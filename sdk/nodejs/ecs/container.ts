@@ -16,6 +16,8 @@
 // describe the different containers that are launched as part of a task.
 
 // See http://docs.aws.amazon.com/AmazonECS/latest/APIReference/API_ContainerDefinition.html
+import * as pulumi from "@pulumi/pulumi";
+
 export interface ContainerDefinition {
     command?: string[];
     cpu?: number;
