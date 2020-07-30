@@ -2,7 +2,7 @@ CHANGELOG
 =========
 
 ## HEAD (Unreleased)
-_(none)_
+* Update `ecs.ContainerDefinition.Secret` valueFrom to `pulumi.Input<string>`
 
 ---
 
