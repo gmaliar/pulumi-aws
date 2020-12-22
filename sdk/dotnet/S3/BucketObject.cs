@@ -25,8 +25,8 @@ namespace Pulumi.Aws.S3
     ///     {
     ///         var examplekms = new Aws.Kms.Key("examplekms", new Aws.Kms.KeyArgs
     ///         {
-    ///             DeletionWindowInDays = 7,
     ///             Description = "KMS key 1",
+    ///             DeletionWindowInDays = 7,
     ///         });
     ///         var examplebucket = new Aws.S3.Bucket("examplebucket", new Aws.S3.BucketArgs
     ///         {
@@ -34,10 +34,10 @@ namespace Pulumi.Aws.S3
     ///         });
     ///         var examplebucketObject = new Aws.S3.BucketObject("examplebucketObject", new Aws.S3.BucketObjectArgs
     ///         {
-    ///             Bucket = examplebucket.Id,
     ///             Key = "someobject",
-    ///             KmsKeyId = examplekms.Arn,
+    ///             Bucket = examplebucket.Id,
     ///             Source = new FileAsset("index.html"),
+    ///             KmsKeyId = examplekms.Arn,
     ///         });
     ///     }
     /// 
@@ -59,10 +59,10 @@ namespace Pulumi.Aws.S3
     ///         });
     ///         var examplebucketObject = new Aws.S3.BucketObject("examplebucketObject", new Aws.S3.BucketObjectArgs
     ///         {
-    ///             Bucket = examplebucket.Id,
     ///             Key = "someobject",
-    ///             ServerSideEncryption = "aws:kms",
+    ///             Bucket = examplebucket.Id,
     ///             Source = new FileAsset("index.html"),
+    ///             ServerSideEncryption = "aws:kms",
     ///         });
     ///     }
     /// 
@@ -84,10 +84,10 @@ namespace Pulumi.Aws.S3
     ///         });
     ///         var examplebucketObject = new Aws.S3.BucketObject("examplebucketObject", new Aws.S3.BucketObjectArgs
     ///         {
-    ///             Bucket = examplebucket.Id,
     ///             Key = "someobject",
-    ///             ServerSideEncryption = "AES256",
+    ///             Bucket = examplebucket.Id,
     ///             Source = new FileAsset("index.html"),
+    ///             ServerSideEncryption = "AES256",
     ///         });
     ///     }
     /// 
@@ -106,24 +106,24 @@ namespace Pulumi.Aws.S3
     ///         var examplebucket = new Aws.S3.Bucket("examplebucket", new Aws.S3.BucketArgs
     ///         {
     ///             Acl = "private",
-    ///             ObjectLockConfiguration = new Aws.S3.Inputs.BucketObjectLockConfigurationArgs
-    ///             {
-    ///                 ObjectLockEnabled = "Enabled",
-    ///             },
     ///             Versioning = new Aws.S3.Inputs.BucketVersioningArgs
     ///             {
     ///                 Enabled = true,
     ///             },
+    ///             ObjectLockConfiguration = new Aws.S3.Inputs.BucketObjectLockConfigurationArgs
+    ///             {
+    ///                 ObjectLockEnabled = "Enabled",
+    ///             },
     ///         });
     ///         var examplebucketObject = new Aws.S3.BucketObject("examplebucketObject", new Aws.S3.BucketObjectArgs
     ///         {
-    ///             Bucket = examplebucket.Id,
-    ///             ForceDestroy = true,
     ///             Key = "someobject",
+    ///             Bucket = examplebucket.Id,
+    ///             Source = new FileAsset("important.txt"),
     ///             ObjectLockLegalHoldStatus = "ON",
     ///             ObjectLockMode = "GOVERNANCE",
     ///             ObjectLockRetainUntilDate = "2021-12-31T23:59:60Z",
-    ///             Source = new FileAsset("important.txt"),
+    ///             ForceDestroy = true,
     ///         });
     ///     }
     /// 
@@ -133,7 +133,7 @@ namespace Pulumi.Aws.S3
     public partial class BucketObject : Pulumi.CustomResource
     {
         /// <summary>
-        /// The [canned ACL](https://docs.aws.amazon.com/AmazonS3/latest/dev/acl-overview.html#canned-acl) to apply. Defaults to "private".
+        /// The [canned ACL](https://docs.aws.amazon.com/AmazonS3/latest/dev/acl-overview.html#canned-acl) to apply. Valid values are `private`, `public-read`, `public-read-write`, `aws-exec-read`, `authenticated-read`, `bucket-owner-read`, and `bucket-owner-full-control`. Defaults to `private`.
         /// </summary>
         [Output("acl")]
         public Output<string?> Acl { get; private set; } = null!;
@@ -206,14 +206,8 @@ namespace Pulumi.Aws.S3
         [Output("key")]
         public Output<string> Key { get; private set; } = null!;
 
-        /// <summary>
-        /// Specifies the AWS KMS Key ARN to use for object encryption.
-        /// This value is a fully qualified **ARN** of the KMS Key. If using `aws.kms.Key`,
-        /// use the exported `arn` attribute:
-        /// `kms_key_id = "${aws_kms_key.foo.arn}"`
-        /// </summary>
         [Output("kmsKeyId")]
-        public Output<string?> KmsKeyId { get; private set; } = null!;
+        public Output<string> KmsKeyId { get; private set; } = null!;
 
         /// <summary>
         /// A map of keys/values to provision metadata (will be automatically prefixed by `x-amz-meta-`, note that only lowercase label are currently supported by the AWS Go API).
@@ -324,7 +318,7 @@ namespace Pulumi.Aws.S3
     public sealed class BucketObjectArgs : Pulumi.ResourceArgs
     {
         /// <summary>
-        /// The [canned ACL](https://docs.aws.amazon.com/AmazonS3/latest/dev/acl-overview.html#canned-acl) to apply. Defaults to "private".
+        /// The [canned ACL](https://docs.aws.amazon.com/AmazonS3/latest/dev/acl-overview.html#canned-acl) to apply. Valid values are `private`, `public-read`, `public-read-write`, `aws-exec-read`, `authenticated-read`, `bucket-owner-read`, and `bucket-owner-full-control`. Defaults to `private`.
         /// </summary>
         [Input("acl")]
         public Input<string>? Acl { get; set; }
@@ -397,12 +391,6 @@ namespace Pulumi.Aws.S3
         [Input("key")]
         public Input<string>? Key { get; set; }
 
-        /// <summary>
-        /// Specifies the AWS KMS Key ARN to use for object encryption.
-        /// This value is a fully qualified **ARN** of the KMS Key. If using `aws.kms.Key`,
-        /// use the exported `arn` attribute:
-        /// `kms_key_id = "${aws_kms_key.foo.arn}"`
-        /// </summary>
         [Input("kmsKeyId")]
         public Input<string>? KmsKeyId { get; set; }
 
@@ -481,7 +469,7 @@ namespace Pulumi.Aws.S3
     public sealed class BucketObjectState : Pulumi.ResourceArgs
     {
         /// <summary>
-        /// The [canned ACL](https://docs.aws.amazon.com/AmazonS3/latest/dev/acl-overview.html#canned-acl) to apply. Defaults to "private".
+        /// The [canned ACL](https://docs.aws.amazon.com/AmazonS3/latest/dev/acl-overview.html#canned-acl) to apply. Valid values are `private`, `public-read`, `public-read-write`, `aws-exec-read`, `authenticated-read`, `bucket-owner-read`, and `bucket-owner-full-control`. Defaults to `private`.
         /// </summary>
         [Input("acl")]
         public Input<string>? Acl { get; set; }
@@ -554,12 +542,6 @@ namespace Pulumi.Aws.S3
         [Input("key")]
         public Input<string>? Key { get; set; }
 
-        /// <summary>
-        /// Specifies the AWS KMS Key ARN to use for object encryption.
-        /// This value is a fully qualified **ARN** of the KMS Key. If using `aws.kms.Key`,
-        /// use the exported `arn` attribute:
-        /// `kms_key_id = "${aws_kms_key.foo.arn}"`
-        /// </summary>
         [Input("kmsKeyId")]
         public Input<string>? KmsKeyId { get; set; }
 

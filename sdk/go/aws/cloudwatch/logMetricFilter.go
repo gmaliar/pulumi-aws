@@ -4,6 +4,7 @@
 package cloudwatch
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -18,7 +19,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/cloudwatch"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/cloudwatch"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -29,13 +30,13 @@ import (
 // 			return err
 // 		}
 // 		_, err = cloudwatch.NewLogMetricFilter(ctx, "yada", &cloudwatch.LogMetricFilterArgs{
+// 			Pattern:      pulumi.String(""),
 // 			LogGroupName: dada.Name,
 // 			MetricTransformation: &cloudwatch.LogMetricFilterMetricTransformationArgs{
 // 				Name:      pulumi.String("EventCount"),
 // 				Namespace: pulumi.String("YourNamespace"),
 // 				Value:     pulumi.String("1"),
 // 			},
-// 			Pattern: pulumi.String(""),
 // 		})
 // 		if err != nil {
 // 			return err
@@ -44,13 +45,20 @@ import (
 // 	})
 // }
 // ```
+//
+// ## Import
+//
+// CloudWatch Log Metric Filter can be imported using the `log_group_name:name`, e.g.
+//
+// ```sh
+//  $ pulumi import aws:cloudwatch/logMetricFilter:LogMetricFilter test /aws/lambda/function:test
+// ```
 type LogMetricFilter struct {
 	pulumi.CustomResourceState
 
 	// The name of the log group to associate the metric filter with.
 	LogGroupName pulumi.StringOutput `pulumi:"logGroupName"`
-	// A block defining collection of information
-	// needed to define how metric data gets emitted. See below.
+	// A block defining collection of information needed to define how metric data gets emitted. See below.
 	MetricTransformation LogMetricFilterMetricTransformationOutput `pulumi:"metricTransformation"`
 	// A name for the metric filter.
 	Name pulumi.StringOutput `pulumi:"name"`
@@ -62,17 +70,18 @@ type LogMetricFilter struct {
 // NewLogMetricFilter registers a new resource with the given unique name, arguments, and options.
 func NewLogMetricFilter(ctx *pulumi.Context,
 	name string, args *LogMetricFilterArgs, opts ...pulumi.ResourceOption) (*LogMetricFilter, error) {
-	if args == nil || args.LogGroupName == nil {
-		return nil, errors.New("missing required argument 'LogGroupName'")
-	}
-	if args == nil || args.MetricTransformation == nil {
-		return nil, errors.New("missing required argument 'MetricTransformation'")
-	}
-	if args == nil || args.Pattern == nil {
-		return nil, errors.New("missing required argument 'Pattern'")
-	}
 	if args == nil {
-		args = &LogMetricFilterArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.LogGroupName == nil {
+		return nil, errors.New("invalid value for required argument 'LogGroupName'")
+	}
+	if args.MetricTransformation == nil {
+		return nil, errors.New("invalid value for required argument 'MetricTransformation'")
+	}
+	if args.Pattern == nil {
+		return nil, errors.New("invalid value for required argument 'Pattern'")
 	}
 	var resource LogMetricFilter
 	err := ctx.RegisterResource("aws:cloudwatch/logMetricFilter:LogMetricFilter", name, args, &resource, opts...)
@@ -98,8 +107,7 @@ func GetLogMetricFilter(ctx *pulumi.Context,
 type logMetricFilterState struct {
 	// The name of the log group to associate the metric filter with.
 	LogGroupName *string `pulumi:"logGroupName"`
-	// A block defining collection of information
-	// needed to define how metric data gets emitted. See below.
+	// A block defining collection of information needed to define how metric data gets emitted. See below.
 	MetricTransformation *LogMetricFilterMetricTransformation `pulumi:"metricTransformation"`
 	// A name for the metric filter.
 	Name *string `pulumi:"name"`
@@ -111,8 +119,7 @@ type logMetricFilterState struct {
 type LogMetricFilterState struct {
 	// The name of the log group to associate the metric filter with.
 	LogGroupName pulumi.StringPtrInput
-	// A block defining collection of information
-	// needed to define how metric data gets emitted. See below.
+	// A block defining collection of information needed to define how metric data gets emitted. See below.
 	MetricTransformation LogMetricFilterMetricTransformationPtrInput
 	// A name for the metric filter.
 	Name pulumi.StringPtrInput
@@ -128,8 +135,7 @@ func (LogMetricFilterState) ElementType() reflect.Type {
 type logMetricFilterArgs struct {
 	// The name of the log group to associate the metric filter with.
 	LogGroupName string `pulumi:"logGroupName"`
-	// A block defining collection of information
-	// needed to define how metric data gets emitted. See below.
+	// A block defining collection of information needed to define how metric data gets emitted. See below.
 	MetricTransformation LogMetricFilterMetricTransformation `pulumi:"metricTransformation"`
 	// A name for the metric filter.
 	Name *string `pulumi:"name"`
@@ -142,8 +148,7 @@ type logMetricFilterArgs struct {
 type LogMetricFilterArgs struct {
 	// The name of the log group to associate the metric filter with.
 	LogGroupName pulumi.StringInput
-	// A block defining collection of information
-	// needed to define how metric data gets emitted. See below.
+	// A block defining collection of information needed to define how metric data gets emitted. See below.
 	MetricTransformation LogMetricFilterMetricTransformationInput
 	// A name for the metric filter.
 	Name pulumi.StringPtrInput
@@ -154,4 +159,43 @@ type LogMetricFilterArgs struct {
 
 func (LogMetricFilterArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*logMetricFilterArgs)(nil)).Elem()
+}
+
+type LogMetricFilterInput interface {
+	pulumi.Input
+
+	ToLogMetricFilterOutput() LogMetricFilterOutput
+	ToLogMetricFilterOutputWithContext(ctx context.Context) LogMetricFilterOutput
+}
+
+func (LogMetricFilter) ElementType() reflect.Type {
+	return reflect.TypeOf((*LogMetricFilter)(nil)).Elem()
+}
+
+func (i LogMetricFilter) ToLogMetricFilterOutput() LogMetricFilterOutput {
+	return i.ToLogMetricFilterOutputWithContext(context.Background())
+}
+
+func (i LogMetricFilter) ToLogMetricFilterOutputWithContext(ctx context.Context) LogMetricFilterOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(LogMetricFilterOutput)
+}
+
+type LogMetricFilterOutput struct {
+	*pulumi.OutputState
+}
+
+func (LogMetricFilterOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*LogMetricFilterOutput)(nil)).Elem()
+}
+
+func (o LogMetricFilterOutput) ToLogMetricFilterOutput() LogMetricFilterOutput {
+	return o
+}
+
+func (o LogMetricFilterOutput) ToLogMetricFilterOutputWithContext(ctx context.Context) LogMetricFilterOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(LogMetricFilterOutput{})
 }

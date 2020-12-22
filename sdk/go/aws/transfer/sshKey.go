@@ -4,6 +4,7 @@
 package transfer
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -18,14 +19,14 @@ import (
 // import (
 // 	"fmt"
 //
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/iam"
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/transfer"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/iam"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/transfer"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
 // func main() {
 // 	pulumi.Run(func(ctx *pulumi.Context) error {
-// 		fooServer, err := transfer.NewServer(ctx, "fooServer", &transfer.ServerArgs{
+// 		exampleServer, err := transfer.NewServer(ctx, "exampleServer", &transfer.ServerArgs{
 // 			IdentityProviderType: pulumi.String("SERVICE_MANAGED"),
 // 			Tags: pulumi.StringMap{
 // 				"NAME": pulumi.String("tf-acc-test-transfer-server"),
@@ -34,34 +35,34 @@ import (
 // 		if err != nil {
 // 			return err
 // 		}
-// 		fooRole, err := iam.NewRole(ctx, "fooRole", &iam.RoleArgs{
-// 			AssumeRolePolicy: pulumi.String(fmt.Sprintf("%v%v%v%v%v%v%v%v%v%v%v%v%v", "{\n", "	\"Version\": \"2012-10-17\",\n", "	\"Statement\": [\n", "		{\n", "		\"Effect\": \"Allow\",\n", "		\"Principal\": {\n", "			\"Service\": \"transfer.amazonaws.com\"\n", "		},\n", "		\"Action\": \"sts:AssumeRole\"\n", "		}\n", "	]\n", "}\n", "\n")),
+// 		exampleRole, err := iam.NewRole(ctx, "exampleRole", &iam.RoleArgs{
+// 			AssumeRolePolicy: pulumi.String(fmt.Sprintf("%v%v%v%v%v%v%v%v%v%v%v%v", "{\n", "	\"Version\": \"2012-10-17\",\n", "	\"Statement\": [\n", "		{\n", "		\"Effect\": \"Allow\",\n", "		\"Principal\": {\n", "			\"Service\": \"transfer.amazonaws.com\"\n", "		},\n", "		\"Action\": \"sts:AssumeRole\"\n", "		}\n", "	]\n", "}\n")),
 // 		})
 // 		if err != nil {
 // 			return err
 // 		}
-// 		_, err = iam.NewRolePolicy(ctx, "fooRolePolicy", &iam.RolePolicyArgs{
-// 			Policy: pulumi.String(fmt.Sprintf("%v%v%v%v%v%v%v%v%v%v%v%v%v%v", "{\n", "	\"Version\": \"2012-10-17\",\n", "	\"Statement\": [\n", "		{\n", "			\"Sid\": \"AllowFullAccesstoS3\",\n", "			\"Effect\": \"Allow\",\n", "			\"Action\": [\n", "				\"s3:*\"\n", "			],\n", "			\"Resource\": \"*\"\n", "		}\n", "	]\n", "}\n", "\n")),
-// 			Role: fooRole.ID(),
-// 		})
-// 		if err != nil {
-// 			return err
-// 		}
-// 		fooUser, err := transfer.NewUser(ctx, "fooUser", &transfer.UserArgs{
-// 			Role:     fooRole.Arn,
-// 			ServerId: fooServer.ID(),
+// 		exampleUser, err := transfer.NewUser(ctx, "exampleUser", &transfer.UserArgs{
+// 			ServerId: exampleServer.ID(),
+// 			UserName: pulumi.String("tftestuser"),
+// 			Role:     exampleRole.Arn,
 // 			Tags: pulumi.StringMap{
 // 				"NAME": pulumi.String("tftestuser"),
 // 			},
-// 			UserName: pulumi.String("tftestuser"),
 // 		})
 // 		if err != nil {
 // 			return err
 // 		}
-// 		_, err = transfer.NewSshKey(ctx, "fooSshKey", &transfer.SshKeyArgs{
-// 			Body:     pulumi.String("ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQD3F6tyPEFEzV0LX3X8BsXdMsQz1x2cEikKDEY0aIj41qgxMCP/iteneqXSIFZBp5vizPvaoIR3Um9xK7PGoW8giupGn+EPuxIA4cDM4vzOqOkiMPhz5XK0whEjkVzTo4+S0puvDZuwIsdiW9mxhJc7tgBNL0cYlWSYVkz4G/fslNfRPW5mYAM49f4fhtxPb5ok4Q2Lg9dPKVHO/Bgeu5woMc7RY0p1ej6D4CKFE6lymSDJpW0YHX/wqE9+cfEauh7xZcG0q9t2ta6F6fmX0agvpFyZo8aFbXeUBr7osSCJNgvavWbM/06niWrOvYX2xwWdhXmXSrbX8ZbabVohBK41 example@example.com"),
-// 			ServerId: fooServer.ID(),
-// 			UserName: fooUser.UserName,
+// 		_, err = transfer.NewSshKey(ctx, "exampleSshKey", &transfer.SshKeyArgs{
+// 			ServerId: exampleServer.ID(),
+// 			UserName: exampleUser.UserName,
+// 			Body:     pulumi.String("... SSH key ..."),
+// 		})
+// 		if err != nil {
+// 			return err
+// 		}
+// 		_, err = iam.NewRolePolicy(ctx, "exampleRolePolicy", &iam.RolePolicyArgs{
+// 			Role: exampleRole.ID(),
+// 			Policy: pulumi.String(fmt.Sprintf("%v%v%v%v%v%v%v%v%v%v%v%v%v", "{\n", "	\"Version\": \"2012-10-17\",\n", "	\"Statement\": [\n", "		{\n", "			\"Sid\": \"AllowFullAccesstoS3\",\n", "			\"Effect\": \"Allow\",\n", "			\"Action\": [\n", "				\"s3:*\"\n", "			],\n", "			\"Resource\": \"*\"\n", "		}\n", "	]\n", "}\n")),
 // 		})
 // 		if err != nil {
 // 			return err
@@ -69,6 +70,14 @@ import (
 // 		return nil
 // 	})
 // }
+// ```
+//
+// ## Import
+//
+// Transfer SSH Public Key can be imported using the `server_id` and `user_name` and `ssh_public_key_id` separated by `/`.
+//
+// ```sh
+//  $ pulumi import aws:transfer/sshKey:SshKey bar s-12345678/test-username/key-12345
 // ```
 type SshKey struct {
 	pulumi.CustomResourceState
@@ -84,17 +93,18 @@ type SshKey struct {
 // NewSshKey registers a new resource with the given unique name, arguments, and options.
 func NewSshKey(ctx *pulumi.Context,
 	name string, args *SshKeyArgs, opts ...pulumi.ResourceOption) (*SshKey, error) {
-	if args == nil || args.Body == nil {
-		return nil, errors.New("missing required argument 'Body'")
-	}
-	if args == nil || args.ServerId == nil {
-		return nil, errors.New("missing required argument 'ServerId'")
-	}
-	if args == nil || args.UserName == nil {
-		return nil, errors.New("missing required argument 'UserName'")
-	}
 	if args == nil {
-		args = &SshKeyArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.Body == nil {
+		return nil, errors.New("invalid value for required argument 'Body'")
+	}
+	if args.ServerId == nil {
+		return nil, errors.New("invalid value for required argument 'ServerId'")
+	}
+	if args.UserName == nil {
+		return nil, errors.New("invalid value for required argument 'UserName'")
 	}
 	var resource SshKey
 	err := ctx.RegisterResource("aws:transfer/sshKey:SshKey", name, args, &resource, opts...)
@@ -160,4 +170,43 @@ type SshKeyArgs struct {
 
 func (SshKeyArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*sshKeyArgs)(nil)).Elem()
+}
+
+type SshKeyInput interface {
+	pulumi.Input
+
+	ToSshKeyOutput() SshKeyOutput
+	ToSshKeyOutputWithContext(ctx context.Context) SshKeyOutput
+}
+
+func (SshKey) ElementType() reflect.Type {
+	return reflect.TypeOf((*SshKey)(nil)).Elem()
+}
+
+func (i SshKey) ToSshKeyOutput() SshKeyOutput {
+	return i.ToSshKeyOutputWithContext(context.Background())
+}
+
+func (i SshKey) ToSshKeyOutputWithContext(ctx context.Context) SshKeyOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(SshKeyOutput)
+}
+
+type SshKeyOutput struct {
+	*pulumi.OutputState
+}
+
+func (SshKeyOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*SshKeyOutput)(nil)).Elem()
+}
+
+func (o SshKeyOutput) ToSshKeyOutput() SshKeyOutput {
+	return o
+}
+
+func (o SshKeyOutput) ToSshKeyOutputWithContext(ctx context.Context) SshKeyOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(SshKeyOutput{})
 }

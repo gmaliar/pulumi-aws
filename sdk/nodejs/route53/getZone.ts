@@ -2,8 +2,7 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 /**
@@ -19,16 +18,16 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const selected = pulumi.output(aws.route53.getZone({
+ * const selected = aws.route53.getZone({
  *     name: "test.com.",
  *     privateZone: true,
- * }, { async: true }));
+ * });
  * const www = new aws.route53.Record("www", {
- *     name: pulumi.interpolate`www.${selected.name!}`,
- *     records: ["10.0.0.1"],
- *     ttl: 300,
+ *     zoneId: selected.then(selected => selected.zoneId),
+ *     name: selected.then(selected => `www.${selected.name}`),
  *     type: "A",
- *     zoneId: selected.zoneId!,
+ *     ttl: "300",
+ *     records: ["10.0.0.1"],
  * });
  * ```
  */

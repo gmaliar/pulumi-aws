@@ -5,32 +5,22 @@
 import warnings
 import pulumi
 import pulumi.runtime
-from typing import Union
-from .. import utilities, tables
+from typing import Any, Mapping, Optional, Sequence, Union
+from .. import _utilities, _tables
+
+__all__ = ['Member']
 
 
 class Member(pulumi.CustomResource):
-    account_id: pulumi.Output[str]
-    """
-    The ID of the member AWS account.
-    """
-    email: pulumi.Output[str]
-    """
-    The email of the member AWS account.
-    """
-    invite: pulumi.Output[bool]
-    """
-    Boolean whether to invite the account to Security Hub as a member. Defaults to `false`.
-    """
-    master_id: pulumi.Output[str]
-    """
-    The ID of the master Security Hub AWS account.
-    """
-    member_status: pulumi.Output[str]
-    """
-    The status of the member account relationship.
-    """
-    def __init__(__self__, resource_name, opts=None, account_id=None, email=None, invite=None, __props__=None, __name__=None, __opts__=None):
+    def __init__(__self__,
+                 resource_name: str,
+                 opts: Optional[pulumi.ResourceOptions] = None,
+                 account_id: Optional[pulumi.Input[str]] = None,
+                 email: Optional[pulumi.Input[str]] = None,
+                 invite: Optional[pulumi.Input[bool]] = None,
+                 __props__=None,
+                 __name__=None,
+                 __opts__=None):
         """
         Provides a Security Hub member resource.
 
@@ -45,7 +35,15 @@ class Member(pulumi.CustomResource):
             account_id="123456789012",
             email="example@example.com",
             invite=True,
-            opts=ResourceOptions(depends_on=["aws_securityhub_account.example"]))
+            opts=pulumi.ResourceOptions(depends_on=[example_account]))
+        ```
+
+        ## Import
+
+        Security Hub members can be imported using their account ID, e.g.
+
+        ```sh
+         $ pulumi import aws:securityhub/member:Member example 123456789012
         ```
 
         :param str resource_name: The name of the resource.
@@ -65,16 +63,16 @@ class Member(pulumi.CustomResource):
         if not isinstance(opts, pulumi.ResourceOptions):
             raise TypeError('Expected resource options to be a ResourceOptions instance')
         if opts.version is None:
-            opts.version = utilities.get_version()
+            opts.version = _utilities.get_version()
         if opts.id is None:
             if __props__ is not None:
                 raise TypeError('__props__ is only valid when passed in combination with a valid opts.id to get an existing resource')
             __props__ = dict()
 
-            if account_id is None:
+            if account_id is None and not opts.urn:
                 raise TypeError("Missing required property 'account_id'")
             __props__['account_id'] = account_id
-            if email is None:
+            if email is None and not opts.urn:
                 raise TypeError("Missing required property 'email'")
             __props__['email'] = email
             __props__['invite'] = invite
@@ -87,13 +85,20 @@ class Member(pulumi.CustomResource):
             opts)
 
     @staticmethod
-    def get(resource_name, id, opts=None, account_id=None, email=None, invite=None, master_id=None, member_status=None):
+    def get(resource_name: str,
+            id: pulumi.Input[str],
+            opts: Optional[pulumi.ResourceOptions] = None,
+            account_id: Optional[pulumi.Input[str]] = None,
+            email: Optional[pulumi.Input[str]] = None,
+            invite: Optional[pulumi.Input[bool]] = None,
+            master_id: Optional[pulumi.Input[str]] = None,
+            member_status: Optional[pulumi.Input[str]] = None) -> 'Member':
         """
         Get an existing Member resource's state with the given name, id, and optional extra
         properties used to qualify the lookup.
 
         :param str resource_name: The unique name of the resulting resource.
-        :param str id: The unique provider ID of the resource to lookup.
+        :param pulumi.Input[str] id: The unique provider ID of the resource to lookup.
         :param pulumi.ResourceOptions opts: Options for the resource.
         :param pulumi.Input[str] account_id: The ID of the member AWS account.
         :param pulumi.Input[str] email: The email of the member AWS account.
@@ -112,8 +117,49 @@ class Member(pulumi.CustomResource):
         __props__["member_status"] = member_status
         return Member(resource_name, opts=opts, __props__=__props__)
 
+    @property
+    @pulumi.getter(name="accountId")
+    def account_id(self) -> pulumi.Output[str]:
+        """
+        The ID of the member AWS account.
+        """
+        return pulumi.get(self, "account_id")
+
+    @property
+    @pulumi.getter
+    def email(self) -> pulumi.Output[str]:
+        """
+        The email of the member AWS account.
+        """
+        return pulumi.get(self, "email")
+
+    @property
+    @pulumi.getter
+    def invite(self) -> pulumi.Output[Optional[bool]]:
+        """
+        Boolean whether to invite the account to Security Hub as a member. Defaults to `false`.
+        """
+        return pulumi.get(self, "invite")
+
+    @property
+    @pulumi.getter(name="masterId")
+    def master_id(self) -> pulumi.Output[str]:
+        """
+        The ID of the master Security Hub AWS account.
+        """
+        return pulumi.get(self, "master_id")
+
+    @property
+    @pulumi.getter(name="memberStatus")
+    def member_status(self) -> pulumi.Output[str]:
+        """
+        The status of the member account relationship.
+        """
+        return pulumi.get(self, "member_status")
+
     def translate_output_property(self, prop):
-        return tables._CAMEL_TO_SNAKE_CASE_TABLE.get(prop) or prop
+        return _tables.CAMEL_TO_SNAKE_CASE_TABLE.get(prop) or prop
 
     def translate_input_property(self, prop):
-        return tables._SNAKE_TO_CAMEL_CASE_TABLE.get(prop) or prop
+        return _tables.SNAKE_TO_CAMEL_CASE_TABLE.get(prop) or prop
+

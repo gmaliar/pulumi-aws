@@ -4,6 +4,7 @@
 package iam
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -20,22 +21,22 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/iam"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/iam"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
 // func main() {
 // 	pulumi.Run(func(ctx *pulumi.Context) error {
 // 		exampleUser, err := iam.NewUser(ctx, "exampleUser", &iam.UserArgs{
-// 			ForceDestroy: pulumi.Bool(true),
 // 			Path:         pulumi.String("/"),
+// 			ForceDestroy: pulumi.Bool(true),
 // 		})
 // 		if err != nil {
 // 			return err
 // 		}
 // 		exampleUserLoginProfile, err := iam.NewUserLoginProfile(ctx, "exampleUserLoginProfile", &iam.UserLoginProfileArgs{
-// 			PgpKey: pulumi.String("keybase:some_person_that_exists"),
 // 			User:   exampleUser.Name,
+// 			PgpKey: pulumi.String("keybase:some_person_that_exists"),
 // 		})
 // 		if err != nil {
 // 			return err
@@ -45,6 +46,32 @@ import (
 // 	})
 // }
 // ```
+//
+// ## Import
+//
+// IAM User Login Profiles can be imported without password information support via the IAM User name, e.g.
+//
+// ```sh
+//  $ pulumi import aws:iam/userLoginProfile:UserLoginProfile example myusername
+// ```
+//
+//  Since this provider has no method to read the PGP or password information during import, use [`ignore_changes` argument](https://www.pulumi.com/docs/intro/concepts/programming-model/#ignorechanges) to ignore them unless password recreation is desired. e.g. hcl resource "aws_iam_user_login_profile" "example" {
+//
+// # ... other configuration ...
+//
+//  lifecycle {
+//
+//  ignore_changes = [
+//
+//  password_length,
+//
+//  password_reset_required,
+//
+//  pgp_key,
+//
+//  ]
+//
+//  } }
 type UserLoginProfile struct {
 	pulumi.CustomResourceState
 
@@ -65,14 +92,15 @@ type UserLoginProfile struct {
 // NewUserLoginProfile registers a new resource with the given unique name, arguments, and options.
 func NewUserLoginProfile(ctx *pulumi.Context,
 	name string, args *UserLoginProfileArgs, opts ...pulumi.ResourceOption) (*UserLoginProfile, error) {
-	if args == nil || args.PgpKey == nil {
-		return nil, errors.New("missing required argument 'PgpKey'")
-	}
-	if args == nil || args.User == nil {
-		return nil, errors.New("missing required argument 'User'")
-	}
 	if args == nil {
-		args = &UserLoginProfileArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.PgpKey == nil {
+		return nil, errors.New("invalid value for required argument 'PgpKey'")
+	}
+	if args.User == nil {
+		return nil, errors.New("invalid value for required argument 'User'")
 	}
 	var resource UserLoginProfile
 	err := ctx.RegisterResource("aws:iam/userLoginProfile:UserLoginProfile", name, args, &resource, opts...)
@@ -154,4 +182,43 @@ type UserLoginProfileArgs struct {
 
 func (UserLoginProfileArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*userLoginProfileArgs)(nil)).Elem()
+}
+
+type UserLoginProfileInput interface {
+	pulumi.Input
+
+	ToUserLoginProfileOutput() UserLoginProfileOutput
+	ToUserLoginProfileOutputWithContext(ctx context.Context) UserLoginProfileOutput
+}
+
+func (UserLoginProfile) ElementType() reflect.Type {
+	return reflect.TypeOf((*UserLoginProfile)(nil)).Elem()
+}
+
+func (i UserLoginProfile) ToUserLoginProfileOutput() UserLoginProfileOutput {
+	return i.ToUserLoginProfileOutputWithContext(context.Background())
+}
+
+func (i UserLoginProfile) ToUserLoginProfileOutputWithContext(ctx context.Context) UserLoginProfileOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(UserLoginProfileOutput)
+}
+
+type UserLoginProfileOutput struct {
+	*pulumi.OutputState
+}
+
+func (UserLoginProfileOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*UserLoginProfileOutput)(nil)).Elem()
+}
+
+func (o UserLoginProfileOutput) ToUserLoginProfileOutput() UserLoginProfileOutput {
+	return o
+}
+
+func (o UserLoginProfileOutput) ToUserLoginProfileOutputWithContext(ctx context.Context) UserLoginProfileOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(UserLoginProfileOutput{})
 }

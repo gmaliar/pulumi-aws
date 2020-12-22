@@ -4,6 +4,7 @@
 package apigateway
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -18,7 +19,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/apigateway"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/apigateway"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -30,9 +31,9 @@ import (
 // 		}
 // 		_, err = apigateway.NewDocumentationPart(ctx, "exampleDocumentationPart", &apigateway.DocumentationPartArgs{
 // 			Location: &apigateway.DocumentationPartLocationArgs{
+// 				Type:   pulumi.String("METHOD"),
 // 				Method: pulumi.String("GET"),
 // 				Path:   pulumi.String("/example"),
-// 				Type:   pulumi.String("METHOD"),
 // 			},
 // 			Properties: pulumi.String("{\"description\":\"Example description\"}"),
 // 			RestApiId:  exampleRestApi.ID(),
@@ -43,6 +44,14 @@ import (
 // 		return nil
 // 	})
 // }
+// ```
+//
+// ## Import
+//
+// API Gateway documentation_parts can be imported using `REST-API-ID/DOC-PART-ID`, e.g.
+//
+// ```sh
+//  $ pulumi import aws:apigateway/documentationPart:DocumentationPart example 5i4e1ko720/3oyy3t
 // ```
 type DocumentationPart struct {
 	pulumi.CustomResourceState
@@ -58,17 +67,18 @@ type DocumentationPart struct {
 // NewDocumentationPart registers a new resource with the given unique name, arguments, and options.
 func NewDocumentationPart(ctx *pulumi.Context,
 	name string, args *DocumentationPartArgs, opts ...pulumi.ResourceOption) (*DocumentationPart, error) {
-	if args == nil || args.Location == nil {
-		return nil, errors.New("missing required argument 'Location'")
-	}
-	if args == nil || args.Properties == nil {
-		return nil, errors.New("missing required argument 'Properties'")
-	}
-	if args == nil || args.RestApiId == nil {
-		return nil, errors.New("missing required argument 'RestApiId'")
-	}
 	if args == nil {
-		args = &DocumentationPartArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.Location == nil {
+		return nil, errors.New("invalid value for required argument 'Location'")
+	}
+	if args.Properties == nil {
+		return nil, errors.New("invalid value for required argument 'Properties'")
+	}
+	if args.RestApiId == nil {
+		return nil, errors.New("invalid value for required argument 'RestApiId'")
 	}
 	var resource DocumentationPart
 	err := ctx.RegisterResource("aws:apigateway/documentationPart:DocumentationPart", name, args, &resource, opts...)
@@ -134,4 +144,43 @@ type DocumentationPartArgs struct {
 
 func (DocumentationPartArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*documentationPartArgs)(nil)).Elem()
+}
+
+type DocumentationPartInput interface {
+	pulumi.Input
+
+	ToDocumentationPartOutput() DocumentationPartOutput
+	ToDocumentationPartOutputWithContext(ctx context.Context) DocumentationPartOutput
+}
+
+func (DocumentationPart) ElementType() reflect.Type {
+	return reflect.TypeOf((*DocumentationPart)(nil)).Elem()
+}
+
+func (i DocumentationPart) ToDocumentationPartOutput() DocumentationPartOutput {
+	return i.ToDocumentationPartOutputWithContext(context.Background())
+}
+
+func (i DocumentationPart) ToDocumentationPartOutputWithContext(ctx context.Context) DocumentationPartOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(DocumentationPartOutput)
+}
+
+type DocumentationPartOutput struct {
+	*pulumi.OutputState
+}
+
+func (DocumentationPartOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*DocumentationPartOutput)(nil)).Elem()
+}
+
+func (o DocumentationPartOutput) ToDocumentationPartOutput() DocumentationPartOutput {
+	return o
+}
+
+func (o DocumentationPartOutput) ToDocumentationPartOutputWithContext(ctx context.Context) DocumentationPartOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(DocumentationPartOutput{})
 }

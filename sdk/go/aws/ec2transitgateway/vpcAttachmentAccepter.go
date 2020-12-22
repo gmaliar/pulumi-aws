@@ -4,6 +4,7 @@
 package ec2transitgateway
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -24,17 +25,17 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/ec2transitgateway"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/ec2transitgateway"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
 // func main() {
 // 	pulumi.Run(func(ctx *pulumi.Context) error {
 // 		_, err := ec2transitgateway.NewVpcAttachmentAccepter(ctx, "example", &ec2transitgateway.VpcAttachmentAccepterArgs{
+// 			TransitGatewayAttachmentId: pulumi.Any(aws_ec2_transit_gateway_vpc_attachment.Example.Id),
 // 			Tags: pulumi.StringMap{
 // 				"Name": pulumi.String("Example cross-account attachment"),
 // 			},
-// 			TransitGatewayAttachmentId: pulumi.String(aws_ec2_transit_gateway_vpc_attachment.Example.Id),
 // 		})
 // 		if err != nil {
 // 			return err
@@ -44,10 +45,18 @@ import (
 // }
 // ```
 //
-// A full example of how to how to create a Transit Gateway in one AWS account, share it with a second AWS account, and attach a VPC in the second account to the Transit Gateway via the `ec2transitgateway.VpcAttachment` and `ec2transitgateway.VpcAttachmentAccepter` resources can be found in [the `./examples/transit-gateway-cross-account-vpc-attachment` directory within the Github Repository](https://github.com/providers/provider-aws/tree/master/examples/transit-gateway-cross-account-vpc-attachment).
+// ## Import
+//
+// `aws_ec2_transit_gateway_vpc_attachment_accepter` can be imported by using the EC2 Transit Gateway Attachment identifier, e.g.
+//
+// ```sh
+//  $ pulumi import aws:ec2transitgateway/vpcAttachmentAccepter:VpcAttachmentAccepter example tgw-attach-12345678
+// ```
 type VpcAttachmentAccepter struct {
 	pulumi.CustomResourceState
 
+	// Whether Appliance Mode support is enabled. Valid values: `disable`, `enable`.
+	ApplianceModeSupport pulumi.StringOutput `pulumi:"applianceModeSupport"`
 	// Whether DNS support is enabled. Valid values: `disable`, `enable`.
 	DnsSupport pulumi.StringOutput `pulumi:"dnsSupport"`
 	// Whether IPv6 support is enabled. Valid values: `disable`, `enable`.
@@ -73,11 +82,12 @@ type VpcAttachmentAccepter struct {
 // NewVpcAttachmentAccepter registers a new resource with the given unique name, arguments, and options.
 func NewVpcAttachmentAccepter(ctx *pulumi.Context,
 	name string, args *VpcAttachmentAccepterArgs, opts ...pulumi.ResourceOption) (*VpcAttachmentAccepter, error) {
-	if args == nil || args.TransitGatewayAttachmentId == nil {
-		return nil, errors.New("missing required argument 'TransitGatewayAttachmentId'")
-	}
 	if args == nil {
-		args = &VpcAttachmentAccepterArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.TransitGatewayAttachmentId == nil {
+		return nil, errors.New("invalid value for required argument 'TransitGatewayAttachmentId'")
 	}
 	var resource VpcAttachmentAccepter
 	err := ctx.RegisterResource("aws:ec2transitgateway/vpcAttachmentAccepter:VpcAttachmentAccepter", name, args, &resource, opts...)
@@ -101,6 +111,8 @@ func GetVpcAttachmentAccepter(ctx *pulumi.Context,
 
 // Input properties used for looking up and filtering VpcAttachmentAccepter resources.
 type vpcAttachmentAccepterState struct {
+	// Whether Appliance Mode support is enabled. Valid values: `disable`, `enable`.
+	ApplianceModeSupport *string `pulumi:"applianceModeSupport"`
 	// Whether DNS support is enabled. Valid values: `disable`, `enable`.
 	DnsSupport *string `pulumi:"dnsSupport"`
 	// Whether IPv6 support is enabled. Valid values: `disable`, `enable`.
@@ -124,6 +136,8 @@ type vpcAttachmentAccepterState struct {
 }
 
 type VpcAttachmentAccepterState struct {
+	// Whether Appliance Mode support is enabled. Valid values: `disable`, `enable`.
+	ApplianceModeSupport pulumi.StringPtrInput
 	// Whether DNS support is enabled. Valid values: `disable`, `enable`.
 	DnsSupport pulumi.StringPtrInput
 	// Whether IPv6 support is enabled. Valid values: `disable`, `enable`.
@@ -175,4 +189,43 @@ type VpcAttachmentAccepterArgs struct {
 
 func (VpcAttachmentAccepterArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*vpcAttachmentAccepterArgs)(nil)).Elem()
+}
+
+type VpcAttachmentAccepterInput interface {
+	pulumi.Input
+
+	ToVpcAttachmentAccepterOutput() VpcAttachmentAccepterOutput
+	ToVpcAttachmentAccepterOutputWithContext(ctx context.Context) VpcAttachmentAccepterOutput
+}
+
+func (VpcAttachmentAccepter) ElementType() reflect.Type {
+	return reflect.TypeOf((*VpcAttachmentAccepter)(nil)).Elem()
+}
+
+func (i VpcAttachmentAccepter) ToVpcAttachmentAccepterOutput() VpcAttachmentAccepterOutput {
+	return i.ToVpcAttachmentAccepterOutputWithContext(context.Background())
+}
+
+func (i VpcAttachmentAccepter) ToVpcAttachmentAccepterOutputWithContext(ctx context.Context) VpcAttachmentAccepterOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(VpcAttachmentAccepterOutput)
+}
+
+type VpcAttachmentAccepterOutput struct {
+	*pulumi.OutputState
+}
+
+func (VpcAttachmentAccepterOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*VpcAttachmentAccepterOutput)(nil)).Elem()
+}
+
+func (o VpcAttachmentAccepterOutput) ToVpcAttachmentAccepterOutput() VpcAttachmentAccepterOutput {
+	return o
+}
+
+func (o VpcAttachmentAccepterOutput) ToVpcAttachmentAccepterOutputWithContext(ctx context.Context) VpcAttachmentAccepterOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(VpcAttachmentAccepterOutput{})
 }

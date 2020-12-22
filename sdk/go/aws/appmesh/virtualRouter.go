@@ -4,6 +4,7 @@
 package appmesh
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -30,14 +31,14 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/appmesh"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/appmesh"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
 // func main() {
 // 	pulumi.Run(func(ctx *pulumi.Context) error {
 // 		_, err := appmesh.NewVirtualRouter(ctx, "serviceb", &appmesh.VirtualRouterArgs{
-// 			MeshName: pulumi.String(aws_appmesh_mesh.Simple.Id),
+// 			MeshName: pulumi.Any(aws_appmesh_mesh.Simple.Id),
 // 			Spec: &appmesh.VirtualRouterSpecArgs{
 // 				Listener: &appmesh.VirtualRouterSpecListenerArgs{
 // 					PortMapping: &appmesh.VirtualRouterSpecListenerPortMappingArgs{
@@ -54,6 +55,16 @@ import (
 // 	})
 // }
 // ```
+//
+// ## Import
+//
+// App Mesh virtual routers can be imported using `mesh_name` together with the virtual router's `name`, e.g.
+//
+// ```sh
+//  $ pulumi import aws:appmesh/virtualRouter:VirtualRouter serviceb simpleapp/serviceB
+// ```
+//
+//  [1]/docs/providers/aws/index.html
 type VirtualRouter struct {
 	pulumi.CustomResourceState
 
@@ -63,10 +74,14 @@ type VirtualRouter struct {
 	CreatedDate pulumi.StringOutput `pulumi:"createdDate"`
 	// The last update date of the virtual router.
 	LastUpdatedDate pulumi.StringOutput `pulumi:"lastUpdatedDate"`
-	// The name of the service mesh in which to create the virtual router.
+	// The name of the service mesh in which to create the virtual router. Must be between 1 and 255 characters in length.
 	MeshName pulumi.StringOutput `pulumi:"meshName"`
-	// The name to use for the virtual router.
+	// The AWS account ID of the service mesh's owner. Defaults to the account ID the [AWS provider](https://www.terraform.io/docs/providers/aws/index.html) is currently connected to.
+	MeshOwner pulumi.StringOutput `pulumi:"meshOwner"`
+	// The name to use for the virtual router. Must be between 1 and 255 characters in length.
 	Name pulumi.StringOutput `pulumi:"name"`
+	// The resource owner's AWS account ID.
+	ResourceOwner pulumi.StringOutput `pulumi:"resourceOwner"`
 	// The virtual router specification to apply.
 	Spec VirtualRouterSpecOutput `pulumi:"spec"`
 	// A map of tags to assign to the resource.
@@ -76,14 +91,15 @@ type VirtualRouter struct {
 // NewVirtualRouter registers a new resource with the given unique name, arguments, and options.
 func NewVirtualRouter(ctx *pulumi.Context,
 	name string, args *VirtualRouterArgs, opts ...pulumi.ResourceOption) (*VirtualRouter, error) {
-	if args == nil || args.MeshName == nil {
-		return nil, errors.New("missing required argument 'MeshName'")
-	}
-	if args == nil || args.Spec == nil {
-		return nil, errors.New("missing required argument 'Spec'")
-	}
 	if args == nil {
-		args = &VirtualRouterArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.MeshName == nil {
+		return nil, errors.New("invalid value for required argument 'MeshName'")
+	}
+	if args.Spec == nil {
+		return nil, errors.New("invalid value for required argument 'Spec'")
 	}
 	var resource VirtualRouter
 	err := ctx.RegisterResource("aws:appmesh/virtualRouter:VirtualRouter", name, args, &resource, opts...)
@@ -113,10 +129,14 @@ type virtualRouterState struct {
 	CreatedDate *string `pulumi:"createdDate"`
 	// The last update date of the virtual router.
 	LastUpdatedDate *string `pulumi:"lastUpdatedDate"`
-	// The name of the service mesh in which to create the virtual router.
+	// The name of the service mesh in which to create the virtual router. Must be between 1 and 255 characters in length.
 	MeshName *string `pulumi:"meshName"`
-	// The name to use for the virtual router.
+	// The AWS account ID of the service mesh's owner. Defaults to the account ID the [AWS provider](https://www.terraform.io/docs/providers/aws/index.html) is currently connected to.
+	MeshOwner *string `pulumi:"meshOwner"`
+	// The name to use for the virtual router. Must be between 1 and 255 characters in length.
 	Name *string `pulumi:"name"`
+	// The resource owner's AWS account ID.
+	ResourceOwner *string `pulumi:"resourceOwner"`
 	// The virtual router specification to apply.
 	Spec *VirtualRouterSpec `pulumi:"spec"`
 	// A map of tags to assign to the resource.
@@ -130,10 +150,14 @@ type VirtualRouterState struct {
 	CreatedDate pulumi.StringPtrInput
 	// The last update date of the virtual router.
 	LastUpdatedDate pulumi.StringPtrInput
-	// The name of the service mesh in which to create the virtual router.
+	// The name of the service mesh in which to create the virtual router. Must be between 1 and 255 characters in length.
 	MeshName pulumi.StringPtrInput
-	// The name to use for the virtual router.
+	// The AWS account ID of the service mesh's owner. Defaults to the account ID the [AWS provider](https://www.terraform.io/docs/providers/aws/index.html) is currently connected to.
+	MeshOwner pulumi.StringPtrInput
+	// The name to use for the virtual router. Must be between 1 and 255 characters in length.
 	Name pulumi.StringPtrInput
+	// The resource owner's AWS account ID.
+	ResourceOwner pulumi.StringPtrInput
 	// The virtual router specification to apply.
 	Spec VirtualRouterSpecPtrInput
 	// A map of tags to assign to the resource.
@@ -145,9 +169,11 @@ func (VirtualRouterState) ElementType() reflect.Type {
 }
 
 type virtualRouterArgs struct {
-	// The name of the service mesh in which to create the virtual router.
+	// The name of the service mesh in which to create the virtual router. Must be between 1 and 255 characters in length.
 	MeshName string `pulumi:"meshName"`
-	// The name to use for the virtual router.
+	// The AWS account ID of the service mesh's owner. Defaults to the account ID the [AWS provider](https://www.terraform.io/docs/providers/aws/index.html) is currently connected to.
+	MeshOwner *string `pulumi:"meshOwner"`
+	// The name to use for the virtual router. Must be between 1 and 255 characters in length.
 	Name *string `pulumi:"name"`
 	// The virtual router specification to apply.
 	Spec VirtualRouterSpec `pulumi:"spec"`
@@ -157,9 +183,11 @@ type virtualRouterArgs struct {
 
 // The set of arguments for constructing a VirtualRouter resource.
 type VirtualRouterArgs struct {
-	// The name of the service mesh in which to create the virtual router.
+	// The name of the service mesh in which to create the virtual router. Must be between 1 and 255 characters in length.
 	MeshName pulumi.StringInput
-	// The name to use for the virtual router.
+	// The AWS account ID of the service mesh's owner. Defaults to the account ID the [AWS provider](https://www.terraform.io/docs/providers/aws/index.html) is currently connected to.
+	MeshOwner pulumi.StringPtrInput
+	// The name to use for the virtual router. Must be between 1 and 255 characters in length.
 	Name pulumi.StringPtrInput
 	// The virtual router specification to apply.
 	Spec VirtualRouterSpecInput
@@ -169,4 +197,43 @@ type VirtualRouterArgs struct {
 
 func (VirtualRouterArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*virtualRouterArgs)(nil)).Elem()
+}
+
+type VirtualRouterInput interface {
+	pulumi.Input
+
+	ToVirtualRouterOutput() VirtualRouterOutput
+	ToVirtualRouterOutputWithContext(ctx context.Context) VirtualRouterOutput
+}
+
+func (VirtualRouter) ElementType() reflect.Type {
+	return reflect.TypeOf((*VirtualRouter)(nil)).Elem()
+}
+
+func (i VirtualRouter) ToVirtualRouterOutput() VirtualRouterOutput {
+	return i.ToVirtualRouterOutputWithContext(context.Background())
+}
+
+func (i VirtualRouter) ToVirtualRouterOutputWithContext(ctx context.Context) VirtualRouterOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(VirtualRouterOutput)
+}
+
+type VirtualRouterOutput struct {
+	*pulumi.OutputState
+}
+
+func (VirtualRouterOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*VirtualRouterOutput)(nil)).Elem()
+}
+
+func (o VirtualRouterOutput) ToVirtualRouterOutput() VirtualRouterOutput {
+	return o
+}
+
+func (o VirtualRouterOutput) ToVirtualRouterOutputWithContext(ctx context.Context) VirtualRouterOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(VirtualRouterOutput{})
 }

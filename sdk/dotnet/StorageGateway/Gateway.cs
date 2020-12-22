@@ -36,6 +36,29 @@ namespace Pulumi.Aws.StorageGateway
     /// 
     /// }
     /// ```
+    /// ### Tape Gateway
+    /// 
+    /// ```csharp
+    /// using Pulumi;
+    /// using Aws = Pulumi.Aws;
+    /// 
+    /// class MyStack : Stack
+    /// {
+    ///     public MyStack()
+    ///     {
+    ///         var example = new Aws.StorageGateway.Gateway("example", new Aws.StorageGateway.GatewayArgs
+    ///         {
+    ///             GatewayIpAddress = "1.2.3.4",
+    ///             GatewayName = "example",
+    ///             GatewayTimezone = "GMT",
+    ///             GatewayType = "VTL",
+    ///             MediumChangerType = "AWS-Gateway-VTL",
+    ///             TapeDriveType = "IBM-ULT3580-TD5",
+    ///         });
+    ///     }
+    /// 
+    /// }
+    /// ```
     /// ### Volume Gateway (Cached)
     /// 
     /// ```csharp
@@ -78,6 +101,16 @@ namespace Pulumi.Aws.StorageGateway
     /// 
     /// }
     /// ```
+    /// 
+    /// ## Import
+    /// 
+    /// `aws_storagegateway_gateway` can be imported by using the gateway Amazon Resource Name (ARN), e.g.
+    /// 
+    /// ```sh
+    ///  $ pulumi import aws:storagegateway/gateway:Gateway example arn:aws:storagegateway:us-east-1:123456789012:gateway/sgw-12345678
+    /// ```
+    /// 
+    ///  Certain resource arguments, like `gateway_ip_address` do not have a Storage Gateway API method for reading the information after creation, either omit the argument from the provider configuration or use `ignoreChanges` to hide the difference.
     /// </summary>
     public partial class Gateway : Pulumi.CustomResource
     {
@@ -94,10 +127,34 @@ namespace Pulumi.Aws.StorageGateway
         public Output<string> Arn { get; private set; } = null!;
 
         /// <summary>
+        /// The average download bandwidth rate limit in bits per second. This is supported for the `CACHED`, `STORED`, and `VTL` gateway types.
+        /// </summary>
+        [Output("averageDownloadRateLimitInBitsPerSec")]
+        public Output<int?> AverageDownloadRateLimitInBitsPerSec { get; private set; } = null!;
+
+        /// <summary>
+        /// The average upload bandwidth rate limit in bits per second. This is supported for the `CACHED`, `STORED`, and `VTL` gateway types.
+        /// </summary>
+        [Output("averageUploadRateLimitInBitsPerSec")]
+        public Output<int?> AverageUploadRateLimitInBitsPerSec { get; private set; } = null!;
+
+        /// <summary>
         /// The Amazon Resource Name (ARN) of the Amazon CloudWatch log group to use to monitor and log events in the gateway.
         /// </summary>
         [Output("cloudwatchLogGroupArn")]
         public Output<string?> CloudwatchLogGroupArn { get; private set; } = null!;
+
+        /// <summary>
+        /// The ID of the Amazon EC2 instance that was used to launch the gateway.
+        /// </summary>
+        [Output("ec2InstanceId")]
+        public Output<string> Ec2InstanceId { get; private set; } = null!;
+
+        /// <summary>
+        /// The type of endpoint for your gateway.
+        /// </summary>
+        [Output("endpointType")]
+        public Output<string> EndpointType { get; private set; } = null!;
 
         /// <summary>
         /// Identifier of the gateway.
@@ -118,6 +175,12 @@ namespace Pulumi.Aws.StorageGateway
         public Output<string> GatewayName { get; private set; } = null!;
 
         /// <summary>
+        /// An array that contains descriptions of the gateway network interfaces. See Gateway Network Interface.
+        /// </summary>
+        [Output("gatewayNetworkInterfaces")]
+        public Output<ImmutableArray<Outputs.GatewayGatewayNetworkInterface>> GatewayNetworkInterfaces { get; private set; } = null!;
+
+        /// <summary>
         /// Time zone for the gateway. The time zone is of the format "GMT", "GMT-hr:mm", or "GMT+hr:mm". For example, `GMT-4:00` indicates the time is 4 hours behind GMT. The time zone is used, for example, for scheduling snapshots and your gateway's maintenance schedule.
         /// </summary>
         [Output("gatewayTimezone")]
@@ -135,6 +198,15 @@ namespace Pulumi.Aws.StorageGateway
         [Output("gatewayVpcEndpoint")]
         public Output<string?> GatewayVpcEndpoint { get; private set; } = null!;
 
+        /// <summary>
+        /// The type of hypervisor environment used by the host.
+        /// </summary>
+        [Output("hostEnvironment")]
+        public Output<string> HostEnvironment { get; private set; } = null!;
+
+        /// <summary>
+        /// Type of medium changer to use for tape gateway. This provider cannot detect drift of this argument. Valid values: `STK-L700`, `AWS-Gateway-VTL`, `IBM-03584L32-0402`.
+        /// </summary>
         [Output("mediumChangerType")]
         public Output<string?> MediumChangerType { get; private set; } = null!;
 
@@ -149,6 +221,12 @@ namespace Pulumi.Aws.StorageGateway
         /// </summary>
         [Output("smbGuestPassword")]
         public Output<string?> SmbGuestPassword { get; private set; } = null!;
+
+        /// <summary>
+        /// Specifies the type of security strategy. Valid values are: `ClientSpecified`, `MandatorySigning`, and `MandatoryEncryption`. See [Setting a Security Level for Your Gateway](https://docs.aws.amazon.com/storagegateway/latest/userguide/managing-gateway-file.html#security-strategy) for more information.
+        /// </summary>
+        [Output("smbSecurityStrategy")]
+        public Output<string> SmbSecurityStrategy { get; private set; } = null!;
 
         /// <summary>
         /// Key-value mapping of resource tags
@@ -215,6 +293,18 @@ namespace Pulumi.Aws.StorageGateway
         public Input<string>? ActivationKey { get; set; }
 
         /// <summary>
+        /// The average download bandwidth rate limit in bits per second. This is supported for the `CACHED`, `STORED`, and `VTL` gateway types.
+        /// </summary>
+        [Input("averageDownloadRateLimitInBitsPerSec")]
+        public Input<int>? AverageDownloadRateLimitInBitsPerSec { get; set; }
+
+        /// <summary>
+        /// The average upload bandwidth rate limit in bits per second. This is supported for the `CACHED`, `STORED`, and `VTL` gateway types.
+        /// </summary>
+        [Input("averageUploadRateLimitInBitsPerSec")]
+        public Input<int>? AverageUploadRateLimitInBitsPerSec { get; set; }
+
+        /// <summary>
         /// The Amazon Resource Name (ARN) of the Amazon CloudWatch log group to use to monitor and log events in the gateway.
         /// </summary>
         [Input("cloudwatchLogGroupArn")]
@@ -250,6 +340,9 @@ namespace Pulumi.Aws.StorageGateway
         [Input("gatewayVpcEndpoint")]
         public Input<string>? GatewayVpcEndpoint { get; set; }
 
+        /// <summary>
+        /// Type of medium changer to use for tape gateway. This provider cannot detect drift of this argument. Valid values: `STK-L700`, `AWS-Gateway-VTL`, `IBM-03584L32-0402`.
+        /// </summary>
         [Input("mediumChangerType")]
         public Input<string>? MediumChangerType { get; set; }
 
@@ -264,6 +357,12 @@ namespace Pulumi.Aws.StorageGateway
         /// </summary>
         [Input("smbGuestPassword")]
         public Input<string>? SmbGuestPassword { get; set; }
+
+        /// <summary>
+        /// Specifies the type of security strategy. Valid values are: `ClientSpecified`, `MandatorySigning`, and `MandatoryEncryption`. See [Setting a Security Level for Your Gateway](https://docs.aws.amazon.com/storagegateway/latest/userguide/managing-gateway-file.html#security-strategy) for more information.
+        /// </summary>
+        [Input("smbSecurityStrategy")]
+        public Input<string>? SmbSecurityStrategy { get; set; }
 
         [Input("tags")]
         private InputMap<string>? _tags;
@@ -303,10 +402,34 @@ namespace Pulumi.Aws.StorageGateway
         public Input<string>? Arn { get; set; }
 
         /// <summary>
+        /// The average download bandwidth rate limit in bits per second. This is supported for the `CACHED`, `STORED`, and `VTL` gateway types.
+        /// </summary>
+        [Input("averageDownloadRateLimitInBitsPerSec")]
+        public Input<int>? AverageDownloadRateLimitInBitsPerSec { get; set; }
+
+        /// <summary>
+        /// The average upload bandwidth rate limit in bits per second. This is supported for the `CACHED`, `STORED`, and `VTL` gateway types.
+        /// </summary>
+        [Input("averageUploadRateLimitInBitsPerSec")]
+        public Input<int>? AverageUploadRateLimitInBitsPerSec { get; set; }
+
+        /// <summary>
         /// The Amazon Resource Name (ARN) of the Amazon CloudWatch log group to use to monitor and log events in the gateway.
         /// </summary>
         [Input("cloudwatchLogGroupArn")]
         public Input<string>? CloudwatchLogGroupArn { get; set; }
+
+        /// <summary>
+        /// The ID of the Amazon EC2 instance that was used to launch the gateway.
+        /// </summary>
+        [Input("ec2InstanceId")]
+        public Input<string>? Ec2InstanceId { get; set; }
+
+        /// <summary>
+        /// The type of endpoint for your gateway.
+        /// </summary>
+        [Input("endpointType")]
+        public Input<string>? EndpointType { get; set; }
 
         /// <summary>
         /// Identifier of the gateway.
@@ -326,6 +449,18 @@ namespace Pulumi.Aws.StorageGateway
         [Input("gatewayName")]
         public Input<string>? GatewayName { get; set; }
 
+        [Input("gatewayNetworkInterfaces")]
+        private InputList<Inputs.GatewayGatewayNetworkInterfaceGetArgs>? _gatewayNetworkInterfaces;
+
+        /// <summary>
+        /// An array that contains descriptions of the gateway network interfaces. See Gateway Network Interface.
+        /// </summary>
+        public InputList<Inputs.GatewayGatewayNetworkInterfaceGetArgs> GatewayNetworkInterfaces
+        {
+            get => _gatewayNetworkInterfaces ?? (_gatewayNetworkInterfaces = new InputList<Inputs.GatewayGatewayNetworkInterfaceGetArgs>());
+            set => _gatewayNetworkInterfaces = value;
+        }
+
         /// <summary>
         /// Time zone for the gateway. The time zone is of the format "GMT", "GMT-hr:mm", or "GMT+hr:mm". For example, `GMT-4:00` indicates the time is 4 hours behind GMT. The time zone is used, for example, for scheduling snapshots and your gateway's maintenance schedule.
         /// </summary>
@@ -344,6 +479,15 @@ namespace Pulumi.Aws.StorageGateway
         [Input("gatewayVpcEndpoint")]
         public Input<string>? GatewayVpcEndpoint { get; set; }
 
+        /// <summary>
+        /// The type of hypervisor environment used by the host.
+        /// </summary>
+        [Input("hostEnvironment")]
+        public Input<string>? HostEnvironment { get; set; }
+
+        /// <summary>
+        /// Type of medium changer to use for tape gateway. This provider cannot detect drift of this argument. Valid values: `STK-L700`, `AWS-Gateway-VTL`, `IBM-03584L32-0402`.
+        /// </summary>
         [Input("mediumChangerType")]
         public Input<string>? MediumChangerType { get; set; }
 
@@ -358,6 +502,12 @@ namespace Pulumi.Aws.StorageGateway
         /// </summary>
         [Input("smbGuestPassword")]
         public Input<string>? SmbGuestPassword { get; set; }
+
+        /// <summary>
+        /// Specifies the type of security strategy. Valid values are: `ClientSpecified`, `MandatorySigning`, and `MandatoryEncryption`. See [Setting a Security Level for Your Gateway](https://docs.aws.amazon.com/storagegateway/latest/userguide/managing-gateway-file.html#security-strategy) for more information.
+        /// </summary>
+        [Input("smbSecurityStrategy")]
+        public Input<string>? SmbSecurityStrategy { get; set; }
 
         [Input("tags")]
         private InputMap<string>? _tags;

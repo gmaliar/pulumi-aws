@@ -4,6 +4,7 @@
 package wafregional
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -18,7 +19,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/wafregional"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/wafregional"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -39,9 +40,9 @@ import (
 // 			MetricName: pulumi.String("tfWAFRule"),
 // 			Predicates: wafregional.RulePredicateArray{
 // 				&wafregional.RulePredicateArgs{
+// 					Type:    pulumi.String("IPMatch"),
 // 					DataId:  ipset.ID(),
 // 					Negated: pulumi.Bool(false),
-// 					Type:    pulumi.String("IPMatch"),
 // 				},
 // 			},
 // 		})
@@ -63,6 +64,14 @@ import (
 // * `type` - (Required) The type of predicate in a rule. Valid values: `ByteMatch`, `GeoMatch`, `IPMatch`, `RegexMatch`, `SizeConstraint`, `SqlInjectionMatch`, or `XssMatch`
 // * `dataId` - (Required) The unique identifier of a predicate, such as the ID of a `ByteMatchSet` or `IPSet`.
 // * `negated` - (Required) Whether to use the settings or the negated settings that you specified in the objects.
+//
+// ## Import
+//
+// WAF Regional Rule can be imported using the id, e.g.
+//
+// ```sh
+//  $ pulumi import aws:wafregional/rule:Rule wafrule a1b2c3d4-d5f6-7777-8888-9999aaaabbbbcccc
+// ```
 type Rule struct {
 	pulumi.CustomResourceState
 
@@ -81,11 +90,12 @@ type Rule struct {
 // NewRule registers a new resource with the given unique name, arguments, and options.
 func NewRule(ctx *pulumi.Context,
 	name string, args *RuleArgs, opts ...pulumi.ResourceOption) (*Rule, error) {
-	if args == nil || args.MetricName == nil {
-		return nil, errors.New("missing required argument 'MetricName'")
-	}
 	if args == nil {
-		args = &RuleArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.MetricName == nil {
+		return nil, errors.New("invalid value for required argument 'MetricName'")
 	}
 	var resource Rule
 	err := ctx.RegisterResource("aws:wafregional/rule:Rule", name, args, &resource, opts...)
@@ -163,4 +173,43 @@ type RuleArgs struct {
 
 func (RuleArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*ruleArgs)(nil)).Elem()
+}
+
+type RuleInput interface {
+	pulumi.Input
+
+	ToRuleOutput() RuleOutput
+	ToRuleOutputWithContext(ctx context.Context) RuleOutput
+}
+
+func (Rule) ElementType() reflect.Type {
+	return reflect.TypeOf((*Rule)(nil)).Elem()
+}
+
+func (i Rule) ToRuleOutput() RuleOutput {
+	return i.ToRuleOutputWithContext(context.Background())
+}
+
+func (i Rule) ToRuleOutputWithContext(ctx context.Context) RuleOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(RuleOutput)
+}
+
+type RuleOutput struct {
+	*pulumi.OutputState
+}
+
+func (RuleOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*RuleOutput)(nil)).Elem()
+}
+
+func (o RuleOutput) ToRuleOutput() RuleOutput {
+	return o
+}
+
+func (o RuleOutput) ToRuleOutputWithContext(ctx context.Context) RuleOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(RuleOutput{})
 }

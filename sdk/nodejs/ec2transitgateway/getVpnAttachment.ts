@@ -2,12 +2,13 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 /**
  * Get information on an EC2 Transit Gateway VPN Attachment.
+ *
+ * > EC2 Transit Gateway VPN Attachments are implicitly created by VPN Connections referencing an EC2 Transit Gateway so there is no managed resource. For ease, the [`aws.ec2.VpnConnection` resource](https://www.terraform.io/docs/providers/aws/r/vpn_connection.html) includes a `transitGatewayAttachmentId` attribute which can replace some usage of this data source. For tagging the attachment, see the [`aws.ec2.Tag` resource](https://www.terraform.io/docs/providers/aws/r/ec2_tag.html).
  *
  * ## Example Usage
  * ### By Transit Gateway and VPN Connection Identifiers
@@ -16,10 +17,10 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const example = pulumi.all([aws_ec2_transit_gateway_example.id, aws_vpn_connection_example.id]).apply(([aws_ec2_transit_gateway_exampleId, aws_vpn_connection_exampleId]) => aws.ec2transitgateway.getVpnAttachment({
- *     transitGatewayId: aws_ec2_transit_gateway_exampleId,
- *     vpnConnectionId: aws_vpn_connection_exampleId,
- * }, { async: true }));
+ * const example = aws.ec2transitgateway.getVpnAttachment({
+ *     transitGatewayId: aws_ec2_transit_gateway.example.id,
+ *     vpnConnectionId: aws_vpn_connection.example.id,
+ * });
  * ```
  * ### Filter
  *

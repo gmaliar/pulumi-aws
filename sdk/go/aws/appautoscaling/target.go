@@ -4,6 +4,7 @@
 package appautoscaling
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -23,7 +24,7 @@ import (
 // import (
 // 	"fmt"
 //
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/appautoscaling"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/appautoscaling"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -51,7 +52,7 @@ import (
 // import (
 // 	"fmt"
 //
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/appautoscaling"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/appautoscaling"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -79,7 +80,7 @@ import (
 // import (
 // 	"fmt"
 //
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/appautoscaling"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/appautoscaling"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -107,7 +108,7 @@ import (
 // import (
 // 	"fmt"
 //
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/appautoscaling"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/appautoscaling"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -126,6 +127,14 @@ import (
 // 		return nil
 // 	})
 // }
+// ```
+//
+// ## Import
+//
+// Application AutoScaling Target can be imported using the `service-namespace` , `resource-id` and `scalable-dimension` separated by `/`.
+//
+// ```sh
+//  $ pulumi import aws:appautoscaling/target:Target test-target service-namespace/resource-id/scalable-dimension
 // ```
 type Target struct {
 	pulumi.CustomResourceState
@@ -147,23 +156,24 @@ type Target struct {
 // NewTarget registers a new resource with the given unique name, arguments, and options.
 func NewTarget(ctx *pulumi.Context,
 	name string, args *TargetArgs, opts ...pulumi.ResourceOption) (*Target, error) {
-	if args == nil || args.MaxCapacity == nil {
-		return nil, errors.New("missing required argument 'MaxCapacity'")
-	}
-	if args == nil || args.MinCapacity == nil {
-		return nil, errors.New("missing required argument 'MinCapacity'")
-	}
-	if args == nil || args.ResourceId == nil {
-		return nil, errors.New("missing required argument 'ResourceId'")
-	}
-	if args == nil || args.ScalableDimension == nil {
-		return nil, errors.New("missing required argument 'ScalableDimension'")
-	}
-	if args == nil || args.ServiceNamespace == nil {
-		return nil, errors.New("missing required argument 'ServiceNamespace'")
-	}
 	if args == nil {
-		args = &TargetArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.MaxCapacity == nil {
+		return nil, errors.New("invalid value for required argument 'MaxCapacity'")
+	}
+	if args.MinCapacity == nil {
+		return nil, errors.New("invalid value for required argument 'MinCapacity'")
+	}
+	if args.ResourceId == nil {
+		return nil, errors.New("invalid value for required argument 'ResourceId'")
+	}
+	if args.ScalableDimension == nil {
+		return nil, errors.New("invalid value for required argument 'ScalableDimension'")
+	}
+	if args.ServiceNamespace == nil {
+		return nil, errors.New("invalid value for required argument 'ServiceNamespace'")
 	}
 	var resource Target
 	err := ctx.RegisterResource("aws:appautoscaling/target:Target", name, args, &resource, opts...)
@@ -253,4 +263,43 @@ type TargetArgs struct {
 
 func (TargetArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*targetArgs)(nil)).Elem()
+}
+
+type TargetInput interface {
+	pulumi.Input
+
+	ToTargetOutput() TargetOutput
+	ToTargetOutputWithContext(ctx context.Context) TargetOutput
+}
+
+func (Target) ElementType() reflect.Type {
+	return reflect.TypeOf((*Target)(nil)).Elem()
+}
+
+func (i Target) ToTargetOutput() TargetOutput {
+	return i.ToTargetOutputWithContext(context.Background())
+}
+
+func (i Target) ToTargetOutputWithContext(ctx context.Context) TargetOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(TargetOutput)
+}
+
+type TargetOutput struct {
+	*pulumi.OutputState
+}
+
+func (TargetOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*TargetOutput)(nil)).Elem()
+}
+
+func (o TargetOutput) ToTargetOutput() TargetOutput {
+	return o
+}
+
+func (o TargetOutput) ToTargetOutputWithContext(ctx context.Context) TargetOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(TargetOutput{})
 }

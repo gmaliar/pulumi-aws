@@ -4,6 +4,7 @@
 package ec2
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
@@ -32,19 +33,42 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/ec2"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/ec2"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
 // func main() {
 // 	pulumi.Run(func(ctx *pulumi.Context) error {
-// 		_, err := ec2.NewVpcEndpoint(ctx, "myEndpoint", nil)
+// 		myEndpoint, err := ec2.NewVpcEndpoint(ctx, "myEndpoint", nil)
+// 		if err != nil {
+// 			return err
+// 		}
+// 		_, err = ec2.NewSecurityGroup(ctx, "example", &ec2.SecurityGroupArgs{
+// 			Egress: ec2.SecurityGroupEgressArray{
+// 				&ec2.SecurityGroupEgressArgs{
+// 					FromPort: pulumi.Int(0),
+// 					ToPort:   pulumi.Int(0),
+// 					Protocol: pulumi.String("-1"),
+// 					PrefixListIds: pulumi.StringArray{
+// 						myEndpoint.PrefixListId,
+// 					},
+// 				},
+// 			},
+// 		})
 // 		if err != nil {
 // 			return err
 // 		}
 // 		return nil
 // 	})
 // }
+// ```
+//
+// ## Import
+//
+// Security Groups can be imported using the `security group id`, e.g.
+//
+// ```sh
+//  $ pulumi import aws:ec2/securityGroup:SecurityGroup elb_sg sg-903004f8
 // ```
 type SecurityGroup struct {
 	pulumi.CustomResourceState
@@ -87,6 +111,7 @@ func NewSecurityGroup(ctx *pulumi.Context,
 	if args == nil {
 		args = &SecurityGroupArgs{}
 	}
+
 	if args.Description == nil {
 		args.Description = pulumi.StringPtr("Managed by Pulumi")
 	}
@@ -242,4 +267,43 @@ type SecurityGroupArgs struct {
 
 func (SecurityGroupArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*securityGroupArgs)(nil)).Elem()
+}
+
+type SecurityGroupInput interface {
+	pulumi.Input
+
+	ToSecurityGroupOutput() SecurityGroupOutput
+	ToSecurityGroupOutputWithContext(ctx context.Context) SecurityGroupOutput
+}
+
+func (SecurityGroup) ElementType() reflect.Type {
+	return reflect.TypeOf((*SecurityGroup)(nil)).Elem()
+}
+
+func (i SecurityGroup) ToSecurityGroupOutput() SecurityGroupOutput {
+	return i.ToSecurityGroupOutputWithContext(context.Background())
+}
+
+func (i SecurityGroup) ToSecurityGroupOutputWithContext(ctx context.Context) SecurityGroupOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(SecurityGroupOutput)
+}
+
+type SecurityGroupOutput struct {
+	*pulumi.OutputState
+}
+
+func (SecurityGroupOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*SecurityGroupOutput)(nil)).Elem()
+}
+
+func (o SecurityGroupOutput) ToSecurityGroupOutput() SecurityGroupOutput {
+	return o
+}
+
+func (o SecurityGroupOutput) ToSecurityGroupOutputWithContext(ctx context.Context) SecurityGroupOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(SecurityGroupOutput{})
 }

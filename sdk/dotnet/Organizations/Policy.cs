@@ -39,6 +39,14 @@ namespace Pulumi.Aws.Organizations
     /// 
     /// }
     /// ```
+    /// 
+    /// ## Import
+    /// 
+    /// `aws_organizations_policy` can be imported by using the policy ID, e.g.
+    /// 
+    /// ```sh
+    ///  $ pulumi import aws:organizations/policy:Policy example p-12345678
+    /// ```
     /// </summary>
     public partial class Policy : Pulumi.CustomResource
     {
@@ -67,7 +75,13 @@ namespace Pulumi.Aws.Organizations
         public Output<string> Name { get; private set; } = null!;
 
         /// <summary>
-        /// The type of policy to create. Valid values are `BACKUP_POLICY`, `SERVICE_CONTROL_POLICY` (SCP), and `TAG_POLICY`. Defaults to `SERVICE_CONTROL_POLICY`.
+        /// Key-value map of resource tags.
+        /// </summary>
+        [Output("tags")]
+        public Output<ImmutableDictionary<string, string>?> Tags { get; private set; } = null!;
+
+        /// <summary>
+        /// The type of policy to create. Valid values are `AISERVICES_OPT_OUT_POLICY`, `BACKUP_POLICY`, `SERVICE_CONTROL_POLICY` (SCP), and `TAG_POLICY`. Defaults to `SERVICE_CONTROL_POLICY`.
         /// </summary>
         [Output("type")]
         public Output<string?> Type { get; private set; } = null!;
@@ -136,8 +150,20 @@ namespace Pulumi.Aws.Organizations
         [Input("name")]
         public Input<string>? Name { get; set; }
 
+        [Input("tags")]
+        private InputMap<string>? _tags;
+
         /// <summary>
-        /// The type of policy to create. Valid values are `BACKUP_POLICY`, `SERVICE_CONTROL_POLICY` (SCP), and `TAG_POLICY`. Defaults to `SERVICE_CONTROL_POLICY`.
+        /// Key-value map of resource tags.
+        /// </summary>
+        public InputMap<string> Tags
+        {
+            get => _tags ?? (_tags = new InputMap<string>());
+            set => _tags = value;
+        }
+
+        /// <summary>
+        /// The type of policy to create. Valid values are `AISERVICES_OPT_OUT_POLICY`, `BACKUP_POLICY`, `SERVICE_CONTROL_POLICY` (SCP), and `TAG_POLICY`. Defaults to `SERVICE_CONTROL_POLICY`.
         /// </summary>
         [Input("type")]
         public Input<string>? Type { get; set; }
@@ -173,8 +199,20 @@ namespace Pulumi.Aws.Organizations
         [Input("name")]
         public Input<string>? Name { get; set; }
 
+        [Input("tags")]
+        private InputMap<string>? _tags;
+
         /// <summary>
-        /// The type of policy to create. Valid values are `BACKUP_POLICY`, `SERVICE_CONTROL_POLICY` (SCP), and `TAG_POLICY`. Defaults to `SERVICE_CONTROL_POLICY`.
+        /// Key-value map of resource tags.
+        /// </summary>
+        public InputMap<string> Tags
+        {
+            get => _tags ?? (_tags = new InputMap<string>());
+            set => _tags = value;
+        }
+
+        /// <summary>
+        /// The type of policy to create. Valid values are `AISERVICES_OPT_OUT_POLICY`, `BACKUP_POLICY`, `SERVICE_CONTROL_POLICY` (SCP), and `TAG_POLICY`. Defaults to `SERVICE_CONTROL_POLICY`.
         /// </summary>
         [Input("type")]
         public Input<string>? Type { get; set; }

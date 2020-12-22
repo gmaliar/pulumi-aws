@@ -15,10 +15,9 @@ import {Policy} from "./index";
  * ```typescript
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
- * import * as fs from "fs";
+ * import * from "fs";
  *
- * const pubsub = new aws.iot.Policy("pubsub", {
- *     policy: `{
+ * const pubsub = new aws.iot.Policy("pubsub", {policy: `{
  *   "Version": "2012-10-17",
  *   "Statement": [
  *     {
@@ -30,11 +29,10 @@ import {Policy} from "./index";
  *     }
  *   ]
  * }
- * `,
- * });
+ * `});
  * const cert = new aws.iot.Certificate("cert", {
+ *     csr: fs.readFileSync("csr.pem"),
  *     active: true,
- *     csr: fs.readFileSync("csr.pem", "utf-8"),
  * });
  * const att = new aws.iot.PolicyAttachment("att", {
  *     policy: pubsub.name,
@@ -95,10 +93,10 @@ export class PolicyAttachment extends pulumi.CustomResource {
             inputs["target"] = state ? state.target : undefined;
         } else {
             const args = argsOrState as PolicyAttachmentArgs | undefined;
-            if (!args || args.policy === undefined) {
+            if ((!args || args.policy === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'policy'");
             }
-            if (!args || args.target === undefined) {
+            if ((!args || args.target === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'target'");
             }
             inputs["policy"] = args ? args.policy : undefined;

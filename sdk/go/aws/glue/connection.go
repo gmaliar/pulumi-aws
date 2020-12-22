@@ -4,6 +4,7 @@
 package glue
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -19,7 +20,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/glue"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/glue"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -39,6 +40,14 @@ import (
 // 	})
 // }
 // ```
+//
+// ## Import
+//
+// Glue Connections can be imported using the `CATALOG-ID` (AWS account ID if not custom) and `NAME`, e.g.
+//
+// ```sh
+//  $ pulumi import aws:glue/connection:Connection MyConnection 123456789012:MyConnection
+// ```
 type Connection struct {
 	pulumi.CustomResourceState
 
@@ -48,7 +57,7 @@ type Connection struct {
 	CatalogId pulumi.StringOutput `pulumi:"catalogId"`
 	// A map of key-value pairs used as parameters for this connection.
 	ConnectionProperties pulumi.StringMapOutput `pulumi:"connectionProperties"`
-	// The type of the connection. Supported are: `JDBC`, `MONGODB`, `KAFKA`. Defaults to `JBDC`.
+	// The type of the connection. Supported are: `JDBC`, `MONGODB`, `KAFKA`, and `NETWORK`. Defaults to `JBDC`.
 	ConnectionType pulumi.StringPtrOutput `pulumi:"connectionType"`
 	// Description of the connection.
 	Description pulumi.StringPtrOutput `pulumi:"description"`
@@ -63,11 +72,12 @@ type Connection struct {
 // NewConnection registers a new resource with the given unique name, arguments, and options.
 func NewConnection(ctx *pulumi.Context,
 	name string, args *ConnectionArgs, opts ...pulumi.ResourceOption) (*Connection, error) {
-	if args == nil || args.ConnectionProperties == nil {
-		return nil, errors.New("missing required argument 'ConnectionProperties'")
-	}
 	if args == nil {
-		args = &ConnectionArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.ConnectionProperties == nil {
+		return nil, errors.New("invalid value for required argument 'ConnectionProperties'")
 	}
 	var resource Connection
 	err := ctx.RegisterResource("aws:glue/connection:Connection", name, args, &resource, opts...)
@@ -97,7 +107,7 @@ type connectionState struct {
 	CatalogId *string `pulumi:"catalogId"`
 	// A map of key-value pairs used as parameters for this connection.
 	ConnectionProperties map[string]string `pulumi:"connectionProperties"`
-	// The type of the connection. Supported are: `JDBC`, `MONGODB`, `KAFKA`. Defaults to `JBDC`.
+	// The type of the connection. Supported are: `JDBC`, `MONGODB`, `KAFKA`, and `NETWORK`. Defaults to `JBDC`.
 	ConnectionType *string `pulumi:"connectionType"`
 	// Description of the connection.
 	Description *string `pulumi:"description"`
@@ -116,7 +126,7 @@ type ConnectionState struct {
 	CatalogId pulumi.StringPtrInput
 	// A map of key-value pairs used as parameters for this connection.
 	ConnectionProperties pulumi.StringMapInput
-	// The type of the connection. Supported are: `JDBC`, `MONGODB`, `KAFKA`. Defaults to `JBDC`.
+	// The type of the connection. Supported are: `JDBC`, `MONGODB`, `KAFKA`, and `NETWORK`. Defaults to `JBDC`.
 	ConnectionType pulumi.StringPtrInput
 	// Description of the connection.
 	Description pulumi.StringPtrInput
@@ -137,7 +147,7 @@ type connectionArgs struct {
 	CatalogId *string `pulumi:"catalogId"`
 	// A map of key-value pairs used as parameters for this connection.
 	ConnectionProperties map[string]string `pulumi:"connectionProperties"`
-	// The type of the connection. Supported are: `JDBC`, `MONGODB`, `KAFKA`. Defaults to `JBDC`.
+	// The type of the connection. Supported are: `JDBC`, `MONGODB`, `KAFKA`, and `NETWORK`. Defaults to `JBDC`.
 	ConnectionType *string `pulumi:"connectionType"`
 	// Description of the connection.
 	Description *string `pulumi:"description"`
@@ -155,7 +165,7 @@ type ConnectionArgs struct {
 	CatalogId pulumi.StringPtrInput
 	// A map of key-value pairs used as parameters for this connection.
 	ConnectionProperties pulumi.StringMapInput
-	// The type of the connection. Supported are: `JDBC`, `MONGODB`, `KAFKA`. Defaults to `JBDC`.
+	// The type of the connection. Supported are: `JDBC`, `MONGODB`, `KAFKA`, and `NETWORK`. Defaults to `JBDC`.
 	ConnectionType pulumi.StringPtrInput
 	// Description of the connection.
 	Description pulumi.StringPtrInput
@@ -169,4 +179,43 @@ type ConnectionArgs struct {
 
 func (ConnectionArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*connectionArgs)(nil)).Elem()
+}
+
+type ConnectionInput interface {
+	pulumi.Input
+
+	ToConnectionOutput() ConnectionOutput
+	ToConnectionOutputWithContext(ctx context.Context) ConnectionOutput
+}
+
+func (Connection) ElementType() reflect.Type {
+	return reflect.TypeOf((*Connection)(nil)).Elem()
+}
+
+func (i Connection) ToConnectionOutput() ConnectionOutput {
+	return i.ToConnectionOutputWithContext(context.Background())
+}
+
+func (i Connection) ToConnectionOutputWithContext(ctx context.Context) ConnectionOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(ConnectionOutput)
+}
+
+type ConnectionOutput struct {
+	*pulumi.OutputState
+}
+
+func (ConnectionOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*ConnectionOutput)(nil)).Elem()
+}
+
+func (o ConnectionOutput) ToConnectionOutput() ConnectionOutput {
+	return o
+}
+
+func (o ConnectionOutput) ToConnectionOutputWithContext(ctx context.Context) ConnectionOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(ConnectionOutput{})
 }

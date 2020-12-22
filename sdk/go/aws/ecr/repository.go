@@ -4,6 +4,7 @@
 package ecr
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
@@ -17,7 +18,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/ecr"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/ecr"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -36,11 +37,21 @@ import (
 // 	})
 // }
 // ```
+//
+// ## Import
+//
+// ECR Repositories can be imported using the `name`, e.g.
+//
+// ```sh
+//  $ pulumi import aws:ecr/repository:Repository service test-service
+// ```
 type Repository struct {
 	pulumi.CustomResourceState
 
 	// Full ARN of the repository.
 	Arn pulumi.StringOutput `pulumi:"arn"`
+	// Encryption configuration for the repository. See below for schema.
+	EncryptionConfigurations RepositoryEncryptionConfigurationArrayOutput `pulumi:"encryptionConfigurations"`
 	// Configuration block that defines image scanning configuration for the repository. By default, image scanning must be manually triggered. See the [ECR User Guide](https://docs.aws.amazon.com/AmazonECR/latest/userguide/image-scanning.html) for more information about image scanning.
 	ImageScanningConfiguration RepositoryImageScanningConfigurationPtrOutput `pulumi:"imageScanningConfiguration"`
 	// The tag mutability setting for the repository. Must be one of: `MUTABLE` or `IMMUTABLE`. Defaults to `MUTABLE`.
@@ -61,6 +72,7 @@ func NewRepository(ctx *pulumi.Context,
 	if args == nil {
 		args = &RepositoryArgs{}
 	}
+
 	var resource Repository
 	err := ctx.RegisterResource("aws:ecr/repository:Repository", name, args, &resource, opts...)
 	if err != nil {
@@ -85,6 +97,8 @@ func GetRepository(ctx *pulumi.Context,
 type repositoryState struct {
 	// Full ARN of the repository.
 	Arn *string `pulumi:"arn"`
+	// Encryption configuration for the repository. See below for schema.
+	EncryptionConfigurations []RepositoryEncryptionConfiguration `pulumi:"encryptionConfigurations"`
 	// Configuration block that defines image scanning configuration for the repository. By default, image scanning must be manually triggered. See the [ECR User Guide](https://docs.aws.amazon.com/AmazonECR/latest/userguide/image-scanning.html) for more information about image scanning.
 	ImageScanningConfiguration *RepositoryImageScanningConfiguration `pulumi:"imageScanningConfiguration"`
 	// The tag mutability setting for the repository. Must be one of: `MUTABLE` or `IMMUTABLE`. Defaults to `MUTABLE`.
@@ -102,6 +116,8 @@ type repositoryState struct {
 type RepositoryState struct {
 	// Full ARN of the repository.
 	Arn pulumi.StringPtrInput
+	// Encryption configuration for the repository. See below for schema.
+	EncryptionConfigurations RepositoryEncryptionConfigurationArrayInput
 	// Configuration block that defines image scanning configuration for the repository. By default, image scanning must be manually triggered. See the [ECR User Guide](https://docs.aws.amazon.com/AmazonECR/latest/userguide/image-scanning.html) for more information about image scanning.
 	ImageScanningConfiguration RepositoryImageScanningConfigurationPtrInput
 	// The tag mutability setting for the repository. Must be one of: `MUTABLE` or `IMMUTABLE`. Defaults to `MUTABLE`.
@@ -121,6 +137,8 @@ func (RepositoryState) ElementType() reflect.Type {
 }
 
 type repositoryArgs struct {
+	// Encryption configuration for the repository. See below for schema.
+	EncryptionConfigurations []RepositoryEncryptionConfiguration `pulumi:"encryptionConfigurations"`
 	// Configuration block that defines image scanning configuration for the repository. By default, image scanning must be manually triggered. See the [ECR User Guide](https://docs.aws.amazon.com/AmazonECR/latest/userguide/image-scanning.html) for more information about image scanning.
 	ImageScanningConfiguration *RepositoryImageScanningConfiguration `pulumi:"imageScanningConfiguration"`
 	// The tag mutability setting for the repository. Must be one of: `MUTABLE` or `IMMUTABLE`. Defaults to `MUTABLE`.
@@ -133,6 +151,8 @@ type repositoryArgs struct {
 
 // The set of arguments for constructing a Repository resource.
 type RepositoryArgs struct {
+	// Encryption configuration for the repository. See below for schema.
+	EncryptionConfigurations RepositoryEncryptionConfigurationArrayInput
 	// Configuration block that defines image scanning configuration for the repository. By default, image scanning must be manually triggered. See the [ECR User Guide](https://docs.aws.amazon.com/AmazonECR/latest/userguide/image-scanning.html) for more information about image scanning.
 	ImageScanningConfiguration RepositoryImageScanningConfigurationPtrInput
 	// The tag mutability setting for the repository. Must be one of: `MUTABLE` or `IMMUTABLE`. Defaults to `MUTABLE`.
@@ -145,4 +165,43 @@ type RepositoryArgs struct {
 
 func (RepositoryArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*repositoryArgs)(nil)).Elem()
+}
+
+type RepositoryInput interface {
+	pulumi.Input
+
+	ToRepositoryOutput() RepositoryOutput
+	ToRepositoryOutputWithContext(ctx context.Context) RepositoryOutput
+}
+
+func (Repository) ElementType() reflect.Type {
+	return reflect.TypeOf((*Repository)(nil)).Elem()
+}
+
+func (i Repository) ToRepositoryOutput() RepositoryOutput {
+	return i.ToRepositoryOutputWithContext(context.Background())
+}
+
+func (i Repository) ToRepositoryOutputWithContext(ctx context.Context) RepositoryOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(RepositoryOutput)
+}
+
+type RepositoryOutput struct {
+	*pulumi.OutputState
+}
+
+func (RepositoryOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*RepositoryOutput)(nil)).Elem()
+}
+
+func (o RepositoryOutput) ToRepositoryOutput() RepositoryOutput {
+	return o
+}
+
+func (o RepositoryOutput) ToRepositoryOutputWithContext(ctx context.Context) RepositoryOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(RepositoryOutput{})
 }

@@ -16,30 +16,30 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/ec2"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/ec2"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
 // func main() {
 // 	pulumi.Run(func(ctx *pulumi.Context) error {
-// 		opt0 := "10.0.1.0/22"
-// 		opt1 := aws_vpc.Foo.Id
+// 		opt0 := aws_vpc.Foo.Id
+// 		opt1 := "10.0.1.0/22"
 // 		pc, err := ec2.LookupVpcPeeringConnection(ctx, &ec2.LookupVpcPeeringConnectionArgs{
-// 			PeerCidrBlock: &opt0,
-// 			VpcId:         &opt1,
+// 			VpcId:         &opt0,
+// 			PeerCidrBlock: &opt1,
 // 		}, nil)
 // 		if err != nil {
 // 			return err
 // 		}
 // 		rt, err := ec2.NewRouteTable(ctx, "rt", &ec2.RouteTableArgs{
-// 			VpcId: pulumi.String(aws_vpc.Foo.Id),
+// 			VpcId: pulumi.Any(aws_vpc.Foo.Id),
 // 		})
 // 		if err != nil {
 // 			return err
 // 		}
 // 		_, err = ec2.NewRoute(ctx, "route", &ec2.RouteArgs{
-// 			DestinationCidrBlock:   pulumi.String(pc.PeerCidrBlock),
 // 			RouteTableId:           rt.ID(),
+// 			DestinationCidrBlock:   pulumi.String(pc.PeerCidrBlock),
 // 			VpcPeeringConnectionId: pulumi.String(pc.Id),
 // 		})
 // 		if err != nil {

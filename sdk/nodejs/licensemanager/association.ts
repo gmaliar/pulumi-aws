@@ -9,31 +9,12 @@ import * as utilities from "../utilities";
  *
  * > **Note:** License configurations can also be associated with launch templates by specifying the `licenseSpecifications` block for an `aws.ec2.LaunchTemplate`.
  *
- * ## Example Usage
+ * ## Import
  *
- * ```typescript
- * import * as pulumi from "@pulumi/pulumi";
- * import * as aws from "@pulumi/aws";
+ * License configurations can be imported in the form `resource_arn,license_configuration_arn`, e.g.
  *
- * const exampleAmi = pulumi.output(aws.getAmi({
- *     filters: [{
- *         name: "name",
- *         values: ["amzn-ami-vpc-nat*"],
- *     }],
- *     mostRecent: true,
- *     owners: ["amazon"],
- * }, { async: true }));
- * const exampleInstance = new aws.ec2.Instance("example", {
- *     ami: exampleAmi.id,
- *     instanceType: "t2.micro",
- * });
- * const exampleLicenseConfiguration = new aws.licensemanager.LicenseConfiguration("example", {
- *     licenseCountingType: "Instance",
- * });
- * const exampleAssociation = new aws.licensemanager.Association("example", {
- *     licenseConfigurationArn: exampleLicenseConfiguration.arn,
- *     resourceArn: exampleInstance.arn,
- * });
+ * ```sh
+ *  $ pulumi import aws:licensemanager/association:Association example arn:aws:ec2:eu-west-1:123456789012:image/ami-123456789abcdef01,arn:aws:license-manager:eu-west-1:123456789012:license-configuration:lic-0123456789abcdef0123456789abcdef
  * ```
  */
 export class Association extends pulumi.CustomResource {
@@ -89,10 +70,10 @@ export class Association extends pulumi.CustomResource {
             inputs["resourceArn"] = state ? state.resourceArn : undefined;
         } else {
             const args = argsOrState as AssociationArgs | undefined;
-            if (!args || args.licenseConfigurationArn === undefined) {
+            if ((!args || args.licenseConfigurationArn === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'licenseConfigurationArn'");
             }
-            if (!args || args.resourceArn === undefined) {
+            if ((!args || args.resourceArn === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'resourceArn'");
             }
             inputs["licenseConfigurationArn"] = args ? args.licenseConfigurationArn : undefined;

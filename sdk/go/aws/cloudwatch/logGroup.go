@@ -4,6 +4,7 @@
 package cloudwatch
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
@@ -17,7 +18,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/cloudwatch"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/cloudwatch"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -36,10 +37,18 @@ import (
 // 	})
 // }
 // ```
+//
+// ## Import
+//
+// Cloudwatch Log Groups can be imported using the `name`, e.g.
+//
+// ```sh
+//  $ pulumi import aws:cloudwatch/logGroup:LogGroup test_group yada
+// ```
 type LogGroup struct {
 	pulumi.CustomResourceState
 
-	// The Amazon Resource Name (ARN) specifying the log group.
+	// The Amazon Resource Name (ARN) specifying the log group. Any `:*` suffix added by the API, denoting all CloudWatch Log Streams under the CloudWatch Log Group, is removed for greater compatibility with other AWS services that do not accept the suffix.
 	Arn pulumi.StringOutput `pulumi:"arn"`
 	// The ARN of the KMS Key to use when encrypting log data. Please note, after the AWS KMS CMK is disassociated from the log group,
 	// AWS CloudWatch Logs stops encrypting newly ingested data for the log group. All previously ingested data remains encrypted, and AWS CloudWatch Logs requires
@@ -50,7 +59,8 @@ type LogGroup struct {
 	// Creates a unique name beginning with the specified prefix. Conflicts with `name`.
 	NamePrefix pulumi.StringPtrOutput `pulumi:"namePrefix"`
 	// Specifies the number of days
-	// you want to retain log events in the specified log group.  Possible values are: 1, 3, 5, 7, 14, 30, 60, 90, 120, 150, 180, 365, 400, 545, 731, 1827, and 3653.
+	// you want to retain log events in the specified log group.  Possible values are: 1, 3, 5, 7, 14, 30, 60, 90, 120, 150, 180, 365, 400, 545, 731, 1827, 3653, and 0.
+	// If you select 0, the events in the log group are always retained and never expire.
 	RetentionInDays pulumi.IntPtrOutput `pulumi:"retentionInDays"`
 	// A map of tags to assign to the resource.
 	Tags pulumi.StringMapOutput `pulumi:"tags"`
@@ -62,6 +72,7 @@ func NewLogGroup(ctx *pulumi.Context,
 	if args == nil {
 		args = &LogGroupArgs{}
 	}
+
 	var resource LogGroup
 	err := ctx.RegisterResource("aws:cloudwatch/logGroup:LogGroup", name, args, &resource, opts...)
 	if err != nil {
@@ -84,7 +95,7 @@ func GetLogGroup(ctx *pulumi.Context,
 
 // Input properties used for looking up and filtering LogGroup resources.
 type logGroupState struct {
-	// The Amazon Resource Name (ARN) specifying the log group.
+	// The Amazon Resource Name (ARN) specifying the log group. Any `:*` suffix added by the API, denoting all CloudWatch Log Streams under the CloudWatch Log Group, is removed for greater compatibility with other AWS services that do not accept the suffix.
 	Arn *string `pulumi:"arn"`
 	// The ARN of the KMS Key to use when encrypting log data. Please note, after the AWS KMS CMK is disassociated from the log group,
 	// AWS CloudWatch Logs stops encrypting newly ingested data for the log group. All previously ingested data remains encrypted, and AWS CloudWatch Logs requires
@@ -95,14 +106,15 @@ type logGroupState struct {
 	// Creates a unique name beginning with the specified prefix. Conflicts with `name`.
 	NamePrefix *string `pulumi:"namePrefix"`
 	// Specifies the number of days
-	// you want to retain log events in the specified log group.  Possible values are: 1, 3, 5, 7, 14, 30, 60, 90, 120, 150, 180, 365, 400, 545, 731, 1827, and 3653.
+	// you want to retain log events in the specified log group.  Possible values are: 1, 3, 5, 7, 14, 30, 60, 90, 120, 150, 180, 365, 400, 545, 731, 1827, 3653, and 0.
+	// If you select 0, the events in the log group are always retained and never expire.
 	RetentionInDays *int `pulumi:"retentionInDays"`
 	// A map of tags to assign to the resource.
 	Tags map[string]string `pulumi:"tags"`
 }
 
 type LogGroupState struct {
-	// The Amazon Resource Name (ARN) specifying the log group.
+	// The Amazon Resource Name (ARN) specifying the log group. Any `:*` suffix added by the API, denoting all CloudWatch Log Streams under the CloudWatch Log Group, is removed for greater compatibility with other AWS services that do not accept the suffix.
 	Arn pulumi.StringPtrInput
 	// The ARN of the KMS Key to use when encrypting log data. Please note, after the AWS KMS CMK is disassociated from the log group,
 	// AWS CloudWatch Logs stops encrypting newly ingested data for the log group. All previously ingested data remains encrypted, and AWS CloudWatch Logs requires
@@ -113,7 +125,8 @@ type LogGroupState struct {
 	// Creates a unique name beginning with the specified prefix. Conflicts with `name`.
 	NamePrefix pulumi.StringPtrInput
 	// Specifies the number of days
-	// you want to retain log events in the specified log group.  Possible values are: 1, 3, 5, 7, 14, 30, 60, 90, 120, 150, 180, 365, 400, 545, 731, 1827, and 3653.
+	// you want to retain log events in the specified log group.  Possible values are: 1, 3, 5, 7, 14, 30, 60, 90, 120, 150, 180, 365, 400, 545, 731, 1827, 3653, and 0.
+	// If you select 0, the events in the log group are always retained and never expire.
 	RetentionInDays pulumi.IntPtrInput
 	// A map of tags to assign to the resource.
 	Tags pulumi.StringMapInput
@@ -133,7 +146,8 @@ type logGroupArgs struct {
 	// Creates a unique name beginning with the specified prefix. Conflicts with `name`.
 	NamePrefix *string `pulumi:"namePrefix"`
 	// Specifies the number of days
-	// you want to retain log events in the specified log group.  Possible values are: 1, 3, 5, 7, 14, 30, 60, 90, 120, 150, 180, 365, 400, 545, 731, 1827, and 3653.
+	// you want to retain log events in the specified log group.  Possible values are: 1, 3, 5, 7, 14, 30, 60, 90, 120, 150, 180, 365, 400, 545, 731, 1827, 3653, and 0.
+	// If you select 0, the events in the log group are always retained and never expire.
 	RetentionInDays *int `pulumi:"retentionInDays"`
 	// A map of tags to assign to the resource.
 	Tags map[string]string `pulumi:"tags"`
@@ -150,7 +164,8 @@ type LogGroupArgs struct {
 	// Creates a unique name beginning with the specified prefix. Conflicts with `name`.
 	NamePrefix pulumi.StringPtrInput
 	// Specifies the number of days
-	// you want to retain log events in the specified log group.  Possible values are: 1, 3, 5, 7, 14, 30, 60, 90, 120, 150, 180, 365, 400, 545, 731, 1827, and 3653.
+	// you want to retain log events in the specified log group.  Possible values are: 1, 3, 5, 7, 14, 30, 60, 90, 120, 150, 180, 365, 400, 545, 731, 1827, 3653, and 0.
+	// If you select 0, the events in the log group are always retained and never expire.
 	RetentionInDays pulumi.IntPtrInput
 	// A map of tags to assign to the resource.
 	Tags pulumi.StringMapInput
@@ -158,4 +173,43 @@ type LogGroupArgs struct {
 
 func (LogGroupArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*logGroupArgs)(nil)).Elem()
+}
+
+type LogGroupInput interface {
+	pulumi.Input
+
+	ToLogGroupOutput() LogGroupOutput
+	ToLogGroupOutputWithContext(ctx context.Context) LogGroupOutput
+}
+
+func (LogGroup) ElementType() reflect.Type {
+	return reflect.TypeOf((*LogGroup)(nil)).Elem()
+}
+
+func (i LogGroup) ToLogGroupOutput() LogGroupOutput {
+	return i.ToLogGroupOutputWithContext(context.Background())
+}
+
+func (i LogGroup) ToLogGroupOutputWithContext(ctx context.Context) LogGroupOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(LogGroupOutput)
+}
+
+type LogGroupOutput struct {
+	*pulumi.OutputState
+}
+
+func (LogGroupOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*LogGroupOutput)(nil)).Elem()
+}
+
+func (o LogGroupOutput) ToLogGroupOutput() LogGroupOutput {
+	return o
+}
+
+func (o LogGroupOutput) ToLogGroupOutputWithContext(ctx context.Context) LogGroupOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(LogGroupOutput{})
 }

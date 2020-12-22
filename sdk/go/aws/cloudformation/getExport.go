@@ -18,8 +18,8 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/cloudformation"
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/ec2"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/cloudformation"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/ec2"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -33,7 +33,7 @@ import (
 // 		}
 // 		_, err = ec2.NewInstance(ctx, "web", &ec2.InstanceArgs{
 // 			Ami:          pulumi.String("ami-abb07bcb"),
-// 			InstanceType: pulumi.String("t1.micro"),
+// 			InstanceType: pulumi.String("t2.micro"),
 // 			SubnetId:     pulumi.String(subnetId.Value),
 // 		})
 // 		if err != nil {

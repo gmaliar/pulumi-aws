@@ -4,6 +4,7 @@
 package datasync
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -18,18 +19,18 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/datasync"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/datasync"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
 // func main() {
 // 	pulumi.Run(func(ctx *pulumi.Context) error {
 // 		_, err := datasync.NewS3Location(ctx, "example", &datasync.S3LocationArgs{
-// 			S3BucketArn: pulumi.String(aws_s3_bucket.Example.Arn),
-// 			S3Config: &datasync.S3LocationS3ConfigArgs{
-// 				BucketAccessRoleArn: pulumi.String(aws_iam_role.Example.Arn),
-// 			},
+// 			S3BucketArn:  pulumi.Any(aws_s3_bucket.Example.Arn),
 // 			Subdirectory: pulumi.String("/example/prefix"),
+// 			S3Config: &datasync.S3LocationS3ConfigArgs{
+// 				BucketAccessRoleArn: pulumi.Any(aws_iam_role.Example.Arn),
+// 			},
 // 		})
 // 		if err != nil {
 // 			return err
@@ -37,6 +38,14 @@ import (
 // 		return nil
 // 	})
 // }
+// ```
+//
+// ## Import
+//
+// `aws_datasync_location_s3` can be imported by using the DataSync Task Amazon Resource Name (ARN), e.g.
+//
+// ```sh
+//  $ pulumi import aws:datasync/s3Location:S3Location example arn:aws:datasync:us-east-1:123456789012:location/loc-12345678901234567
 // ```
 type S3Location struct {
 	pulumi.CustomResourceState
@@ -57,17 +66,18 @@ type S3Location struct {
 // NewS3Location registers a new resource with the given unique name, arguments, and options.
 func NewS3Location(ctx *pulumi.Context,
 	name string, args *S3LocationArgs, opts ...pulumi.ResourceOption) (*S3Location, error) {
-	if args == nil || args.S3BucketArn == nil {
-		return nil, errors.New("missing required argument 'S3BucketArn'")
-	}
-	if args == nil || args.S3Config == nil {
-		return nil, errors.New("missing required argument 'S3Config'")
-	}
-	if args == nil || args.Subdirectory == nil {
-		return nil, errors.New("missing required argument 'Subdirectory'")
-	}
 	if args == nil {
-		args = &S3LocationArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.S3BucketArn == nil {
+		return nil, errors.New("invalid value for required argument 'S3BucketArn'")
+	}
+	if args.S3Config == nil {
+		return nil, errors.New("invalid value for required argument 'S3Config'")
+	}
+	if args.Subdirectory == nil {
+		return nil, errors.New("invalid value for required argument 'Subdirectory'")
 	}
 	var resource S3Location
 	err := ctx.RegisterResource("aws:datasync/s3Location:S3Location", name, args, &resource, opts...)
@@ -147,4 +157,43 @@ type S3LocationArgs struct {
 
 func (S3LocationArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*s3locationArgs)(nil)).Elem()
+}
+
+type S3LocationInput interface {
+	pulumi.Input
+
+	ToS3LocationOutput() S3LocationOutput
+	ToS3LocationOutputWithContext(ctx context.Context) S3LocationOutput
+}
+
+func (S3Location) ElementType() reflect.Type {
+	return reflect.TypeOf((*S3Location)(nil)).Elem()
+}
+
+func (i S3Location) ToS3LocationOutput() S3LocationOutput {
+	return i.ToS3LocationOutputWithContext(context.Background())
+}
+
+func (i S3Location) ToS3LocationOutputWithContext(ctx context.Context) S3LocationOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(S3LocationOutput)
+}
+
+type S3LocationOutput struct {
+	*pulumi.OutputState
+}
+
+func (S3LocationOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*S3LocationOutput)(nil)).Elem()
+}
+
+func (o S3LocationOutput) ToS3LocationOutput() S3LocationOutput {
+	return o
+}
+
+func (o S3LocationOutput) ToS3LocationOutputWithContext(ctx context.Context) S3LocationOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(S3LocationOutput{})
 }

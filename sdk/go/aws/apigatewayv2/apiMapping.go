@@ -4,6 +4,7 @@
 package apigatewayv2
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -20,16 +21,16 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/apigatewayv2"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/apigatewayv2"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
 // func main() {
 // 	pulumi.Run(func(ctx *pulumi.Context) error {
 // 		_, err := apigatewayv2.NewApiMapping(ctx, "example", &apigatewayv2.ApiMappingArgs{
-// 			ApiId:      pulumi.String(aws_apigatewayv2_api.Example.Id),
-// 			DomainName: pulumi.String(aws_apigatewayv2_domain_name.Example.Id),
-// 			Stage:      pulumi.String(aws_apigatewayv2_stage.Example.Id),
+// 			ApiId:      pulumi.Any(aws_apigatewayv2_api.Example.Id),
+// 			DomainName: pulumi.Any(aws_apigatewayv2_domain_name.Example.Id),
+// 			Stage:      pulumi.Any(aws_apigatewayv2_stage.Example.Id),
 // 		})
 // 		if err != nil {
 // 			return err
@@ -37,6 +38,14 @@ import (
 // 		return nil
 // 	})
 // }
+// ```
+//
+// ## Import
+//
+// `aws_apigatewayv2_api_mapping` can be imported by using the API mapping identifier and domain name, e.g.
+//
+// ```sh
+//  $ pulumi import aws:apigatewayv2/apiMapping:ApiMapping example 1122334/ws-api.example.com
 // ```
 type ApiMapping struct {
 	pulumi.CustomResourceState
@@ -54,17 +63,18 @@ type ApiMapping struct {
 // NewApiMapping registers a new resource with the given unique name, arguments, and options.
 func NewApiMapping(ctx *pulumi.Context,
 	name string, args *ApiMappingArgs, opts ...pulumi.ResourceOption) (*ApiMapping, error) {
-	if args == nil || args.ApiId == nil {
-		return nil, errors.New("missing required argument 'ApiId'")
-	}
-	if args == nil || args.DomainName == nil {
-		return nil, errors.New("missing required argument 'DomainName'")
-	}
-	if args == nil || args.Stage == nil {
-		return nil, errors.New("missing required argument 'Stage'")
-	}
 	if args == nil {
-		args = &ApiMappingArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.ApiId == nil {
+		return nil, errors.New("invalid value for required argument 'ApiId'")
+	}
+	if args.DomainName == nil {
+		return nil, errors.New("invalid value for required argument 'DomainName'")
+	}
+	if args.Stage == nil {
+		return nil, errors.New("invalid value for required argument 'Stage'")
 	}
 	var resource ApiMapping
 	err := ctx.RegisterResource("aws:apigatewayv2/apiMapping:ApiMapping", name, args, &resource, opts...)
@@ -138,4 +148,43 @@ type ApiMappingArgs struct {
 
 func (ApiMappingArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*apiMappingArgs)(nil)).Elem()
+}
+
+type ApiMappingInput interface {
+	pulumi.Input
+
+	ToApiMappingOutput() ApiMappingOutput
+	ToApiMappingOutputWithContext(ctx context.Context) ApiMappingOutput
+}
+
+func (ApiMapping) ElementType() reflect.Type {
+	return reflect.TypeOf((*ApiMapping)(nil)).Elem()
+}
+
+func (i ApiMapping) ToApiMappingOutput() ApiMappingOutput {
+	return i.ToApiMappingOutputWithContext(context.Background())
+}
+
+func (i ApiMapping) ToApiMappingOutputWithContext(ctx context.Context) ApiMappingOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(ApiMappingOutput)
+}
+
+type ApiMappingOutput struct {
+	*pulumi.OutputState
+}
+
+func (ApiMappingOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*ApiMappingOutput)(nil)).Elem()
+}
+
+func (o ApiMappingOutput) ToApiMappingOutput() ApiMappingOutput {
+	return o
+}
+
+func (o ApiMappingOutput) ToApiMappingOutputWithContext(ctx context.Context) ApiMappingOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(ApiMappingOutput{})
 }

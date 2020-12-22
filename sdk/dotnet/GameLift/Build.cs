@@ -35,13 +35,17 @@ namespace Pulumi.Aws.GameLift
     ///         {
     ///             DependsOn = 
     ///             {
-    ///                 "aws_iam_role_policy.test",
+    ///                 aws_iam_role_policy.Test,
     ///             },
     ///         });
     ///     }
     /// 
     /// }
     /// ```
+    /// 
+    /// ## Import
+    /// 
+    /// Gamelift Builds cannot be imported at this time.
     /// </summary>
     public partial class Build : Pulumi.CustomResource
     {

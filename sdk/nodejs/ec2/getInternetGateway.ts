@@ -2,8 +2,7 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 /**
@@ -16,14 +15,13 @@ import * as utilities from "../utilities";
  * import * as aws from "@pulumi/aws";
  *
  * const config = new pulumi.Config();
- * const vpcId = config.require("vpcId");
- *
- * const defaultInternetGateway = pulumi.output(aws.ec2.getInternetGateway({
+ * const vpcId = config.requireObject("vpcId");
+ * const default = aws.ec2.getInternetGateway({
  *     filters: [{
  *         name: "attachment.vpc-id",
  *         values: [vpcId],
  *     }],
- * }, { async: true }));
+ * });
  * ```
  */
 export function getInternetGateway(args?: GetInternetGatewayArgs, opts?: pulumi.InvokeOptions): Promise<GetInternetGatewayResult> {

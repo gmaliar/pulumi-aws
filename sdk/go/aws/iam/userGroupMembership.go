@@ -4,6 +4,7 @@
 package iam
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -23,7 +24,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/iam"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/iam"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -42,11 +43,11 @@ import (
 // 			return err
 // 		}
 // 		_, err = iam.NewUserGroupMembership(ctx, "example1", &iam.UserGroupMembershipArgs{
+// 			User: user1.Name,
 // 			Groups: pulumi.StringArray{
 // 				group1.Name,
 // 				group2.Name,
 // 			},
-// 			User: user1.Name,
 // 		})
 // 		if err != nil {
 // 			return err
@@ -56,10 +57,10 @@ import (
 // 			return err
 // 		}
 // 		_, err = iam.NewUserGroupMembership(ctx, "example2", &iam.UserGroupMembershipArgs{
+// 			User: user1.Name,
 // 			Groups: pulumi.StringArray{
 // 				group3.Name,
 // 			},
-// 			User: user1.Name,
 // 		})
 // 		if err != nil {
 // 			return err
@@ -67,6 +68,14 @@ import (
 // 		return nil
 // 	})
 // }
+// ```
+//
+// ## Import
+//
+// IAM user group membership can be imported using the user name and group names separated by `/`.
+//
+// ```sh
+//  $ pulumi import aws:iam/userGroupMembership:UserGroupMembership example1 user1/group1/group2
 // ```
 type UserGroupMembership struct {
 	pulumi.CustomResourceState
@@ -80,14 +89,15 @@ type UserGroupMembership struct {
 // NewUserGroupMembership registers a new resource with the given unique name, arguments, and options.
 func NewUserGroupMembership(ctx *pulumi.Context,
 	name string, args *UserGroupMembershipArgs, opts ...pulumi.ResourceOption) (*UserGroupMembership, error) {
-	if args == nil || args.Groups == nil {
-		return nil, errors.New("missing required argument 'Groups'")
-	}
-	if args == nil || args.User == nil {
-		return nil, errors.New("missing required argument 'User'")
-	}
 	if args == nil {
-		args = &UserGroupMembershipArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.Groups == nil {
+		return nil, errors.New("invalid value for required argument 'Groups'")
+	}
+	if args.User == nil {
+		return nil, errors.New("invalid value for required argument 'User'")
 	}
 	var resource UserGroupMembership
 	err := ctx.RegisterResource("aws:iam/userGroupMembership:UserGroupMembership", name, args, &resource, opts...)
@@ -145,4 +155,43 @@ type UserGroupMembershipArgs struct {
 
 func (UserGroupMembershipArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*userGroupMembershipArgs)(nil)).Elem()
+}
+
+type UserGroupMembershipInput interface {
+	pulumi.Input
+
+	ToUserGroupMembershipOutput() UserGroupMembershipOutput
+	ToUserGroupMembershipOutputWithContext(ctx context.Context) UserGroupMembershipOutput
+}
+
+func (UserGroupMembership) ElementType() reflect.Type {
+	return reflect.TypeOf((*UserGroupMembership)(nil)).Elem()
+}
+
+func (i UserGroupMembership) ToUserGroupMembershipOutput() UserGroupMembershipOutput {
+	return i.ToUserGroupMembershipOutputWithContext(context.Background())
+}
+
+func (i UserGroupMembership) ToUserGroupMembershipOutputWithContext(ctx context.Context) UserGroupMembershipOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(UserGroupMembershipOutput)
+}
+
+type UserGroupMembershipOutput struct {
+	*pulumi.OutputState
+}
+
+func (UserGroupMembershipOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*UserGroupMembershipOutput)(nil)).Elem()
+}
+
+func (o UserGroupMembershipOutput) ToUserGroupMembershipOutput() UserGroupMembershipOutput {
+	return o
+}
+
+func (o UserGroupMembershipOutput) ToUserGroupMembershipOutputWithContext(ctx context.Context) UserGroupMembershipOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(UserGroupMembershipOutput{})
 }

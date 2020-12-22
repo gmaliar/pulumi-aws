@@ -2,8 +2,7 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 /**
@@ -32,11 +31,19 @@ import * as utilities from "../utilities";
  * const resource = new aws.cognito.ResourceServer("resource", {
  *     identifier: "https://example.com",
  *     scopes: [{
- *         scopeDescription: "a Sample Scope Description",
  *         scopeName: "sample-scope",
+ *         scopeDescription: "a Sample Scope Description",
  *     }],
  *     userPoolId: pool.id,
  * });
+ * ```
+ *
+ * ## Import
+ *
+ * `aws_cognito_resource_server` can be imported using their User Pool ID and Identifier, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:cognito/resourceServer:ResourceServer example xxx_yyyyy|https://example.com
  * ```
  */
 export class ResourceServer extends pulumi.CustomResource {
@@ -104,10 +111,10 @@ export class ResourceServer extends pulumi.CustomResource {
             inputs["userPoolId"] = state ? state.userPoolId : undefined;
         } else {
             const args = argsOrState as ResourceServerArgs | undefined;
-            if (!args || args.identifier === undefined) {
+            if ((!args || args.identifier === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'identifier'");
             }
-            if (!args || args.userPoolId === undefined) {
+            if ((!args || args.userPoolId === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'userPoolId'");
             }
             inputs["identifier"] = args ? args.identifier : undefined;

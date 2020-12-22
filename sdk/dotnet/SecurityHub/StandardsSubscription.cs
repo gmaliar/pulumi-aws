@@ -32,7 +32,7 @@ namespace Pulumi.Aws.SecurityHub
     ///         {
     ///             DependsOn = 
     ///             {
-    ///                 "aws_securityhub_account.example",
+    ///                 example,
     ///             },
     ///         });
     ///         var pci321 = new Aws.SecurityHub.StandardsSubscription("pci321", new Aws.SecurityHub.StandardsSubscriptionArgs
@@ -42,12 +42,24 @@ namespace Pulumi.Aws.SecurityHub
     ///         {
     ///             DependsOn = 
     ///             {
-    ///                 "aws_securityhub_account.example",
+    ///                 example,
     ///             },
     ///         });
     ///     }
     /// 
     /// }
+    /// ```
+    /// 
+    /// ## Import
+    /// 
+    /// Security Hub standards subscriptions can be imported using the standards subscription ARN, e.g.
+    /// 
+    /// ```sh
+    ///  $ pulumi import aws:securityhub/standardsSubscription:StandardsSubscription cis arn:aws:securityhub:eu-west-1:123456789012:subscription/cis-aws-foundations-benchmark/v/1.2.0
+    /// ```
+    /// 
+    /// ```sh
+    ///  $ pulumi import aws:securityhub/standardsSubscription:StandardsSubscription pci_321 arn:aws:securityhub:eu-west-1:123456789012:subscription/pci-dss/v/3.2.1
     /// ```
     /// </summary>
     public partial class StandardsSubscription : Pulumi.CustomResource

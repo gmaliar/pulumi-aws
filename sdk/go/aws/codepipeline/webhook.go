@@ -4,6 +4,7 @@
 package codepipeline
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -20,7 +21,7 @@ import (
 // import (
 // 	"fmt"
 //
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/codepipeline"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/codepipeline"
 // 	"github.com/pulumi/pulumi-github/sdk/go/github"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
@@ -28,53 +29,53 @@ import (
 // func main() {
 // 	pulumi.Run(func(ctx *pulumi.Context) error {
 // 		barPipeline, err := codepipeline.NewPipeline(ctx, "barPipeline", &codepipeline.PipelineArgs{
+// 			RoleArn: pulumi.Any(aws_iam_role.Bar.Arn),
 // 			ArtifactStore: &codepipeline.PipelineArtifactStoreArgs{
+// 				Location: pulumi.Any(aws_s3_bucket.Bar.Bucket),
+// 				Type:     pulumi.String("S3"),
 // 				EncryptionKey: &codepipeline.PipelineArtifactStoreEncryptionKeyArgs{
-// 					Id:   pulumi.String(data.Aws_kms_alias.S3kmskey.Arn),
+// 					Id:   pulumi.Any(data.Aws_kms_alias.S3kmskey.Arn),
 // 					Type: pulumi.String("KMS"),
 // 				},
-// 				Location: pulumi.String(aws_s3_bucket.Bar.Bucket),
-// 				Type:     pulumi.String("S3"),
 // 			},
-// 			RoleArn: pulumi.String(aws_iam_role.Bar.Arn),
 // 			Stages: codepipeline.PipelineStageArray{
 // 				&codepipeline.PipelineStageArgs{
+// 					Name: pulumi.String("Source"),
 // 					Actions: codepipeline.PipelineStageActionArray{
 // 						&codepipeline.PipelineStageActionArgs{
+// 							Name:     pulumi.String("Source"),
 // 							Category: pulumi.String("Source"),
-// 							Configuration: pulumi.StringMap{
-// 								"Branch": pulumi.String("master"),
-// 								"Owner":  pulumi.String("my-organization"),
-// 								"Repo":   pulumi.String("test"),
-// 							},
-// 							Name: pulumi.String("Source"),
-// 							OutputArtifacts: pulumi.StringArray{
-// 								pulumi.String("test"),
-// 							},
 // 							Owner:    pulumi.String("ThirdParty"),
 // 							Provider: pulumi.String("GitHub"),
 // 							Version:  pulumi.String("1"),
+// 							OutputArtifacts: pulumi.StringArray{
+// 								pulumi.String("test"),
+// 							},
+// 							Configuration: pulumi.StringMap{
+// 								"Owner":  pulumi.String("my-organization"),
+// 								"Repo":   pulumi.String("test"),
+// 								"Branch": pulumi.String("master"),
+// 							},
 // 						},
 // 					},
-// 					Name: pulumi.String("Source"),
 // 				},
 // 				&codepipeline.PipelineStageArgs{
+// 					Name: pulumi.String("Build"),
 // 					Actions: codepipeline.PipelineStageActionArray{
 // 						&codepipeline.PipelineStageActionArgs{
+// 							Name:     pulumi.String("Build"),
 // 							Category: pulumi.String("Build"),
-// 							Configuration: pulumi.StringMap{
-// 								"ProjectName": pulumi.String("test"),
-// 							},
+// 							Owner:    pulumi.String("AWS"),
+// 							Provider: pulumi.String("CodeBuild"),
 // 							InputArtifacts: pulumi.StringArray{
 // 								pulumi.String("test"),
 // 							},
-// 							Name:     pulumi.String("Build"),
-// 							Owner:    pulumi.String("AWS"),
-// 							Provider: pulumi.String("CodeBuild"),
-// 							Version:  pulumi.String("1"),
+// 							Version: pulumi.String("1"),
+// 							Configuration: pulumi.StringMap{
+// 								"ProjectName": pulumi.String("test"),
+// 							},
 // 						},
 // 					},
-// 					Name: pulumi.String("Build"),
 // 				},
 // 			},
 // 		})
@@ -84,6 +85,8 @@ import (
 // 		webhookSecret := "super-secret"
 // 		barWebhook, err := codepipeline.NewWebhook(ctx, "barWebhook", &codepipeline.WebhookArgs{
 // 			Authentication: pulumi.String("GITHUB_HMAC"),
+// 			TargetAction:   pulumi.String("Source"),
+// 			TargetPipeline: barPipeline.Name,
 // 			AuthenticationConfiguration: &codepipeline.WebhookAuthenticationConfigurationArgs{
 // 				SecretToken: pulumi.String(webhookSecret),
 // 			},
@@ -93,23 +96,21 @@ import (
 // 					MatchEquals: pulumi.String("refs/heads/{Branch}"),
 // 				},
 // 			},
-// 			TargetAction:   pulumi.String("Source"),
-// 			TargetPipeline: barPipeline.Name,
 // 		})
 // 		if err != nil {
 // 			return err
 // 		}
 // 		_, err = github.NewRepositoryWebhook(ctx, "barRepositoryWebhook", &github.RepositoryWebhookArgs{
+// 			Repository: pulumi.Any(github_repository.Repo.Name),
 // 			Configuration: &github.RepositoryWebhookConfigurationArgs{
+// 				Url:         barWebhook.Url,
 // 				ContentType: pulumi.String("json"),
 // 				InsecureSsl: pulumi.Bool(true),
 // 				Secret:      pulumi.String(webhookSecret),
-// 				Url:         barWebhook.Url,
 // 			},
 // 			Events: pulumi.StringArray{
 // 				pulumi.String("push"),
 // 			},
-// 			Repository: pulumi.String(github_repository.Repo.Name),
 // 		})
 // 		if err != nil {
 // 			return err
@@ -117,6 +118,14 @@ import (
 // 		return nil
 // 	})
 // }
+// ```
+//
+// ## Import
+//
+// CodePipeline Webhooks can be imported by their ARN, e.g.
+//
+// ```sh
+//  $ pulumi import aws:codepipeline/webhook:Webhook example arn:aws:codepipeline:us-west-2:123456789012:webhook:example
 // ```
 type Webhook struct {
 	pulumi.CustomResourceState
@@ -142,20 +151,21 @@ type Webhook struct {
 // NewWebhook registers a new resource with the given unique name, arguments, and options.
 func NewWebhook(ctx *pulumi.Context,
 	name string, args *WebhookArgs, opts ...pulumi.ResourceOption) (*Webhook, error) {
-	if args == nil || args.Authentication == nil {
-		return nil, errors.New("missing required argument 'Authentication'")
-	}
-	if args == nil || args.Filters == nil {
-		return nil, errors.New("missing required argument 'Filters'")
-	}
-	if args == nil || args.TargetAction == nil {
-		return nil, errors.New("missing required argument 'TargetAction'")
-	}
-	if args == nil || args.TargetPipeline == nil {
-		return nil, errors.New("missing required argument 'TargetPipeline'")
-	}
 	if args == nil {
-		args = &WebhookArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.Authentication == nil {
+		return nil, errors.New("invalid value for required argument 'Authentication'")
+	}
+	if args.Filters == nil {
+		return nil, errors.New("invalid value for required argument 'Filters'")
+	}
+	if args.TargetAction == nil {
+		return nil, errors.New("invalid value for required argument 'TargetAction'")
+	}
+	if args.TargetPipeline == nil {
+		return nil, errors.New("invalid value for required argument 'TargetPipeline'")
 	}
 	var resource Webhook
 	err := ctx.RegisterResource("aws:codepipeline/webhook:Webhook", name, args, &resource, opts...)
@@ -257,4 +267,43 @@ type WebhookArgs struct {
 
 func (WebhookArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*webhookArgs)(nil)).Elem()
+}
+
+type WebhookInput interface {
+	pulumi.Input
+
+	ToWebhookOutput() WebhookOutput
+	ToWebhookOutputWithContext(ctx context.Context) WebhookOutput
+}
+
+func (Webhook) ElementType() reflect.Type {
+	return reflect.TypeOf((*Webhook)(nil)).Elem()
+}
+
+func (i Webhook) ToWebhookOutput() WebhookOutput {
+	return i.ToWebhookOutputWithContext(context.Background())
+}
+
+func (i Webhook) ToWebhookOutputWithContext(ctx context.Context) WebhookOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(WebhookOutput)
+}
+
+type WebhookOutput struct {
+	*pulumi.OutputState
+}
+
+func (WebhookOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*WebhookOutput)(nil)).Elem()
+}
+
+func (o WebhookOutput) ToWebhookOutput() WebhookOutput {
+	return o
+}
+
+func (o WebhookOutput) ToWebhookOutputWithContext(ctx context.Context) WebhookOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(WebhookOutput{})
 }

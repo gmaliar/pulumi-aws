@@ -87,9 +87,11 @@ namespace Pulumi.Aws.ElasticLoadBalancingV2
         public readonly Outputs.GetLoadBalancerAccessLogsResult AccessLogs;
         public readonly string Arn;
         public readonly string ArnSuffix;
+        public readonly string CustomerOwnedIpv4Pool;
         public readonly string DnsName;
         public readonly bool DropInvalidHeaderFields;
         public readonly bool EnableDeletionProtection;
+        public readonly bool EnableHttp2;
         /// <summary>
         /// The provider-assigned unique ID for this managed resource.
         /// </summary>
@@ -114,11 +116,15 @@ namespace Pulumi.Aws.ElasticLoadBalancingV2
 
             string arnSuffix,
 
+            string customerOwnedIpv4Pool,
+
             string dnsName,
 
             bool dropInvalidHeaderFields,
 
             bool enableDeletionProtection,
+
+            bool enableHttp2,
 
             string id,
 
@@ -147,9 +153,11 @@ namespace Pulumi.Aws.ElasticLoadBalancingV2
             AccessLogs = accessLogs;
             Arn = arn;
             ArnSuffix = arnSuffix;
+            CustomerOwnedIpv4Pool = customerOwnedIpv4Pool;
             DnsName = dnsName;
             DropInvalidHeaderFields = dropInvalidHeaderFields;
             EnableDeletionProtection = enableDeletionProtection;
+            EnableHttp2 = enableHttp2;
             Id = id;
             IdleTimeout = idleTimeout;
             Internal = @internal;

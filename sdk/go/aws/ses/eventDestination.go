@@ -4,6 +4,7 @@
 package ses
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -19,25 +20,25 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/ses"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/ses"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
 // func main() {
 // 	pulumi.Run(func(ctx *pulumi.Context) error {
 // 		_, err := ses.NewEventDestination(ctx, "cloudwatch", &ses.EventDestinationArgs{
+// 			ConfigurationSetName: pulumi.Any(aws_ses_configuration_set.Example.Name),
+// 			Enabled:              pulumi.Bool(true),
+// 			MatchingTypes: pulumi.StringArray{
+// 				pulumi.String("bounce"),
+// 				pulumi.String("send"),
+// 			},
 // 			CloudwatchDestinations: ses.EventDestinationCloudwatchDestinationArray{
 // 				&ses.EventDestinationCloudwatchDestinationArgs{
 // 					DefaultValue:  pulumi.String("default"),
 // 					DimensionName: pulumi.String("dimension"),
 // 					ValueSource:   pulumi.String("emailHeader"),
 // 				},
-// 			},
-// 			ConfigurationSetName: pulumi.String(aws_ses_configuration_set.Example.Name),
-// 			Enabled:              pulumi.Bool(true),
-// 			MatchingTypes: pulumi.StringArray{
-// 				pulumi.String("bounce"),
-// 				pulumi.String("send"),
 // 			},
 // 		})
 // 		if err != nil {
@@ -53,22 +54,22 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/ses"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/ses"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
 // func main() {
 // 	pulumi.Run(func(ctx *pulumi.Context) error {
 // 		_, err := ses.NewEventDestination(ctx, "kinesis", &ses.EventDestinationArgs{
-// 			ConfigurationSetName: pulumi.String(aws_ses_configuration_set.Example.Name),
+// 			ConfigurationSetName: pulumi.Any(aws_ses_configuration_set.Example.Name),
 // 			Enabled:              pulumi.Bool(true),
-// 			KinesisDestination: &ses.EventDestinationKinesisDestinationArgs{
-// 				RoleArn:   pulumi.String(aws_iam_role.Example.Arn),
-// 				StreamArn: pulumi.String(aws_kinesis_firehose_delivery_stream.Example.Arn),
-// 			},
 // 			MatchingTypes: pulumi.StringArray{
 // 				pulumi.String("bounce"),
 // 				pulumi.String("send"),
+// 			},
+// 			KinesisDestination: &ses.EventDestinationKinesisDestinationArgs{
+// 				StreamArn: pulumi.Any(aws_kinesis_firehose_delivery_stream.Example.Arn),
+// 				RoleArn:   pulumi.Any(aws_iam_role.Example.Arn),
 // 			},
 // 		})
 // 		if err != nil {
@@ -84,21 +85,21 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/ses"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/ses"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
 // func main() {
 // 	pulumi.Run(func(ctx *pulumi.Context) error {
 // 		_, err := ses.NewEventDestination(ctx, "sns", &ses.EventDestinationArgs{
-// 			ConfigurationSetName: pulumi.String(aws_ses_configuration_set.Example.Name),
+// 			ConfigurationSetName: pulumi.Any(aws_ses_configuration_set.Example.Name),
 // 			Enabled:              pulumi.Bool(true),
 // 			MatchingTypes: pulumi.StringArray{
 // 				pulumi.String("bounce"),
 // 				pulumi.String("send"),
 // 			},
 // 			SnsDestination: &ses.EventDestinationSnsDestinationArgs{
-// 				TopicArn: pulumi.String(aws_sns_topic.Example.Arn),
+// 				TopicArn: pulumi.Any(aws_sns_topic.Example.Arn),
 // 			},
 // 		})
 // 		if err != nil {
@@ -107,6 +108,14 @@ import (
 // 		return nil
 // 	})
 // }
+// ```
+//
+// ## Import
+//
+// SES event destinations can be imported using `configuration_set_name` together with the event destination's `name`, e.g.
+//
+// ```sh
+//  $ pulumi import aws:ses/eventDestination:EventDestination sns some-configuration-set-test/event-destination-sns
 // ```
 type EventDestination struct {
 	pulumi.CustomResourceState
@@ -130,14 +139,15 @@ type EventDestination struct {
 // NewEventDestination registers a new resource with the given unique name, arguments, and options.
 func NewEventDestination(ctx *pulumi.Context,
 	name string, args *EventDestinationArgs, opts ...pulumi.ResourceOption) (*EventDestination, error) {
-	if args == nil || args.ConfigurationSetName == nil {
-		return nil, errors.New("missing required argument 'ConfigurationSetName'")
-	}
-	if args == nil || args.MatchingTypes == nil {
-		return nil, errors.New("missing required argument 'MatchingTypes'")
-	}
 	if args == nil {
-		args = &EventDestinationArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.ConfigurationSetName == nil {
+		return nil, errors.New("invalid value for required argument 'ConfigurationSetName'")
+	}
+	if args.MatchingTypes == nil {
+		return nil, errors.New("invalid value for required argument 'MatchingTypes'")
 	}
 	var resource EventDestination
 	err := ctx.RegisterResource("aws:ses/eventDestination:EventDestination", name, args, &resource, opts...)
@@ -235,4 +245,43 @@ type EventDestinationArgs struct {
 
 func (EventDestinationArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*eventDestinationArgs)(nil)).Elem()
+}
+
+type EventDestinationInput interface {
+	pulumi.Input
+
+	ToEventDestinationOutput() EventDestinationOutput
+	ToEventDestinationOutputWithContext(ctx context.Context) EventDestinationOutput
+}
+
+func (EventDestination) ElementType() reflect.Type {
+	return reflect.TypeOf((*EventDestination)(nil)).Elem()
+}
+
+func (i EventDestination) ToEventDestinationOutput() EventDestinationOutput {
+	return i.ToEventDestinationOutputWithContext(context.Background())
+}
+
+func (i EventDestination) ToEventDestinationOutputWithContext(ctx context.Context) EventDestinationOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(EventDestinationOutput)
+}
+
+type EventDestinationOutput struct {
+	*pulumi.OutputState
+}
+
+func (EventDestinationOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*EventDestinationOutput)(nil)).Elem()
+}
+
+func (o EventDestinationOutput) ToEventDestinationOutput() EventDestinationOutput {
+	return o
+}
+
+func (o EventDestinationOutput) ToEventDestinationOutputWithContext(ctx context.Context) EventDestinationOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(EventDestinationOutput{})
 }

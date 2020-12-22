@@ -4,6 +4,7 @@
 package glacier
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
@@ -21,8 +22,8 @@ import (
 // import (
 // 	"fmt"
 //
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/glacier"
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/sns"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/glacier"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/sns"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -33,16 +34,16 @@ import (
 // 			return err
 // 		}
 // 		_, err = glacier.NewVault(ctx, "myArchive", &glacier.VaultArgs{
-// 			AccessPolicy: pulumi.String(fmt.Sprintf("%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v", "{\n", "    \"Version\":\"2012-10-17\",\n", "    \"Statement\":[\n", "       {\n", "          \"Sid\": \"add-read-only-perm\",\n", "          \"Principal\": \"*\",\n", "          \"Effect\": \"Allow\",\n", "          \"Action\": [\n", "             \"glacier:InitiateJob\",\n", "             \"glacier:GetJobOutput\"\n", "          ],\n", "          \"Resource\": \"arn:aws:glacier:eu-west-1:432981146916:vaults/MyArchive\"\n", "       }\n", "    ]\n", "}\n", "\n")),
 // 			Notifications: glacier.VaultNotificationArray{
 // 				&glacier.VaultNotificationArgs{
+// 					SnsTopic: awsSnsTopic.Arn,
 // 					Events: pulumi.StringArray{
 // 						pulumi.String("ArchiveRetrievalCompleted"),
 // 						pulumi.String("InventoryRetrievalCompleted"),
 // 					},
-// 					SnsTopic: awsSnsTopic.Arn,
 // 				},
 // 			},
+// 			AccessPolicy: pulumi.String(fmt.Sprintf("%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v", "{\n", "    \"Version\":\"2012-10-17\",\n", "    \"Statement\":[\n", "       {\n", "          \"Sid\": \"add-read-only-perm\",\n", "          \"Principal\": \"*\",\n", "          \"Effect\": \"Allow\",\n", "          \"Action\": [\n", "             \"glacier:InitiateJob\",\n", "             \"glacier:GetJobOutput\"\n", "          ],\n", "          \"Resource\": \"arn:aws:glacier:eu-west-1:432981146916:vaults/MyArchive\"\n", "       }\n", "    ]\n", "}\n")),
 // 			Tags: pulumi.StringMap{
 // 				"Test": pulumi.String("MyArchive"),
 // 			},
@@ -53,6 +54,14 @@ import (
 // 		return nil
 // 	})
 // }
+// ```
+//
+// ## Import
+//
+// Glacier Vaults can be imported using the `name`, e.g.
+//
+// ```sh
+//  $ pulumi import aws:glacier/vault:Vault archive my_archive
 // ```
 type Vault struct {
 	pulumi.CustomResourceState
@@ -78,6 +87,7 @@ func NewVault(ctx *pulumi.Context,
 	if args == nil {
 		args = &VaultArgs{}
 	}
+
 	var resource Vault
 	err := ctx.RegisterResource("aws:glacier/vault:Vault", name, args, &resource, opts...)
 	if err != nil {
@@ -162,4 +172,43 @@ type VaultArgs struct {
 
 func (VaultArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*vaultArgs)(nil)).Elem()
+}
+
+type VaultInput interface {
+	pulumi.Input
+
+	ToVaultOutput() VaultOutput
+	ToVaultOutputWithContext(ctx context.Context) VaultOutput
+}
+
+func (Vault) ElementType() reflect.Type {
+	return reflect.TypeOf((*Vault)(nil)).Elem()
+}
+
+func (i Vault) ToVaultOutput() VaultOutput {
+	return i.ToVaultOutputWithContext(context.Background())
+}
+
+func (i Vault) ToVaultOutputWithContext(ctx context.Context) VaultOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(VaultOutput)
+}
+
+type VaultOutput struct {
+	*pulumi.OutputState
+}
+
+func (VaultOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*VaultOutput)(nil)).Elem()
+}
+
+func (o VaultOutput) ToVaultOutput() VaultOutput {
+	return o
+}
+
+func (o VaultOutput) ToVaultOutputWithContext(ctx context.Context) VaultOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(VaultOutput{})
 }

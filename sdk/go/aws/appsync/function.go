@@ -4,6 +4,7 @@
 package appsync
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -20,35 +21,36 @@ import (
 // import (
 // 	"fmt"
 //
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/appsync"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/appsync"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
 // func main() {
 // 	pulumi.Run(func(ctx *pulumi.Context) error {
-// 		testGraphQLApi, err := appsync.NewGraphQLApi(ctx, "testGraphQLApi", &appsync.GraphQLApiArgs{
+// 		exampleGraphQLApi, err := appsync.NewGraphQLApi(ctx, "exampleGraphQLApi", &appsync.GraphQLApiArgs{
 // 			AuthenticationType: pulumi.String("API_KEY"),
-// 			Schema:             pulumi.String(fmt.Sprintf("%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v", "type Mutation {\n", "    putPost(id: ID!, title: String!): Post\n", "}\n", "\n", "type Post {\n", "    id: ID!\n", "    title: String!\n", "}\n", "\n", "type Query {\n", "    singlePost(id: ID!): Post\n", "}\n", "\n", "schema {\n", "    query: Query\n", "    mutation: Mutation\n", "}\n", "\n")),
+// 			Schema:             pulumi.String(fmt.Sprintf("%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v", "type Mutation {\n", "  putPost(id: ID!, title: String!): Post\n", "}\n", "\n", "type Post {\n", "  id: ID!\n", "  title: String!\n", "}\n", "\n", "type Query {\n", "  singlePost(id: ID!): Post\n", "}\n", "\n", "schema {\n", "  query: Query\n", "  mutation: Mutation\n", "}\n")),
 // 		})
 // 		if err != nil {
 // 			return err
 // 		}
-// 		testDataSource, err := appsync.NewDataSource(ctx, "testDataSource", &appsync.DataSourceArgs{
-// 			ApiId: testGraphQLApi.ID(),
+// 		exampleDataSource, err := appsync.NewDataSource(ctx, "exampleDataSource", &appsync.DataSourceArgs{
+// 			ApiId: exampleGraphQLApi.ID(),
+// 			Name:  pulumi.String("example"),
+// 			Type:  pulumi.String("HTTP"),
 // 			HttpConfig: &appsync.DataSourceHttpConfigArgs{
 // 				Endpoint: pulumi.String("http://example.com"),
 // 			},
-// 			Type: pulumi.String("HTTP"),
 // 		})
 // 		if err != nil {
 // 			return err
 // 		}
-// 		_, err = appsync.NewFunction(ctx, "testFunction", &appsync.FunctionArgs{
-// 			ApiId:                   testGraphQLApi.ID(),
-// 			DataSource:              testDataSource.Name,
-// 			Name:                    pulumi.String("tf_example"),
-// 			RequestMappingTemplate:  pulumi.String(fmt.Sprintf("%v%v%v%v%v%v%v%v%v%v%v%v%v", "{\n", "    \"version\": \"2018-05-29\",\n", "    \"method\": \"GET\",\n", "    \"resourcePath\": \"/\",\n", "    \"params\":{\n", "        \"headers\": ", "$", "utils.http.copyheaders(", "$", "ctx.request.headers)\n", "    }\n", "}\n", "\n")),
-// 			ResponseMappingTemplate: pulumi.String(fmt.Sprintf("%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v", "#if(", "$", "ctx.result.statusCode == 200)\n", "    ", "$", "ctx.result.body\n", "#else\n", "    ", "$", "utils.appendError(", "$", "ctx.result.body, ", "$", "ctx.result.statusCode)\n", "#end\n", "\n")),
+// 		_, err = appsync.NewFunction(ctx, "exampleFunction", &appsync.FunctionArgs{
+// 			ApiId:                   exampleGraphQLApi.ID(),
+// 			DataSource:              exampleDataSource.Name,
+// 			Name:                    pulumi.String("example"),
+// 			RequestMappingTemplate:  pulumi.String(fmt.Sprintf("%v%v%v%v%v%v%v%v%v%v%v%v", "{\n", "    \"version\": \"2018-05-29\",\n", "    \"method\": \"GET\",\n", "    \"resourcePath\": \"/\",\n", "    \"params\":{\n", "        \"headers\": ", "$", "utils.http.copyheaders(", "$", "ctx.request.headers)\n", "    }\n", "}\n")),
+// 			ResponseMappingTemplate: pulumi.String(fmt.Sprintf("%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v", "#if(", "$", "ctx.result.statusCode == 200)\n", "    ", "$", "ctx.result.body\n", "#else\n", "    ", "$", "utils.appendError(", "$", "ctx.result.body, ", "$", "ctx.result.statusCode)\n", "#end\n")),
 // 		})
 // 		if err != nil {
 // 			return err
@@ -56,6 +58,14 @@ import (
 // 		return nil
 // 	})
 // }
+// ```
+//
+// ## Import
+//
+// `aws_appsync_function` can be imported using the AppSync API ID and Function ID separated by `-`, e.g.
+//
+// ```sh
+//  $ pulumi import aws:appsync/function:Function example xxxxx-yyyyy
 // ```
 type Function struct {
 	pulumi.CustomResourceState
@@ -83,20 +93,21 @@ type Function struct {
 // NewFunction registers a new resource with the given unique name, arguments, and options.
 func NewFunction(ctx *pulumi.Context,
 	name string, args *FunctionArgs, opts ...pulumi.ResourceOption) (*Function, error) {
-	if args == nil || args.ApiId == nil {
-		return nil, errors.New("missing required argument 'ApiId'")
-	}
-	if args == nil || args.DataSource == nil {
-		return nil, errors.New("missing required argument 'DataSource'")
-	}
-	if args == nil || args.RequestMappingTemplate == nil {
-		return nil, errors.New("missing required argument 'RequestMappingTemplate'")
-	}
-	if args == nil || args.ResponseMappingTemplate == nil {
-		return nil, errors.New("missing required argument 'ResponseMappingTemplate'")
-	}
 	if args == nil {
-		args = &FunctionArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.ApiId == nil {
+		return nil, errors.New("invalid value for required argument 'ApiId'")
+	}
+	if args.DataSource == nil {
+		return nil, errors.New("invalid value for required argument 'DataSource'")
+	}
+	if args.RequestMappingTemplate == nil {
+		return nil, errors.New("invalid value for required argument 'RequestMappingTemplate'")
+	}
+	if args.ResponseMappingTemplate == nil {
+		return nil, errors.New("invalid value for required argument 'ResponseMappingTemplate'")
 	}
 	var resource Function
 	err := ctx.RegisterResource("aws:appsync/function:Function", name, args, &resource, opts...)
@@ -202,4 +213,43 @@ type FunctionArgs struct {
 
 func (FunctionArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*functionArgs)(nil)).Elem()
+}
+
+type FunctionInput interface {
+	pulumi.Input
+
+	ToFunctionOutput() FunctionOutput
+	ToFunctionOutputWithContext(ctx context.Context) FunctionOutput
+}
+
+func (Function) ElementType() reflect.Type {
+	return reflect.TypeOf((*Function)(nil)).Elem()
+}
+
+func (i Function) ToFunctionOutput() FunctionOutput {
+	return i.ToFunctionOutputWithContext(context.Background())
+}
+
+func (i Function) ToFunctionOutputWithContext(ctx context.Context) FunctionOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(FunctionOutput)
+}
+
+type FunctionOutput struct {
+	*pulumi.OutputState
+}
+
+func (FunctionOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*FunctionOutput)(nil)).Elem()
+}
+
+func (o FunctionOutput) ToFunctionOutput() FunctionOutput {
+	return o
+}
+
+func (o FunctionOutput) ToFunctionOutputWithContext(ctx context.Context) FunctionOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(FunctionOutput{})
 }

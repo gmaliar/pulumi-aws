@@ -2,8 +2,7 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 /**
@@ -31,6 +30,7 @@ export function getComputeEnvironment(args: GetComputeEnvironmentArgs, opts?: pu
     }
     return pulumi.runtime.invoke("aws:batch/getComputeEnvironment:getComputeEnvironment", {
         "computeEnvironmentName": args.computeEnvironmentName,
+        "tags": args.tags,
     }, opts);
 }
 
@@ -42,6 +42,10 @@ export interface GetComputeEnvironmentArgs {
      * The name of the Batch Compute Environment
      */
     readonly computeEnvironmentName: string;
+    /**
+     * Key-value map of resource tags
+     */
+    readonly tags?: {[key: string]: string};
 }
 
 /**
@@ -77,6 +81,10 @@ export interface GetComputeEnvironmentResult {
      * A short, human-readable string to provide additional details about the current status of the compute environment.
      */
     readonly statusReason: string;
+    /**
+     * Key-value map of resource tags
+     */
+    readonly tags: {[key: string]: string};
     /**
      * The type of the compute environment (for example, `MANAGED` or `UNMANAGED`).
      */

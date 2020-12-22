@@ -17,7 +17,7 @@ import * as utilities from "../utilities";
  * import * as aws from "@pulumi/aws";
  *
  * const example = new aws.secretsmanager.SecretVersion("example", {
- *     secretId: aws_secretsmanager_secret_example.id,
+ *     secretId: aws_secretsmanager_secret.example.id,
  *     secretString: "example-string-to-protect",
  * });
  * ```
@@ -30,20 +30,22 @@ import * as utilities from "../utilities";
  * import * as aws from "@pulumi/aws";
  *
  * const config = new pulumi.Config();
- * // The map here can come from other supported configurations
- * // like locals, resource attribute, map() built-in, etc.
- * const example = config.get("example") || {
+ * const example = config.getObject("example") || {
  *     key1: "value1",
  *     key2: "value2",
  * };
- *
- * const exampleSecretVersion = new aws.secretsmanager.SecretVersion("example", {
- *     secretId: aws_secretsmanager_secret_example.id,
- *     secretString: (() => {
- *         throw "tf2pulumi error: NYI: call to jsonencode";
- *         return (() => { throw "NYI: call to jsonencode"; })();
- *     })(),
+ * const exampleSecretVersion = new aws.secretsmanager.SecretVersion("exampleSecretVersion", {
+ *     secretId: aws_secretsmanager_secret.example.id,
+ *     secretString: JSON.stringify(example),
  * });
+ * ```
+ *
+ * ## Import
+ *
+ * `aws_secretsmanager_secret_version` can be imported by using the secret ID and version ID, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:secretsmanager/secretVersion:SecretVersion example 'arn:aws:secretsmanager:us-east-1:123456789012:secret:example-123456|xxxxx-xxxxxxx-xxxxxxx-xxxxx'
  * ```
  */
 export class SecretVersion extends pulumi.CustomResource {
@@ -119,7 +121,7 @@ export class SecretVersion extends pulumi.CustomResource {
             inputs["versionStages"] = state ? state.versionStages : undefined;
         } else {
             const args = argsOrState as SecretVersionArgs | undefined;
-            if (!args || args.secretId === undefined) {
+            if ((!args || args.secretId === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'secretId'");
             }
             inputs["secretBinary"] = args ? args.secretBinary : undefined;

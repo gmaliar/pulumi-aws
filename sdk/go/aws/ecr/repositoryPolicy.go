@@ -4,6 +4,7 @@
 package ecr
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -22,7 +23,7 @@ import (
 // import (
 // 	"fmt"
 //
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/ecr"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/ecr"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -33,8 +34,8 @@ import (
 // 			return err
 // 		}
 // 		_, err = ecr.NewRepositoryPolicy(ctx, "foopolicy", &ecr.RepositoryPolicyArgs{
-// 			Policy:     pulumi.String(fmt.Sprintf("%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v", "{\n", "    \"Version\": \"2008-10-17\",\n", "    \"Statement\": [\n", "        {\n", "            \"Sid\": \"new policy\",\n", "            \"Effect\": \"Allow\",\n", "            \"Principal\": \"*\",\n", "            \"Action\": [\n", "                \"ecr:GetDownloadUrlForLayer\",\n", "                \"ecr:BatchGetImage\",\n", "                \"ecr:BatchCheckLayerAvailability\",\n", "                \"ecr:PutImage\",\n", "                \"ecr:InitiateLayerUpload\",\n", "                \"ecr:UploadLayerPart\",\n", "                \"ecr:CompleteLayerUpload\",\n", "                \"ecr:DescribeRepositories\",\n", "                \"ecr:GetRepositoryPolicy\",\n", "                \"ecr:ListImages\",\n", "                \"ecr:DeleteRepository\",\n", "                \"ecr:BatchDeleteImage\",\n", "                \"ecr:SetRepositoryPolicy\",\n", "                \"ecr:DeleteRepositoryPolicy\"\n", "            ]\n", "        }\n", "    ]\n", "}\n", "\n")),
 // 			Repository: foo.Name,
+// 			Policy:     pulumi.String(fmt.Sprintf("%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v", "{\n", "    \"Version\": \"2008-10-17\",\n", "    \"Statement\": [\n", "        {\n", "            \"Sid\": \"new policy\",\n", "            \"Effect\": \"Allow\",\n", "            \"Principal\": \"*\",\n", "            \"Action\": [\n", "                \"ecr:GetDownloadUrlForLayer\",\n", "                \"ecr:BatchGetImage\",\n", "                \"ecr:BatchCheckLayerAvailability\",\n", "                \"ecr:PutImage\",\n", "                \"ecr:InitiateLayerUpload\",\n", "                \"ecr:UploadLayerPart\",\n", "                \"ecr:CompleteLayerUpload\",\n", "                \"ecr:DescribeRepositories\",\n", "                \"ecr:GetRepositoryPolicy\",\n", "                \"ecr:ListImages\",\n", "                \"ecr:DeleteRepository\",\n", "                \"ecr:BatchDeleteImage\",\n", "                \"ecr:SetRepositoryPolicy\",\n", "                \"ecr:DeleteRepositoryPolicy\"\n", "            ]\n", "        }\n", "    ]\n", "}\n")),
 // 		})
 // 		if err != nil {
 // 			return err
@@ -42,6 +43,14 @@ import (
 // 		return nil
 // 	})
 // }
+// ```
+//
+// ## Import
+//
+// ECR Repository Policy can be imported using the repository name, e.g.
+//
+// ```sh
+//  $ pulumi import aws:ecr/repositoryPolicy:RepositoryPolicy example example
 // ```
 type RepositoryPolicy struct {
 	pulumi.CustomResourceState
@@ -57,14 +66,15 @@ type RepositoryPolicy struct {
 // NewRepositoryPolicy registers a new resource with the given unique name, arguments, and options.
 func NewRepositoryPolicy(ctx *pulumi.Context,
 	name string, args *RepositoryPolicyArgs, opts ...pulumi.ResourceOption) (*RepositoryPolicy, error) {
-	if args == nil || args.Policy == nil {
-		return nil, errors.New("missing required argument 'Policy'")
-	}
-	if args == nil || args.Repository == nil {
-		return nil, errors.New("missing required argument 'Repository'")
-	}
 	if args == nil {
-		args = &RepositoryPolicyArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.Policy == nil {
+		return nil, errors.New("invalid value for required argument 'Policy'")
+	}
+	if args.Repository == nil {
+		return nil, errors.New("invalid value for required argument 'Repository'")
 	}
 	var resource RepositoryPolicy
 	err := ctx.RegisterResource("aws:ecr/repositoryPolicy:RepositoryPolicy", name, args, &resource, opts...)
@@ -126,4 +136,43 @@ type RepositoryPolicyArgs struct {
 
 func (RepositoryPolicyArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*repositoryPolicyArgs)(nil)).Elem()
+}
+
+type RepositoryPolicyInput interface {
+	pulumi.Input
+
+	ToRepositoryPolicyOutput() RepositoryPolicyOutput
+	ToRepositoryPolicyOutputWithContext(ctx context.Context) RepositoryPolicyOutput
+}
+
+func (RepositoryPolicy) ElementType() reflect.Type {
+	return reflect.TypeOf((*RepositoryPolicy)(nil)).Elem()
+}
+
+func (i RepositoryPolicy) ToRepositoryPolicyOutput() RepositoryPolicyOutput {
+	return i.ToRepositoryPolicyOutputWithContext(context.Background())
+}
+
+func (i RepositoryPolicy) ToRepositoryPolicyOutputWithContext(ctx context.Context) RepositoryPolicyOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(RepositoryPolicyOutput)
+}
+
+type RepositoryPolicyOutput struct {
+	*pulumi.OutputState
+}
+
+func (RepositoryPolicyOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*RepositoryPolicyOutput)(nil)).Elem()
+}
+
+func (o RepositoryPolicyOutput) ToRepositoryPolicyOutput() RepositoryPolicyOutput {
+	return o
+}
+
+func (o RepositoryPolicyOutput) ToRepositoryPolicyOutputWithContext(ctx context.Context) RepositoryPolicyOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(RepositoryPolicyOutput{})
 }

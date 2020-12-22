@@ -22,8 +22,8 @@ import * as utilities from "../utilities";
  *
  * // Create a new load balancer attachment
  * const baz = new aws.elb.Attachment("baz", {
- *     elb: aws_elb_bar.id,
- *     instance: aws_instance_foo.id,
+ *     elb: aws_elb.bar.id,
+ *     instance: aws_instance.foo.id,
  * });
  * ```
  *
@@ -86,10 +86,10 @@ export class Attachment extends pulumi.CustomResource {
             inputs["instance"] = state ? state.instance : undefined;
         } else {
             const args = argsOrState as AttachmentArgs | undefined;
-            if (!args || args.elb === undefined) {
+            if ((!args || args.elb === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'elb'");
             }
-            if (!args || args.instance === undefined) {
+            if ((!args || args.instance === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'instance'");
             }
             inputs["elb"] = args ? args.elb : undefined;

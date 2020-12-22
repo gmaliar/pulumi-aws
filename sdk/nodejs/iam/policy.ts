@@ -33,6 +33,14 @@ import {PolicyDocument} from "./index";
  * `,
  * });
  * ```
+ *
+ * ## Import
+ *
+ * IAM Policies can be imported using the `arn`, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:iam/policy:Policy administrator arn:aws:iam::123456789012:policy/UsersManageOwnCredentials
+ * ```
  */
 export class Policy extends pulumi.CustomResource {
     /**
@@ -108,7 +116,7 @@ export class Policy extends pulumi.CustomResource {
             inputs["policy"] = state ? state.policy : undefined;
         } else {
             const args = argsOrState as PolicyArgs | undefined;
-            if (!args || args.policy === undefined) {
+            if ((!args || args.policy === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'policy'");
             }
             inputs["description"] = args ? args.description : undefined;

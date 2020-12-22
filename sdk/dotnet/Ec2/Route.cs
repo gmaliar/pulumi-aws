@@ -37,7 +37,7 @@ namespace Pulumi.Aws.Ec2
     ///         {
     ///             DependsOn = 
     ///             {
-    ///                 "aws_route_table.testing",
+    ///                 aws_route_table.Testing,
     ///             },
     ///         });
     ///     }
@@ -56,8 +56,8 @@ namespace Pulumi.Aws.Ec2
     ///     {
     ///         var vpc = new Aws.Ec2.Vpc("vpc", new Aws.Ec2.VpcArgs
     ///         {
-    ///             AssignGeneratedIpv6CidrBlock = true,
     ///             CidrBlock = "10.1.0.0/16",
+    ///             AssignGeneratedIpv6CidrBlock = true,
     ///         });
     ///         var egress = new Aws.Ec2.EgressOnlyInternetGateway("egress", new Aws.Ec2.EgressOnlyInternetGatewayArgs
     ///         {
@@ -65,13 +65,27 @@ namespace Pulumi.Aws.Ec2
     ///         });
     ///         var route = new Aws.Ec2.Route("route", new Aws.Ec2.RouteArgs
     ///         {
+    ///             RouteTableId = "rtb-4fbb3ac4",
     ///             DestinationIpv6CidrBlock = "::/0",
     ///             EgressOnlyGatewayId = egress.Id,
-    ///             RouteTableId = "rtb-4fbb3ac4",
     ///         });
     ///     }
     /// 
     /// }
+    /// ```
+    /// 
+    /// ## Import
+    /// 
+    /// Individual routes can be imported using `ROUTETABLEID_DESTINATION`. For example, import a route in route table `rtb-656C65616E6F72` with an IPv4 destination CIDR of `10.42.0.0/16` like thisconsole
+    /// 
+    /// ```sh
+    ///  $ pulumi import aws:ec2/route:Route my_route rtb-656C65616E6F72_10.42.0.0/16
+    /// ```
+    /// 
+    ///  Import a route in route table `rtb-656C65616E6F72` with an IPv6 destination CIDR of `2620:0:2d0:200::8/125` similarlyconsole
+    /// 
+    /// ```sh
+    ///  $ pulumi import aws:ec2/route:Route my_route rtb-656C65616E6F72_2620:0:2d0:200::8/125
     /// ```
     /// </summary>
     public partial class Route : Pulumi.CustomResource
@@ -113,6 +127,12 @@ namespace Pulumi.Aws.Ec2
         public Output<string> InstanceOwnerId { get; private set; } = null!;
 
         /// <summary>
+        /// Identifier of a Outpost local gateway.
+        /// </summary>
+        [Output("localGatewayId")]
+        public Output<string> LocalGatewayId { get; private set; } = null!;
+
+        /// <summary>
         /// Identifier of a VPC NAT gateway.
         /// </summary>
         [Output("natGatewayId")]
@@ -141,6 +161,12 @@ namespace Pulumi.Aws.Ec2
         /// </summary>
         [Output("transitGatewayId")]
         public Output<string?> TransitGatewayId { get; private set; } = null!;
+
+        /// <summary>
+        /// Identifier of a VPC Endpoint.
+        /// </summary>
+        [Output("vpcEndpointId")]
+        public Output<string?> VpcEndpointId { get; private set; } = null!;
 
         /// <summary>
         /// Identifier of a VPC peering connection.
@@ -225,6 +251,12 @@ namespace Pulumi.Aws.Ec2
         public Input<string>? InstanceId { get; set; }
 
         /// <summary>
+        /// Identifier of a Outpost local gateway.
+        /// </summary>
+        [Input("localGatewayId")]
+        public Input<string>? LocalGatewayId { get; set; }
+
+        /// <summary>
         /// Identifier of a VPC NAT gateway.
         /// </summary>
         [Input("natGatewayId")]
@@ -247,6 +279,12 @@ namespace Pulumi.Aws.Ec2
         /// </summary>
         [Input("transitGatewayId")]
         public Input<string>? TransitGatewayId { get; set; }
+
+        /// <summary>
+        /// Identifier of a VPC Endpoint.
+        /// </summary>
+        [Input("vpcEndpointId")]
+        public Input<string>? VpcEndpointId { get; set; }
 
         /// <summary>
         /// Identifier of a VPC peering connection.
@@ -298,6 +336,12 @@ namespace Pulumi.Aws.Ec2
         public Input<string>? InstanceOwnerId { get; set; }
 
         /// <summary>
+        /// Identifier of a Outpost local gateway.
+        /// </summary>
+        [Input("localGatewayId")]
+        public Input<string>? LocalGatewayId { get; set; }
+
+        /// <summary>
         /// Identifier of a VPC NAT gateway.
         /// </summary>
         [Input("natGatewayId")]
@@ -326,6 +370,12 @@ namespace Pulumi.Aws.Ec2
         /// </summary>
         [Input("transitGatewayId")]
         public Input<string>? TransitGatewayId { get; set; }
+
+        /// <summary>
+        /// Identifier of a VPC Endpoint.
+        /// </summary>
+        [Input("vpcEndpointId")]
+        public Input<string>? VpcEndpointId { get; set; }
 
         /// <summary>
         /// Identifier of a VPC peering connection.

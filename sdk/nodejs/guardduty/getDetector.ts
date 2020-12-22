@@ -2,8 +2,7 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 /**
@@ -50,7 +49,7 @@ export interface GetDetectorResult {
      * The frequency of notifications sent about subsequent finding occurrences.
      */
     readonly findingPublishingFrequency: string;
-    readonly id?: string;
+    readonly id: string;
     /**
      * The service-linked role that grants GuardDuty access to the resources in the AWS account.
      */

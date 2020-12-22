@@ -2,8 +2,7 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 /**
@@ -32,18 +31,26 @@ import * as utilities from "../utilities";
  * const example = new aws.mq.Broker("example", {
  *     brokerName: "example",
  *     configuration: {
- *         id: aws_mq_configuration_test.id,
- *         revision: aws_mq_configuration_test.latestRevision,
+ *         id: aws_mq_configuration.test.id,
+ *         revision: aws_mq_configuration.test.latest_revision,
  *     },
  *     engineType: "ActiveMQ",
  *     engineVersion: "5.15.0",
  *     hostInstanceType: "mq.t2.micro",
- *     securityGroups: [aws_security_group_test.id],
+ *     securityGroups: [aws_security_group.test.id],
  *     users: [{
- *         password: "MindTheGap",
  *         username: "ExampleUser",
+ *         password: "MindTheGap",
  *     }],
  * });
+ * ```
+ *
+ * ## Import
+ *
+ * MQ Brokers can be imported using their broker id, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:mq/broker:Broker example a1b2c3d4-d5f6-7777-8888-9999aaaabbbbcccc
  * ```
  */
 export class Broker extends pulumi.CustomResource {
@@ -188,22 +195,22 @@ export class Broker extends pulumi.CustomResource {
             inputs["users"] = state ? state.users : undefined;
         } else {
             const args = argsOrState as BrokerArgs | undefined;
-            if (!args || args.brokerName === undefined) {
+            if ((!args || args.brokerName === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'brokerName'");
             }
-            if (!args || args.engineType === undefined) {
+            if ((!args || args.engineType === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'engineType'");
             }
-            if (!args || args.engineVersion === undefined) {
+            if ((!args || args.engineVersion === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'engineVersion'");
             }
-            if (!args || args.hostInstanceType === undefined) {
+            if ((!args || args.hostInstanceType === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'hostInstanceType'");
             }
-            if (!args || args.securityGroups === undefined) {
+            if ((!args || args.securityGroups === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'securityGroups'");
             }
-            if (!args || args.users === undefined) {
+            if ((!args || args.users === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'users'");
             }
             inputs["applyImmediately"] = args ? args.applyImmediately : undefined;

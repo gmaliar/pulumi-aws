@@ -14,6 +14,7 @@ import * as utilities from "../utilities";
  * import * as aws from "@pulumi/aws";
  *
  * const example = new aws.inspector.AssessmentTemplate("example", {
+ *     targetArn: aws_inspector_assessment_target.example.arn,
  *     duration: 3600,
  *     rulesPackageArns: [
  *         "arn:aws:inspector:us-west-2:758058086616:rulespackage/0-9hgA516p",
@@ -21,8 +22,15 @@ import * as utilities from "../utilities";
  *         "arn:aws:inspector:us-west-2:758058086616:rulespackage/0-JJOtZiqQ",
  *         "arn:aws:inspector:us-west-2:758058086616:rulespackage/0-vg5GGHSD",
  *     ],
- *     targetArn: aws_inspector_assessment_target_example.arn,
  * });
+ * ```
+ *
+ * ## Import
+ *
+ * `aws_inspector_assessment_template` can be imported by using the template assessment ARN, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:inspector/assessmentTemplate:AssessmentTemplate example arn:aws:inspector:us-west-2:123456789012:target/0-9IaAzhGR/template/0-WEcjR8CH
  * ```
  */
 export class AssessmentTemplate extends pulumi.CustomResource {
@@ -98,13 +106,13 @@ export class AssessmentTemplate extends pulumi.CustomResource {
             inputs["targetArn"] = state ? state.targetArn : undefined;
         } else {
             const args = argsOrState as AssessmentTemplateArgs | undefined;
-            if (!args || args.duration === undefined) {
+            if ((!args || args.duration === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'duration'");
             }
-            if (!args || args.rulesPackageArns === undefined) {
+            if ((!args || args.rulesPackageArns === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'rulesPackageArns'");
             }
-            if (!args || args.targetArn === undefined) {
+            if ((!args || args.targetArn === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'targetArn'");
             }
             inputs["duration"] = args ? args.duration : undefined;

@@ -2,218 +2,20 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 import {LaunchConfiguration, PlacementGroup} from "../ec2";
-import {Metric, MetricsGranularity} from "./index";
+import {Metric} from "./index";
 
 /**
- * Provides an AutoScaling Group resource.
+ * ## Import
  *
- * > **Note:** You must specify either `launchConfiguration`, `launchTemplate`, or `mixedInstancesPolicy`.
+ * AutoScaling Groups can be imported using the `name`, e.g.
  *
- * ## Example Usage
- *
- * ```typescript
- * import * as pulumi from "@pulumi/pulumi";
- * import * as aws from "@pulumi/aws";
- *
- * const test = new aws.ec2.PlacementGroup("test", {
- *     strategy: "cluster",
- * });
- * const bar = new aws.autoscaling.Group("bar", {
- *     desiredCapacity: 4,
- *     forceDelete: true,
- *     healthCheckGracePeriod: 300,
- *     healthCheckType: "ELB",
- *     initialLifecycleHooks: [{
- *         defaultResult: "CONTINUE",
- *         heartbeatTimeout: 2000,
- *         lifecycleTransition: "autoscaling:EC2_INSTANCE_LAUNCHING",
- *         name: "foobar",
- *         notificationMetadata: `{
- *   "foo": "bar"
- * }
- * `,
- *         notificationTargetArn: "arn:aws:sqs:us-east-1:444455556666:queue1*",
- *         roleArn: "arn:aws:iam::123456789012:role/S3Access",
- *     }],
- *     launchConfiguration: aws_launch_configuration_foobar.name,
- *     maxSize: 5,
- *     minSize: 2,
- *     placementGroup: test.id,
- *     tags: [
- *         {
- *             key: "foo",
- *             propagateAtLaunch: true,
- *             value: "bar",
- *         },
- *         {
- *             key: "lorem",
- *             propagateAtLaunch: false,
- *             value: "ipsum",
- *         },
- *     ],
- *     vpcZoneIdentifiers: [
- *         aws_subnet_example1.id,
- *         aws_subnet_example2.id,
- *     ],
- * }, { timeouts: {
- *     delete: "15m",
- * } });
+ * ```sh
+ *  $ pulumi import aws:autoscaling/group:Group web web-asg
  * ```
- * ### With Latest Version Of Launch Template
- *
- * ```typescript
- * import * as pulumi from "@pulumi/pulumi";
- * import * as aws from "@pulumi/aws";
- *
- * const foobar = new aws.ec2.LaunchTemplate("foobar", {
- *     imageId: "ami-1a2b3c",
- *     instanceType: "t2.micro",
- *     namePrefix: "foobar",
- * });
- * const bar = new aws.autoscaling.Group("bar", {
- *     availabilityZones: ["us-east-1a"],
- *     desiredCapacity: 1,
- *     launchTemplate: {
- *         id: foobar.id,
- *         version: "$Latest",
- *     },
- *     maxSize: 1,
- *     minSize: 1,
- * });
- * ```
- * ### Mixed Instances Policy
- *
- * ```typescript
- * import * as pulumi from "@pulumi/pulumi";
- * import * as aws from "@pulumi/aws";
- *
- * const exampleLaunchTemplate = new aws.ec2.LaunchTemplate("example", {
- *     imageId: aws_ami_example.id,
- *     instanceType: "c5.large",
- *     namePrefix: "example",
- * });
- * const exampleGroup = new aws.autoscaling.Group("example", {
- *     availabilityZones: ["us-east-1a"],
- *     desiredCapacity: 1,
- *     maxSize: 1,
- *     minSize: 1,
- *     mixedInstancesPolicy: {
- *         launchTemplate: {
- *             launchTemplateSpecification: {
- *                 launchTemplateId: exampleLaunchTemplate.id,
- *             },
- *             overrides: [
- *                 {
- *                     instanceType: "c4.large",
- *                     weightedCapacity: "3",
- *                 },
- *                 {
- *                     instanceType: "c3.large",
- *                     weightedCapacity: "2",
- *                 },
- *             ],
- *         },
- *     },
- * });
- * ```
- * ## Interpolated tags
- *
- * ```typescript
- * import * as pulumi from "@pulumi/pulumi";
- * import * as aws from "@pulumi/aws";
- *
- * const config = new pulumi.Config();
- * const extraTags = config.get("extraTags") || [
- *     {
- *         key: "Foo",
- *         propagateAtLaunch: true,
- *         value: "Bar",
- *     },
- *     {
- *         key: "Baz",
- *         propagateAtLaunch: true,
- *         value: "Bam",
- *     },
- * ];
- *
- * const bar = new aws.autoscaling.Group("bar", {
- *     launchConfiguration: aws_launch_configuration_foobar.name,
- *     maxSize: 5,
- *     minSize: 2,
- *     tagsCollection: [{"key": "interpolation1", "value": "value3", "propagate_at_launch": true}, {"key": "interpolation2", "value": "value4", "propagate_at_launch": true}].concat(extraTags),
- *     vpcZoneIdentifiers: [
- *         aws_subnet_example1.id,
- *         aws_subnet_example2.id,
- *     ],
- * });
- * ```
- *
- * ## Waiting for Capacity
- *
- * A newly-created ASG is initially empty and begins to scale to `minSize` (or
- * `desiredCapacity`, if specified) by launching instances using the provided
- * Launch Configuration. These instances take time to launch and boot.
- *
- * On ASG Update, changes to these values also take time to result in the target
- * number of instances providing service.
- *
- * This provider provides two mechanisms to help consistently manage ASG scale up
- * time across dependent resources.
- *
- * #### Waiting for ASG Capacity
- *
- * The first is default behavior. This provider waits after ASG creation for
- * `minSize` (or `desiredCapacity`, if specified) healthy instances to show up
- * in the ASG before continuing.
- *
- * If `minSize` or `desiredCapacity` are changed in a subsequent update,
- * this provider will also wait for the correct number of healthy instances before
- * continuing.
- *
- * This provider considers an instance "healthy" when the ASG reports `HealthStatus:
- * "Healthy"` and `LifecycleState: "InService"`. See the [AWS AutoScaling
- * Docs](https://docs.aws.amazon.com/AutoScaling/latest/DeveloperGuide/AutoScalingGroupLifecycle.html)
- * for more information on an ASG's lifecycle.
- *
- * This provider will wait for healthy instances for up to
- * `waitForCapacityTimeout`. If ASG creation is taking more than a few minutes,
- * it's worth investigating for scaling activity errors, which can be caused by
- * problems with the selected Launch Configuration.
- *
- * Setting `waitForCapacityTimeout` to `"0"` disables ASG Capacity waiting.
- *
- * #### Waiting for ELB Capacity
- *
- * The second mechanism is optional, and affects ASGs with attached ELBs specified
- * via the `loadBalancers` attribute or with ALBs specified with `targetGroupArns`.
- *
- * The `minElbCapacity` parameter causes this provider to wait for at least the
- * requested number of instances to show up `"InService"` in all attached ELBs
- * during ASG creation.  It has no effect on ASG updates.
- *
- * If `waitForElbCapacity` is set, this provider will wait for exactly that number
- * of Instances to be `"InService"` in all attached ELBs on both creation and
- * updates.
- *
- * These parameters can be used to ensure that service is being provided before
- * this provider moves on. If new instances don't pass the ELB's health checks for any
- * reason, the deployment will time out, and the ASG will be marked as
- * tainted (i.e. marked to be destroyed in a follow up run).
- *
- * As with ASG Capacity, this provider will wait for up to `waitForCapacityTimeout`
- * for the proper number of instances to be healthy.
- *
- * #### Troubleshooting Capacity Waiting Timeouts
- *
- * If ASG creation takes more than a few minutes, this could indicate one of a
- * number of configuration problems. See the [AWS Docs on Load Balancer
- * Troubleshooting](https://docs.aws.amazon.com/ElasticLoadBalancing/latest/DeveloperGuide/elb-troubleshooting.html)
- * for more information.
  */
 export class Group extends pulumi.CustomResource {
     /**
@@ -248,9 +50,13 @@ export class Group extends pulumi.CustomResource {
      */
     public /*out*/ readonly arn!: pulumi.Output<string>;
     /**
-     * A list of one or more availability zones for the group. This parameter should not be specified when using `vpcZoneIdentifier`.
+     * A list of one or more availability zones for the group. Used for EC2-Classic and default subnets when not specified with `vpcZoneIdentifier` argument. Conflicts with `vpcZoneIdentifier`.
      */
     public readonly availabilityZones!: pulumi.Output<string[]>;
+    /**
+     * Indicates whether capacity rebalance is enabled. Otherwise, capacity rebalance is disabled.
+     */
+    public readonly capacityRebalance!: pulumi.Output<boolean | undefined>;
     /**
      * The amount of time, in seconds, after a scaling activity completes before another scaling activity can start.
      */
@@ -303,7 +109,7 @@ export class Group extends pulumi.CustomResource {
      * A list of elastic load balancer names to add to the autoscaling
      * group names. Only valid for classic load balancers. For ALBs, use `targetGroupArns` instead.
      */
-    public readonly loadBalancers!: pulumi.Output<string[]>;
+    public readonly loadBalancers!: pulumi.Output<string[] | undefined>;
     /**
      * The maximum amount of time, in seconds, that an instance can be in service, values must be either equal to 0 or between 604800 and 31536000 seconds.
      */
@@ -369,15 +175,15 @@ export class Group extends pulumi.CustomResource {
      */
     public readonly tagsCollection!: pulumi.Output<{[key: string]: string}[] | undefined>;
     /**
-     * A list of `aws.alb.TargetGroup` ARNs, for use with Application or Network Load Balancing.
+     * A set of `aws.alb.TargetGroup` ARNs, for use with Application or Network Load Balancing.
      */
-    public readonly targetGroupArns!: pulumi.Output<string[]>;
+    public readonly targetGroupArns!: pulumi.Output<string[] | undefined>;
     /**
      * A list of policies to decide how the instances in the auto scale group should be terminated. The allowed values are `OldestInstance`, `NewestInstance`, `OldestLaunchConfiguration`, `ClosestToNextInstanceHour`, `OldestLaunchTemplate`, `AllocationStrategy`, `Default`.
      */
     public readonly terminationPolicies!: pulumi.Output<string[] | undefined>;
     /**
-     * A list of subnet IDs to launch resources in.
+     * A list of subnet IDs to launch resources in. Subnets automatically determine which availability zones the group will reside. Conflicts with `availabilityZones`.
      */
     public readonly vpcZoneIdentifiers!: pulumi.Output<string[]>;
     /**
@@ -411,6 +217,7 @@ export class Group extends pulumi.CustomResource {
             const state = argsOrState as GroupState | undefined;
             inputs["arn"] = state ? state.arn : undefined;
             inputs["availabilityZones"] = state ? state.availabilityZones : undefined;
+            inputs["capacityRebalance"] = state ? state.capacityRebalance : undefined;
             inputs["defaultCooldown"] = state ? state.defaultCooldown : undefined;
             inputs["desiredCapacity"] = state ? state.desiredCapacity : undefined;
             inputs["enabledMetrics"] = state ? state.enabledMetrics : undefined;
@@ -442,13 +249,14 @@ export class Group extends pulumi.CustomResource {
             inputs["waitForElbCapacity"] = state ? state.waitForElbCapacity : undefined;
         } else {
             const args = argsOrState as GroupArgs | undefined;
-            if (!args || args.maxSize === undefined) {
+            if ((!args || args.maxSize === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'maxSize'");
             }
-            if (!args || args.minSize === undefined) {
+            if ((!args || args.minSize === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'minSize'");
             }
             inputs["availabilityZones"] = args ? args.availabilityZones : undefined;
+            inputs["capacityRebalance"] = args ? args.capacityRebalance : undefined;
             inputs["defaultCooldown"] = args ? args.defaultCooldown : undefined;
             inputs["desiredCapacity"] = args ? args.desiredCapacity : undefined;
             inputs["enabledMetrics"] = args ? args.enabledMetrics : undefined;
@@ -500,9 +308,13 @@ export interface GroupState {
      */
     readonly arn?: pulumi.Input<string>;
     /**
-     * A list of one or more availability zones for the group. This parameter should not be specified when using `vpcZoneIdentifier`.
+     * A list of one or more availability zones for the group. Used for EC2-Classic and default subnets when not specified with `vpcZoneIdentifier` argument. Conflicts with `vpcZoneIdentifier`.
      */
     readonly availabilityZones?: pulumi.Input<pulumi.Input<string>[]>;
+    /**
+     * Indicates whether capacity rebalance is enabled. Otherwise, capacity rebalance is disabled.
+     */
+    readonly capacityRebalance?: pulumi.Input<boolean>;
     /**
      * The amount of time, in seconds, after a scaling activity completes before another scaling activity can start.
      */
@@ -567,7 +379,7 @@ export interface GroupState {
     /**
      * The granularity to associate with the metrics to collect. The only valid value is `1Minute`. Default is `1Minute`.
      */
-    readonly metricsGranularity?: pulumi.Input<string | MetricsGranularity>;
+    readonly metricsGranularity?: pulumi.Input<string | enums.autoscaling.MetricsGranularity>;
     /**
      * Setting this causes this provider to wait for
      * this number of instances from this autoscaling group to show up healthy in the
@@ -621,7 +433,7 @@ export interface GroupState {
      */
     readonly tagsCollection?: pulumi.Input<pulumi.Input<{[key: string]: pulumi.Input<string>}>[]>;
     /**
-     * A list of `aws.alb.TargetGroup` ARNs, for use with Application or Network Load Balancing.
+     * A set of `aws.alb.TargetGroup` ARNs, for use with Application or Network Load Balancing.
      */
     readonly targetGroupArns?: pulumi.Input<pulumi.Input<string>[]>;
     /**
@@ -629,7 +441,7 @@ export interface GroupState {
      */
     readonly terminationPolicies?: pulumi.Input<pulumi.Input<string>[]>;
     /**
-     * A list of subnet IDs to launch resources in.
+     * A list of subnet IDs to launch resources in. Subnets automatically determine which availability zones the group will reside. Conflicts with `availabilityZones`.
      */
     readonly vpcZoneIdentifiers?: pulumi.Input<pulumi.Input<string>[]>;
     /**
@@ -655,9 +467,13 @@ export interface GroupState {
  */
 export interface GroupArgs {
     /**
-     * A list of one or more availability zones for the group. This parameter should not be specified when using `vpcZoneIdentifier`.
+     * A list of one or more availability zones for the group. Used for EC2-Classic and default subnets when not specified with `vpcZoneIdentifier` argument. Conflicts with `vpcZoneIdentifier`.
      */
     readonly availabilityZones?: pulumi.Input<pulumi.Input<string>[]>;
+    /**
+     * Indicates whether capacity rebalance is enabled. Otherwise, capacity rebalance is disabled.
+     */
+    readonly capacityRebalance?: pulumi.Input<boolean>;
     /**
      * The amount of time, in seconds, after a scaling activity completes before another scaling activity can start.
      */
@@ -722,7 +538,7 @@ export interface GroupArgs {
     /**
      * The granularity to associate with the metrics to collect. The only valid value is `1Minute`. Default is `1Minute`.
      */
-    readonly metricsGranularity?: pulumi.Input<string | MetricsGranularity>;
+    readonly metricsGranularity?: pulumi.Input<string | enums.autoscaling.MetricsGranularity>;
     /**
      * Setting this causes this provider to wait for
      * this number of instances from this autoscaling group to show up healthy in the
@@ -776,7 +592,7 @@ export interface GroupArgs {
      */
     readonly tagsCollection?: pulumi.Input<pulumi.Input<{[key: string]: pulumi.Input<string>}>[]>;
     /**
-     * A list of `aws.alb.TargetGroup` ARNs, for use with Application or Network Load Balancing.
+     * A set of `aws.alb.TargetGroup` ARNs, for use with Application or Network Load Balancing.
      */
     readonly targetGroupArns?: pulumi.Input<pulumi.Input<string>[]>;
     /**
@@ -784,7 +600,7 @@ export interface GroupArgs {
      */
     readonly terminationPolicies?: pulumi.Input<pulumi.Input<string>[]>;
     /**
-     * A list of subnet IDs to launch resources in.
+     * A list of subnet IDs to launch resources in. Subnets automatically determine which availability zones the group will reside. Conflicts with `availabilityZones`.
      */
     readonly vpcZoneIdentifiers?: pulumi.Input<pulumi.Input<string>[]>;
     /**

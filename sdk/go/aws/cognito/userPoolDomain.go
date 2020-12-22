@@ -4,6 +4,7 @@
 package cognito
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -19,7 +20,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/cognito"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/cognito"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -46,8 +47,8 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/cognito"
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/route53"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/cognito"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/route53"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -58,8 +59,8 @@ import (
 // 			return err
 // 		}
 // 		main, err := cognito.NewUserPoolDomain(ctx, "main", &cognito.UserPoolDomainArgs{
-// 			CertificateArn: pulumi.String(aws_acm_certificate.Cert.Arn),
 // 			Domain:         pulumi.String("example-domain.example.com"),
+// 			CertificateArn: pulumi.Any(aws_acm_certificate.Cert.Arn),
 // 			UserPoolId:     exampleUserPool.ID(),
 // 		})
 // 		if err != nil {
@@ -73,6 +74,9 @@ import (
 // 			return err
 // 		}
 // 		_, err = route53.NewRecord(ctx, "auth_cognito_A", &route53.RecordArgs{
+// 			Name:   main.Domain,
+// 			Type:   pulumi.String("A"),
+// 			ZoneId: pulumi.String(exampleZone.ZoneId),
 // 			Aliases: route53.RecordAliasArray{
 // 				&route53.RecordAliasArgs{
 // 					EvaluateTargetHealth: pulumi.Bool(false),
@@ -80,9 +84,6 @@ import (
 // 					ZoneId:               pulumi.String("Z2FDTNDATAQYW2"),
 // 				},
 // 			},
-// 			Name:   main.Domain,
-// 			Type:   pulumi.String("A"),
-// 			ZoneId: pulumi.String(exampleZone.ZoneId),
 // 		})
 // 		if err != nil {
 // 			return err
@@ -90,6 +91,14 @@ import (
 // 		return nil
 // 	})
 // }
+// ```
+//
+// ## Import
+//
+// Cognito User Pool Domains can be imported using the `domain`, e.g.
+//
+// ```sh
+//  $ pulumi import aws:cognito/userPoolDomain:UserPoolDomain main <domain>
 // ```
 type UserPoolDomain struct {
 	pulumi.CustomResourceState
@@ -113,14 +122,15 @@ type UserPoolDomain struct {
 // NewUserPoolDomain registers a new resource with the given unique name, arguments, and options.
 func NewUserPoolDomain(ctx *pulumi.Context,
 	name string, args *UserPoolDomainArgs, opts ...pulumi.ResourceOption) (*UserPoolDomain, error) {
-	if args == nil || args.Domain == nil {
-		return nil, errors.New("missing required argument 'Domain'")
-	}
-	if args == nil || args.UserPoolId == nil {
-		return nil, errors.New("missing required argument 'UserPoolId'")
-	}
 	if args == nil {
-		args = &UserPoolDomainArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.Domain == nil {
+		return nil, errors.New("invalid value for required argument 'Domain'")
+	}
+	if args.UserPoolId == nil {
+		return nil, errors.New("invalid value for required argument 'UserPoolId'")
 	}
 	var resource UserPoolDomain
 	err := ctx.RegisterResource("aws:cognito/userPoolDomain:UserPoolDomain", name, args, &resource, opts...)
@@ -202,4 +212,43 @@ type UserPoolDomainArgs struct {
 
 func (UserPoolDomainArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*userPoolDomainArgs)(nil)).Elem()
+}
+
+type UserPoolDomainInput interface {
+	pulumi.Input
+
+	ToUserPoolDomainOutput() UserPoolDomainOutput
+	ToUserPoolDomainOutputWithContext(ctx context.Context) UserPoolDomainOutput
+}
+
+func (UserPoolDomain) ElementType() reflect.Type {
+	return reflect.TypeOf((*UserPoolDomain)(nil)).Elem()
+}
+
+func (i UserPoolDomain) ToUserPoolDomainOutput() UserPoolDomainOutput {
+	return i.ToUserPoolDomainOutputWithContext(context.Background())
+}
+
+func (i UserPoolDomain) ToUserPoolDomainOutputWithContext(ctx context.Context) UserPoolDomainOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(UserPoolDomainOutput)
+}
+
+type UserPoolDomainOutput struct {
+	*pulumi.OutputState
+}
+
+func (UserPoolDomainOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*UserPoolDomainOutput)(nil)).Elem()
+}
+
+func (o UserPoolDomainOutput) ToUserPoolDomainOutput() UserPoolDomainOutput {
+	return o
+}
+
+func (o UserPoolDomainOutput) ToUserPoolDomainOutputWithContext(ctx context.Context) UserPoolDomainOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(UserPoolDomainOutput{})
 }

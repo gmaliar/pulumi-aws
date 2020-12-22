@@ -25,6 +25,7 @@ namespace Pulumi.Aws.ApiGateway
     ///         var myapi = new Aws.ApiGateway.RestApi("myapi", new Aws.ApiGateway.RestApiArgs
     ///         {
     ///         });
+    ///         // ...
     ///         var dev = new Aws.ApiGateway.Deployment("dev", new Aws.ApiGateway.DeploymentArgs
     ///         {
     ///             RestApi = myapi.Id,
@@ -37,6 +38,8 @@ namespace Pulumi.Aws.ApiGateway
     ///         });
     ///         var myUsagePlan = new Aws.ApiGateway.UsagePlan("myUsagePlan", new Aws.ApiGateway.UsagePlanArgs
     ///         {
+    ///             Description = "my description",
+    ///             ProductCode = "MYCODE",
     ///             ApiStages = 
     ///             {
     ///                 new Aws.ApiGateway.Inputs.UsagePlanApiStageArgs
@@ -50,8 +53,6 @@ namespace Pulumi.Aws.ApiGateway
     ///                     Stage = prod.StageName,
     ///                 },
     ///             },
-    ///             Description = "my description",
-    ///             ProductCode = "MYCODE",
     ///             QuotaSettings = new Aws.ApiGateway.Inputs.UsagePlanQuotaSettingsArgs
     ///             {
     ///                 Limit = 20,
@@ -67,6 +68,14 @@ namespace Pulumi.Aws.ApiGateway
     ///     }
     /// 
     /// }
+    /// ```
+    /// 
+    /// ## Import
+    /// 
+    /// AWS API Gateway Usage Plan can be imported using the `id`, e.g.
+    /// 
+    /// ```sh
+    ///  $ pulumi import aws:apigateway/usagePlan:UsagePlan myusageplan &lt;usage_plan_id&gt;
     /// ```
     /// </summary>
     public partial class UsagePlan : Pulumi.CustomResource
@@ -96,7 +105,7 @@ namespace Pulumi.Aws.ApiGateway
         public Output<string> Name { get; private set; } = null!;
 
         /// <summary>
-        /// The AWS Markeplace product identifier to associate with the usage plan as a SaaS product on AWS Marketplace.
+        /// The AWS Marketplace product identifier to associate with the usage plan as a SaaS product on AWS Marketplace.
         /// </summary>
         [Output("productCode")]
         public Output<string?> ProductCode { get; private set; } = null!;
@@ -190,7 +199,7 @@ namespace Pulumi.Aws.ApiGateway
         public Input<string>? Name { get; set; }
 
         /// <summary>
-        /// The AWS Markeplace product identifier to associate with the usage plan as a SaaS product on AWS Marketplace.
+        /// The AWS Marketplace product identifier to associate with the usage plan as a SaaS product on AWS Marketplace.
         /// </summary>
         [Input("productCode")]
         public Input<string>? ProductCode { get; set; }
@@ -257,7 +266,7 @@ namespace Pulumi.Aws.ApiGateway
         public Input<string>? Name { get; set; }
 
         /// <summary>
-        /// The AWS Markeplace product identifier to associate with the usage plan as a SaaS product on AWS Marketplace.
+        /// The AWS Marketplace product identifier to associate with the usage plan as a SaaS product on AWS Marketplace.
         /// </summary>
         [Input("productCode")]
         public Input<string>? ProductCode { get; set; }

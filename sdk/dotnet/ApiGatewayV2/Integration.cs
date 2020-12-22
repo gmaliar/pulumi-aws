@@ -46,24 +46,59 @@ namespace Pulumi.Aws.ApiGatewayV2
     ///         var exampleFunction = new Aws.Lambda.Function("exampleFunction", new Aws.Lambda.FunctionArgs
     ///         {
     ///             Code = new FileArchive("example.zip"),
-    ///             Handler = "index.handler",
     ///             Role = aws_iam_role.Example.Arn,
-    ///             Runtime = "nodejs10.x",
+    ///             Handler = "index.handler",
+    ///             Runtime = "nodejs12.x",
     ///         });
     ///         var exampleIntegration = new Aws.ApiGatewayV2.Integration("exampleIntegration", new Aws.ApiGatewayV2.IntegrationArgs
     ///         {
     ///             ApiId = aws_apigatewayv2_api.Example.Id,
+    ///             IntegrationType = "AWS",
     ///             ConnectionType = "INTERNET",
     ///             ContentHandlingStrategy = "CONVERT_TO_TEXT",
     ///             Description = "Lambda example",
     ///             IntegrationMethod = "POST",
-    ///             IntegrationType = "AWS",
     ///             IntegrationUri = exampleFunction.InvokeArn,
     ///             PassthroughBehavior = "WHEN_NO_MATCH",
     ///         });
     ///     }
     /// 
     /// }
+    /// ```
+    /// ### AWS Service Integration
+    /// 
+    /// ```csharp
+    /// using Pulumi;
+    /// using Aws = Pulumi.Aws;
+    /// 
+    /// class MyStack : Stack
+    /// {
+    ///     public MyStack()
+    ///     {
+    ///         var example = new Aws.ApiGatewayV2.Integration("example", new Aws.ApiGatewayV2.IntegrationArgs
+    ///         {
+    ///             ApiId = aws_apigatewayv2_api.Example.Id,
+    ///             CredentialsArn = aws_iam_role.Example.Arn,
+    ///             Description = "SQS example",
+    ///             IntegrationType = "AWS_PROXY",
+    ///             IntegrationSubtype = "SQS-SendMessage",
+    ///             RequestParameters = 
+    ///             {
+    ///                 { "QueueUrl", "$request.header.queueUrl" },
+    ///                 { "MessageBody", "$request.body.message" },
+    ///             },
+    ///         });
+    ///     }
+    /// 
+    /// }
+    /// ```
+    /// 
+    /// ## Import
+    /// 
+    /// `aws_apigatewayv2_integration` can be imported by using the API identifier and integration identifier, e.g.
+    /// 
+    /// ```sh
+    ///  $ pulumi import aws:apigatewayv2/integration:Integration example aabbccddee/1122334
     /// ```
     /// </summary>
     public partial class Integration : Pulumi.CustomResource
@@ -75,7 +110,7 @@ namespace Pulumi.Aws.ApiGatewayV2
         public Output<string> ApiId { get; private set; } = null!;
 
         /// <summary>
-        /// The ID of the VPC link for a private integration. Supported only for HTTP APIs.
+        /// The ID of the VPC link for a private integration. Supported only for HTTP APIs. Must be between 1 and 1024 characters in length.
         /// </summary>
         [Output("connectionId")]
         public Output<string?> ConnectionId { get; private set; } = null!;
@@ -117,6 +152,12 @@ namespace Pulumi.Aws.ApiGatewayV2
         public Output<string> IntegrationResponseSelectionExpression { get; private set; } = null!;
 
         /// <summary>
+        /// Specifies the AWS service action to invoke. Supported only for HTTP APIs when `integration_type` is `AWS_PROXY`. See the [AWS service integration reference](https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api-develop-integrations-aws-services-reference.html) documentation for supported values. Must be between 1 and 128 characters in length.
+        /// </summary>
+        [Output("integrationSubtype")]
+        public Output<string?> IntegrationSubtype { get; private set; } = null!;
+
+        /// <summary>
         /// The integration type of an integration.
         /// Valid values: `AWS`, `AWS_PROXY`, `HTTP`, `HTTP_PROXY`, `MOCK`.
         /// </summary>
@@ -144,6 +185,13 @@ namespace Pulumi.Aws.ApiGatewayV2
         public Output<string?> PayloadFormatVersion { get; private set; } = null!;
 
         /// <summary>
+        /// A key-value map specifying request parameters that are passed from the method request to the backend.
+        /// Supported only for WebSocket APIs.
+        /// </summary>
+        [Output("requestParameters")]
+        public Output<ImmutableDictionary<string, string>?> RequestParameters { get; private set; } = null!;
+
+        /// <summary>
         /// A map of Velocity templates that are applied on the request payload based on the value of the Content-Type header sent by the client. Supported only for WebSocket APIs.
         /// </summary>
         [Output("requestTemplates")]
@@ -155,11 +203,14 @@ namespace Pulumi.Aws.ApiGatewayV2
         [Output("templateSelectionExpression")]
         public Output<string?> TemplateSelectionExpression { get; private set; } = null!;
 
-        /// <summary>
-        /// Custom timeout between 50 and 29,000 milliseconds. The default value is 29,000 milliseconds or 29 seconds.
-        /// </summary>
         [Output("timeoutMilliseconds")]
-        public Output<int?> TimeoutMilliseconds { get; private set; } = null!;
+        public Output<int> TimeoutMilliseconds { get; private set; } = null!;
+
+        /// <summary>
+        /// The TLS configuration for a private integration. Supported only for HTTP APIs.
+        /// </summary>
+        [Output("tlsConfig")]
+        public Output<Outputs.IntegrationTlsConfig?> TlsConfig { get; private set; } = null!;
 
 
         /// <summary>
@@ -214,7 +265,7 @@ namespace Pulumi.Aws.ApiGatewayV2
         public Input<string> ApiId { get; set; } = null!;
 
         /// <summary>
-        /// The ID of the VPC link for a private integration. Supported only for HTTP APIs.
+        /// The ID of the VPC link for a private integration. Supported only for HTTP APIs. Must be between 1 and 1024 characters in length.
         /// </summary>
         [Input("connectionId")]
         public Input<string>? ConnectionId { get; set; }
@@ -250,6 +301,12 @@ namespace Pulumi.Aws.ApiGatewayV2
         public Input<string>? IntegrationMethod { get; set; }
 
         /// <summary>
+        /// Specifies the AWS service action to invoke. Supported only for HTTP APIs when `integration_type` is `AWS_PROXY`. See the [AWS service integration reference](https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api-develop-integrations-aws-services-reference.html) documentation for supported values. Must be between 1 and 128 characters in length.
+        /// </summary>
+        [Input("integrationSubtype")]
+        public Input<string>? IntegrationSubtype { get; set; }
+
+        /// <summary>
         /// The integration type of an integration.
         /// Valid values: `AWS`, `AWS_PROXY`, `HTTP`, `HTTP_PROXY`, `MOCK`.
         /// </summary>
@@ -276,6 +333,19 @@ namespace Pulumi.Aws.ApiGatewayV2
         [Input("payloadFormatVersion")]
         public Input<string>? PayloadFormatVersion { get; set; }
 
+        [Input("requestParameters")]
+        private InputMap<string>? _requestParameters;
+
+        /// <summary>
+        /// A key-value map specifying request parameters that are passed from the method request to the backend.
+        /// Supported only for WebSocket APIs.
+        /// </summary>
+        public InputMap<string> RequestParameters
+        {
+            get => _requestParameters ?? (_requestParameters = new InputMap<string>());
+            set => _requestParameters = value;
+        }
+
         [Input("requestTemplates")]
         private InputMap<string>? _requestTemplates;
 
@@ -294,11 +364,14 @@ namespace Pulumi.Aws.ApiGatewayV2
         [Input("templateSelectionExpression")]
         public Input<string>? TemplateSelectionExpression { get; set; }
 
-        /// <summary>
-        /// Custom timeout between 50 and 29,000 milliseconds. The default value is 29,000 milliseconds or 29 seconds.
-        /// </summary>
         [Input("timeoutMilliseconds")]
         public Input<int>? TimeoutMilliseconds { get; set; }
+
+        /// <summary>
+        /// The TLS configuration for a private integration. Supported only for HTTP APIs.
+        /// </summary>
+        [Input("tlsConfig")]
+        public Input<Inputs.IntegrationTlsConfigArgs>? TlsConfig { get; set; }
 
         public IntegrationArgs()
         {
@@ -314,7 +387,7 @@ namespace Pulumi.Aws.ApiGatewayV2
         public Input<string>? ApiId { get; set; }
 
         /// <summary>
-        /// The ID of the VPC link for a private integration. Supported only for HTTP APIs.
+        /// The ID of the VPC link for a private integration. Supported only for HTTP APIs. Must be between 1 and 1024 characters in length.
         /// </summary>
         [Input("connectionId")]
         public Input<string>? ConnectionId { get; set; }
@@ -356,6 +429,12 @@ namespace Pulumi.Aws.ApiGatewayV2
         public Input<string>? IntegrationResponseSelectionExpression { get; set; }
 
         /// <summary>
+        /// Specifies the AWS service action to invoke. Supported only for HTTP APIs when `integration_type` is `AWS_PROXY`. See the [AWS service integration reference](https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api-develop-integrations-aws-services-reference.html) documentation for supported values. Must be between 1 and 128 characters in length.
+        /// </summary>
+        [Input("integrationSubtype")]
+        public Input<string>? IntegrationSubtype { get; set; }
+
+        /// <summary>
         /// The integration type of an integration.
         /// Valid values: `AWS`, `AWS_PROXY`, `HTTP`, `HTTP_PROXY`, `MOCK`.
         /// </summary>
@@ -382,6 +461,19 @@ namespace Pulumi.Aws.ApiGatewayV2
         [Input("payloadFormatVersion")]
         public Input<string>? PayloadFormatVersion { get; set; }
 
+        [Input("requestParameters")]
+        private InputMap<string>? _requestParameters;
+
+        /// <summary>
+        /// A key-value map specifying request parameters that are passed from the method request to the backend.
+        /// Supported only for WebSocket APIs.
+        /// </summary>
+        public InputMap<string> RequestParameters
+        {
+            get => _requestParameters ?? (_requestParameters = new InputMap<string>());
+            set => _requestParameters = value;
+        }
+
         [Input("requestTemplates")]
         private InputMap<string>? _requestTemplates;
 
@@ -400,11 +492,14 @@ namespace Pulumi.Aws.ApiGatewayV2
         [Input("templateSelectionExpression")]
         public Input<string>? TemplateSelectionExpression { get; set; }
 
-        /// <summary>
-        /// Custom timeout between 50 and 29,000 milliseconds. The default value is 29,000 milliseconds or 29 seconds.
-        /// </summary>
         [Input("timeoutMilliseconds")]
         public Input<int>? TimeoutMilliseconds { get; set; }
+
+        /// <summary>
+        /// The TLS configuration for a private integration. Supported only for HTTP APIs.
+        /// </summary>
+        [Input("tlsConfig")]
+        public Input<Inputs.IntegrationTlsConfigGetArgs>? TlsConfig { get; set; }
 
         public IntegrationState()
         {

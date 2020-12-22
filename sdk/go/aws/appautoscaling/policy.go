@@ -4,6 +4,7 @@
 package appautoscaling
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -19,7 +20,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/appautoscaling"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/appautoscaling"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -60,7 +61,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/appautoscaling"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/appautoscaling"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -100,6 +101,30 @@ import (
 // 	})
 // }
 // ```
+// ### Preserve desired count when updating an autoscaled ECS Service
+//
+// ```go
+// package main
+//
+// import (
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/ecs"
+// 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
+// )
+//
+// func main() {
+// 	pulumi.Run(func(ctx *pulumi.Context) error {
+// 		_, err := ecs.NewService(ctx, "ecsService", &ecs.ServiceArgs{
+// 			Cluster:        pulumi.String("clusterName"),
+// 			TaskDefinition: pulumi.String("taskDefinitionFamily:1"),
+// 			DesiredCount:   pulumi.Int(2),
+// 		})
+// 		if err != nil {
+// 			return err
+// 		}
+// 		return nil
+// 	})
+// }
+// ```
 // ### Aurora Read Replica Autoscaling
 //
 // ```go
@@ -108,34 +133,34 @@ import (
 // import (
 // 	"fmt"
 //
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/appautoscaling"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/appautoscaling"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
 // func main() {
 // 	pulumi.Run(func(ctx *pulumi.Context) error {
 // 		replicasTarget, err := appautoscaling.NewTarget(ctx, "replicasTarget", &appautoscaling.TargetArgs{
-// 			MaxCapacity:       pulumi.Int(15),
-// 			MinCapacity:       pulumi.Int(1),
-// 			ResourceId:        pulumi.String(fmt.Sprintf("%v%v", "cluster:", aws_rds_cluster.Example.Id)),
-// 			ScalableDimension: pulumi.String("rds:cluster:ReadReplicaCount"),
 // 			ServiceNamespace:  pulumi.String("rds"),
+// 			ScalableDimension: pulumi.String("rds:cluster:ReadReplicaCount"),
+// 			ResourceId:        pulumi.String(fmt.Sprintf("%v%v", "cluster:", aws_rds_cluster.Example.Id)),
+// 			MinCapacity:       pulumi.Int(1),
+// 			MaxCapacity:       pulumi.Int(15),
 // 		})
 // 		if err != nil {
 // 			return err
 // 		}
 // 		_, err = appautoscaling.NewPolicy(ctx, "replicasPolicy", &appautoscaling.PolicyArgs{
-// 			PolicyType:        pulumi.String("TargetTrackingScaling"),
-// 			ResourceId:        replicasTarget.ResourceId,
-// 			ScalableDimension: replicasTarget.ScalableDimension,
 // 			ServiceNamespace:  replicasTarget.ServiceNamespace,
+// 			ScalableDimension: replicasTarget.ScalableDimension,
+// 			ResourceId:        replicasTarget.ResourceId,
+// 			PolicyType:        pulumi.String("TargetTrackingScaling"),
 // 			TargetTrackingScalingPolicyConfiguration: &appautoscaling.PolicyTargetTrackingScalingPolicyConfigurationArgs{
 // 				PredefinedMetricSpecification: &appautoscaling.PolicyTargetTrackingScalingPolicyConfigurationPredefinedMetricSpecificationArgs{
 // 					PredefinedMetricType: pulumi.String("RDSReaderAverageCPUUtilization"),
 // 				},
+// 				TargetValue:      pulumi.Float64(75),
 // 				ScaleInCooldown:  pulumi.Int(300),
 // 				ScaleOutCooldown: pulumi.Int(300),
-// 				TargetValue:      pulumi.Float64(75),
 // 			},
 // 		})
 // 		if err != nil {
@@ -145,12 +170,20 @@ import (
 // 	})
 // }
 // ```
+//
+// ## Import
+//
+// Application AutoScaling Policy can be imported using the `service-namespace` , `resource-id`, `scalable-dimension` and `policy-name` separated by `/`.
+//
+// ```sh
+//  $ pulumi import aws:appautoscaling/policy:Policy test-policy service-namespace/resource-id/scalable-dimension/policy-name
+// ```
 type Policy struct {
 	pulumi.CustomResourceState
 
 	// The ARN assigned by AWS to the scaling policy.
 	Arn pulumi.StringOutput `pulumi:"arn"`
-	// The name of the policy.
+	// The name of the policy. Must be between 1 and 255 characters in length.
 	Name pulumi.StringOutput `pulumi:"name"`
 	// The policy type. Valid values are `StepScaling` and `TargetTrackingScaling`. Defaults to `StepScaling`. Certain services only support only one policy type. For more information see the [Target Tracking Scaling Policies](https://docs.aws.amazon.com/autoscaling/application/userguide/application-auto-scaling-target-tracking.html) and [Step Scaling Policies](https://docs.aws.amazon.com/autoscaling/application/userguide/application-auto-scaling-step-scaling-policies.html) documentation.
 	PolicyType pulumi.StringPtrOutput `pulumi:"policyType"`
@@ -169,17 +202,18 @@ type Policy struct {
 // NewPolicy registers a new resource with the given unique name, arguments, and options.
 func NewPolicy(ctx *pulumi.Context,
 	name string, args *PolicyArgs, opts ...pulumi.ResourceOption) (*Policy, error) {
-	if args == nil || args.ResourceId == nil {
-		return nil, errors.New("missing required argument 'ResourceId'")
-	}
-	if args == nil || args.ScalableDimension == nil {
-		return nil, errors.New("missing required argument 'ScalableDimension'")
-	}
-	if args == nil || args.ServiceNamespace == nil {
-		return nil, errors.New("missing required argument 'ServiceNamespace'")
-	}
 	if args == nil {
-		args = &PolicyArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.ResourceId == nil {
+		return nil, errors.New("invalid value for required argument 'ResourceId'")
+	}
+	if args.ScalableDimension == nil {
+		return nil, errors.New("invalid value for required argument 'ScalableDimension'")
+	}
+	if args.ServiceNamespace == nil {
+		return nil, errors.New("invalid value for required argument 'ServiceNamespace'")
 	}
 	var resource Policy
 	err := ctx.RegisterResource("aws:appautoscaling/policy:Policy", name, args, &resource, opts...)
@@ -205,7 +239,7 @@ func GetPolicy(ctx *pulumi.Context,
 type policyState struct {
 	// The ARN assigned by AWS to the scaling policy.
 	Arn *string `pulumi:"arn"`
-	// The name of the policy.
+	// The name of the policy. Must be between 1 and 255 characters in length.
 	Name *string `pulumi:"name"`
 	// The policy type. Valid values are `StepScaling` and `TargetTrackingScaling`. Defaults to `StepScaling`. Certain services only support only one policy type. For more information see the [Target Tracking Scaling Policies](https://docs.aws.amazon.com/autoscaling/application/userguide/application-auto-scaling-target-tracking.html) and [Step Scaling Policies](https://docs.aws.amazon.com/autoscaling/application/userguide/application-auto-scaling-step-scaling-policies.html) documentation.
 	PolicyType *string `pulumi:"policyType"`
@@ -224,7 +258,7 @@ type policyState struct {
 type PolicyState struct {
 	// The ARN assigned by AWS to the scaling policy.
 	Arn pulumi.StringPtrInput
-	// The name of the policy.
+	// The name of the policy. Must be between 1 and 255 characters in length.
 	Name pulumi.StringPtrInput
 	// The policy type. Valid values are `StepScaling` and `TargetTrackingScaling`. Defaults to `StepScaling`. Certain services only support only one policy type. For more information see the [Target Tracking Scaling Policies](https://docs.aws.amazon.com/autoscaling/application/userguide/application-auto-scaling-target-tracking.html) and [Step Scaling Policies](https://docs.aws.amazon.com/autoscaling/application/userguide/application-auto-scaling-step-scaling-policies.html) documentation.
 	PolicyType pulumi.StringPtrInput
@@ -245,7 +279,7 @@ func (PolicyState) ElementType() reflect.Type {
 }
 
 type policyArgs struct {
-	// The name of the policy.
+	// The name of the policy. Must be between 1 and 255 characters in length.
 	Name *string `pulumi:"name"`
 	// The policy type. Valid values are `StepScaling` and `TargetTrackingScaling`. Defaults to `StepScaling`. Certain services only support only one policy type. For more information see the [Target Tracking Scaling Policies](https://docs.aws.amazon.com/autoscaling/application/userguide/application-auto-scaling-target-tracking.html) and [Step Scaling Policies](https://docs.aws.amazon.com/autoscaling/application/userguide/application-auto-scaling-step-scaling-policies.html) documentation.
 	PolicyType *string `pulumi:"policyType"`
@@ -263,7 +297,7 @@ type policyArgs struct {
 
 // The set of arguments for constructing a Policy resource.
 type PolicyArgs struct {
-	// The name of the policy.
+	// The name of the policy. Must be between 1 and 255 characters in length.
 	Name pulumi.StringPtrInput
 	// The policy type. Valid values are `StepScaling` and `TargetTrackingScaling`. Defaults to `StepScaling`. Certain services only support only one policy type. For more information see the [Target Tracking Scaling Policies](https://docs.aws.amazon.com/autoscaling/application/userguide/application-auto-scaling-target-tracking.html) and [Step Scaling Policies](https://docs.aws.amazon.com/autoscaling/application/userguide/application-auto-scaling-step-scaling-policies.html) documentation.
 	PolicyType pulumi.StringPtrInput
@@ -281,4 +315,43 @@ type PolicyArgs struct {
 
 func (PolicyArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*policyArgs)(nil)).Elem()
+}
+
+type PolicyInput interface {
+	pulumi.Input
+
+	ToPolicyOutput() PolicyOutput
+	ToPolicyOutputWithContext(ctx context.Context) PolicyOutput
+}
+
+func (Policy) ElementType() reflect.Type {
+	return reflect.TypeOf((*Policy)(nil)).Elem()
+}
+
+func (i Policy) ToPolicyOutput() PolicyOutput {
+	return i.ToPolicyOutputWithContext(context.Background())
+}
+
+func (i Policy) ToPolicyOutputWithContext(ctx context.Context) PolicyOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(PolicyOutput)
+}
+
+type PolicyOutput struct {
+	*pulumi.OutputState
+}
+
+func (PolicyOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*PolicyOutput)(nil)).Elem()
+}
+
+func (o PolicyOutput) ToPolicyOutput() PolicyOutput {
+	return o
+}
+
+func (o PolicyOutput) ToPolicyOutputWithContext(ctx context.Context) PolicyOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(PolicyOutput{})
 }

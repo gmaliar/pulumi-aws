@@ -4,6 +4,7 @@
 package apigateway
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -20,7 +21,7 @@ import (
 // import (
 // 	"fmt"
 //
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/apigateway"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/apigateway"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -33,10 +34,10 @@ import (
 // 			return err
 // 		}
 // 		_, err = apigateway.NewModel(ctx, "myDemoModel", &apigateway.ModelArgs{
-// 			ContentType: pulumi.String("application/json"),
-// 			Description: pulumi.String("a JSON schema"),
 // 			RestApi:     myDemoAPI.ID(),
-// 			Schema:      pulumi.String(fmt.Sprintf("%v%v%v%v", "{\n", "  \"type\": \"object\"\n", "}\n", "\n")),
+// 			Description: pulumi.String("a JSON schema"),
+// 			ContentType: pulumi.String("application/json"),
+// 			Schema:      pulumi.String(fmt.Sprintf("%v%v%v", "{\n", "  \"type\": \"object\"\n", "}\n")),
 // 		})
 // 		if err != nil {
 // 			return err
@@ -44,6 +45,14 @@ import (
 // 		return nil
 // 	})
 // }
+// ```
+//
+// ## Import
+//
+// `aws_api_gateway_model` can be imported using `REST-API-ID/NAME`, e.g.
+//
+// ```sh
+//  $ pulumi import aws:apigateway/model:Model example 12345abcde/example
 // ```
 type Model struct {
 	pulumi.CustomResourceState
@@ -63,14 +72,15 @@ type Model struct {
 // NewModel registers a new resource with the given unique name, arguments, and options.
 func NewModel(ctx *pulumi.Context,
 	name string, args *ModelArgs, opts ...pulumi.ResourceOption) (*Model, error) {
-	if args == nil || args.ContentType == nil {
-		return nil, errors.New("missing required argument 'ContentType'")
-	}
-	if args == nil || args.RestApi == nil {
-		return nil, errors.New("missing required argument 'RestApi'")
-	}
 	if args == nil {
-		args = &ModelArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.ContentType == nil {
+		return nil, errors.New("invalid value for required argument 'ContentType'")
+	}
+	if args.RestApi == nil {
+		return nil, errors.New("invalid value for required argument 'RestApi'")
 	}
 	var resource Model
 	err := ctx.RegisterResource("aws:apigateway/model:Model", name, args, &resource, opts...)
@@ -152,4 +162,43 @@ type ModelArgs struct {
 
 func (ModelArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*modelArgs)(nil)).Elem()
+}
+
+type ModelInput interface {
+	pulumi.Input
+
+	ToModelOutput() ModelOutput
+	ToModelOutputWithContext(ctx context.Context) ModelOutput
+}
+
+func (Model) ElementType() reflect.Type {
+	return reflect.TypeOf((*Model)(nil)).Elem()
+}
+
+func (i Model) ToModelOutput() ModelOutput {
+	return i.ToModelOutputWithContext(context.Background())
+}
+
+func (i Model) ToModelOutputWithContext(ctx context.Context) ModelOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(ModelOutput)
+}
+
+type ModelOutput struct {
+	*pulumi.OutputState
+}
+
+func (ModelOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*ModelOutput)(nil)).Elem()
+}
+
+func (o ModelOutput) ToModelOutput() ModelOutput {
+	return o
+}
+
+func (o ModelOutput) ToModelOutputWithContext(ctx context.Context) ModelOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(ModelOutput{})
 }

@@ -4,6 +4,7 @@
 package wafregional
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -19,7 +20,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/wafregional"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/wafregional"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -50,10 +51,10 @@ import (
 // 			return err
 // 		}
 // 		_, err = wafregional.NewWebAcl(ctx, "wafacl", &wafregional.WebAclArgs{
+// 			MetricName: pulumi.String("tfWebACL"),
 // 			DefaultAction: &wafregional.WebAclDefaultActionArgs{
 // 				Type: pulumi.String("ALLOW"),
 // 			},
-// 			MetricName: pulumi.String("tfWebACL"),
 // 			Rules: wafregional.WebAclRuleArray{
 // 				&wafregional.WebAclRuleArgs{
 // 					Action: &wafregional.WebAclRuleActionArgs{
@@ -78,25 +79,25 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/wafregional"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/wafregional"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
 // func main() {
 // 	pulumi.Run(func(ctx *pulumi.Context) error {
 // 		_, err := wafregional.NewWebAcl(ctx, "example", &wafregional.WebAclArgs{
+// 			MetricName: pulumi.String("example"),
 // 			DefaultAction: &wafregional.WebAclDefaultActionArgs{
 // 				Type: pulumi.String("ALLOW"),
 // 			},
-// 			MetricName: pulumi.String("example"),
 // 			Rules: wafregional.WebAclRuleArray{
 // 				&wafregional.WebAclRuleArgs{
+// 					Priority: pulumi.Int(1),
+// 					RuleId:   pulumi.Any(aws_wafregional_rule_group.Example.Id),
+// 					Type:     pulumi.String("GROUP"),
 // 					OverrideAction: &wafregional.WebAclRuleOverrideActionArgs{
 // 						Type: pulumi.String("NONE"),
 // 					},
-// 					Priority: pulumi.Int(1),
-// 					RuleId:   pulumi.String(aws_wafregional_rule_group.Example.Id),
-// 					Type:     pulumi.String("GROUP"),
 // 				},
 // 			},
 // 		})
@@ -115,7 +116,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/wafregional"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/wafregional"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -123,15 +124,15 @@ import (
 // 	pulumi.Run(func(ctx *pulumi.Context) error {
 // 		_, err := wafregional.NewWebAcl(ctx, "example", &wafregional.WebAclArgs{
 // 			LoggingConfiguration: &wafregional.WebAclLoggingConfigurationArgs{
-// 				LogDestination: pulumi.String(aws_kinesis_firehose_delivery_stream.Example.Arn),
+// 				LogDestination: pulumi.Any(aws_kinesis_firehose_delivery_stream.Example.Arn),
 // 				RedactedFields: &wafregional.WebAclLoggingConfigurationRedactedFieldsArgs{
-// 					FieldToMatch: pulumi.Array{
-// 						pulumi.StringMap{
-// 							"type": pulumi.String("URI"),
+// 					FieldToMatches: wafregional.WebAclLoggingConfigurationRedactedFieldsFieldToMatchArray{
+// 						&wafregional.WebAclLoggingConfigurationRedactedFieldsFieldToMatchArgs{
+// 							Type: pulumi.String("URI"),
 // 						},
-// 						pulumi.StringMap{
-// 							"data": pulumi.String("referer"),
-// 							"type": pulumi.String("HEADER"),
+// 						&wafregional.WebAclLoggingConfigurationRedactedFieldsFieldToMatchArgs{
+// 							Data: pulumi.String("referer"),
+// 							Type: pulumi.String("HEADER"),
 // 						},
 // 					},
 // 				},
@@ -143,6 +144,14 @@ import (
 // 		return nil
 // 	})
 // }
+// ```
+//
+// ## Import
+//
+// WAF Regional Web ACL can be imported using the id, e.g.
+//
+// ```sh
+//  $ pulumi import aws:wafregional/webAcl:WebAcl wafacl a1b2c3d4-d5f6-7777-8888-9999aaaabbbbcccc
 // ```
 type WebAcl struct {
 	pulumi.CustomResourceState
@@ -166,14 +175,15 @@ type WebAcl struct {
 // NewWebAcl registers a new resource with the given unique name, arguments, and options.
 func NewWebAcl(ctx *pulumi.Context,
 	name string, args *WebAclArgs, opts ...pulumi.ResourceOption) (*WebAcl, error) {
-	if args == nil || args.DefaultAction == nil {
-		return nil, errors.New("missing required argument 'DefaultAction'")
-	}
-	if args == nil || args.MetricName == nil {
-		return nil, errors.New("missing required argument 'MetricName'")
-	}
 	if args == nil {
-		args = &WebAclArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.DefaultAction == nil {
+		return nil, errors.New("invalid value for required argument 'DefaultAction'")
+	}
+	if args.MetricName == nil {
+		return nil, errors.New("invalid value for required argument 'MetricName'")
 	}
 	var resource WebAcl
 	err := ctx.RegisterResource("aws:wafregional/webAcl:WebAcl", name, args, &resource, opts...)
@@ -267,4 +277,43 @@ type WebAclArgs struct {
 
 func (WebAclArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*webAclArgs)(nil)).Elem()
+}
+
+type WebAclInput interface {
+	pulumi.Input
+
+	ToWebAclOutput() WebAclOutput
+	ToWebAclOutputWithContext(ctx context.Context) WebAclOutput
+}
+
+func (WebAcl) ElementType() reflect.Type {
+	return reflect.TypeOf((*WebAcl)(nil)).Elem()
+}
+
+func (i WebAcl) ToWebAclOutput() WebAclOutput {
+	return i.ToWebAclOutputWithContext(context.Background())
+}
+
+func (i WebAcl) ToWebAclOutputWithContext(ctx context.Context) WebAclOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(WebAclOutput)
+}
+
+type WebAclOutput struct {
+	*pulumi.OutputState
+}
+
+func (WebAclOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*WebAclOutput)(nil)).Elem()
+}
+
+func (o WebAclOutput) ToWebAclOutput() WebAclOutput {
+	return o
+}
+
+func (o WebAclOutput) ToWebAclOutputWithContext(ctx context.Context) WebAclOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(WebAclOutput{})
 }

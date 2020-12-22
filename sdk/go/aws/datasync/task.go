@@ -4,6 +4,7 @@
 package datasync
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -12,31 +13,12 @@ import (
 
 // Manages an AWS DataSync Task, which represents a configuration for synchronization. Starting an execution of these DataSync Tasks (actually synchronizing files) is performed outside of this resource.
 //
-// ## Example Usage
+// ## Import
 //
-// ```go
-// package main
+// `aws_datasync_task` can be imported by using the DataSync Task Amazon Resource Name (ARN), e.g.
 //
-// import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/datasync"
-// 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
-// )
-//
-// func main() {
-// 	pulumi.Run(func(ctx *pulumi.Context) error {
-// 		_, err := datasync.NewTask(ctx, "example", &datasync.TaskArgs{
-// 			DestinationLocationArn: pulumi.String(aws_datasync_location_s3.Destination.Arn),
-// 			Options: &datasync.TaskOptionsArgs{
-// 				BytesPerSecond: pulumi.Int(-1),
-// 			},
-// 			SourceLocationArn: pulumi.String(aws_datasync_location_nfs.Source.Arn),
-// 		})
-// 		if err != nil {
-// 			return err
-// 		}
-// 		return nil
-// 	})
-// }
+// ```sh
+//  $ pulumi import aws:datasync/task:Task example arn:aws:datasync:us-east-1:123456789012:task/task-12345678901234567
 // ```
 type Task struct {
 	pulumi.CustomResourceState
@@ -60,14 +42,15 @@ type Task struct {
 // NewTask registers a new resource with the given unique name, arguments, and options.
 func NewTask(ctx *pulumi.Context,
 	name string, args *TaskArgs, opts ...pulumi.ResourceOption) (*Task, error) {
-	if args == nil || args.DestinationLocationArn == nil {
-		return nil, errors.New("missing required argument 'DestinationLocationArn'")
-	}
-	if args == nil || args.SourceLocationArn == nil {
-		return nil, errors.New("missing required argument 'SourceLocationArn'")
-	}
 	if args == nil {
-		args = &TaskArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.DestinationLocationArn == nil {
+		return nil, errors.New("invalid value for required argument 'DestinationLocationArn'")
+	}
+	if args.SourceLocationArn == nil {
+		return nil, errors.New("invalid value for required argument 'SourceLocationArn'")
 	}
 	var resource Task
 	err := ctx.RegisterResource("aws:datasync/task:Task", name, args, &resource, opts...)
@@ -161,4 +144,43 @@ type TaskArgs struct {
 
 func (TaskArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*taskArgs)(nil)).Elem()
+}
+
+type TaskInput interface {
+	pulumi.Input
+
+	ToTaskOutput() TaskOutput
+	ToTaskOutputWithContext(ctx context.Context) TaskOutput
+}
+
+func (Task) ElementType() reflect.Type {
+	return reflect.TypeOf((*Task)(nil)).Elem()
+}
+
+func (i Task) ToTaskOutput() TaskOutput {
+	return i.ToTaskOutputWithContext(context.Background())
+}
+
+func (i Task) ToTaskOutputWithContext(ctx context.Context) TaskOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(TaskOutput)
+}
+
+type TaskOutput struct {
+	*pulumi.OutputState
+}
+
+func (TaskOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*TaskOutput)(nil)).Elem()
+}
+
+func (o TaskOutput) ToTaskOutput() TaskOutput {
+	return o
+}
+
+func (o TaskOutput) ToTaskOutputWithContext(ctx context.Context) TaskOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(TaskOutput{})
 }

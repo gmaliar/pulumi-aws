@@ -2,8 +2,7 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 /**
@@ -32,6 +31,14 @@ import * as utilities from "../utilities";
  *         },
  *     },
  * });
+ * ```
+ *
+ * ## Import
+ *
+ * ECS Task Definitions can be imported via their Amazon Resource Name (ARN)
+ *
+ * ```sh
+ *  $ pulumi import aws:ecs/taskDefinition:TaskDefinition example arn:aws:ecs:us-east-1:012345678910:task-definition/mytaskfamily:123
  * ```
  */
 export class TaskDefinition extends pulumi.CustomResource {
@@ -67,12 +74,13 @@ export class TaskDefinition extends pulumi.CustomResource {
      */
     public /*out*/ readonly arn!: pulumi.Output<string>;
     /**
-     * A list of valid [container definitions]
-     * (http://docs.aws.amazon.com/AmazonECS/latest/APIReference/API_ContainerDefinition.html) provided as a
-     * single valid JSON document. Please note that you should only provide values that are part of the container
-     * definition document. For a detailed description of what parameters are available, see the [Task Definition Parameters]
-     * (https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task_definition_parameters.html) section from the
-     * official [Developer Guide](https://docs.aws.amazon.com/AmazonECS/latest/developerguide).
+     * A list of valid [container
+     * definitions](http://docs.aws.amazon.com/AmazonECS/latest/APIReference/API_ContainerDefinition.html)
+     * provided as a single valid JSON document. Please note that you should only
+     * provide values that are part of the container definition document. For a
+     * detailed description of what parameters are available, see the [Task Definition
+     * Parameters](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task_definition_parameters.html)
+     * section from the official [Developer Guide](https://docs.aws.amazon.com/AmazonECS/latest/developerguide).
      */
     public readonly containerDefinitions!: pulumi.Output<string>;
     /**
@@ -167,10 +175,10 @@ export class TaskDefinition extends pulumi.CustomResource {
             inputs["volumes"] = state ? state.volumes : undefined;
         } else {
             const args = argsOrState as TaskDefinitionArgs | undefined;
-            if (!args || args.containerDefinitions === undefined) {
+            if ((!args || args.containerDefinitions === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'containerDefinitions'");
             }
-            if (!args || args.family === undefined) {
+            if ((!args || args.family === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'family'");
             }
             inputs["containerDefinitions"] = args ? args.containerDefinitions : undefined;
@@ -211,12 +219,13 @@ export interface TaskDefinitionState {
      */
     readonly arn?: pulumi.Input<string>;
     /**
-     * A list of valid [container definitions]
-     * (http://docs.aws.amazon.com/AmazonECS/latest/APIReference/API_ContainerDefinition.html) provided as a
-     * single valid JSON document. Please note that you should only provide values that are part of the container
-     * definition document. For a detailed description of what parameters are available, see the [Task Definition Parameters]
-     * (https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task_definition_parameters.html) section from the
-     * official [Developer Guide](https://docs.aws.amazon.com/AmazonECS/latest/developerguide).
+     * A list of valid [container
+     * definitions](http://docs.aws.amazon.com/AmazonECS/latest/APIReference/API_ContainerDefinition.html)
+     * provided as a single valid JSON document. Please note that you should only
+     * provide values that are part of the container definition document. For a
+     * detailed description of what parameters are available, see the [Task Definition
+     * Parameters](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task_definition_parameters.html)
+     * section from the official [Developer Guide](https://docs.aws.amazon.com/AmazonECS/latest/developerguide).
      */
     readonly containerDefinitions?: pulumi.Input<string>;
     /**
@@ -286,12 +295,13 @@ export interface TaskDefinitionState {
  */
 export interface TaskDefinitionArgs {
     /**
-     * A list of valid [container definitions]
-     * (http://docs.aws.amazon.com/AmazonECS/latest/APIReference/API_ContainerDefinition.html) provided as a
-     * single valid JSON document. Please note that you should only provide values that are part of the container
-     * definition document. For a detailed description of what parameters are available, see the [Task Definition Parameters]
-     * (https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task_definition_parameters.html) section from the
-     * official [Developer Guide](https://docs.aws.amazon.com/AmazonECS/latest/developerguide).
+     * A list of valid [container
+     * definitions](http://docs.aws.amazon.com/AmazonECS/latest/APIReference/API_ContainerDefinition.html)
+     * provided as a single valid JSON document. Please note that you should only
+     * provide values that are part of the container definition document. For a
+     * detailed description of what parameters are available, see the [Task Definition
+     * Parameters](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task_definition_parameters.html)
+     * section from the official [Developer Guide](https://docs.aws.amazon.com/AmazonECS/latest/developerguide).
      */
     readonly containerDefinitions: pulumi.Input<string>;
     /**

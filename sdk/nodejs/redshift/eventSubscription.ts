@@ -13,22 +13,23 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const defaultCluster = new aws.redshift.Cluster("default", {
+ * const defaultCluster = new aws.redshift.Cluster("defaultCluster", {
  *     clusterIdentifier: "default",
  *     databaseName: "default",
  * });
- * const defaultTopic = new aws.sns.Topic("default", {});
- * const defaultEventSubscription = new aws.redshift.EventSubscription("default", {
+ * // ...
+ * const defaultTopic = new aws.sns.Topic("defaultTopic", {});
+ * const defaultEventSubscription = new aws.redshift.EventSubscription("defaultEventSubscription", {
+ *     snsTopicArn: defaultTopic.arn,
+ *     sourceType: "cluster",
+ *     sourceIds: [defaultCluster.id],
+ *     severity: "INFO",
  *     eventCategories: [
  *         "configuration",
  *         "management",
  *         "monitoring",
  *         "security",
  *     ],
- *     severity: "INFO",
- *     snsTopicArn: defaultTopic.arn,
- *     sourceIds: [defaultCluster.id],
- *     sourceType: "cluster",
  *     tags: {
  *         Name: "default",
  *     },
@@ -41,6 +42,14 @@ import * as utilities from "../utilities";
  * * `arn` - Amazon Resource Name (ARN) of the Redshift event notification subscription
  * * `id` - The name of the Redshift event notification subscription
  * * `customerAwsId` - The AWS customer account associated with the Redshift event notification subscription
+ *
+ * ## Import
+ *
+ * Redshift Event Subscriptions can be imported using the `name`, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:redshift/eventSubscription:EventSubscription default redshift-event-sub
+ * ```
  */
 export class EventSubscription extends pulumi.CustomResource {
     /**
@@ -131,7 +140,7 @@ export class EventSubscription extends pulumi.CustomResource {
             inputs["tags"] = state ? state.tags : undefined;
         } else {
             const args = argsOrState as EventSubscriptionArgs | undefined;
-            if (!args || args.snsTopicArn === undefined) {
+            if ((!args || args.snsTopicArn === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'snsTopicArn'");
             }
             inputs["enabled"] = args ? args.enabled : undefined;

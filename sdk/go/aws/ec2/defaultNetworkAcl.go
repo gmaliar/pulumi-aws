@@ -4,6 +4,7 @@
 package ec2
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -45,7 +46,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/ec2"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/ec2"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -97,7 +98,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/ec2"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/ec2"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -140,7 +141,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/ec2"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/ec2"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -161,6 +162,14 @@ import (
 // 		return nil
 // 	})
 // }
+// ```
+//
+// ## Import
+//
+// Default Network ACLs can be imported using the `id`, e.g.
+//
+// ```sh
+//  $ pulumi import aws:ec2/defaultNetworkAcl:DefaultNetworkAcl sample acl-7aaabd18
 // ```
 type DefaultNetworkAcl struct {
 	pulumi.CustomResourceState
@@ -188,11 +197,12 @@ type DefaultNetworkAcl struct {
 // NewDefaultNetworkAcl registers a new resource with the given unique name, arguments, and options.
 func NewDefaultNetworkAcl(ctx *pulumi.Context,
 	name string, args *DefaultNetworkAclArgs, opts ...pulumi.ResourceOption) (*DefaultNetworkAcl, error) {
-	if args == nil || args.DefaultNetworkAclId == nil {
-		return nil, errors.New("missing required argument 'DefaultNetworkAclId'")
-	}
 	if args == nil {
-		args = &DefaultNetworkAclArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.DefaultNetworkAclId == nil {
+		return nil, errors.New("invalid value for required argument 'DefaultNetworkAclId'")
 	}
 	var resource DefaultNetworkAcl
 	err := ctx.RegisterResource("aws:ec2/defaultNetworkAcl:DefaultNetworkAcl", name, args, &resource, opts...)
@@ -294,4 +304,43 @@ type DefaultNetworkAclArgs struct {
 
 func (DefaultNetworkAclArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*defaultNetworkAclArgs)(nil)).Elem()
+}
+
+type DefaultNetworkAclInput interface {
+	pulumi.Input
+
+	ToDefaultNetworkAclOutput() DefaultNetworkAclOutput
+	ToDefaultNetworkAclOutputWithContext(ctx context.Context) DefaultNetworkAclOutput
+}
+
+func (DefaultNetworkAcl) ElementType() reflect.Type {
+	return reflect.TypeOf((*DefaultNetworkAcl)(nil)).Elem()
+}
+
+func (i DefaultNetworkAcl) ToDefaultNetworkAclOutput() DefaultNetworkAclOutput {
+	return i.ToDefaultNetworkAclOutputWithContext(context.Background())
+}
+
+func (i DefaultNetworkAcl) ToDefaultNetworkAclOutputWithContext(ctx context.Context) DefaultNetworkAclOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(DefaultNetworkAclOutput)
+}
+
+type DefaultNetworkAclOutput struct {
+	*pulumi.OutputState
+}
+
+func (DefaultNetworkAclOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*DefaultNetworkAclOutput)(nil)).Elem()
+}
+
+func (o DefaultNetworkAclOutput) ToDefaultNetworkAclOutput() DefaultNetworkAclOutput {
+	return o
+}
+
+func (o DefaultNetworkAclOutput) ToDefaultNetworkAclOutputWithContext(ctx context.Context) DefaultNetworkAclOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(DefaultNetworkAclOutput{})
 }

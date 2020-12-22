@@ -32,7 +32,10 @@ namespace Pulumi.Aws.Fsx
     ///             ActiveDirectoryId = aws_directory_service_directory.Example.Id,
     ///             KmsKeyId = aws_kms_key.Example.Arn,
     ///             StorageCapacity = 300,
-    ///             SubnetIds = aws_subnet.Example.Id,
+    ///             SubnetIds = 
+    ///             {
+    ///                 aws_subnet.Example.Id,
+    ///             },
     ///             ThroughputCapacity = 1024,
     ///         });
     ///     }
@@ -54,6 +57,12 @@ namespace Pulumi.Aws.Fsx
     ///         var example = new Aws.Fsx.WindowsFileSystem("example", new Aws.Fsx.WindowsFileSystemArgs
     ///         {
     ///             KmsKeyId = aws_kms_key.Example.Arn,
+    ///             StorageCapacity = 300,
+    ///             SubnetIds = 
+    ///             {
+    ///                 aws_subnet.Example.Id,
+    ///             },
+    ///             ThroughputCapacity = 1024,
     ///             SelfManagedActiveDirectory = new Aws.Fsx.Inputs.WindowsFileSystemSelfManagedActiveDirectoryArgs
     ///             {
     ///                 DnsIps = 
@@ -65,14 +74,33 @@ namespace Pulumi.Aws.Fsx
     ///                 Password = "avoid-plaintext-passwords",
     ///                 Username = "Admin",
     ///             },
-    ///             StorageCapacity = 300,
-    ///             SubnetIds = aws_subnet.Example.Id,
-    ///             ThroughputCapacity = 1024,
     ///         });
     ///     }
     /// 
     /// }
     /// ```
+    /// 
+    /// ## Import
+    /// 
+    /// FSx File Systems can be imported using the `id`, e.g.
+    /// 
+    /// ```sh
+    ///  $ pulumi import aws:fsx/windowsFileSystem:WindowsFileSystem example fs-543ab12b1ca672f33
+    /// ```
+    /// 
+    ///  Certain resource arguments, like `security_group_ids` and the `self_managed_active_directory` configuation block `password`, do not have a FSx API method for reading the information after creation. If these arguments are set in the provider configuration on an imported resource, the povider will always show a difference. To workaround this behavior, either omit the argument from the configuration or use [`ignoreChanges`](https://www.pulumi.com/docs/intro/concepts/programming-model/#ignorechanges) to hide the difference, e.g. hcl resource "aws_fsx_windows_file_system" "example" {
+    /// 
+    /// # ... other configuration ...
+    /// 
+    ///  security_group_ids = [aws_security_group.example.id]
+    /// 
+    /// # There is no FSx API for reading security_group_ids
+    /// 
+    ///  lifecycle {
+    /// 
+    ///  ignore_changes = [security_group_ids]
+    /// 
+    ///  } }
     /// </summary>
     public partial class WindowsFileSystem : Pulumi.CustomResource
     {
@@ -89,7 +117,7 @@ namespace Pulumi.Aws.Fsx
         public Output<string> Arn { get; private set; } = null!;
 
         /// <summary>
-        /// The number of days to retain automatic backups. Minimum of `0` and maximum of `35`. Defaults to `7`. Set to `0` to disable.
+        /// The number of days to retain automatic backups. Minimum of `0` and maximum of `90`. Defaults to `7`. Set to `0` to disable.
         /// </summary>
         [Output("automaticBackupRetentionDays")]
         public Output<int?> AutomaticBackupRetentionDays { get; private set; } = null!;
@@ -105,6 +133,12 @@ namespace Pulumi.Aws.Fsx
         /// </summary>
         [Output("dailyAutomaticBackupStartTime")]
         public Output<string> DailyAutomaticBackupStartTime { get; private set; } = null!;
+
+        /// <summary>
+        /// Specifies the file system deployment type, valid values are `MULTI_AZ_1`, `SINGLE_AZ_1` and `SINGLE_AZ_2`. Default value is `SINGLE_AZ_1`.
+        /// </summary>
+        [Output("deploymentType")]
+        public Output<string?> DeploymentType { get; private set; } = null!;
 
         /// <summary>
         /// DNS name for the file system, e.g. `fs-12345678.corp.example.com` (domain name matching the Active Directory domain name)
@@ -131,6 +165,24 @@ namespace Pulumi.Aws.Fsx
         public Output<string> OwnerId { get; private set; } = null!;
 
         /// <summary>
+        /// The IP address of the primary, or preferred, file server.
+        /// </summary>
+        [Output("preferredFileServerIp")]
+        public Output<string> PreferredFileServerIp { get; private set; } = null!;
+
+        /// <summary>
+        /// Specifies the subnet in which you want the preferred file server to be located. Required for when deployment type is `MULTI_AZ_1`.
+        /// </summary>
+        [Output("preferredSubnetId")]
+        public Output<string> PreferredSubnetId { get; private set; } = null!;
+
+        /// <summary>
+        /// For `MULTI_AZ_1` deployment types, use this endpoint when performing administrative tasks on the file system using Amazon FSx Remote PowerShell. For `SINGLE_AZ_1` deployment types, this is the DNS name of the file system.
+        /// </summary>
+        [Output("remoteAdministrationEndpoint")]
+        public Output<string> RemoteAdministrationEndpoint { get; private set; } = null!;
+
+        /// <summary>
         /// A list of IDs for the security groups that apply to the specified network interfaces created for file system access. These security groups will apply to all network interfaces.
         /// </summary>
         [Output("securityGroupIds")]
@@ -149,16 +201,22 @@ namespace Pulumi.Aws.Fsx
         public Output<bool?> SkipFinalBackup { get; private set; } = null!;
 
         /// <summary>
-        /// Storage capacity (GiB) of the file system. Minimum of 32 and maximum of 65536.
+        /// Storage capacity (GiB) of the file system. Minimum of 32 and maximum of 65536. If the storage type is set to `HDD` the minimum value is 2000.
         /// </summary>
         [Output("storageCapacity")]
         public Output<int> StorageCapacity { get; private set; } = null!;
 
         /// <summary>
-        /// A list of IDs for the subnets that the file system will be accessible from. File systems support only one subnet. The file server is also launched in that subnet's Availability Zone.
+        /// Specifies the storage type, Valid values are `SSD` and `HDD`. `HDD` is supported on `SINGLE_AZ_2` and `MULTI_AZ_1` Windows file system deployment types. Default value is `SSD`.
+        /// </summary>
+        [Output("storageType")]
+        public Output<string?> StorageType { get; private set; } = null!;
+
+        /// <summary>
+        /// A list of IDs for the subnets that the file system will be accessible from. To specify more than a single subnet set `deployment_type` to `MULTI_AZ_1`.
         /// </summary>
         [Output("subnetIds")]
-        public Output<string> SubnetIds { get; private set; } = null!;
+        public Output<ImmutableArray<string>> SubnetIds { get; private set; } = null!;
 
         /// <summary>
         /// A map of tags to assign to the file system.
@@ -237,7 +295,7 @@ namespace Pulumi.Aws.Fsx
         public Input<string>? ActiveDirectoryId { get; set; }
 
         /// <summary>
-        /// The number of days to retain automatic backups. Minimum of `0` and maximum of `35`. Defaults to `7`. Set to `0` to disable.
+        /// The number of days to retain automatic backups. Minimum of `0` and maximum of `90`. Defaults to `7`. Set to `0` to disable.
         /// </summary>
         [Input("automaticBackupRetentionDays")]
         public Input<int>? AutomaticBackupRetentionDays { get; set; }
@@ -255,10 +313,22 @@ namespace Pulumi.Aws.Fsx
         public Input<string>? DailyAutomaticBackupStartTime { get; set; }
 
         /// <summary>
+        /// Specifies the file system deployment type, valid values are `MULTI_AZ_1`, `SINGLE_AZ_1` and `SINGLE_AZ_2`. Default value is `SINGLE_AZ_1`.
+        /// </summary>
+        [Input("deploymentType")]
+        public Input<string>? DeploymentType { get; set; }
+
+        /// <summary>
         /// ARN for the KMS Key to encrypt the file system at rest. Defaults to an AWS managed KMS Key.
         /// </summary>
         [Input("kmsKeyId")]
         public Input<string>? KmsKeyId { get; set; }
+
+        /// <summary>
+        /// Specifies the subnet in which you want the preferred file server to be located. Required for when deployment type is `MULTI_AZ_1`.
+        /// </summary>
+        [Input("preferredSubnetId")]
+        public Input<string>? PreferredSubnetId { get; set; }
 
         [Input("securityGroupIds")]
         private InputList<string>? _securityGroupIds;
@@ -285,16 +355,28 @@ namespace Pulumi.Aws.Fsx
         public Input<bool>? SkipFinalBackup { get; set; }
 
         /// <summary>
-        /// Storage capacity (GiB) of the file system. Minimum of 32 and maximum of 65536.
+        /// Storage capacity (GiB) of the file system. Minimum of 32 and maximum of 65536. If the storage type is set to `HDD` the minimum value is 2000.
         /// </summary>
         [Input("storageCapacity", required: true)]
         public Input<int> StorageCapacity { get; set; } = null!;
 
         /// <summary>
-        /// A list of IDs for the subnets that the file system will be accessible from. File systems support only one subnet. The file server is also launched in that subnet's Availability Zone.
+        /// Specifies the storage type, Valid values are `SSD` and `HDD`. `HDD` is supported on `SINGLE_AZ_2` and `MULTI_AZ_1` Windows file system deployment types. Default value is `SSD`.
         /// </summary>
+        [Input("storageType")]
+        public Input<string>? StorageType { get; set; }
+
         [Input("subnetIds", required: true)]
-        public Input<string> SubnetIds { get; set; } = null!;
+        private InputList<string>? _subnetIds;
+
+        /// <summary>
+        /// A list of IDs for the subnets that the file system will be accessible from. To specify more than a single subnet set `deployment_type` to `MULTI_AZ_1`.
+        /// </summary>
+        public InputList<string> SubnetIds
+        {
+            get => _subnetIds ?? (_subnetIds = new InputList<string>());
+            set => _subnetIds = value;
+        }
 
         [Input("tags")]
         private InputMap<string>? _tags;
@@ -340,7 +422,7 @@ namespace Pulumi.Aws.Fsx
         public Input<string>? Arn { get; set; }
 
         /// <summary>
-        /// The number of days to retain automatic backups. Minimum of `0` and maximum of `35`. Defaults to `7`. Set to `0` to disable.
+        /// The number of days to retain automatic backups. Minimum of `0` and maximum of `90`. Defaults to `7`. Set to `0` to disable.
         /// </summary>
         [Input("automaticBackupRetentionDays")]
         public Input<int>? AutomaticBackupRetentionDays { get; set; }
@@ -356,6 +438,12 @@ namespace Pulumi.Aws.Fsx
         /// </summary>
         [Input("dailyAutomaticBackupStartTime")]
         public Input<string>? DailyAutomaticBackupStartTime { get; set; }
+
+        /// <summary>
+        /// Specifies the file system deployment type, valid values are `MULTI_AZ_1`, `SINGLE_AZ_1` and `SINGLE_AZ_2`. Default value is `SINGLE_AZ_1`.
+        /// </summary>
+        [Input("deploymentType")]
+        public Input<string>? DeploymentType { get; set; }
 
         /// <summary>
         /// DNS name for the file system, e.g. `fs-12345678.corp.example.com` (domain name matching the Active Directory domain name)
@@ -387,6 +475,24 @@ namespace Pulumi.Aws.Fsx
         [Input("ownerId")]
         public Input<string>? OwnerId { get; set; }
 
+        /// <summary>
+        /// The IP address of the primary, or preferred, file server.
+        /// </summary>
+        [Input("preferredFileServerIp")]
+        public Input<string>? PreferredFileServerIp { get; set; }
+
+        /// <summary>
+        /// Specifies the subnet in which you want the preferred file server to be located. Required for when deployment type is `MULTI_AZ_1`.
+        /// </summary>
+        [Input("preferredSubnetId")]
+        public Input<string>? PreferredSubnetId { get; set; }
+
+        /// <summary>
+        /// For `MULTI_AZ_1` deployment types, use this endpoint when performing administrative tasks on the file system using Amazon FSx Remote PowerShell. For `SINGLE_AZ_1` deployment types, this is the DNS name of the file system.
+        /// </summary>
+        [Input("remoteAdministrationEndpoint")]
+        public Input<string>? RemoteAdministrationEndpoint { get; set; }
+
         [Input("securityGroupIds")]
         private InputList<string>? _securityGroupIds;
 
@@ -412,16 +518,28 @@ namespace Pulumi.Aws.Fsx
         public Input<bool>? SkipFinalBackup { get; set; }
 
         /// <summary>
-        /// Storage capacity (GiB) of the file system. Minimum of 32 and maximum of 65536.
+        /// Storage capacity (GiB) of the file system. Minimum of 32 and maximum of 65536. If the storage type is set to `HDD` the minimum value is 2000.
         /// </summary>
         [Input("storageCapacity")]
         public Input<int>? StorageCapacity { get; set; }
 
         /// <summary>
-        /// A list of IDs for the subnets that the file system will be accessible from. File systems support only one subnet. The file server is also launched in that subnet's Availability Zone.
+        /// Specifies the storage type, Valid values are `SSD` and `HDD`. `HDD` is supported on `SINGLE_AZ_2` and `MULTI_AZ_1` Windows file system deployment types. Default value is `SSD`.
         /// </summary>
+        [Input("storageType")]
+        public Input<string>? StorageType { get; set; }
+
         [Input("subnetIds")]
-        public Input<string>? SubnetIds { get; set; }
+        private InputList<string>? _subnetIds;
+
+        /// <summary>
+        /// A list of IDs for the subnets that the file system will be accessible from. To specify more than a single subnet set `deployment_type` to `MULTI_AZ_1`.
+        /// </summary>
+        public InputList<string> SubnetIds
+        {
+            get => _subnetIds ?? (_subnetIds = new InputList<string>());
+            set => _subnetIds = value;
+        }
 
         [Input("tags")]
         private InputMap<string>? _tags;

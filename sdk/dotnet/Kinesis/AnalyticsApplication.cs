@@ -15,6 +15,8 @@ namespace Pulumi.Aws.Kinesis
     /// 
     /// For more details, see the [Amazon Kinesis Analytics Documentation](https://docs.aws.amazon.com/kinesisanalytics/latest/dev/what-is.html).
     /// 
+    /// &gt; **Note:** To manage Amazon Kinesis Data Analytics for Apache Flink applications, use the [`aws.kinesisanalyticsv2.Application`](https://www.terraform.io/docs/providers/aws/r/kinesisanalyticsv2_application.html) resource.
+    /// 
     /// ## Example Usage
     /// 
     /// ```csharp
@@ -33,12 +35,12 @@ namespace Pulumi.Aws.Kinesis
     ///         {
     ///             Inputs = new Aws.Kinesis.Inputs.AnalyticsApplicationInputsArgs
     ///             {
+    ///                 NamePrefix = "test_prefix",
     ///                 KinesisStream = new Aws.Kinesis.Inputs.AnalyticsApplicationInputsKinesisStreamArgs
     ///                 {
     ///                     ResourceArn = testStream.Arn,
     ///                     RoleArn = aws_iam_role.Test.Arn,
     ///                 },
-    ///                 NamePrefix = "test_prefix",
     ///                 Parallelism = new Aws.Kinesis.Inputs.AnalyticsApplicationInputsParallelismArgs
     ///                 {
     ///                     Count = 1,
@@ -71,6 +73,14 @@ namespace Pulumi.Aws.Kinesis
     ///     }
     /// 
     /// }
+    /// ```
+    /// 
+    /// ## Import
+    /// 
+    /// Kinesis Analytics Application can be imported by using ARN, e.g.
+    /// 
+    /// ```sh
+    ///  $ pulumi import aws:kinesis/analyticsApplication:AnalyticsApplication example arn:aws:kinesisanalytics:us-west-2:1234567890:application/example
     /// ```
     /// </summary>
     public partial class AnalyticsApplication : Pulumi.CustomResource

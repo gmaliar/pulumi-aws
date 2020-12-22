@@ -37,6 +37,10 @@ namespace Pulumi.Aws.Ses
     ///                         "SES:SendEmail",
     ///                         "SES:SendRawEmail",
     ///                     },
+    ///                     Resources = 
+    ///                     {
+    ///                         arn,
+    ///                     },
     ///                     Principals = 
     ///                     {
     ///                         new Aws.Iam.Inputs.GetPolicyDocumentStatementPrincipalArgs
@@ -47,10 +51,6 @@ namespace Pulumi.Aws.Ses
     ///                             },
     ///                             Type = "AWS",
     ///                         },
-    ///                     },
-    ///                     Resources = 
-    ///                     {
-    ///                         arn,
     ///                     },
     ///                 },
     ///             },
@@ -63,6 +63,14 @@ namespace Pulumi.Aws.Ses
     ///     }
     /// 
     /// }
+    /// ```
+    /// 
+    /// ## Import
+    /// 
+    /// SES Identity Policies can be imported using the identity and policy name, separated by a pipe character (`|`), e.g.
+    /// 
+    /// ```sh
+    ///  $ pulumi import aws:ses/identityPolicy:IdentityPolicy example 'example.com|example'
     /// ```
     /// </summary>
     public partial class IdentityPolicy : Pulumi.CustomResource

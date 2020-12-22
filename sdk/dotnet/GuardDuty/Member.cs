@@ -22,7 +22,7 @@ namespace Pulumi.Aws.GuardDuty
     /// {
     ///     public MyStack()
     ///     {
-    ///         var master = new Aws.GuardDuty.Detector("master", new Aws.GuardDuty.DetectorArgs
+    ///         var primary = new Aws.GuardDuty.Detector("primary", new Aws.GuardDuty.DetectorArgs
     ///         {
     ///             Enable = true,
     ///         });
@@ -31,12 +31,12 @@ namespace Pulumi.Aws.GuardDuty
     ///             Enable = true,
     ///         }, new CustomResourceOptions
     ///         {
-    ///             Provider = "aws.dev",
+    ///             Provider = aws.Dev,
     ///         });
     ///         var memberMember = new Aws.GuardDuty.Member("memberMember", new Aws.GuardDuty.MemberArgs
     ///         {
     ///             AccountId = memberDetector.AccountId,
-    ///             DetectorId = master.Id,
+    ///             DetectorId = primary.Id,
     ///             Email = "required@example.com",
     ///             Invite = true,
     ///             InvitationMessage = "please accept guardduty invitation",
@@ -44,6 +44,14 @@ namespace Pulumi.Aws.GuardDuty
     ///     }
     /// 
     /// }
+    /// ```
+    /// 
+    /// ## Import
+    /// 
+    /// GuardDuty members can be imported using the the primary GuardDuty detector ID and member AWS account ID, e.g.
+    /// 
+    /// ```sh
+    ///  $ pulumi import aws:guardduty/member:Member MyMember 00b00fd5aecc0ab60a708659477e9617:123456789012
     /// ```
     /// </summary>
     public partial class Member : Pulumi.CustomResource
@@ -85,7 +93,7 @@ namespace Pulumi.Aws.GuardDuty
         public Output<bool?> Invite { get; private set; } = null!;
 
         /// <summary>
-        /// The status of the relationship between the member account and its master account. More information can be found in [Amazon GuardDuty API Reference](https://docs.aws.amazon.com/guardduty/latest/ug/get-members.html).
+        /// The status of the relationship between the member account and its primary account. More information can be found in [Amazon GuardDuty API Reference](https://docs.aws.amazon.com/guardduty/latest/ug/get-members.html).
         /// </summary>
         [Output("relationshipStatus")]
         public Output<string> RelationshipStatus { get; private set; } = null!;
@@ -216,7 +224,7 @@ namespace Pulumi.Aws.GuardDuty
         public Input<bool>? Invite { get; set; }
 
         /// <summary>
-        /// The status of the relationship between the member account and its master account. More information can be found in [Amazon GuardDuty API Reference](https://docs.aws.amazon.com/guardduty/latest/ug/get-members.html).
+        /// The status of the relationship between the member account and its primary account. More information can be found in [Amazon GuardDuty API Reference](https://docs.aws.amazon.com/guardduty/latest/ug/get-members.html).
         /// </summary>
         [Input("relationshipStatus")]
         public Input<string>? RelationshipStatus { get; set; }

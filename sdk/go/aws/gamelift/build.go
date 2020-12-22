@@ -4,6 +4,7 @@
 package gamelift
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -18,7 +19,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/gamelift"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/gamelift"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -27,12 +28,12 @@ import (
 // 		_, err := gamelift.NewBuild(ctx, "test", &gamelift.BuildArgs{
 // 			OperatingSystem: pulumi.String("WINDOWS_2012"),
 // 			StorageLocation: &gamelift.BuildStorageLocationArgs{
-// 				Bucket:  pulumi.String(aws_s3_bucket.Test.Bucket),
-// 				Key:     pulumi.String(aws_s3_bucket_object.Test.Key),
-// 				RoleArn: pulumi.String(aws_iam_role.Test.Arn),
+// 				Bucket:  pulumi.Any(aws_s3_bucket.Test.Bucket),
+// 				Key:     pulumi.Any(aws_s3_bucket_object.Test.Key),
+// 				RoleArn: pulumi.Any(aws_iam_role.Test.Arn),
 // 			},
 // 		}, pulumi.DependsOn([]pulumi.Resource{
-// 			"aws_iam_role_policy.test",
+// 			aws_iam_role_policy.Test,
 // 		}))
 // 		if err != nil {
 // 			return err
@@ -41,6 +42,10 @@ import (
 // 	})
 // }
 // ```
+//
+// ## Import
+//
+// Gamelift Builds cannot be imported at this time.
 type Build struct {
 	pulumi.CustomResourceState
 
@@ -61,14 +66,15 @@ type Build struct {
 // NewBuild registers a new resource with the given unique name, arguments, and options.
 func NewBuild(ctx *pulumi.Context,
 	name string, args *BuildArgs, opts ...pulumi.ResourceOption) (*Build, error) {
-	if args == nil || args.OperatingSystem == nil {
-		return nil, errors.New("missing required argument 'OperatingSystem'")
-	}
-	if args == nil || args.StorageLocation == nil {
-		return nil, errors.New("missing required argument 'StorageLocation'")
-	}
 	if args == nil {
-		args = &BuildArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.OperatingSystem == nil {
+		return nil, errors.New("invalid value for required argument 'OperatingSystem'")
+	}
+	if args.StorageLocation == nil {
+		return nil, errors.New("invalid value for required argument 'StorageLocation'")
 	}
 	var resource Build
 	err := ctx.RegisterResource("aws:gamelift/build:Build", name, args, &resource, opts...)
@@ -154,4 +160,43 @@ type BuildArgs struct {
 
 func (BuildArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*buildArgs)(nil)).Elem()
+}
+
+type BuildInput interface {
+	pulumi.Input
+
+	ToBuildOutput() BuildOutput
+	ToBuildOutputWithContext(ctx context.Context) BuildOutput
+}
+
+func (Build) ElementType() reflect.Type {
+	return reflect.TypeOf((*Build)(nil)).Elem()
+}
+
+func (i Build) ToBuildOutput() BuildOutput {
+	return i.ToBuildOutputWithContext(context.Background())
+}
+
+func (i Build) ToBuildOutputWithContext(ctx context.Context) BuildOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(BuildOutput)
+}
+
+type BuildOutput struct {
+	*pulumi.OutputState
+}
+
+func (BuildOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*BuildOutput)(nil)).Elem()
+}
+
+func (o BuildOutput) ToBuildOutput() BuildOutput {
+	return o
+}
+
+func (o BuildOutput) ToBuildOutputWithContext(ctx context.Context) BuildOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(BuildOutput{})
 }

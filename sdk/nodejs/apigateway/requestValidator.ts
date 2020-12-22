@@ -16,10 +16,18 @@ import {RestApi} from "./index";
  * import * as aws from "@pulumi/aws";
  *
  * const example = new aws.apigateway.RequestValidator("example", {
- *     restApi: aws_api_gateway_rest_api_example.id,
+ *     restApi: aws_api_gateway_rest_api.example.id,
  *     validateRequestBody: true,
  *     validateRequestParameters: true,
  * });
+ * ```
+ *
+ * ## Import
+ *
+ * `aws_api_gateway_request_validator` can be imported using `REST-API-ID/REQUEST-VALIDATOR-ID`, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:apigateway/requestValidator:RequestValidator example 12345abcde/67890fghij
  * ```
  */
 export class RequestValidator extends pulumi.CustomResource {
@@ -85,7 +93,7 @@ export class RequestValidator extends pulumi.CustomResource {
             inputs["validateRequestParameters"] = state ? state.validateRequestParameters : undefined;
         } else {
             const args = argsOrState as RequestValidatorArgs | undefined;
-            if (!args || args.restApi === undefined) {
+            if ((!args || args.restApi === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'restApi'");
             }
             inputs["name"] = args ? args.name : undefined;

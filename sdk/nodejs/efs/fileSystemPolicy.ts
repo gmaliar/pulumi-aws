@@ -16,17 +16,17 @@ import * as utilities from "../utilities";
  * const fs = new aws.efs.FileSystem("fs", {});
  * const policy = new aws.efs.FileSystemPolicy("policy", {
  *     fileSystemId: fs.id,
- *     policy: pulumi.interpolate`{
+ *     policy: `{
  *     "Version": "2012-10-17",
  *     "Id": "ExamplePolicy01",
  *     "Statement": [
  *         {
- *             "Sid": "ExampleSatement01",
+ *             "Sid": "ExampleStatement01",
  *             "Effect": "Allow",
  *             "Principal": {
  *                 "AWS": "*"
  *             },
- *             "Resource": "${aws_efs_file_system_test.arn}",
+ *             "Resource": "${aws_efs_file_system.test.arn}",
  *             "Action": [
  *                 "elasticfilesystem:ClientMount",
  *                 "elasticfilesystem:ClientWrite"
@@ -41,6 +41,14 @@ import * as utilities from "../utilities";
  * }
  * `,
  * });
+ * ```
+ *
+ * ## Import
+ *
+ * The EFS file system policies can be imported using the `id`, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:efs/fileSystemPolicy:FileSystemPolicy foo fs-6fa144c6
  * ```
  */
 export class FileSystemPolicy extends pulumi.CustomResource {
@@ -96,10 +104,10 @@ export class FileSystemPolicy extends pulumi.CustomResource {
             inputs["policy"] = state ? state.policy : undefined;
         } else {
             const args = argsOrState as FileSystemPolicyArgs | undefined;
-            if (!args || args.fileSystemId === undefined) {
+            if ((!args || args.fileSystemId === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'fileSystemId'");
             }
-            if (!args || args.policy === undefined) {
+            if ((!args || args.policy === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'policy'");
             }
             inputs["fileSystemId"] = args ? args.fileSystemId : undefined;

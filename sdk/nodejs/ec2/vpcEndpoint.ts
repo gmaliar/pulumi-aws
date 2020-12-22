@@ -2,8 +2,7 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 /**
@@ -24,8 +23,8 @@ import * as utilities from "../utilities";
  * import * as aws from "@pulumi/aws";
  *
  * const s3 = new aws.ec2.VpcEndpoint("s3", {
+ *     vpcId: aws_vpc.main.id,
  *     serviceName: "com.amazonaws.us-west-2.s3",
- *     vpcId: aws_vpc_main.id,
  * });
  * ```
  * ### Basic w/ Tags
@@ -35,11 +34,11 @@ import * as utilities from "../utilities";
  * import * as aws from "@pulumi/aws";
  *
  * const s3 = new aws.ec2.VpcEndpoint("s3", {
+ *     vpcId: aws_vpc.main.id,
  *     serviceName: "com.amazonaws.us-west-2.s3",
  *     tags: {
  *         Environment: "test",
  *     },
- *     vpcId: aws_vpc_main.id,
  * });
  * ```
  * ### Interface Endpoint Type
@@ -49,42 +48,40 @@ import * as utilities from "../utilities";
  * import * as aws from "@pulumi/aws";
  *
  * const ec2 = new aws.ec2.VpcEndpoint("ec2", {
- *     privateDnsEnabled: true,
- *     securityGroupIds: [aws_security_group_sg1.id],
+ *     vpcId: aws_vpc.main.id,
  *     serviceName: "com.amazonaws.us-west-2.ec2",
  *     vpcEndpointType: "Interface",
- *     vpcId: aws_vpc_main.id,
+ *     securityGroupIds: [aws_security_group.sg1.id],
+ *     privateDnsEnabled: true,
  * });
  * ```
- * ### Non-AWS Service
+ * ### Gateway Load Balancer Endpoint Type
  *
  * ```typescript
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const ptfeServiceVpcEndpoint = new aws.ec2.VpcEndpoint("ptfe_service", {
- *     privateDnsEnabled: false,
- *     securityGroupIds: [aws_security_group_ptfe_service.id],
- *     serviceName: var_ptfe_service,
- *     subnetIds: [local_subnet_ids],
- *     vpcEndpointType: "Interface",
- *     vpcId: var_vpc_id,
+ * const current = aws.getCallerIdentity({});
+ * const exampleVpcEndpointService = new aws.ec2.VpcEndpointService("exampleVpcEndpointService", {
+ *     acceptanceRequired: false,
+ *     allowedPrincipals: [current.then(current => current.arn)],
+ *     gatewayLoadBalancerArns: [aws_lb.example.arn],
  * });
- * const internal = pulumi.output(aws.route53.getZone({
- *     name: "vpc.internal.",
- *     privateZone: true,
- *     vpcId: var_vpc_id,
- * }, { async: true }));
- * const ptfeServiceRecord = new aws.route53.Record("ptfe_service", {
- *     name: pulumi.interpolate`ptfe.${internal.name!}`,
- *     records: [ptfeServiceVpcEndpoint.dnsEntries.apply(dnsEntries => (<any>dnsEntries[0])["dns_name"])],
- *     ttl: 300,
- *     type: "CNAME",
- *     zoneId: internal.zoneId!,
+ * const exampleVpcEndpoint = new aws.ec2.VpcEndpoint("exampleVpcEndpoint", {
+ *     serviceName: exampleVpcEndpointService.serviceName,
+ *     subnetIds: [aws_subnet.example.id],
+ *     vpcEndpointType: exampleVpcEndpointService.serviceType,
+ *     vpcId: aws_vpc.example.id,
  * });
  * ```
  *
- * > **NOTE The `dnsEntry` output is a list of maps:** This provider interpolation support for lists of maps requires the `lookup` and `[]` until full support of lists of maps is available
+ * ## Import
+ *
+ * VPC Endpoints can be imported using the `vpc endpoint id`, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:ec2/vpcEndpoint:VpcEndpoint endpoint1 vpce-3ecf2a57
+ * ```
  */
 export class VpcEndpoint extends pulumi.CustomResource {
     /**
@@ -172,7 +169,7 @@ export class VpcEndpoint extends pulumi.CustomResource {
      */
     public /*out*/ readonly state!: pulumi.Output<string>;
     /**
-     * The ID of one or more subnets in which to create a network interface for the endpoint. Applicable for endpoints of type `Interface`.
+     * The ID of one or more subnets in which to create a network interface for the endpoint. Applicable for endpoints of type `GatewayLoadBalancer` and `Interface`.
      */
     public readonly subnetIds!: pulumi.Output<string[]>;
     /**
@@ -180,7 +177,7 @@ export class VpcEndpoint extends pulumi.CustomResource {
      */
     public readonly tags!: pulumi.Output<{[key: string]: string} | undefined>;
     /**
-     * The VPC endpoint type, `Gateway` or `Interface`. Defaults to `Gateway`.
+     * The VPC endpoint type, `Gateway`, `GatewayLoadBalancer`, or `Interface`. Defaults to `Gateway`.
      */
     public readonly vpcEndpointType!: pulumi.Output<string | undefined>;
     /**
@@ -220,10 +217,10 @@ export class VpcEndpoint extends pulumi.CustomResource {
             inputs["vpcId"] = state ? state.vpcId : undefined;
         } else {
             const args = argsOrState as VpcEndpointArgs | undefined;
-            if (!args || args.serviceName === undefined) {
+            if ((!args || args.serviceName === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'serviceName'");
             }
-            if (!args || args.vpcId === undefined) {
+            if ((!args || args.vpcId === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'vpcId'");
             }
             inputs["autoAccept"] = args ? args.autoAccept : undefined;
@@ -318,7 +315,7 @@ export interface VpcEndpointState {
      */
     readonly state?: pulumi.Input<string>;
     /**
-     * The ID of one or more subnets in which to create a network interface for the endpoint. Applicable for endpoints of type `Interface`.
+     * The ID of one or more subnets in which to create a network interface for the endpoint. Applicable for endpoints of type `GatewayLoadBalancer` and `Interface`.
      */
     readonly subnetIds?: pulumi.Input<pulumi.Input<string>[]>;
     /**
@@ -326,7 +323,7 @@ export interface VpcEndpointState {
      */
     readonly tags?: pulumi.Input<{[key: string]: pulumi.Input<string>}>;
     /**
-     * The VPC endpoint type, `Gateway` or `Interface`. Defaults to `Gateway`.
+     * The VPC endpoint type, `Gateway`, `GatewayLoadBalancer`, or `Interface`. Defaults to `Gateway`.
      */
     readonly vpcEndpointType?: pulumi.Input<string>;
     /**
@@ -365,7 +362,7 @@ export interface VpcEndpointArgs {
      */
     readonly serviceName: pulumi.Input<string>;
     /**
-     * The ID of one or more subnets in which to create a network interface for the endpoint. Applicable for endpoints of type `Interface`.
+     * The ID of one or more subnets in which to create a network interface for the endpoint. Applicable for endpoints of type `GatewayLoadBalancer` and `Interface`.
      */
     readonly subnetIds?: pulumi.Input<pulumi.Input<string>[]>;
     /**
@@ -373,7 +370,7 @@ export interface VpcEndpointArgs {
      */
     readonly tags?: pulumi.Input<{[key: string]: pulumi.Input<string>}>;
     /**
-     * The VPC endpoint type, `Gateway` or `Interface`. Defaults to `Gateway`.
+     * The VPC endpoint type, `Gateway`, `GatewayLoadBalancer`, or `Interface`. Defaults to `Gateway`.
      */
     readonly vpcEndpointType?: pulumi.Input<string>;
     /**

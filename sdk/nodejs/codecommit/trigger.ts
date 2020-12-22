@@ -2,8 +2,7 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 /**
@@ -15,15 +14,13 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const testRepository = new aws.codecommit.Repository("test", {
- *     repositoryName: "test",
- * });
- * const testTrigger = new aws.codecommit.Trigger("test", {
+ * const testRepository = new aws.codecommit.Repository("testRepository", {repositoryName: "test"});
+ * const testTrigger = new aws.codecommit.Trigger("testTrigger", {
  *     repositoryName: testRepository.repositoryName,
  *     triggers: [{
- *         destinationArn: aws_sns_topic_test.arn,
- *         events: ["all"],
  *         name: "all",
+ *         events: ["all"],
+ *         destinationArn: aws_sns_topic.test.arn,
  *     }],
  * });
  * ```
@@ -80,10 +77,10 @@ export class Trigger extends pulumi.CustomResource {
             inputs["triggers"] = state ? state.triggers : undefined;
         } else {
             const args = argsOrState as TriggerArgs | undefined;
-            if (!args || args.repositoryName === undefined) {
+            if ((!args || args.repositoryName === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'repositoryName'");
             }
-            if (!args || args.triggers === undefined) {
+            if ((!args || args.triggers === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'triggers'");
             }
             inputs["repositoryName"] = args ? args.repositoryName : undefined;

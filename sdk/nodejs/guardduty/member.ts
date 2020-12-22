@@ -13,17 +13,25 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const master = new aws.guardduty.Detector("master", {enable: true});
+ * const primary = new aws.guardduty.Detector("primary", {enable: true});
  * const memberDetector = new aws.guardduty.Detector("memberDetector", {enable: true}, {
- *     provider: "aws.dev",
+ *     provider: aws.dev,
  * });
  * const memberMember = new aws.guardduty.Member("memberMember", {
  *     accountId: memberDetector.accountId,
- *     detectorId: master.id,
+ *     detectorId: primary.id,
  *     email: "required@example.com",
  *     invite: true,
  *     invitationMessage: "please accept guardduty invitation",
  * });
+ * ```
+ *
+ * ## Import
+ *
+ * GuardDuty members can be imported using the the primary GuardDuty detector ID and member AWS account ID, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:guardduty/member:Member MyMember 00b00fd5aecc0ab60a708659477e9617:123456789012
  * ```
  */
 export class Member extends pulumi.CustomResource {
@@ -79,7 +87,7 @@ export class Member extends pulumi.CustomResource {
      */
     public readonly invite!: pulumi.Output<boolean | undefined>;
     /**
-     * The status of the relationship between the member account and its master account. More information can be found in [Amazon GuardDuty API Reference](https://docs.aws.amazon.com/guardduty/latest/ug/get-members.html).
+     * The status of the relationship between the member account and its primary account. More information can be found in [Amazon GuardDuty API Reference](https://docs.aws.amazon.com/guardduty/latest/ug/get-members.html).
      */
     public /*out*/ readonly relationshipStatus!: pulumi.Output<string>;
 
@@ -104,13 +112,13 @@ export class Member extends pulumi.CustomResource {
             inputs["relationshipStatus"] = state ? state.relationshipStatus : undefined;
         } else {
             const args = argsOrState as MemberArgs | undefined;
-            if (!args || args.accountId === undefined) {
+            if ((!args || args.accountId === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'accountId'");
             }
-            if (!args || args.detectorId === undefined) {
+            if ((!args || args.detectorId === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'detectorId'");
             }
-            if (!args || args.email === undefined) {
+            if ((!args || args.email === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'email'");
             }
             inputs["accountId"] = args ? args.accountId : undefined;
@@ -161,7 +169,7 @@ export interface MemberState {
      */
     readonly invite?: pulumi.Input<boolean>;
     /**
-     * The status of the relationship between the member account and its master account. More information can be found in [Amazon GuardDuty API Reference](https://docs.aws.amazon.com/guardduty/latest/ug/get-members.html).
+     * The status of the relationship between the member account and its primary account. More information can be found in [Amazon GuardDuty API Reference](https://docs.aws.amazon.com/guardduty/latest/ug/get-members.html).
      */
     readonly relationshipStatus?: pulumi.Input<string>;
 }

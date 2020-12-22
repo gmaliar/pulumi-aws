@@ -29,16 +29,19 @@ namespace Pulumi.Aws.LB
     ///         var exampleCertificate = new Aws.Acm.Certificate("exampleCertificate", new Aws.Acm.CertificateArgs
     ///         {
     ///         });
+    ///         // ...
     ///         var frontEndLoadBalancer = new Aws.LB.LoadBalancer("frontEndLoadBalancer", new Aws.LB.LoadBalancerArgs
     ///         {
     ///         });
+    ///         // ...
     ///         var frontEndListener = new Aws.LB.Listener("frontEndListener", new Aws.LB.ListenerArgs
     ///         {
     ///         });
+    ///         // ...
     ///         var exampleListenerCertificate = new Aws.LB.ListenerCertificate("exampleListenerCertificate", new Aws.LB.ListenerCertificateArgs
     ///         {
-    ///             CertificateArn = exampleCertificate.Arn,
     ///             ListenerArn = frontEndListener.Arn,
+    ///             CertificateArn = exampleCertificate.Arn,
     ///         });
     ///     }
     /// 
@@ -84,7 +87,7 @@ namespace Pulumi.Aws.LB
                 Version = Utilities.Version,
                 Aliases =
                 {
-                    new Alias { Type = "aws:elasticloadbalancingv2/listenerCertificate:ListenerCertificate"},
+                    new Pulumi.Alias { Type = "aws:elasticloadbalancingv2/listenerCertificate:ListenerCertificate"},
                 },
             };
             var merged = CustomResourceOptions.Merge(defaultOptions, options);

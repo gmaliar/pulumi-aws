@@ -56,17 +56,11 @@ namespace Pulumi.Aws.Route53
     ///         });
     ///         var dev_ns = new Aws.Route53.Record("dev-ns", new Aws.Route53.RecordArgs
     ///         {
-    ///             Name = "dev.example.com",
-    ///             Records = 
-    ///             {
-    ///                 dev.NameServers.Apply(nameServers =&gt; nameServers[0]),
-    ///                 dev.NameServers.Apply(nameServers =&gt; nameServers[1]),
-    ///                 dev.NameServers.Apply(nameServers =&gt; nameServers[2]),
-    ///                 dev.NameServers.Apply(nameServers =&gt; nameServers[3]),
-    ///             },
-    ///             Ttl = 30,
-    ///             Type = "NS",
     ///             ZoneId = main.ZoneId,
+    ///             Name = "dev.example.com",
+    ///             Type = "NS",
+    ///             Ttl = 30,
+    ///             Records = dev.NameServers,
     ///         });
     ///     }
     /// 
@@ -99,6 +93,14 @@ namespace Pulumi.Aws.Route53
     ///     }
     /// 
     /// }
+    /// ```
+    /// 
+    /// ## Import
+    /// 
+    /// Route53 Zones can be imported using the `zone id`, e.g.
+    /// 
+    /// ```sh
+    ///  $ pulumi import aws:route53/zone:Zone myzone Z1D633PJN98FT9
     /// ```
     /// </summary>
     public partial class Zone : Pulumi.CustomResource

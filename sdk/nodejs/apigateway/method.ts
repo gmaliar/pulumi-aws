@@ -15,19 +15,17 @@ import {RestApi} from "./index";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const myDemoAPI = new aws.apigateway.RestApi("MyDemoAPI", {
- *     description: "This is my API for demonstration purposes",
- * });
- * const myDemoResource = new aws.apigateway.Resource("MyDemoResource", {
+ * const myDemoAPI = new aws.apigateway.RestApi("myDemoAPI", {description: "This is my API for demonstration purposes"});
+ * const myDemoResource = new aws.apigateway.Resource("myDemoResource", {
+ *     restApi: myDemoAPI.id,
  *     parentId: myDemoAPI.rootResourceId,
  *     pathPart: "mydemoresource",
- *     restApi: myDemoAPI.id,
  * });
- * const myDemoMethod = new aws.apigateway.Method("MyDemoMethod", {
- *     authorization: "NONE",
- *     httpMethod: "GET",
- *     resourceId: myDemoResource.id,
+ * const myDemoMethod = new aws.apigateway.Method("myDemoMethod", {
  *     restApi: myDemoAPI.id,
+ *     resourceId: myDemoResource.id,
+ *     httpMethod: "GET",
+ *     authorization: "NONE",
  * });
  * ```
  * ## Usage with Cognito User Pool Authorizer
@@ -37,32 +35,39 @@ import {RestApi} from "./index";
  * import * as aws from "@pulumi/aws";
  *
  * const config = new pulumi.Config();
- * const cognitoUserPoolName = config.require("cognitoUserPoolName");
- *
- * const thisUserPools = pulumi.output(aws.cognito.getUserPools({
+ * const cognitoUserPoolName = config.requireObject("cognitoUserPoolName");
+ * const thisUserPools = aws.cognito.getUserPools({
  *     name: cognitoUserPoolName,
- * }, { async: true }));
- * const thisRestApi = new aws.apigateway.RestApi("this", {});
- * const thisResource = new aws.apigateway.Resource("this", {
+ * });
+ * const thisRestApi = new aws.apigateway.RestApi("thisRestApi", {});
+ * const thisResource = new aws.apigateway.Resource("thisResource", {
+ *     restApi: thisRestApi.id,
  *     parentId: thisRestApi.rootResourceId,
  *     pathPart: "{proxy+}",
- *     restApi: thisRestApi.id,
  * });
- * const thisAuthorizer = new aws.apigateway.Authorizer("this", {
- *     providerArns: thisUserPools.arns,
- *     restApi: thisRestApi.id,
+ * const thisAuthorizer = new aws.apigateway.Authorizer("thisAuthorizer", {
  *     type: "COGNITO_USER_POOLS",
+ *     restApi: thisRestApi.id,
+ *     providerArns: thisUserPools.then(thisUserPools => thisUserPools.arns),
  * });
  * const any = new aws.apigateway.Method("any", {
+ *     restApi: thisRestApi.id,
+ *     resourceId: thisResource.id,
+ *     httpMethod: "ANY",
  *     authorization: "COGNITO_USER_POOLS",
  *     authorizerId: thisAuthorizer.id,
- *     httpMethod: "ANY",
  *     requestParameters: {
  *         "method.request.path.proxy": true,
  *     },
- *     resourceId: thisResource.id,
- *     restApi: thisRestApi.id,
  * });
+ * ```
+ *
+ * ## Import
+ *
+ * `aws_api_gateway_method` can be imported using `REST-API-ID/RESOURCE-ID/HTTP-METHOD`, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:apigateway/method:Method example 12345abcde/67890fghij/GET
  * ```
  */
 export class Method extends pulumi.CustomResource {
@@ -161,16 +166,16 @@ export class Method extends pulumi.CustomResource {
             inputs["restApi"] = state ? state.restApi : undefined;
         } else {
             const args = argsOrState as MethodArgs | undefined;
-            if (!args || args.authorization === undefined) {
+            if ((!args || args.authorization === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'authorization'");
             }
-            if (!args || args.httpMethod === undefined) {
+            if ((!args || args.httpMethod === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'httpMethod'");
             }
-            if (!args || args.resourceId === undefined) {
+            if ((!args || args.resourceId === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'resourceId'");
             }
-            if (!args || args.restApi === undefined) {
+            if ((!args || args.restApi === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'restApi'");
             }
             inputs["apiKeyRequired"] = args ? args.apiKeyRequired : undefined;

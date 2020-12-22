@@ -2,8 +2,7 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 /**
@@ -31,6 +30,7 @@ export function getJobQueue(args: GetJobQueueArgs, opts?: pulumi.InvokeOptions):
     }
     return pulumi.runtime.invoke("aws:batch/getJobQueue:getJobQueue", {
         "name": args.name,
+        "tags": args.tags,
     }, opts);
 }
 
@@ -42,6 +42,10 @@ export interface GetJobQueueArgs {
      * The name of the job queue.
      */
     readonly name: string;
+    /**
+     * Key-value map of resource tags
+     */
+    readonly tags?: {[key: string]: string};
 }
 
 /**
@@ -82,4 +86,8 @@ export interface GetJobQueueResult {
      * of the job queue.
      */
     readonly statusReason: string;
+    /**
+     * Key-value map of resource tags
+     */
+    readonly tags: {[key: string]: string};
 }

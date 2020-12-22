@@ -4,6 +4,7 @@
 package ses
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
@@ -19,7 +20,7 @@ import (
 // import (
 // 	"fmt"
 //
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/ses"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/ses"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -36,6 +37,14 @@ import (
 // 		return nil
 // 	})
 // }
+// ```
+//
+// ## Import
+//
+// SES templates can be imported using the template name, e.g.
+//
+// ```sh
+//  $ pulumi import aws:ses/template:Template MyTemplate MyTemplate
 // ```
 type Template struct {
 	pulumi.CustomResourceState
@@ -56,6 +65,7 @@ func NewTemplate(ctx *pulumi.Context,
 	if args == nil {
 		args = &TemplateArgs{}
 	}
+
 	var resource Template
 	err := ctx.RegisterResource("aws:ses/template:Template", name, args, &resource, opts...)
 	if err != nil {
@@ -128,4 +138,43 @@ type TemplateArgs struct {
 
 func (TemplateArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*templateArgs)(nil)).Elem()
+}
+
+type TemplateInput interface {
+	pulumi.Input
+
+	ToTemplateOutput() TemplateOutput
+	ToTemplateOutputWithContext(ctx context.Context) TemplateOutput
+}
+
+func (Template) ElementType() reflect.Type {
+	return reflect.TypeOf((*Template)(nil)).Elem()
+}
+
+func (i Template) ToTemplateOutput() TemplateOutput {
+	return i.ToTemplateOutputWithContext(context.Background())
+}
+
+func (i Template) ToTemplateOutputWithContext(ctx context.Context) TemplateOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(TemplateOutput)
+}
+
+type TemplateOutput struct {
+	*pulumi.OutputState
+}
+
+func (TemplateOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*TemplateOutput)(nil)).Elem()
+}
+
+func (o TemplateOutput) ToTemplateOutput() TemplateOutput {
+	return o
+}
+
+func (o TemplateOutput) ToTemplateOutputWithContext(ctx context.Context) TemplateOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(TemplateOutput{})
 }

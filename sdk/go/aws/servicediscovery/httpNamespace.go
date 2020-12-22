@@ -4,6 +4,7 @@
 package servicediscovery
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
@@ -15,7 +16,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/servicediscovery"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/servicediscovery"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -30,6 +31,14 @@ import (
 // 		return nil
 // 	})
 // }
+// ```
+//
+// ## Import
+//
+// Service Discovery HTTP Namespace can be imported using the namespace ID, e.g.
+//
+// ```sh
+//  $ pulumi import aws:servicediscovery/httpNamespace:HttpNamespace example ns-1234567890
 // ```
 type HttpNamespace struct {
 	pulumi.CustomResourceState
@@ -50,6 +59,7 @@ func NewHttpNamespace(ctx *pulumi.Context,
 	if args == nil {
 		args = &HttpNamespaceArgs{}
 	}
+
 	var resource HttpNamespace
 	err := ctx.RegisterResource("aws:servicediscovery/httpNamespace:HttpNamespace", name, args, &resource, opts...)
 	if err != nil {
@@ -118,4 +128,43 @@ type HttpNamespaceArgs struct {
 
 func (HttpNamespaceArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*httpNamespaceArgs)(nil)).Elem()
+}
+
+type HttpNamespaceInput interface {
+	pulumi.Input
+
+	ToHttpNamespaceOutput() HttpNamespaceOutput
+	ToHttpNamespaceOutputWithContext(ctx context.Context) HttpNamespaceOutput
+}
+
+func (HttpNamespace) ElementType() reflect.Type {
+	return reflect.TypeOf((*HttpNamespace)(nil)).Elem()
+}
+
+func (i HttpNamespace) ToHttpNamespaceOutput() HttpNamespaceOutput {
+	return i.ToHttpNamespaceOutputWithContext(context.Background())
+}
+
+func (i HttpNamespace) ToHttpNamespaceOutputWithContext(ctx context.Context) HttpNamespaceOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(HttpNamespaceOutput)
+}
+
+type HttpNamespaceOutput struct {
+	*pulumi.OutputState
+}
+
+func (HttpNamespaceOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*HttpNamespaceOutput)(nil)).Elem()
+}
+
+func (o HttpNamespaceOutput) ToHttpNamespaceOutput() HttpNamespaceOutput {
+	return o
+}
+
+func (o HttpNamespaceOutput) ToHttpNamespaceOutputWithContext(ctx context.Context) HttpNamespaceOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(HttpNamespaceOutput{})
 }

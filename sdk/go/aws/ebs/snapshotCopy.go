@@ -4,6 +4,7 @@
 package ebs
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -18,7 +19,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/ebs"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/ebs"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -35,17 +36,17 @@ import (
 // 			return err
 // 		}
 // 		exampleSnapshot, err := ebs.NewSnapshot(ctx, "exampleSnapshot", &ebs.SnapshotArgs{
+// 			VolumeId: example.ID(),
 // 			Tags: pulumi.StringMap{
 // 				"Name": pulumi.String("HelloWorld_snap"),
 // 			},
-// 			VolumeId: example.ID(),
 // 		})
 // 		if err != nil {
 // 			return err
 // 		}
 // 		_, err = ebs.NewSnapshotCopy(ctx, "exampleCopy", &ebs.SnapshotCopyArgs{
-// 			SourceRegion:     pulumi.String("us-west-2"),
 // 			SourceSnapshotId: exampleSnapshot.ID(),
+// 			SourceRegion:     pulumi.String("us-west-2"),
 // 			Tags: pulumi.StringMap{
 // 				"Name": pulumi.String("HelloWorld_copy_snap"),
 // 			},
@@ -90,14 +91,15 @@ type SnapshotCopy struct {
 // NewSnapshotCopy registers a new resource with the given unique name, arguments, and options.
 func NewSnapshotCopy(ctx *pulumi.Context,
 	name string, args *SnapshotCopyArgs, opts ...pulumi.ResourceOption) (*SnapshotCopy, error) {
-	if args == nil || args.SourceRegion == nil {
-		return nil, errors.New("missing required argument 'SourceRegion'")
-	}
-	if args == nil || args.SourceSnapshotId == nil {
-		return nil, errors.New("missing required argument 'SourceSnapshotId'")
-	}
 	if args == nil {
-		args = &SnapshotCopyArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.SourceRegion == nil {
+		return nil, errors.New("invalid value for required argument 'SourceRegion'")
+	}
+	if args.SourceSnapshotId == nil {
+		return nil, errors.New("invalid value for required argument 'SourceSnapshotId'")
 	}
 	var resource SnapshotCopy
 	err := ctx.RegisterResource("aws:ebs/snapshotCopy:SnapshotCopy", name, args, &resource, opts...)
@@ -213,4 +215,43 @@ type SnapshotCopyArgs struct {
 
 func (SnapshotCopyArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*snapshotCopyArgs)(nil)).Elem()
+}
+
+type SnapshotCopyInput interface {
+	pulumi.Input
+
+	ToSnapshotCopyOutput() SnapshotCopyOutput
+	ToSnapshotCopyOutputWithContext(ctx context.Context) SnapshotCopyOutput
+}
+
+func (SnapshotCopy) ElementType() reflect.Type {
+	return reflect.TypeOf((*SnapshotCopy)(nil)).Elem()
+}
+
+func (i SnapshotCopy) ToSnapshotCopyOutput() SnapshotCopyOutput {
+	return i.ToSnapshotCopyOutputWithContext(context.Background())
+}
+
+func (i SnapshotCopy) ToSnapshotCopyOutputWithContext(ctx context.Context) SnapshotCopyOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(SnapshotCopyOutput)
+}
+
+type SnapshotCopyOutput struct {
+	*pulumi.OutputState
+}
+
+func (SnapshotCopyOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*SnapshotCopyOutput)(nil)).Elem()
+}
+
+func (o SnapshotCopyOutput) ToSnapshotCopyOutput() SnapshotCopyOutput {
+	return o
+}
+
+func (o SnapshotCopyOutput) ToSnapshotCopyOutputWithContext(ctx context.Context) SnapshotCopyOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(SnapshotCopyOutput{})
 }

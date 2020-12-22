@@ -4,6 +4,7 @@
 package ec2
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -37,27 +38,27 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/ec2"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/ec2"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
 // func main() {
 // 	pulumi.Run(func(ctx *pulumi.Context) error {
 // 		_, err := ec2.NewRouteTable(ctx, "routeTable", &ec2.RouteTableArgs{
+// 			VpcId: pulumi.Any(aws_vpc.Default.Id),
 // 			Routes: ec2.RouteTableRouteArray{
 // 				&ec2.RouteTableRouteArgs{
 // 					CidrBlock: pulumi.String("10.0.1.0/24"),
-// 					GatewayId: pulumi.String(aws_internet_gateway.Main.Id),
+// 					GatewayId: pulumi.Any(aws_internet_gateway.Main.Id),
 // 				},
 // 				&ec2.RouteTableRouteArgs{
-// 					EgressOnlyGatewayId: pulumi.String(aws_egress_only_internet_gateway.Foo.Id),
 // 					Ipv6CidrBlock:       pulumi.String("::/0"),
+// 					EgressOnlyGatewayId: pulumi.Any(aws_egress_only_internet_gateway.Foo.Id),
 // 				},
 // 			},
 // 			Tags: pulumi.StringMap{
 // 				"Name": pulumi.String("main"),
 // 			},
-// 			VpcId: pulumi.String(aws_vpc.Default.Id),
 // 		})
 // 		if err != nil {
 // 			return err
@@ -65,6 +66,14 @@ import (
 // 		return nil
 // 	})
 // }
+// ```
+//
+// ## Import
+//
+// Route Tables can be imported using the route table `id`. For example, to import route table `rtb-4e616f6d69`, use this command
+//
+// ```sh
+//  $ pulumi import aws:ec2/routeTable:RouteTable public_rt rtb-4e616f6d69
 // ```
 type RouteTable struct {
 	pulumi.CustomResourceState
@@ -84,11 +93,12 @@ type RouteTable struct {
 // NewRouteTable registers a new resource with the given unique name, arguments, and options.
 func NewRouteTable(ctx *pulumi.Context,
 	name string, args *RouteTableArgs, opts ...pulumi.ResourceOption) (*RouteTable, error) {
-	if args == nil || args.VpcId == nil {
-		return nil, errors.New("missing required argument 'VpcId'")
-	}
 	if args == nil {
-		args = &RouteTableArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.VpcId == nil {
+		return nil, errors.New("invalid value for required argument 'VpcId'")
 	}
 	var resource RouteTable
 	err := ctx.RegisterResource("aws:ec2/routeTable:RouteTable", name, args, &resource, opts...)
@@ -166,4 +176,43 @@ type RouteTableArgs struct {
 
 func (RouteTableArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*routeTableArgs)(nil)).Elem()
+}
+
+type RouteTableInput interface {
+	pulumi.Input
+
+	ToRouteTableOutput() RouteTableOutput
+	ToRouteTableOutputWithContext(ctx context.Context) RouteTableOutput
+}
+
+func (RouteTable) ElementType() reflect.Type {
+	return reflect.TypeOf((*RouteTable)(nil)).Elem()
+}
+
+func (i RouteTable) ToRouteTableOutput() RouteTableOutput {
+	return i.ToRouteTableOutputWithContext(context.Background())
+}
+
+func (i RouteTable) ToRouteTableOutputWithContext(ctx context.Context) RouteTableOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(RouteTableOutput)
+}
+
+type RouteTableOutput struct {
+	*pulumi.OutputState
+}
+
+func (RouteTableOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*RouteTableOutput)(nil)).Elem()
+}
+
+func (o RouteTableOutput) ToRouteTableOutput() RouteTableOutput {
+	return o
+}
+
+func (o RouteTableOutput) ToRouteTableOutputWithContext(ctx context.Context) RouteTableOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(RouteTableOutput{})
 }

@@ -4,6 +4,7 @@
 package s3
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -23,8 +24,8 @@ import (
 // import (
 // 	"fmt"
 //
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/s3"
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/sns"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/s3"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/sns"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -36,7 +37,7 @@ import (
 // 		}
 // 		topic, err := sns.NewTopic(ctx, "topic", &sns.TopicArgs{
 // 			Policy: bucket.Arn.ApplyT(func(arn string) (string, error) {
-// 				return fmt.Sprintf("%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v", "{\n", "    \"Version\":\"2012-10-17\",\n", "    \"Statement\":[{\n", "        \"Effect\": \"Allow\",\n", "        \"Principal\": {\"AWS\":\"*\"},\n", "        \"Action\": \"SNS:Publish\",\n", "        \"Resource\": \"arn:aws:sns:*:*:s3-event-notification-topic\",\n", "        \"Condition\":{\n", "            \"ArnLike\":{\"aws:SourceArn\":\"", arn, "\"}\n", "        }\n", "    }]\n", "}\n", "\n"), nil
+// 				return fmt.Sprintf("%v%v%v%v%v%v%v%v%v%v%v%v%v%v", "{\n", "    \"Version\":\"2012-10-17\",\n", "    \"Statement\":[{\n", "        \"Effect\": \"Allow\",\n", "        \"Principal\": {\"AWS\":\"*\"},\n", "        \"Action\": \"SNS:Publish\",\n", "        \"Resource\": \"arn:aws:sns:*:*:s3-event-notification-topic\",\n", "        \"Condition\":{\n", "            \"ArnLike\":{\"aws:SourceArn\":\"", arn, "\"}\n", "        }\n", "    }]\n", "}\n"), nil
 // 			}).(pulumi.StringOutput),
 // 		})
 // 		if err != nil {
@@ -46,11 +47,11 @@ import (
 // 			Bucket: bucket.ID(),
 // 			Topics: s3.BucketNotificationTopicArray{
 // 				&s3.BucketNotificationTopicArgs{
+// 					TopicArn: topic.Arn,
 // 					Events: pulumi.StringArray{
 // 						pulumi.String("s3:ObjectCreated:*"),
 // 					},
 // 					FilterSuffix: pulumi.String(".log"),
-// 					TopicArn:     topic.Arn,
 // 				},
 // 			},
 // 		})
@@ -69,8 +70,8 @@ import (
 // import (
 // 	"fmt"
 //
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/s3"
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/sqs"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/s3"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/sqs"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -82,7 +83,7 @@ import (
 // 		}
 // 		queue, err := sqs.NewQueue(ctx, "queue", &sqs.QueueArgs{
 // 			Policy: bucket.Arn.ApplyT(func(arn string) (string, error) {
-// 				return fmt.Sprintf("%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v", "{\n", "  \"Version\": \"2012-10-17\",\n", "  \"Statement\": [\n", "    {\n", "      \"Effect\": \"Allow\",\n", "      \"Principal\": \"*\",\n", "      \"Action\": \"sqs:SendMessage\",\n", "	  \"Resource\": \"arn:aws:sqs:*:*:s3-event-notification-queue\",\n", "      \"Condition\": {\n", "        \"ArnEquals\": { \"aws:SourceArn\": \"", arn, "\" }\n", "      }\n", "    }\n", "  ]\n", "}\n", "\n"), nil
+// 				return fmt.Sprintf("%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v", "{\n", "  \"Version\": \"2012-10-17\",\n", "  \"Statement\": [\n", "    {\n", "      \"Effect\": \"Allow\",\n", "      \"Principal\": \"*\",\n", "      \"Action\": \"sqs:SendMessage\",\n", "	  \"Resource\": \"arn:aws:sqs:*:*:s3-event-notification-queue\",\n", "      \"Condition\": {\n", "        \"ArnEquals\": { \"aws:SourceArn\": \"", arn, "\" }\n", "      }\n", "    }\n", "  ]\n", "}\n"), nil
 // 			}).(pulumi.StringOutput),
 // 		})
 // 		if err != nil {
@@ -92,11 +93,11 @@ import (
 // 			Bucket: bucket.ID(),
 // 			Queues: s3.BucketNotificationQueueArray{
 // 				&s3.BucketNotificationQueueArgs{
+// 					QueueArn: queue.Arn,
 // 					Events: pulumi.StringArray{
 // 						pulumi.String("s3:ObjectCreated:*"),
 // 					},
 // 					FilterSuffix: pulumi.String(".log"),
-// 					QueueArn:     queue.Arn,
 // 				},
 // 			},
 // 		})
@@ -115,8 +116,8 @@ import (
 // import (
 // 	"fmt"
 //
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/s3"
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/sqs"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/s3"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/sqs"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -128,7 +129,7 @@ import (
 // 		}
 // 		queue, err := sqs.NewQueue(ctx, "queue", &sqs.QueueArgs{
 // 			Policy: bucket.Arn.ApplyT(func(arn string) (string, error) {
-// 				return fmt.Sprintf("%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v", "{\n", "  \"Version\": \"2012-10-17\",\n", "  \"Statement\": [\n", "    {\n", "      \"Effect\": \"Allow\",\n", "      \"Principal\": \"*\",\n", "      \"Action\": \"sqs:SendMessage\",\n", "	  \"Resource\": \"arn:aws:sqs:*:*:s3-event-notification-queue\",\n", "      \"Condition\": {\n", "        \"ArnEquals\": { \"aws:SourceArn\": \"", arn, "\" }\n", "      }\n", "    }\n", "  ]\n", "}\n", "\n"), nil
+// 				return fmt.Sprintf("%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v", "{\n", "  \"Version\": \"2012-10-17\",\n", "  \"Statement\": [\n", "    {\n", "      \"Effect\": \"Allow\",\n", "      \"Principal\": \"*\",\n", "      \"Action\": \"sqs:SendMessage\",\n", "	  \"Resource\": \"arn:aws:sqs:*:*:s3-event-notification-queue\",\n", "      \"Condition\": {\n", "        \"ArnEquals\": { \"aws:SourceArn\": \"", arn, "\" }\n", "      }\n", "    }\n", "  ]\n", "}\n"), nil
 // 			}).(pulumi.StringOutput),
 // 		})
 // 		if err != nil {
@@ -138,20 +139,20 @@ import (
 // 			Bucket: bucket.ID(),
 // 			Queues: s3.BucketNotificationQueueArray{
 // 				&s3.BucketNotificationQueueArgs{
+// 					Id:       pulumi.String("image-upload-event"),
+// 					QueueArn: queue.Arn,
 // 					Events: pulumi.StringArray{
 // 						pulumi.String("s3:ObjectCreated:*"),
 // 					},
 // 					FilterPrefix: pulumi.String("images/"),
-// 					Id:           pulumi.String("image-upload-event"),
-// 					QueueArn:     queue.Arn,
 // 				},
 // 				&s3.BucketNotificationQueueArgs{
+// 					Id:       pulumi.String("video-upload-event"),
+// 					QueueArn: queue.Arn,
 // 					Events: pulumi.StringArray{
 // 						pulumi.String("s3:ObjectCreated:*"),
 // 					},
 // 					FilterPrefix: pulumi.String("videos/"),
-// 					Id:           pulumi.String("video-upload-event"),
-// 					QueueArn:     queue.Arn,
 // 				},
 // 			},
 // 		})
@@ -161,6 +162,14 @@ import (
 // 		return nil
 // 	})
 // }
+// ```
+//
+// ## Import
+//
+// S3 bucket notification can be imported using the `bucket`, e.g.
+//
+// ```sh
+//  $ pulumi import aws:s3/bucketNotification:BucketNotification bucket_notification bucket-name
 // ```
 type BucketNotification struct {
 	pulumi.CustomResourceState
@@ -178,11 +187,12 @@ type BucketNotification struct {
 // NewBucketNotification registers a new resource with the given unique name, arguments, and options.
 func NewBucketNotification(ctx *pulumi.Context,
 	name string, args *BucketNotificationArgs, opts ...pulumi.ResourceOption) (*BucketNotification, error) {
-	if args == nil || args.Bucket == nil {
-		return nil, errors.New("missing required argument 'Bucket'")
-	}
 	if args == nil {
-		args = &BucketNotificationArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.Bucket == nil {
+		return nil, errors.New("invalid value for required argument 'Bucket'")
 	}
 	var resource BucketNotification
 	err := ctx.RegisterResource("aws:s3/bucketNotification:BucketNotification", name, args, &resource, opts...)
@@ -256,4 +266,43 @@ type BucketNotificationArgs struct {
 
 func (BucketNotificationArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*bucketNotificationArgs)(nil)).Elem()
+}
+
+type BucketNotificationInput interface {
+	pulumi.Input
+
+	ToBucketNotificationOutput() BucketNotificationOutput
+	ToBucketNotificationOutputWithContext(ctx context.Context) BucketNotificationOutput
+}
+
+func (BucketNotification) ElementType() reflect.Type {
+	return reflect.TypeOf((*BucketNotification)(nil)).Elem()
+}
+
+func (i BucketNotification) ToBucketNotificationOutput() BucketNotificationOutput {
+	return i.ToBucketNotificationOutputWithContext(context.Background())
+}
+
+func (i BucketNotification) ToBucketNotificationOutputWithContext(ctx context.Context) BucketNotificationOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(BucketNotificationOutput)
+}
+
+type BucketNotificationOutput struct {
+	*pulumi.OutputState
+}
+
+func (BucketNotificationOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*BucketNotificationOutput)(nil)).Elem()
+}
+
+func (o BucketNotificationOutput) ToBucketNotificationOutput() BucketNotificationOutput {
+	return o
+}
+
+func (o BucketNotificationOutput) ToBucketNotificationOutputWithContext(ctx context.Context) BucketNotificationOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(BucketNotificationOutput{})
 }

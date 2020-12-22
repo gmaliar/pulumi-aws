@@ -5,32 +5,24 @@
 import warnings
 import pulumi
 import pulumi.runtime
-from typing import Union
-from .. import utilities, tables
+from typing import Any, Mapping, Optional, Sequence, Union
+from .. import _utilities, _tables
+
+__all__ = ['NamedQuery']
 
 
 class NamedQuery(pulumi.CustomResource):
-    database: pulumi.Output[str]
-    """
-    The database to which the query belongs.
-    """
-    description: pulumi.Output[str]
-    """
-    A brief explanation of the query. Maximum length of 1024.
-    """
-    name: pulumi.Output[str]
-    """
-    The plain language name for the query. Maximum length of 128.
-    """
-    query: pulumi.Output[str]
-    """
-    The text of the query itself. In other words, all query statements. Maximum length of 262144.
-    """
-    workgroup: pulumi.Output[str]
-    """
-    The workgroup to which the query belongs. Defaults to `primary`
-    """
-    def __init__(__self__, resource_name, opts=None, database=None, description=None, name=None, query=None, workgroup=None, __props__=None, __name__=None, __opts__=None):
+    def __init__(__self__,
+                 resource_name: str,
+                 opts: Optional[pulumi.ResourceOptions] = None,
+                 database: Optional[pulumi.Input[str]] = None,
+                 description: Optional[pulumi.Input[str]] = None,
+                 name: Optional[pulumi.Input[str]] = None,
+                 query: Optional[pulumi.Input[str]] = None,
+                 workgroup: Optional[pulumi.Input[str]] = None,
+                 __props__=None,
+                 __name__=None,
+                 __opts__=None):
         """
         Provides an Athena Named Query resource.
 
@@ -44,21 +36,29 @@ class NamedQuery(pulumi.CustomResource):
         test_key = aws.kms.Key("testKey",
             deletion_window_in_days=7,
             description="Athena KMS Key")
-        test_workgroup = aws.athena.Workgroup("testWorkgroup", configuration={
-            "resultConfiguration": {
-                "encryption_configuration": {
+        test_workgroup = aws.athena.Workgroup("testWorkgroup", configuration=aws.athena.WorkgroupConfigurationArgs(
+            result_configuration=aws.athena.WorkgroupConfigurationResultConfigurationArgs(
+                encryption_configuration={
                     "encryptionOption": "SSE_KMS",
                     "kms_key_arn": test_key.arn,
                 },
-            },
-        })
+            ),
+        ))
         hoge_database = aws.athena.Database("hogeDatabase",
-            bucket=hoge_bucket.id,
-            name="users")
+            name="users",
+            bucket=hoge_bucket.id)
         foo = aws.athena.NamedQuery("foo",
+            workgroup=test_workgroup.id,
             database=hoge_database.name,
-            query=hoge_database.name.apply(lambda name: f"SELECT * FROM {name} limit 10;"),
-            workgroup=test_workgroup.id)
+            query=hoge_database.name.apply(lambda name: f"SELECT * FROM {name} limit 10;"))
+        ```
+
+        ## Import
+
+        Athena Named Query can be imported using the query ID, e.g.
+
+        ```sh
+         $ pulumi import aws:athena/namedQuery:NamedQuery example 0123456789
         ```
 
         :param str resource_name: The name of the resource.
@@ -80,18 +80,18 @@ class NamedQuery(pulumi.CustomResource):
         if not isinstance(opts, pulumi.ResourceOptions):
             raise TypeError('Expected resource options to be a ResourceOptions instance')
         if opts.version is None:
-            opts.version = utilities.get_version()
+            opts.version = _utilities.get_version()
         if opts.id is None:
             if __props__ is not None:
                 raise TypeError('__props__ is only valid when passed in combination with a valid opts.id to get an existing resource')
             __props__ = dict()
 
-            if database is None:
+            if database is None and not opts.urn:
                 raise TypeError("Missing required property 'database'")
             __props__['database'] = database
             __props__['description'] = description
             __props__['name'] = name
-            if query is None:
+            if query is None and not opts.urn:
                 raise TypeError("Missing required property 'query'")
             __props__['query'] = query
             __props__['workgroup'] = workgroup
@@ -102,13 +102,20 @@ class NamedQuery(pulumi.CustomResource):
             opts)
 
     @staticmethod
-    def get(resource_name, id, opts=None, database=None, description=None, name=None, query=None, workgroup=None):
+    def get(resource_name: str,
+            id: pulumi.Input[str],
+            opts: Optional[pulumi.ResourceOptions] = None,
+            database: Optional[pulumi.Input[str]] = None,
+            description: Optional[pulumi.Input[str]] = None,
+            name: Optional[pulumi.Input[str]] = None,
+            query: Optional[pulumi.Input[str]] = None,
+            workgroup: Optional[pulumi.Input[str]] = None) -> 'NamedQuery':
         """
         Get an existing NamedQuery resource's state with the given name, id, and optional extra
         properties used to qualify the lookup.
 
         :param str resource_name: The unique name of the resulting resource.
-        :param str id: The unique provider ID of the resource to lookup.
+        :param pulumi.Input[str] id: The unique provider ID of the resource to lookup.
         :param pulumi.ResourceOptions opts: Options for the resource.
         :param pulumi.Input[str] database: The database to which the query belongs.
         :param pulumi.Input[str] description: A brief explanation of the query. Maximum length of 1024.
@@ -127,8 +134,49 @@ class NamedQuery(pulumi.CustomResource):
         __props__["workgroup"] = workgroup
         return NamedQuery(resource_name, opts=opts, __props__=__props__)
 
+    @property
+    @pulumi.getter
+    def database(self) -> pulumi.Output[str]:
+        """
+        The database to which the query belongs.
+        """
+        return pulumi.get(self, "database")
+
+    @property
+    @pulumi.getter
+    def description(self) -> pulumi.Output[Optional[str]]:
+        """
+        A brief explanation of the query. Maximum length of 1024.
+        """
+        return pulumi.get(self, "description")
+
+    @property
+    @pulumi.getter
+    def name(self) -> pulumi.Output[str]:
+        """
+        The plain language name for the query. Maximum length of 128.
+        """
+        return pulumi.get(self, "name")
+
+    @property
+    @pulumi.getter
+    def query(self) -> pulumi.Output[str]:
+        """
+        The text of the query itself. In other words, all query statements. Maximum length of 262144.
+        """
+        return pulumi.get(self, "query")
+
+    @property
+    @pulumi.getter
+    def workgroup(self) -> pulumi.Output[Optional[str]]:
+        """
+        The workgroup to which the query belongs. Defaults to `primary`
+        """
+        return pulumi.get(self, "workgroup")
+
     def translate_output_property(self, prop):
-        return tables._CAMEL_TO_SNAKE_CASE_TABLE.get(prop) or prop
+        return _tables.CAMEL_TO_SNAKE_CASE_TABLE.get(prop) or prop
 
     def translate_input_property(self, prop):
-        return tables._SNAKE_TO_CAMEL_CASE_TABLE.get(prop) or prop
+        return _tables.SNAKE_TO_CAMEL_CASE_TABLE.get(prop) or prop
+

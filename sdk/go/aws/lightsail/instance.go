@@ -4,6 +4,7 @@
 package lightsail
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -22,7 +23,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/lightsail"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/lightsail"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -62,37 +63,6 @@ import (
 // - `us-east-2{a,b,c}`
 // - `us-west-2{a,b,c}`
 //
-// ## Blueprints
-//
-// Lightsail currently supports the following Blueprint IDs:
-//
-// ### OS Only
-//
-// - `amazonLinux20180302`
-// - `centos7190101`
-// - `debian87`
-// - `debian95`
-// - `freebsd111`
-// - `opensuse422`
-// - `ubuntu16042`
-// - `ubuntu1804`
-//
-// ### Apps and OS
-//
-// - `drupal856`
-// - `gitlab11141`
-// - `joomla3811`
-// - `lamp56372`
-// - `lamp71201`
-// - `magento225`
-// - `mean401`
-// - `nginx11401`
-// - `nodejs1080`
-// - `pleskUbuntu178111`
-// - `redmine346`
-// - `wordpress498`
-// - `wordpressMultisite498`
-//
 // ## Bundles
 //
 // Lightsail currently supports the following Bundle IDs (e.g. an instance in `ap-northeast-1` would use `small20`):
@@ -126,6 +96,14 @@ import (
 // - us-east-1: `20`
 // - us-east-2: `20`
 // - us-west-2: `20`
+//
+// ## Import
+//
+// Lightsail Instances can be imported using their name, e.g.
+//
+// ```sh
+//  $ pulumi import aws:lightsail/instance:Instance gitlab_test 'custom gitlab'
+// ```
 type Instance struct {
 	pulumi.CustomResourceState
 
@@ -134,8 +112,7 @@ type Instance struct {
 	// The Availability Zone in which to create your
 	// instance (see list below)
 	AvailabilityZone pulumi.StringOutput `pulumi:"availabilityZone"`
-	// The ID for a virtual private server image
-	// (see list below)
+	// The ID for a virtual private server image. A list of available blueprint IDs can be obtained using the AWS CLI command: `aws lightsail get-blueprints`
 	BlueprintId pulumi.StringOutput `pulumi:"blueprintId"`
 	// The bundle of specification information (see list below)
 	BundleId pulumi.StringOutput `pulumi:"bundleId"`
@@ -157,7 +134,7 @@ type Instance struct {
 	PrivateIpAddress pulumi.StringOutput  `pulumi:"privateIpAddress"`
 	PublicIpAddress  pulumi.StringOutput  `pulumi:"publicIpAddress"`
 	RamSize          pulumi.Float64Output `pulumi:"ramSize"`
-	// A map of tags to assign to the resource.
+	// A map of tags to assign to the resource. To create a key-only tag, use an empty string as the value.
 	Tags pulumi.StringMapOutput `pulumi:"tags"`
 	// launch script to configure server with additional user data
 	UserData pulumi.StringPtrOutput `pulumi:"userData"`
@@ -167,17 +144,18 @@ type Instance struct {
 // NewInstance registers a new resource with the given unique name, arguments, and options.
 func NewInstance(ctx *pulumi.Context,
 	name string, args *InstanceArgs, opts ...pulumi.ResourceOption) (*Instance, error) {
-	if args == nil || args.AvailabilityZone == nil {
-		return nil, errors.New("missing required argument 'AvailabilityZone'")
-	}
-	if args == nil || args.BlueprintId == nil {
-		return nil, errors.New("missing required argument 'BlueprintId'")
-	}
-	if args == nil || args.BundleId == nil {
-		return nil, errors.New("missing required argument 'BundleId'")
-	}
 	if args == nil {
-		args = &InstanceArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.AvailabilityZone == nil {
+		return nil, errors.New("invalid value for required argument 'AvailabilityZone'")
+	}
+	if args.BlueprintId == nil {
+		return nil, errors.New("invalid value for required argument 'BlueprintId'")
+	}
+	if args.BundleId == nil {
+		return nil, errors.New("invalid value for required argument 'BundleId'")
 	}
 	var resource Instance
 	err := ctx.RegisterResource("aws:lightsail/instance:Instance", name, args, &resource, opts...)
@@ -206,8 +184,7 @@ type instanceState struct {
 	// The Availability Zone in which to create your
 	// instance (see list below)
 	AvailabilityZone *string `pulumi:"availabilityZone"`
-	// The ID for a virtual private server image
-	// (see list below)
+	// The ID for a virtual private server image. A list of available blueprint IDs can be obtained using the AWS CLI command: `aws lightsail get-blueprints`
 	BlueprintId *string `pulumi:"blueprintId"`
 	// The bundle of specification information (see list below)
 	BundleId *string `pulumi:"bundleId"`
@@ -229,7 +206,7 @@ type instanceState struct {
 	PrivateIpAddress *string  `pulumi:"privateIpAddress"`
 	PublicIpAddress  *string  `pulumi:"publicIpAddress"`
 	RamSize          *float64 `pulumi:"ramSize"`
-	// A map of tags to assign to the resource.
+	// A map of tags to assign to the resource. To create a key-only tag, use an empty string as the value.
 	Tags map[string]string `pulumi:"tags"`
 	// launch script to configure server with additional user data
 	UserData *string `pulumi:"userData"`
@@ -242,8 +219,7 @@ type InstanceState struct {
 	// The Availability Zone in which to create your
 	// instance (see list below)
 	AvailabilityZone pulumi.StringPtrInput
-	// The ID for a virtual private server image
-	// (see list below)
+	// The ID for a virtual private server image. A list of available blueprint IDs can be obtained using the AWS CLI command: `aws lightsail get-blueprints`
 	BlueprintId pulumi.StringPtrInput
 	// The bundle of specification information (see list below)
 	BundleId pulumi.StringPtrInput
@@ -265,7 +241,7 @@ type InstanceState struct {
 	PrivateIpAddress pulumi.StringPtrInput
 	PublicIpAddress  pulumi.StringPtrInput
 	RamSize          pulumi.Float64PtrInput
-	// A map of tags to assign to the resource.
+	// A map of tags to assign to the resource. To create a key-only tag, use an empty string as the value.
 	Tags pulumi.StringMapInput
 	// launch script to configure server with additional user data
 	UserData pulumi.StringPtrInput
@@ -280,8 +256,7 @@ type instanceArgs struct {
 	// The Availability Zone in which to create your
 	// instance (see list below)
 	AvailabilityZone string `pulumi:"availabilityZone"`
-	// The ID for a virtual private server image
-	// (see list below)
+	// The ID for a virtual private server image. A list of available blueprint IDs can be obtained using the AWS CLI command: `aws lightsail get-blueprints`
 	BlueprintId string `pulumi:"blueprintId"`
 	// The bundle of specification information (see list below)
 	BundleId string `pulumi:"bundleId"`
@@ -290,7 +265,7 @@ type instanceArgs struct {
 	KeyPairName *string `pulumi:"keyPairName"`
 	// The name of the Lightsail Instance. Names be unique within each AWS Region in your Lightsail account.
 	Name *string `pulumi:"name"`
-	// A map of tags to assign to the resource.
+	// A map of tags to assign to the resource. To create a key-only tag, use an empty string as the value.
 	Tags map[string]string `pulumi:"tags"`
 	// launch script to configure server with additional user data
 	UserData *string `pulumi:"userData"`
@@ -301,8 +276,7 @@ type InstanceArgs struct {
 	// The Availability Zone in which to create your
 	// instance (see list below)
 	AvailabilityZone pulumi.StringInput
-	// The ID for a virtual private server image
-	// (see list below)
+	// The ID for a virtual private server image. A list of available blueprint IDs can be obtained using the AWS CLI command: `aws lightsail get-blueprints`
 	BlueprintId pulumi.StringInput
 	// The bundle of specification information (see list below)
 	BundleId pulumi.StringInput
@@ -311,7 +285,7 @@ type InstanceArgs struct {
 	KeyPairName pulumi.StringPtrInput
 	// The name of the Lightsail Instance. Names be unique within each AWS Region in your Lightsail account.
 	Name pulumi.StringPtrInput
-	// A map of tags to assign to the resource.
+	// A map of tags to assign to the resource. To create a key-only tag, use an empty string as the value.
 	Tags pulumi.StringMapInput
 	// launch script to configure server with additional user data
 	UserData pulumi.StringPtrInput
@@ -319,4 +293,43 @@ type InstanceArgs struct {
 
 func (InstanceArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*instanceArgs)(nil)).Elem()
+}
+
+type InstanceInput interface {
+	pulumi.Input
+
+	ToInstanceOutput() InstanceOutput
+	ToInstanceOutputWithContext(ctx context.Context) InstanceOutput
+}
+
+func (Instance) ElementType() reflect.Type {
+	return reflect.TypeOf((*Instance)(nil)).Elem()
+}
+
+func (i Instance) ToInstanceOutput() InstanceOutput {
+	return i.ToInstanceOutputWithContext(context.Background())
+}
+
+func (i Instance) ToInstanceOutputWithContext(ctx context.Context) InstanceOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(InstanceOutput)
+}
+
+type InstanceOutput struct {
+	*pulumi.OutputState
+}
+
+func (InstanceOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*InstanceOutput)(nil)).Elem()
+}
+
+func (o InstanceOutput) ToInstanceOutput() InstanceOutput {
+	return o
+}
+
+func (o InstanceOutput) ToInstanceOutputWithContext(ctx context.Context) InstanceOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(InstanceOutput{})
 }

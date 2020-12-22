@@ -4,6 +4,7 @@
 package batch
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -20,7 +21,7 @@ import (
 // import (
 // 	"fmt"
 //
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/batch"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/batch"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -36,6 +37,14 @@ import (
 // 		return nil
 // 	})
 // }
+// ```
+//
+// ## Import
+//
+// Batch Job Definition can be imported using the `arn`, e.g.
+//
+// ```sh
+//  $ pulumi import aws:batch/jobDefinition:JobDefinition test arn:aws:batch:us-east-1:123456789012:job-definition/sample
 // ```
 type JobDefinition struct {
 	pulumi.CustomResourceState
@@ -54,6 +63,8 @@ type JobDefinition struct {
 	RetryStrategy JobDefinitionRetryStrategyPtrOutput `pulumi:"retryStrategy"`
 	// The revision of the job definition.
 	Revision pulumi.IntOutput `pulumi:"revision"`
+	// Key-value map of resource tags
+	Tags pulumi.StringMapOutput `pulumi:"tags"`
 	// Specifies the timeout for jobs so that if a job runs longer, AWS Batch terminates the job. Maximum number of `timeout` is `1`. Defined below.
 	Timeout JobDefinitionTimeoutPtrOutput `pulumi:"timeout"`
 	// The type of job definition.  Must be `container`
@@ -63,11 +74,12 @@ type JobDefinition struct {
 // NewJobDefinition registers a new resource with the given unique name, arguments, and options.
 func NewJobDefinition(ctx *pulumi.Context,
 	name string, args *JobDefinitionArgs, opts ...pulumi.ResourceOption) (*JobDefinition, error) {
-	if args == nil || args.Type == nil {
-		return nil, errors.New("missing required argument 'Type'")
-	}
 	if args == nil {
-		args = &JobDefinitionArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.Type == nil {
+		return nil, errors.New("invalid value for required argument 'Type'")
 	}
 	var resource JobDefinition
 	err := ctx.RegisterResource("aws:batch/jobDefinition:JobDefinition", name, args, &resource, opts...)
@@ -105,6 +117,8 @@ type jobDefinitionState struct {
 	RetryStrategy *JobDefinitionRetryStrategy `pulumi:"retryStrategy"`
 	// The revision of the job definition.
 	Revision *int `pulumi:"revision"`
+	// Key-value map of resource tags
+	Tags map[string]string `pulumi:"tags"`
 	// Specifies the timeout for jobs so that if a job runs longer, AWS Batch terminates the job. Maximum number of `timeout` is `1`. Defined below.
 	Timeout *JobDefinitionTimeout `pulumi:"timeout"`
 	// The type of job definition.  Must be `container`
@@ -126,6 +140,8 @@ type JobDefinitionState struct {
 	RetryStrategy JobDefinitionRetryStrategyPtrInput
 	// The revision of the job definition.
 	Revision pulumi.IntPtrInput
+	// Key-value map of resource tags
+	Tags pulumi.StringMapInput
 	// Specifies the timeout for jobs so that if a job runs longer, AWS Batch terminates the job. Maximum number of `timeout` is `1`. Defined below.
 	Timeout JobDefinitionTimeoutPtrInput
 	// The type of job definition.  Must be `container`
@@ -147,6 +163,8 @@ type jobDefinitionArgs struct {
 	// Specifies the retry strategy to use for failed jobs that are submitted with this job definition.
 	// Maximum number of `retryStrategy` is `1`.  Defined below.
 	RetryStrategy *JobDefinitionRetryStrategy `pulumi:"retryStrategy"`
+	// Key-value map of resource tags
+	Tags map[string]string `pulumi:"tags"`
 	// Specifies the timeout for jobs so that if a job runs longer, AWS Batch terminates the job. Maximum number of `timeout` is `1`. Defined below.
 	Timeout *JobDefinitionTimeout `pulumi:"timeout"`
 	// The type of job definition.  Must be `container`
@@ -165,6 +183,8 @@ type JobDefinitionArgs struct {
 	// Specifies the retry strategy to use for failed jobs that are submitted with this job definition.
 	// Maximum number of `retryStrategy` is `1`.  Defined below.
 	RetryStrategy JobDefinitionRetryStrategyPtrInput
+	// Key-value map of resource tags
+	Tags pulumi.StringMapInput
 	// Specifies the timeout for jobs so that if a job runs longer, AWS Batch terminates the job. Maximum number of `timeout` is `1`. Defined below.
 	Timeout JobDefinitionTimeoutPtrInput
 	// The type of job definition.  Must be `container`
@@ -173,4 +193,43 @@ type JobDefinitionArgs struct {
 
 func (JobDefinitionArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*jobDefinitionArgs)(nil)).Elem()
+}
+
+type JobDefinitionInput interface {
+	pulumi.Input
+
+	ToJobDefinitionOutput() JobDefinitionOutput
+	ToJobDefinitionOutputWithContext(ctx context.Context) JobDefinitionOutput
+}
+
+func (JobDefinition) ElementType() reflect.Type {
+	return reflect.TypeOf((*JobDefinition)(nil)).Elem()
+}
+
+func (i JobDefinition) ToJobDefinitionOutput() JobDefinitionOutput {
+	return i.ToJobDefinitionOutputWithContext(context.Background())
+}
+
+func (i JobDefinition) ToJobDefinitionOutputWithContext(ctx context.Context) JobDefinitionOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(JobDefinitionOutput)
+}
+
+type JobDefinitionOutput struct {
+	*pulumi.OutputState
+}
+
+func (JobDefinitionOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*JobDefinitionOutput)(nil)).Elem()
+}
+
+func (o JobDefinitionOutput) ToJobDefinitionOutput() JobDefinitionOutput {
+	return o
+}
+
+func (o JobDefinitionOutput) ToJobDefinitionOutputWithContext(ctx context.Context) JobDefinitionOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(JobDefinitionOutput{})
 }

@@ -14,13 +14,19 @@ import * as utilities from "../utilities";
  * import * as aws from "@pulumi/aws";
  *
  * const example = new aws.ec2transitgateway.VpcAttachment("example", {
- *     subnetIds: [aws_subnet_example.id],
- *     transitGatewayId: aws_ec2_transit_gateway_example.id,
- *     vpcId: aws_vpc_example.id,
+ *     subnetIds: [aws_subnet.example.id],
+ *     transitGatewayId: aws_ec2_transit_gateway.example.id,
+ *     vpcId: aws_vpc.example.id,
  * });
  * ```
  *
- * A full example of how to create a Transit Gateway in one AWS account, share it with a second AWS account, and attach a VPC in the second account to the Transit Gateway via the `aws.ec2transitgateway.VpcAttachment` and `aws.ec2transitgateway.VpcAttachmentAccepter` resources can be found in [the `./examples/transit-gateway-cross-account-vpc-attachment` directory within the Github Repository](https://github.com/providers/provider-aws/tree/master/examples/transit-gateway-cross-account-vpc-attachment).
+ * ## Import
+ *
+ * `aws_ec2_transit_gateway_vpc_attachment` can be imported by using the EC2 Transit Gateway Attachment identifier, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:ec2transitgateway/vpcAttachment:VpcAttachment example tgw-attach-12345678
+ * ```
  */
 export class VpcAttachment extends pulumi.CustomResource {
     /**
@@ -50,6 +56,10 @@ export class VpcAttachment extends pulumi.CustomResource {
         return obj['__pulumiType'] === VpcAttachment.__pulumiType;
     }
 
+    /**
+     * Whether Appliance Mode support is enabled. If enabled, a traffic flow between a source and destination uses the same Availability Zone for the VPC attachment for the lifetime of that flow. Valid values: `disable`, `enable`. Default value: `disable`.
+     */
+    public readonly applianceModeSupport!: pulumi.Output<string | undefined>;
     /**
      * Whether DNS support is enabled. Valid values: `disable`, `enable`. Default value: `enable`.
      */
@@ -99,6 +109,7 @@ export class VpcAttachment extends pulumi.CustomResource {
         let inputs: pulumi.Inputs = {};
         if (opts && opts.id) {
             const state = argsOrState as VpcAttachmentState | undefined;
+            inputs["applianceModeSupport"] = state ? state.applianceModeSupport : undefined;
             inputs["dnsSupport"] = state ? state.dnsSupport : undefined;
             inputs["ipv6Support"] = state ? state.ipv6Support : undefined;
             inputs["subnetIds"] = state ? state.subnetIds : undefined;
@@ -110,15 +121,16 @@ export class VpcAttachment extends pulumi.CustomResource {
             inputs["vpcOwnerId"] = state ? state.vpcOwnerId : undefined;
         } else {
             const args = argsOrState as VpcAttachmentArgs | undefined;
-            if (!args || args.subnetIds === undefined) {
+            if ((!args || args.subnetIds === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'subnetIds'");
             }
-            if (!args || args.transitGatewayId === undefined) {
+            if ((!args || args.transitGatewayId === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'transitGatewayId'");
             }
-            if (!args || args.vpcId === undefined) {
+            if ((!args || args.vpcId === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'vpcId'");
             }
+            inputs["applianceModeSupport"] = args ? args.applianceModeSupport : undefined;
             inputs["dnsSupport"] = args ? args.dnsSupport : undefined;
             inputs["ipv6Support"] = args ? args.ipv6Support : undefined;
             inputs["subnetIds"] = args ? args.subnetIds : undefined;
@@ -144,6 +156,10 @@ export class VpcAttachment extends pulumi.CustomResource {
  * Input properties used for looking up and filtering VpcAttachment resources.
  */
 export interface VpcAttachmentState {
+    /**
+     * Whether Appliance Mode support is enabled. If enabled, a traffic flow between a source and destination uses the same Availability Zone for the VPC attachment for the lifetime of that flow. Valid values: `disable`, `enable`. Default value: `disable`.
+     */
+    readonly applianceModeSupport?: pulumi.Input<string>;
     /**
      * Whether DNS support is enabled. Valid values: `disable`, `enable`. Default value: `enable`.
      */
@@ -186,6 +202,10 @@ export interface VpcAttachmentState {
  * The set of arguments for constructing a VpcAttachment resource.
  */
 export interface VpcAttachmentArgs {
+    /**
+     * Whether Appliance Mode support is enabled. If enabled, a traffic flow between a source and destination uses the same Availability Zone for the VPC attachment for the lifetime of that flow. Valid values: `disable`, `enable`. Default value: `disable`.
+     */
+    readonly applianceModeSupport?: pulumi.Input<string>;
     /**
      * Whether DNS support is enabled. Valid values: `disable`, `enable`. Default value: `enable`.
      */

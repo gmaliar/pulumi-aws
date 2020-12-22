@@ -4,6 +4,7 @@
 package opsworks
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -18,20 +19,20 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/opsworks"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/opsworks"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
 // func main() {
 // 	pulumi.Run(func(ctx *pulumi.Context) error {
 // 		_, err := opsworks.NewInstance(ctx, "my_instance", &opsworks.InstanceArgs{
-// 			InstanceType: pulumi.String("t2.micro"),
+// 			StackId: pulumi.Any(aws_opsworks_stack.Main.Id),
 // 			LayerIds: pulumi.StringArray{
-// 				pulumi.String(aws_opsworks_custom_layer.My - layer.Id),
+// 				pulumi.Any(aws_opsworks_custom_layer.My - layer.Id),
 // 			},
-// 			Os:      pulumi.String("Amazon Linux 2015.09"),
-// 			StackId: pulumi.String(aws_opsworks_stack.Main.Id),
-// 			State:   pulumi.String("stopped"),
+// 			InstanceType: pulumi.String("t2.micro"),
+// 			Os:           pulumi.String("Amazon Linux 2015.09"),
+// 			State:        pulumi.String("stopped"),
 // 		})
 // 		if err != nil {
 // 			return err
@@ -93,6 +94,14 @@ import (
 // resources cannot be automatically detected by this provider. After making updates
 // to block device configuration, resource recreation can be manually triggered by
 // using the [`up` command with the --replace argument](https://www.pulumi.com/docs/reference/cli/pulumi_up/).
+//
+// ## Import
+//
+// Opsworks Instances can be imported using the `instance id`, e.g.
+//
+// ```sh
+//  $ pulumi import aws:opsworks/instance:Instance my_instance 4d6d1710-ded9-42a1-b08e-b043ad7af1e2
+// ```
 type Instance struct {
 	pulumi.CustomResourceState
 
@@ -181,14 +190,15 @@ type Instance struct {
 // NewInstance registers a new resource with the given unique name, arguments, and options.
 func NewInstance(ctx *pulumi.Context,
 	name string, args *InstanceArgs, opts ...pulumi.ResourceOption) (*Instance, error) {
-	if args == nil || args.LayerIds == nil {
-		return nil, errors.New("missing required argument 'LayerIds'")
-	}
-	if args == nil || args.StackId == nil {
-		return nil, errors.New("missing required argument 'StackId'")
-	}
 	if args == nil {
-		args = &InstanceArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.LayerIds == nil {
+		return nil, errors.New("invalid value for required argument 'LayerIds'")
+	}
+	if args.StackId == nil {
+		return nil, errors.New("invalid value for required argument 'StackId'")
 	}
 	var resource Instance
 	err := ctx.RegisterResource("aws:opsworks/instance:Instance", name, args, &resource, opts...)
@@ -546,4 +556,43 @@ type InstanceArgs struct {
 
 func (InstanceArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*instanceArgs)(nil)).Elem()
+}
+
+type InstanceInput interface {
+	pulumi.Input
+
+	ToInstanceOutput() InstanceOutput
+	ToInstanceOutputWithContext(ctx context.Context) InstanceOutput
+}
+
+func (Instance) ElementType() reflect.Type {
+	return reflect.TypeOf((*Instance)(nil)).Elem()
+}
+
+func (i Instance) ToInstanceOutput() InstanceOutput {
+	return i.ToInstanceOutputWithContext(context.Background())
+}
+
+func (i Instance) ToInstanceOutputWithContext(ctx context.Context) InstanceOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(InstanceOutput)
+}
+
+type InstanceOutput struct {
+	*pulumi.OutputState
+}
+
+func (InstanceOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*InstanceOutput)(nil)).Elem()
+}
+
+func (o InstanceOutput) ToInstanceOutput() InstanceOutput {
+	return o
+}
+
+func (o InstanceOutput) ToInstanceOutputWithContext(ctx context.Context) InstanceOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(InstanceOutput{})
 }

@@ -45,15 +45,15 @@ namespace Pulumi.Aws.WorkLink
     ///         {
     ///             Network = new Aws.WorkLink.Inputs.FleetNetworkArgs
     ///             {
-    ///                 SecurityGroupIds = 
-    ///                 {
-    ///                     aws_security_group.Test.Id,
-    ///                 },
+    ///                 VpcId = aws_vpc.Test.Id,
     ///                 SubnetIds = 
     ///                 {
     ///                     aws_subnet.Test.Select(__item =&gt; __item.Id).ToList(),
     ///                 },
-    ///                 VpcId = aws_vpc.Test.Id,
+    ///                 SecurityGroupIds = 
+    ///                 {
+    ///                     aws_security_group.Test.Id,
+    ///                 },
     ///             },
     ///         });
     ///     }
@@ -76,13 +76,21 @@ namespace Pulumi.Aws.WorkLink
     ///         {
     ///             IdentityProvider = new Aws.WorkLink.Inputs.FleetIdentityProviderArgs
     ///             {
-    ///                 SamlMetadata = File.ReadAllText("saml-metadata.xml"),
     ///                 Type = "SAML",
+    ///                 SamlMetadata = File.ReadAllText("saml-metadata.xml"),
     ///             },
     ///         });
     ///     }
     /// 
     /// }
+    /// ```
+    /// 
+    /// ## Import
+    /// 
+    /// WorkLink can be imported using the ARN, e.g.
+    /// 
+    /// ```sh
+    ///  $ pulumi import aws:worklink/fleet:Fleet test arn:aws:worklink::123456789012:fleet/example
     /// ```
     /// </summary>
     public partial class Fleet : Pulumi.CustomResource
@@ -94,7 +102,7 @@ namespace Pulumi.Aws.WorkLink
         public Output<string> Arn { get; private set; } = null!;
 
         /// <summary>
-        /// The ARN of the Amazon Kinesis data stream that receives the audit events.
+        /// The ARN of the Amazon Kinesis data stream that receives the audit events. Kinesis data stream name must begin with `"AmazonWorkLink-"`.
         /// </summary>
         [Output("auditStreamArn")]
         public Output<string?> AuditStreamArn { get; private set; } = null!;
@@ -200,7 +208,7 @@ namespace Pulumi.Aws.WorkLink
     public sealed class FleetArgs : Pulumi.ResourceArgs
     {
         /// <summary>
-        /// The ARN of the Amazon Kinesis data stream that receives the audit events.
+        /// The ARN of the Amazon Kinesis data stream that receives the audit events. Kinesis data stream name must begin with `"AmazonWorkLink-"`.
         /// </summary>
         [Input("auditStreamArn")]
         public Input<string>? AuditStreamArn { get; set; }
@@ -255,7 +263,7 @@ namespace Pulumi.Aws.WorkLink
         public Input<string>? Arn { get; set; }
 
         /// <summary>
-        /// The ARN of the Amazon Kinesis data stream that receives the audit events.
+        /// The ARN of the Amazon Kinesis data stream that receives the audit events. Kinesis data stream name must begin with `"AmazonWorkLink-"`.
         /// </summary>
         [Input("auditStreamArn")]
         public Input<string>? AuditStreamArn { get; set; }

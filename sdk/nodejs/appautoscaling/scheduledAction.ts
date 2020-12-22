@@ -2,8 +2,7 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 /**
@@ -16,22 +15,22 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const dynamodbTarget = new aws.appautoscaling.Target("dynamodb", {
+ * const dynamodbTarget = new aws.appautoscaling.Target("dynamodbTarget", {
  *     maxCapacity: 100,
  *     minCapacity: 5,
  *     resourceId: "table/tableName",
  *     scalableDimension: "dynamodb:table:ReadCapacityUnits",
  *     serviceNamespace: "dynamodb",
  * });
- * const dynamodbScheduledAction = new aws.appautoscaling.ScheduledAction("dynamodb", {
+ * const dynamodbScheduledAction = new aws.appautoscaling.ScheduledAction("dynamodbScheduledAction", {
+ *     serviceNamespace: dynamodbTarget.serviceNamespace,
  *     resourceId: dynamodbTarget.resourceId,
  *     scalableDimension: dynamodbTarget.scalableDimension,
- *     scalableTargetAction: {
- *         maxCapacity: 200,
- *         minCapacity: 1,
- *     },
  *     schedule: "at(2006-01-02T15:04:05)",
- *     serviceNamespace: dynamodbTarget.serviceNamespace,
+ *     scalableTargetAction: {
+ *         minCapacity: 1,
+ *         maxCapacity: 200,
+ *     },
  * });
  * ```
  * ### ECS Service Autoscaling
@@ -40,22 +39,22 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const ecsTarget = new aws.appautoscaling.Target("ecs", {
+ * const ecsTarget = new aws.appautoscaling.Target("ecsTarget", {
  *     maxCapacity: 4,
  *     minCapacity: 1,
  *     resourceId: "service/clusterName/serviceName",
  *     scalableDimension: "ecs:service:DesiredCount",
  *     serviceNamespace: "ecs",
  * });
- * const ecsScheduledAction = new aws.appautoscaling.ScheduledAction("ecs", {
+ * const ecsScheduledAction = new aws.appautoscaling.ScheduledAction("ecsScheduledAction", {
+ *     serviceNamespace: ecsTarget.serviceNamespace,
  *     resourceId: ecsTarget.resourceId,
  *     scalableDimension: ecsTarget.scalableDimension,
- *     scalableTargetAction: {
- *         maxCapacity: 10,
- *         minCapacity: 1,
- *     },
  *     schedule: "at(2006-01-02T15:04:05)",
- *     serviceNamespace: ecsTarget.serviceNamespace,
+ *     scalableTargetAction: {
+ *         minCapacity: 1,
+ *         maxCapacity: 10,
+ *     },
  * });
  * ```
  */
@@ -147,10 +146,10 @@ export class ScheduledAction extends pulumi.CustomResource {
             inputs["startTime"] = state ? state.startTime : undefined;
         } else {
             const args = argsOrState as ScheduledActionArgs | undefined;
-            if (!args || args.resourceId === undefined) {
+            if ((!args || args.resourceId === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'resourceId'");
             }
-            if (!args || args.serviceNamespace === undefined) {
+            if ((!args || args.serviceNamespace === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'serviceNamespace'");
             }
             inputs["endTime"] = args ? args.endTime : undefined;

@@ -14,8 +14,7 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const topic = new aws.sns.Topic("topic", {
- *     policy: `{
+ * const topic = new aws.sns.Topic("topic", {policy: `{
  *     "Version":"2012-10-17",
  *     "Statement":[{
  *         "Effect": "Allow",
@@ -26,20 +25,27 @@ import * as utilities from "../utilities";
  *         "Resource": "arn:aws:sns:*:*:vpce-notification-topic"
  *     }]
  * }
- * `,
- * });
- * const fooVpcEndpointService = new aws.ec2.VpcEndpointService("foo", {
+ * `});
+ * const fooVpcEndpointService = new aws.ec2.VpcEndpointService("fooVpcEndpointService", {
  *     acceptanceRequired: false,
- *     networkLoadBalancerArns: [aws_lb_test.arn],
+ *     networkLoadBalancerArns: [aws_lb.test.arn],
  * });
- * const fooVpcEndpointConnectionNotification = new aws.ec2.VpcEndpointConnectionNotification("foo", {
+ * const fooVpcEndpointConnectionNotification = new aws.ec2.VpcEndpointConnectionNotification("fooVpcEndpointConnectionNotification", {
+ *     vpcEndpointServiceId: fooVpcEndpointService.id,
+ *     connectionNotificationArn: topic.arn,
  *     connectionEvents: [
  *         "Accept",
  *         "Reject",
  *     ],
- *     connectionNotificationArn: topic.arn,
- *     vpcEndpointServiceId: fooVpcEndpointService.id,
  * });
+ * ```
+ *
+ * ## Import
+ *
+ * VPC Endpoint connection notifications can be imported using the `VPC endpoint connection notification id`, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:ec2/vpcEndpointConnectionNotification:VpcEndpointConnectionNotification foo vpce-nfn-09e6ed3b4efba2263
  * ```
  */
 export class VpcEndpointConnectionNotification extends pulumi.CustomResource {
@@ -115,10 +121,10 @@ export class VpcEndpointConnectionNotification extends pulumi.CustomResource {
             inputs["vpcEndpointServiceId"] = state ? state.vpcEndpointServiceId : undefined;
         } else {
             const args = argsOrState as VpcEndpointConnectionNotificationArgs | undefined;
-            if (!args || args.connectionEvents === undefined) {
+            if ((!args || args.connectionEvents === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'connectionEvents'");
             }
-            if (!args || args.connectionNotificationArn === undefined) {
+            if ((!args || args.connectionNotificationArn === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'connectionNotificationArn'");
             }
             inputs["connectionEvents"] = args ? args.connectionEvents : undefined;

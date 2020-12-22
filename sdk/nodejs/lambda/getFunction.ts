@@ -2,8 +2,7 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 /**
@@ -17,10 +16,9 @@ import * as utilities from "../utilities";
  *
  * const config = new pulumi.Config();
  * const functionName = config.require("functionName");
- *
- * const existing = pulumi.output(aws.lambda.getFunction({
+ * const existing = aws.lambda.getFunction({
  *     functionName: functionName,
- * }, { async: true }));
+ * });
  * ```
  */
 export function getFunction(args: GetFunctionArgs, opts?: pulumi.InvokeOptions): Promise<GetFunctionResult> {
@@ -61,6 +59,10 @@ export interface GetFunctionResult {
      * Unqualified (no `:QUALIFIER` or `:VERSION` suffix) Amazon Resource Name (ARN) identifying your Lambda Function. See also `qualifiedArn`.
      */
     readonly arn: string;
+    /**
+     * Amazon Resource Name (ARN) for a Code Signing Configuration.
+     */
+    readonly codeSigningConfigArn: string;
     /**
      * Configure the function's *dead letter queue*.
      */
@@ -120,9 +122,17 @@ export interface GetFunctionResult {
      */
     readonly role: string;
     /**
-     * The runtime environment for the Lambda function..
+     * The runtime environment for the Lambda function.
      */
     readonly runtime: string;
+    /**
+     * The Amazon Resource Name (ARN) of a signing job.
+     */
+    readonly signingJobArn: string;
+    /**
+     * The Amazon Resource Name (ARN) for a signing profile version.
+     */
+    readonly signingProfileVersionArn: string;
     /**
      * Base64-encoded representation of raw SHA-256 sum of the zip file.
      */

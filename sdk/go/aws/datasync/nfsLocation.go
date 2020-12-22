@@ -4,6 +4,7 @@
 package datasync
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -20,20 +21,20 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/datasync"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/datasync"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
 // func main() {
 // 	pulumi.Run(func(ctx *pulumi.Context) error {
 // 		_, err := datasync.NewNfsLocation(ctx, "example", &datasync.NfsLocationArgs{
-// 			OnPremConfig: &datasync.NfsLocationOnPremConfigArgs{
-// 				AgentArns: pulumi.StringArray{
-// 					pulumi.String(aws_datasync_agent.Example.Arn),
-// 				},
-// 			},
 // 			ServerHostname: pulumi.String("nfs.example.com"),
 // 			Subdirectory:   pulumi.String("/exported/path"),
+// 			OnPremConfig: &datasync.NfsLocationOnPremConfigArgs{
+// 				AgentArns: pulumi.StringArray{
+// 					pulumi.Any(aws_datasync_agent.Example.Arn),
+// 				},
+// 			},
 // 		})
 // 		if err != nil {
 // 			return err
@@ -41,6 +42,14 @@ import (
 // 		return nil
 // 	})
 // }
+// ```
+//
+// ## Import
+//
+// `aws_datasync_location_nfs` can be imported by using the DataSync Task Amazon Resource Name (ARN), e.g.
+//
+// ```sh
+//  $ pulumi import aws:datasync/nfsLocation:NfsLocation example arn:aws:datasync:us-east-1:123456789012:location/loc-12345678901234567
 // ```
 type NfsLocation struct {
 	pulumi.CustomResourceState
@@ -61,17 +70,18 @@ type NfsLocation struct {
 // NewNfsLocation registers a new resource with the given unique name, arguments, and options.
 func NewNfsLocation(ctx *pulumi.Context,
 	name string, args *NfsLocationArgs, opts ...pulumi.ResourceOption) (*NfsLocation, error) {
-	if args == nil || args.OnPremConfig == nil {
-		return nil, errors.New("missing required argument 'OnPremConfig'")
-	}
-	if args == nil || args.ServerHostname == nil {
-		return nil, errors.New("missing required argument 'ServerHostname'")
-	}
-	if args == nil || args.Subdirectory == nil {
-		return nil, errors.New("missing required argument 'Subdirectory'")
-	}
 	if args == nil {
-		args = &NfsLocationArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.OnPremConfig == nil {
+		return nil, errors.New("invalid value for required argument 'OnPremConfig'")
+	}
+	if args.ServerHostname == nil {
+		return nil, errors.New("invalid value for required argument 'ServerHostname'")
+	}
+	if args.Subdirectory == nil {
+		return nil, errors.New("invalid value for required argument 'Subdirectory'")
 	}
 	var resource NfsLocation
 	err := ctx.RegisterResource("aws:datasync/nfsLocation:NfsLocation", name, args, &resource, opts...)
@@ -151,4 +161,43 @@ type NfsLocationArgs struct {
 
 func (NfsLocationArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*nfsLocationArgs)(nil)).Elem()
+}
+
+type NfsLocationInput interface {
+	pulumi.Input
+
+	ToNfsLocationOutput() NfsLocationOutput
+	ToNfsLocationOutputWithContext(ctx context.Context) NfsLocationOutput
+}
+
+func (NfsLocation) ElementType() reflect.Type {
+	return reflect.TypeOf((*NfsLocation)(nil)).Elem()
+}
+
+func (i NfsLocation) ToNfsLocationOutput() NfsLocationOutput {
+	return i.ToNfsLocationOutputWithContext(context.Background())
+}
+
+func (i NfsLocation) ToNfsLocationOutputWithContext(ctx context.Context) NfsLocationOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(NfsLocationOutput)
+}
+
+type NfsLocationOutput struct {
+	*pulumi.OutputState
+}
+
+func (NfsLocationOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*NfsLocationOutput)(nil)).Elem()
+}
+
+func (o NfsLocationOutput) ToNfsLocationOutput() NfsLocationOutput {
+	return o
+}
+
+func (o NfsLocationOutput) ToNfsLocationOutputWithContext(ctx context.Context) NfsLocationOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(NfsLocationOutput{})
 }

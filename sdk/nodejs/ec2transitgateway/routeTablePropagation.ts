@@ -14,9 +14,17 @@ import * as utilities from "../utilities";
  * import * as aws from "@pulumi/aws";
  *
  * const example = new aws.ec2transitgateway.RouteTablePropagation("example", {
- *     transitGatewayAttachmentId: aws_ec2_transit_gateway_vpc_attachment_example.id,
- *     transitGatewayRouteTableId: aws_ec2_transit_gateway_route_table_example.id,
+ *     transitGatewayAttachmentId: aws_ec2_transit_gateway_vpc_attachment.example.id,
+ *     transitGatewayRouteTableId: aws_ec2_transit_gateway_route_table.example.id,
  * });
+ * ```
+ *
+ * ## Import
+ *
+ * `aws_ec2_transit_gateway_route_table_propagation` can be imported by using the EC2 Transit Gateway Route Table identifier, an underscore, and the EC2 Transit Gateway Attachment identifier, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:ec2transitgateway/routeTablePropagation:RouteTablePropagation example tgw-rtb-12345678_tgw-attach-87654321
  * ```
  */
 export class RouteTablePropagation extends pulumi.CustomResource {
@@ -82,10 +90,10 @@ export class RouteTablePropagation extends pulumi.CustomResource {
             inputs["transitGatewayRouteTableId"] = state ? state.transitGatewayRouteTableId : undefined;
         } else {
             const args = argsOrState as RouteTablePropagationArgs | undefined;
-            if (!args || args.transitGatewayAttachmentId === undefined) {
+            if ((!args || args.transitGatewayAttachmentId === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'transitGatewayAttachmentId'");
             }
-            if (!args || args.transitGatewayRouteTableId === undefined) {
+            if ((!args || args.transitGatewayRouteTableId === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'transitGatewayRouteTableId'");
             }
             inputs["transitGatewayAttachmentId"] = args ? args.transitGatewayAttachmentId : undefined;

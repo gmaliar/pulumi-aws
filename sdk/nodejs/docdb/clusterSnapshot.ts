@@ -14,9 +14,17 @@ import * as utilities from "../utilities";
  * import * as aws from "@pulumi/aws";
  *
  * const example = new aws.docdb.ClusterSnapshot("example", {
- *     dbClusterIdentifier: aws_docdb_cluster_example.id,
+ *     dbClusterIdentifier: aws_docdb_cluster.example.id,
  *     dbClusterSnapshotIdentifier: "resourcetestsnapshot1234",
  * });
+ * ```
+ *
+ * ## Import
+ *
+ * `aws_docdb_cluster_snapshot` can be imported by using the cluster snapshot identifier, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:docdb/clusterSnapshot:ClusterSnapshot example my-cluster-snapshot
  * ```
  */
 export class ClusterSnapshot extends pulumi.CustomResource {
@@ -121,10 +129,10 @@ export class ClusterSnapshot extends pulumi.CustomResource {
             inputs["vpcId"] = state ? state.vpcId : undefined;
         } else {
             const args = argsOrState as ClusterSnapshotArgs | undefined;
-            if (!args || args.dbClusterIdentifier === undefined) {
+            if ((!args || args.dbClusterIdentifier === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'dbClusterIdentifier'");
             }
-            if (!args || args.dbClusterSnapshotIdentifier === undefined) {
+            if ((!args || args.dbClusterSnapshotIdentifier === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'dbClusterSnapshotIdentifier'");
             }
             inputs["dbClusterIdentifier"] = args ? args.dbClusterIdentifier : undefined;

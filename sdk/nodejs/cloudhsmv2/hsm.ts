@@ -15,13 +15,21 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const cluster = pulumi.output(aws.cloudhsmv2.getCluster({
- *     clusterId: var_cloudhsm_cluster_id,
- * }, { async: true }));
- * const cloudhsmV2Hsm = new aws.cloudhsmv2.Hsm("cloudhsm_v2_hsm", {
- *     clusterId: cluster.clusterId,
- *     subnetId: cluster.apply(cluster => cluster.subnetIds[0]),
+ * const cluster = aws.cloudhsmv2.getCluster({
+ *     clusterId: _var.cloudhsm_cluster_id,
  * });
+ * const cloudhsmV2Hsm = new aws.cloudhsmv2.Hsm("cloudhsmV2Hsm", {
+ *     subnetId: cluster.then(cluster => cluster.subnetIds[0]),
+ *     clusterId: cluster.then(cluster => cluster.clusterId),
+ * });
+ * ```
+ *
+ * ## Import
+ *
+ * HSM modules can be imported using their HSM ID, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:cloudhsmv2/hsm:Hsm bar hsm-quo8dahtaca
  * ```
  */
 export class Hsm extends pulumi.CustomResource {
@@ -102,7 +110,7 @@ export class Hsm extends pulumi.CustomResource {
             inputs["subnetId"] = state ? state.subnetId : undefined;
         } else {
             const args = argsOrState as HsmArgs | undefined;
-            if (!args || args.clusterId === undefined) {
+            if ((!args || args.clusterId === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'clusterId'");
             }
             inputs["availabilityZone"] = args ? args.availabilityZone : undefined;

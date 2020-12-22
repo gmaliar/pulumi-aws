@@ -4,6 +4,7 @@
 package autoscaling
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -24,7 +25,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/autoscaling"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/autoscaling"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -34,21 +35,21 @@ import (
 // 			AvailabilityZones: pulumi.StringArray{
 // 				pulumi.String("us-east-1a"),
 // 			},
-// 			ForceDelete:            pulumi.Bool(true),
-// 			HealthCheckGracePeriod: pulumi.Int(300),
-// 			HealthCheckType:        pulumi.String("ELB"),
-// 			LaunchConfiguration:    pulumi.String(aws_launch_configuration.Foo.Name),
 // 			MaxSize:                pulumi.Int(5),
 // 			MinSize:                pulumi.Int(2),
+// 			HealthCheckGracePeriod: pulumi.Int(300),
+// 			HealthCheckType:        pulumi.String("ELB"),
+// 			ForceDelete:            pulumi.Bool(true),
+// 			LaunchConfiguration:    pulumi.Any(aws_launch_configuration.Foo.Name),
 // 		})
 // 		if err != nil {
 // 			return err
 // 		}
 // 		_, err = autoscaling.NewPolicy(ctx, "bat", &autoscaling.PolicyArgs{
-// 			AdjustmentType:       pulumi.String("ChangeInCapacity"),
-// 			AutoscalingGroupName: bar.Name,
-// 			Cooldown:             pulumi.Int(300),
 // 			ScalingAdjustment:    pulumi.Int(4),
+// 			AdjustmentType:       pulumi.String("ChangeInCapacity"),
+// 			Cooldown:             pulumi.Int(300),
+// 			AutoscalingGroupName: bar.Name,
 // 		})
 // 		if err != nil {
 // 			return err
@@ -56,6 +57,14 @@ import (
 // 		return nil
 // 	})
 // }
+// ```
+//
+// ## Import
+//
+// AutoScaling scaling policy can be imported using the role autoscaling_group_name and name separated by `/`.
+//
+// ```sh
+//  $ pulumi import aws:autoscaling/policy:Policy test-policy asg-name/policy-name
 // ```
 type Policy struct {
 	pulumi.CustomResourceState
@@ -71,7 +80,8 @@ type Policy struct {
 	// The estimated time, in seconds, until a newly launched instance will contribute CloudWatch metrics. Without a value, AWS will default to the group's specified cooldown period.
 	EstimatedInstanceWarmup pulumi.IntPtrOutput `pulumi:"estimatedInstanceWarmup"`
 	// The aggregation type for the policy's metrics. Valid values are "Minimum", "Maximum", and "Average". Without a value, AWS will treat the aggregation type as "Average".
-	MetricAggregationType  pulumi.StringOutput `pulumi:"metricAggregationType"`
+	MetricAggregationType pulumi.StringOutput `pulumi:"metricAggregationType"`
+	// Minimum value to scale by when `adjustmentType` is set to `PercentChangeInCapacity`.
 	MinAdjustmentMagnitude pulumi.IntPtrOutput `pulumi:"minAdjustmentMagnitude"`
 	// The name of the dimension.
 	Name pulumi.StringOutput `pulumi:"name"`
@@ -91,11 +101,12 @@ type Policy struct {
 // NewPolicy registers a new resource with the given unique name, arguments, and options.
 func NewPolicy(ctx *pulumi.Context,
 	name string, args *PolicyArgs, opts ...pulumi.ResourceOption) (*Policy, error) {
-	if args == nil || args.AutoscalingGroupName == nil {
-		return nil, errors.New("missing required argument 'AutoscalingGroupName'")
-	}
 	if args == nil {
-		args = &PolicyArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.AutoscalingGroupName == nil {
+		return nil, errors.New("invalid value for required argument 'AutoscalingGroupName'")
 	}
 	var resource Policy
 	err := ctx.RegisterResource("aws:autoscaling/policy:Policy", name, args, &resource, opts...)
@@ -130,8 +141,9 @@ type policyState struct {
 	// The estimated time, in seconds, until a newly launched instance will contribute CloudWatch metrics. Without a value, AWS will default to the group's specified cooldown period.
 	EstimatedInstanceWarmup *int `pulumi:"estimatedInstanceWarmup"`
 	// The aggregation type for the policy's metrics. Valid values are "Minimum", "Maximum", and "Average". Without a value, AWS will treat the aggregation type as "Average".
-	MetricAggregationType  *string `pulumi:"metricAggregationType"`
-	MinAdjustmentMagnitude *int    `pulumi:"minAdjustmentMagnitude"`
+	MetricAggregationType *string `pulumi:"metricAggregationType"`
+	// Minimum value to scale by when `adjustmentType` is set to `PercentChangeInCapacity`.
+	MinAdjustmentMagnitude *int `pulumi:"minAdjustmentMagnitude"`
 	// The name of the dimension.
 	Name *string `pulumi:"name"`
 	// The policy type, either "SimpleScaling", "StepScaling" or "TargetTrackingScaling". If this value isn't provided, AWS will default to "SimpleScaling."
@@ -159,7 +171,8 @@ type PolicyState struct {
 	// The estimated time, in seconds, until a newly launched instance will contribute CloudWatch metrics. Without a value, AWS will default to the group's specified cooldown period.
 	EstimatedInstanceWarmup pulumi.IntPtrInput
 	// The aggregation type for the policy's metrics. Valid values are "Minimum", "Maximum", and "Average". Without a value, AWS will treat the aggregation type as "Average".
-	MetricAggregationType  pulumi.StringPtrInput
+	MetricAggregationType pulumi.StringPtrInput
+	// Minimum value to scale by when `adjustmentType` is set to `PercentChangeInCapacity`.
 	MinAdjustmentMagnitude pulumi.IntPtrInput
 	// The name of the dimension.
 	Name pulumi.StringPtrInput
@@ -190,8 +203,9 @@ type policyArgs struct {
 	// The estimated time, in seconds, until a newly launched instance will contribute CloudWatch metrics. Without a value, AWS will default to the group's specified cooldown period.
 	EstimatedInstanceWarmup *int `pulumi:"estimatedInstanceWarmup"`
 	// The aggregation type for the policy's metrics. Valid values are "Minimum", "Maximum", and "Average". Without a value, AWS will treat the aggregation type as "Average".
-	MetricAggregationType  *string `pulumi:"metricAggregationType"`
-	MinAdjustmentMagnitude *int    `pulumi:"minAdjustmentMagnitude"`
+	MetricAggregationType *string `pulumi:"metricAggregationType"`
+	// Minimum value to scale by when `adjustmentType` is set to `PercentChangeInCapacity`.
+	MinAdjustmentMagnitude *int `pulumi:"minAdjustmentMagnitude"`
 	// The name of the dimension.
 	Name *string `pulumi:"name"`
 	// The policy type, either "SimpleScaling", "StepScaling" or "TargetTrackingScaling". If this value isn't provided, AWS will default to "SimpleScaling."
@@ -218,7 +232,8 @@ type PolicyArgs struct {
 	// The estimated time, in seconds, until a newly launched instance will contribute CloudWatch metrics. Without a value, AWS will default to the group's specified cooldown period.
 	EstimatedInstanceWarmup pulumi.IntPtrInput
 	// The aggregation type for the policy's metrics. Valid values are "Minimum", "Maximum", and "Average". Without a value, AWS will treat the aggregation type as "Average".
-	MetricAggregationType  pulumi.StringPtrInput
+	MetricAggregationType pulumi.StringPtrInput
+	// Minimum value to scale by when `adjustmentType` is set to `PercentChangeInCapacity`.
 	MinAdjustmentMagnitude pulumi.IntPtrInput
 	// The name of the dimension.
 	Name pulumi.StringPtrInput
@@ -237,4 +252,43 @@ type PolicyArgs struct {
 
 func (PolicyArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*policyArgs)(nil)).Elem()
+}
+
+type PolicyInput interface {
+	pulumi.Input
+
+	ToPolicyOutput() PolicyOutput
+	ToPolicyOutputWithContext(ctx context.Context) PolicyOutput
+}
+
+func (Policy) ElementType() reflect.Type {
+	return reflect.TypeOf((*Policy)(nil)).Elem()
+}
+
+func (i Policy) ToPolicyOutput() PolicyOutput {
+	return i.ToPolicyOutputWithContext(context.Background())
+}
+
+func (i Policy) ToPolicyOutputWithContext(ctx context.Context) PolicyOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(PolicyOutput)
+}
+
+type PolicyOutput struct {
+	*pulumi.OutputState
+}
+
+func (PolicyOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*PolicyOutput)(nil)).Elem()
+}
+
+func (o PolicyOutput) ToPolicyOutput() PolicyOutput {
+	return o
+}
+
+func (o PolicyOutput) ToPolicyOutputWithContext(ctx context.Context) PolicyOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(PolicyOutput{})
 }

@@ -12,6 +12,8 @@ namespace Pulumi.Aws.S3
     /// <summary>
     /// Provides a S3 bucket resource.
     /// 
+    /// &gt; This functionality is for managing S3 in an AWS Partition. To manage [S3 on Outposts](https://docs.aws.amazon.com/AmazonS3/latest/dev/S3onOutposts.html), see the [`aws.s3control.Bucket` resource](https://www.terraform.io/docs/providers/aws/r/s3control_bucket.html).
+    /// 
     /// ## Example Usage
     /// ### Private Bucket w/ Tags
     /// 
@@ -53,8 +55,8 @@ namespace Pulumi.Aws.S3
     ///             Policy = File.ReadAllText("policy.json"),
     ///             Website = new Aws.S3.Inputs.BucketWebsiteArgs
     ///             {
-    ///                 ErrorDocument = "error.html",
     ///                 IndexDocument = "index.html",
+    ///                 ErrorDocument = "error.html",
     ///                 RoutingRules = @"[{
     ///     ""Condition"": {
     ///         ""KeyPrefixEquals"": ""docs/""
@@ -63,7 +65,6 @@ namespace Pulumi.Aws.S3
     ///         ""ReplaceKeyPrefixWith"": ""documents/""
     ///     }
     /// }]
-    /// 
     /// ",
     ///             },
     ///         });
@@ -286,12 +287,10 @@ namespace Pulumi.Aws.S3
     ///     }
     ///   ]
     /// }
-    /// 
     /// ",
     ///         });
     ///         var destination = new Aws.S3.Bucket("destination", new Aws.S3.BucketArgs
     ///         {
-    ///             Region = "eu-west-1",
     ///             Versioning = new Aws.S3.Inputs.BucketVersioningArgs
     ///             {
     ///                 Enabled = true,
@@ -300,7 +299,10 @@ namespace Pulumi.Aws.S3
     ///         var bucket = new Aws.S3.Bucket("bucket", new Aws.S3.BucketArgs
     ///         {
     ///             Acl = "private",
-    ///             Region = "eu-central-1",
+    ///             Versioning = new Aws.S3.Inputs.BucketVersioningArgs
+    ///             {
+    ///                 Enabled = true,
+    ///             },
     ///             ReplicationConfiguration = new Aws.S3.Inputs.BucketReplicationConfigurationArgs
     ///             {
     ///                 Role = replicationRole.Arn,
@@ -308,24 +310,20 @@ namespace Pulumi.Aws.S3
     ///                 {
     ///                     new Aws.S3.Inputs.BucketReplicationConfigurationRuleArgs
     ///                     {
+    ///                         Id = "foobar",
+    ///                         Prefix = "foo",
+    ///                         Status = "Enabled",
     ///                         Destination = new Aws.S3.Inputs.BucketReplicationConfigurationRuleDestinationArgs
     ///                         {
     ///                             Bucket = destination.Arn,
     ///                             StorageClass = "STANDARD",
     ///                         },
-    ///                         Id = "foobar",
-    ///                         Prefix = "foo",
-    ///                         Status = "Enabled",
     ///                     },
     ///                 },
     ///             },
-    ///             Versioning = new Aws.S3.Inputs.BucketVersioningArgs
-    ///             {
-    ///                 Enabled = true,
-    ///             },
     ///         }, new CustomResourceOptions
     ///         {
-    ///             Provider = "aws.central",
+    ///             Provider = aws.Central,
     ///         });
     ///         var replicationPolicy = new Aws.Iam.Policy("replicationPolicy", new Aws.Iam.PolicyArgs
     ///         {
@@ -367,14 +365,13 @@ namespace Pulumi.Aws.S3
     ///     }}
     ///   ]
     /// }}
-    /// 
     /// ";
     ///             }),
     ///         });
     ///         var replicationRolePolicyAttachment = new Aws.Iam.RolePolicyAttachment("replicationRolePolicyAttachment", new Aws.Iam.RolePolicyAttachmentArgs
     ///         {
-    ///             PolicyArn = replicationPolicy.Arn,
     ///             Role = replicationRole.Name,
+    ///             PolicyArn = replicationPolicy.Arn,
     ///         });
     ///     }
     /// 
@@ -392,8 +389,8 @@ namespace Pulumi.Aws.S3
     ///     {
     ///         var mykey = new Aws.Kms.Key("mykey", new Aws.Kms.KeyArgs
     ///         {
-    ///             DeletionWindowInDays = 10,
     ///             Description = "This key is used to encrypt bucket objects",
+    ///             DeletionWindowInDays = 10,
     ///         });
     ///         var mybucket = new Aws.S3.Bucket("mybucket", new Aws.S3.BucketArgs
     ///         {
@@ -431,20 +428,20 @@ namespace Pulumi.Aws.S3
     ///                 new Aws.S3.Inputs.BucketGrantArgs
     ///                 {
     ///                     Id = currentUser.Apply(currentUser =&gt; currentUser.Id),
+    ///                     Type = "CanonicalUser",
     ///                     Permissions = 
     ///                     {
     ///                         "FULL_CONTROL",
     ///                     },
-    ///                     Type = "CanonicalUser",
     ///                 },
     ///                 new Aws.S3.Inputs.BucketGrantArgs
     ///                 {
+    ///                     Type = "Group",
     ///                     Permissions = 
     ///                     {
     ///                         "READ",
     ///                         "WRITE",
     ///                     },
-    ///                     Type = "Group",
     ///                     Uri = "http://acs.amazonaws.com/groups/s3/LogDelivery",
     ///                 },
     ///             },
@@ -453,6 +450,16 @@ namespace Pulumi.Aws.S3
     /// 
     /// }
     /// ```
+    /// 
+    /// ## Import
+    /// 
+    /// S3 bucket can be imported using the `bucket`, e.g.
+    /// 
+    /// ```sh
+    ///  $ pulumi import aws:s3/bucket:Bucket bucket bucket-name
+    /// ```
+    /// 
+    ///  The `policy` argument is not imported and will be deprecated in a future version 3.x of the Terraform AWS Provider for removal in version 4.0. Use the [`aws_s3_bucket_policy` resource](/docs/providers/aws/r/s3_bucket_policy.html) to manage the S3 Bucket Policy instead.
     /// </summary>
     public partial class Bucket : Pulumi.CustomResource
     {
@@ -463,7 +470,7 @@ namespace Pulumi.Aws.S3
         public Output<string> AccelerationStatus { get; private set; } = null!;
 
         /// <summary>
-        /// The [canned ACL](https://docs.aws.amazon.com/AmazonS3/latest/dev/acl-overview.html#canned-acl) to apply. Defaults to "private".  Conflicts with `grant`.
+        /// The [canned ACL](https://docs.aws.amazon.com/AmazonS3/latest/dev/acl-overview.html#canned-acl) to apply. Valid values are `private`, `public-read`, `public-read-write`, `aws-exec-read`, `authenticated-read`, and `log-delivery-write`. Defaults to `private`.  Conflicts with `grant`.
         /// </summary>
         [Output("acl")]
         public Output<string?> Acl { get; private set; } = null!;
@@ -475,7 +482,7 @@ namespace Pulumi.Aws.S3
         public Output<string> Arn { get; private set; } = null!;
 
         /// <summary>
-        /// The name of the bucket. If omitted, this provider will assign a random, unique name.
+        /// The name of the bucket. If omitted, this provider will assign a random, unique name. Must be less than or equal to 63 characters in length.
         /// </summary>
         [Output("bucket")]
         public Output<string> BucketName { get; private set; } = null!;
@@ -487,7 +494,7 @@ namespace Pulumi.Aws.S3
         public Output<string> BucketDomainName { get; private set; } = null!;
 
         /// <summary>
-        /// Creates a unique bucket name beginning with the specified prefix. Conflicts with `bucket`.
+        /// Creates a unique bucket name beginning with the specified prefix. Conflicts with `bucket`. Must be less than or equal to 37 characters in length.
         /// </summary>
         [Output("bucketPrefix")]
         public Output<string?> BucketPrefix { get; private set; } = null!;
@@ -547,7 +554,7 @@ namespace Pulumi.Aws.S3
         public Output<string?> Policy { get; private set; } = null!;
 
         /// <summary>
-        /// If specified, the AWS region this bucket should reside in. Otherwise, the region used by the callee.
+        /// The AWS region this bucket resides in.
         /// </summary>
         [Output("region")]
         public Output<string> Region { get; private set; } = null!;
@@ -656,10 +663,10 @@ namespace Pulumi.Aws.S3
         public Input<string>? AccelerationStatus { get; set; }
 
         /// <summary>
-        /// The [canned ACL](https://docs.aws.amazon.com/AmazonS3/latest/dev/acl-overview.html#canned-acl) to apply. Defaults to "private".  Conflicts with `grant`.
+        /// The [canned ACL](https://docs.aws.amazon.com/AmazonS3/latest/dev/acl-overview.html#canned-acl) to apply. Valid values are `private`, `public-read`, `public-read-write`, `aws-exec-read`, `authenticated-read`, and `log-delivery-write`. Defaults to `private`.  Conflicts with `grant`.
         /// </summary>
         [Input("acl")]
-        public Input<string>? Acl { get; set; }
+        public InputUnion<string, Pulumi.Aws.S3.CannedAcl>? Acl { get; set; }
 
         /// <summary>
         /// The ARN of the bucket. Will be of format `arn:aws:s3:::bucketname`.
@@ -668,13 +675,13 @@ namespace Pulumi.Aws.S3
         public Input<string>? Arn { get; set; }
 
         /// <summary>
-        /// The name of the bucket. If omitted, this provider will assign a random, unique name.
+        /// The name of the bucket. If omitted, this provider will assign a random, unique name. Must be less than or equal to 63 characters in length.
         /// </summary>
         [Input("bucket")]
         public Input<string>? BucketName { get; set; }
 
         /// <summary>
-        /// Creates a unique bucket name beginning with the specified prefix. Conflicts with `bucket`.
+        /// Creates a unique bucket name beginning with the specified prefix. Conflicts with `bucket`. Must be less than or equal to 37 characters in length.
         /// </summary>
         [Input("bucketPrefix")]
         public Input<string>? BucketPrefix { get; set; }
@@ -752,12 +759,6 @@ namespace Pulumi.Aws.S3
         public Input<string>? Policy { get; set; }
 
         /// <summary>
-        /// If specified, the AWS region this bucket should reside in. Otherwise, the region used by the callee.
-        /// </summary>
-        [Input("region")]
-        public Input<string>? Region { get; set; }
-
-        /// <summary>
         /// A configuration of [replication configuration](http://docs.aws.amazon.com/AmazonS3/latest/dev/crr.html) (documented below).
         /// </summary>
         [Input("replicationConfiguration")]
@@ -828,10 +829,10 @@ namespace Pulumi.Aws.S3
         public Input<string>? AccelerationStatus { get; set; }
 
         /// <summary>
-        /// The [canned ACL](https://docs.aws.amazon.com/AmazonS3/latest/dev/acl-overview.html#canned-acl) to apply. Defaults to "private".  Conflicts with `grant`.
+        /// The [canned ACL](https://docs.aws.amazon.com/AmazonS3/latest/dev/acl-overview.html#canned-acl) to apply. Valid values are `private`, `public-read`, `public-read-write`, `aws-exec-read`, `authenticated-read`, and `log-delivery-write`. Defaults to `private`.  Conflicts with `grant`.
         /// </summary>
         [Input("acl")]
-        public Input<string>? Acl { get; set; }
+        public InputUnion<string, Pulumi.Aws.S3.CannedAcl>? Acl { get; set; }
 
         /// <summary>
         /// The ARN of the bucket. Will be of format `arn:aws:s3:::bucketname`.
@@ -840,7 +841,7 @@ namespace Pulumi.Aws.S3
         public Input<string>? Arn { get; set; }
 
         /// <summary>
-        /// The name of the bucket. If omitted, this provider will assign a random, unique name.
+        /// The name of the bucket. If omitted, this provider will assign a random, unique name. Must be less than or equal to 63 characters in length.
         /// </summary>
         [Input("bucket")]
         public Input<string>? BucketName { get; set; }
@@ -852,7 +853,7 @@ namespace Pulumi.Aws.S3
         public Input<string>? BucketDomainName { get; set; }
 
         /// <summary>
-        /// Creates a unique bucket name beginning with the specified prefix. Conflicts with `bucket`.
+        /// Creates a unique bucket name beginning with the specified prefix. Conflicts with `bucket`. Must be less than or equal to 37 characters in length.
         /// </summary>
         [Input("bucketPrefix")]
         public Input<string>? BucketPrefix { get; set; }
@@ -936,7 +937,7 @@ namespace Pulumi.Aws.S3
         public Input<string>? Policy { get; set; }
 
         /// <summary>
-        /// If specified, the AWS region this bucket should reside in. Otherwise, the region used by the callee.
+        /// The AWS region this bucket resides in.
         /// </summary>
         [Input("region")]
         public Input<string>? Region { get; set; }

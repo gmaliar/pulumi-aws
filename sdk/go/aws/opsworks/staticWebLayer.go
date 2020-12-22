@@ -4,6 +4,7 @@
 package opsworks
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -18,14 +19,14 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/opsworks"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/opsworks"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
 // func main() {
 // 	pulumi.Run(func(ctx *pulumi.Context) error {
 // 		_, err := opsworks.NewStaticWebLayer(ctx, "web", &opsworks.StaticWebLayerArgs{
-// 			StackId: pulumi.String(aws_opsworks_stack.Main.Id),
+// 			StackId: pulumi.Any(aws_opsworks_stack.Main.Id),
 // 		})
 // 		if err != nil {
 // 			return err
@@ -33,6 +34,14 @@ import (
 // 		return nil
 // 	})
 // }
+// ```
+//
+// ## Import
+//
+// OpsWorks static web server Layers can be imported using the `id`, e.g.
+//
+// ```sh
+//  $ pulumi import aws:opsworks/staticWebLayer:StaticWebLayer bar 00000000-0000-0000-0000-000000000000
 // ```
 type StaticWebLayer struct {
 	pulumi.CustomResourceState
@@ -80,11 +89,12 @@ type StaticWebLayer struct {
 // NewStaticWebLayer registers a new resource with the given unique name, arguments, and options.
 func NewStaticWebLayer(ctx *pulumi.Context,
 	name string, args *StaticWebLayerArgs, opts ...pulumi.ResourceOption) (*StaticWebLayer, error) {
-	if args == nil || args.StackId == nil {
-		return nil, errors.New("missing required argument 'StackId'")
-	}
 	if args == nil {
-		args = &StaticWebLayerArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.StackId == nil {
+		return nil, errors.New("invalid value for required argument 'StackId'")
 	}
 	var resource StaticWebLayer
 	err := ctx.RegisterResource("aws:opsworks/staticWebLayer:StaticWebLayer", name, args, &resource, opts...)
@@ -274,4 +284,43 @@ type StaticWebLayerArgs struct {
 
 func (StaticWebLayerArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*staticWebLayerArgs)(nil)).Elem()
+}
+
+type StaticWebLayerInput interface {
+	pulumi.Input
+
+	ToStaticWebLayerOutput() StaticWebLayerOutput
+	ToStaticWebLayerOutputWithContext(ctx context.Context) StaticWebLayerOutput
+}
+
+func (StaticWebLayer) ElementType() reflect.Type {
+	return reflect.TypeOf((*StaticWebLayer)(nil)).Elem()
+}
+
+func (i StaticWebLayer) ToStaticWebLayerOutput() StaticWebLayerOutput {
+	return i.ToStaticWebLayerOutputWithContext(context.Background())
+}
+
+func (i StaticWebLayer) ToStaticWebLayerOutputWithContext(ctx context.Context) StaticWebLayerOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(StaticWebLayerOutput)
+}
+
+type StaticWebLayerOutput struct {
+	*pulumi.OutputState
+}
+
+func (StaticWebLayerOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*StaticWebLayerOutput)(nil)).Elem()
+}
+
+func (o StaticWebLayerOutput) ToStaticWebLayerOutput() StaticWebLayerOutput {
+	return o
+}
+
+func (o StaticWebLayerOutput) ToStaticWebLayerOutputWithContext(ctx context.Context) StaticWebLayerOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(StaticWebLayerOutput{})
 }

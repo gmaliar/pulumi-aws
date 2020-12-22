@@ -36,6 +36,8 @@ namespace Pulumi.Aws.WafRegional
     ///         var wafrule = new Aws.WafRegional.RateBasedRule("wafrule", new Aws.WafRegional.RateBasedRuleArgs
     ///         {
     ///             MetricName = "tfWAFRule",
+    ///             RateKey = "IP",
+    ///             RateLimit = 100,
     ///             Predicates = 
     ///             {
     ///                 new Aws.WafRegional.Inputs.RateBasedRulePredicateArgs
@@ -45,18 +47,24 @@ namespace Pulumi.Aws.WafRegional
     ///                     Type = "IPMatch",
     ///                 },
     ///             },
-    ///             RateKey = "IP",
-    ///             RateLimit = 100,
     ///         }, new CustomResourceOptions
     ///         {
     ///             DependsOn = 
     ///             {
-    ///                 "aws_wafregional_ipset.ipset",
+    ///                 ipset,
     ///             },
     ///         });
     ///     }
     /// 
     /// }
+    /// ```
+    /// 
+    /// ## Import
+    /// 
+    /// WAF Regional Rate Based Rule can be imported using the id, e.g.
+    /// 
+    /// ```sh
+    ///  $ pulumi import aws:wafregional/rateBasedRule:RateBasedRule wafrule a1b2c3d4-d5f6-7777-8888-9999aaaabbbbcccc
     /// ```
     /// </summary>
     public partial class RateBasedRule : Pulumi.CustomResource

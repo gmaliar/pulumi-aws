@@ -4,6 +4,7 @@
 package cloudwatch
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -18,7 +19,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/cloudwatch"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/cloudwatch"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -50,7 +51,7 @@ import (
 // import (
 // 	"fmt"
 //
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/cloudwatch"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/cloudwatch"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -109,7 +110,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/cloudwatch"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/cloudwatch"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -150,6 +151,14 @@ import (
 // 		return nil
 // 	})
 // }
+// ```
+//
+// ## Import
+//
+// Cloud Metric Alarms can be imported using the `alarm_name`, e.g.
+//
+// ```sh
+//  $ pulumi import aws:cloudwatch/metricAlarm:MetricAlarm test alarm-12345
 // ```
 type MetricAlarm struct {
 	pulumi.CustomResourceState
@@ -213,14 +222,15 @@ type MetricAlarm struct {
 // NewMetricAlarm registers a new resource with the given unique name, arguments, and options.
 func NewMetricAlarm(ctx *pulumi.Context,
 	name string, args *MetricAlarmArgs, opts ...pulumi.ResourceOption) (*MetricAlarm, error) {
-	if args == nil || args.ComparisonOperator == nil {
-		return nil, errors.New("missing required argument 'ComparisonOperator'")
-	}
-	if args == nil || args.EvaluationPeriods == nil {
-		return nil, errors.New("missing required argument 'EvaluationPeriods'")
-	}
 	if args == nil {
-		args = &MetricAlarmArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.ComparisonOperator == nil {
+		return nil, errors.New("invalid value for required argument 'ComparisonOperator'")
+	}
+	if args.EvaluationPeriods == nil {
+		return nil, errors.New("invalid value for required argument 'EvaluationPeriods'")
 	}
 	var resource MetricAlarm
 	err := ctx.RegisterResource("aws:cloudwatch/metricAlarm:MetricAlarm", name, args, &resource, opts...)
@@ -474,4 +484,43 @@ type MetricAlarmArgs struct {
 
 func (MetricAlarmArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*metricAlarmArgs)(nil)).Elem()
+}
+
+type MetricAlarmInput interface {
+	pulumi.Input
+
+	ToMetricAlarmOutput() MetricAlarmOutput
+	ToMetricAlarmOutputWithContext(ctx context.Context) MetricAlarmOutput
+}
+
+func (MetricAlarm) ElementType() reflect.Type {
+	return reflect.TypeOf((*MetricAlarm)(nil)).Elem()
+}
+
+func (i MetricAlarm) ToMetricAlarmOutput() MetricAlarmOutput {
+	return i.ToMetricAlarmOutputWithContext(context.Background())
+}
+
+func (i MetricAlarm) ToMetricAlarmOutputWithContext(ctx context.Context) MetricAlarmOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(MetricAlarmOutput)
+}
+
+type MetricAlarmOutput struct {
+	*pulumi.OutputState
+}
+
+func (MetricAlarmOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*MetricAlarmOutput)(nil)).Elem()
+}
+
+func (o MetricAlarmOutput) ToMetricAlarmOutput() MetricAlarmOutput {
+	return o
+}
+
+func (o MetricAlarmOutput) ToMetricAlarmOutputWithContext(ctx context.Context) MetricAlarmOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(MetricAlarmOutput{})
 }

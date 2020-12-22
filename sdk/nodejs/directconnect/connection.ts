@@ -18,6 +18,14 @@ import * as utilities from "../utilities";
  *     location: "EqDC2",
  * });
  * ```
+ *
+ * ## Import
+ *
+ * Direct Connect connections can be imported using the `connection id`, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:directconnect/connection:Connection test_connection dxcon-ffre0ec3
+ * ```
  */
 export class Connection extends pulumi.CustomResource {
     /**
@@ -102,10 +110,10 @@ export class Connection extends pulumi.CustomResource {
             inputs["tags"] = state ? state.tags : undefined;
         } else {
             const args = argsOrState as ConnectionArgs | undefined;
-            if (!args || args.bandwidth === undefined) {
+            if ((!args || args.bandwidth === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'bandwidth'");
             }
-            if (!args || args.location === undefined) {
+            if ((!args || args.location === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'location'");
             }
             inputs["bandwidth"] = args ? args.bandwidth : undefined;

@@ -20,14 +20,20 @@ import * as utilities from "../utilities";
  * import * as aws from "@pulumi/aws";
  *
  * const example = new aws.ec2transitgateway.VpcAttachmentAccepter("example", {
+ *     transitGatewayAttachmentId: aws_ec2_transit_gateway_vpc_attachment.example.id,
  *     tags: {
  *         Name: "Example cross-account attachment",
  *     },
- *     transitGatewayAttachmentId: aws_ec2_transit_gateway_vpc_attachment_example.id,
  * });
  * ```
  *
- * A full example of how to how to create a Transit Gateway in one AWS account, share it with a second AWS account, and attach a VPC in the second account to the Transit Gateway via the `aws.ec2transitgateway.VpcAttachment` and `aws.ec2transitgateway.VpcAttachmentAccepter` resources can be found in [the `./examples/transit-gateway-cross-account-vpc-attachment` directory within the Github Repository](https://github.com/providers/provider-aws/tree/master/examples/transit-gateway-cross-account-vpc-attachment).
+ * ## Import
+ *
+ * `aws_ec2_transit_gateway_vpc_attachment_accepter` can be imported by using the EC2 Transit Gateway Attachment identifier, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:ec2transitgateway/vpcAttachmentAccepter:VpcAttachmentAccepter example tgw-attach-12345678
+ * ```
  */
 export class VpcAttachmentAccepter extends pulumi.CustomResource {
     /**
@@ -57,6 +63,10 @@ export class VpcAttachmentAccepter extends pulumi.CustomResource {
         return obj['__pulumiType'] === VpcAttachmentAccepter.__pulumiType;
     }
 
+    /**
+     * Whether Appliance Mode support is enabled. Valid values: `disable`, `enable`.
+     */
+    public /*out*/ readonly applianceModeSupport!: pulumi.Output<string>;
     /**
      * Whether DNS support is enabled. Valid values: `disable`, `enable`.
      */
@@ -110,6 +120,7 @@ export class VpcAttachmentAccepter extends pulumi.CustomResource {
         let inputs: pulumi.Inputs = {};
         if (opts && opts.id) {
             const state = argsOrState as VpcAttachmentAccepterState | undefined;
+            inputs["applianceModeSupport"] = state ? state.applianceModeSupport : undefined;
             inputs["dnsSupport"] = state ? state.dnsSupport : undefined;
             inputs["ipv6Support"] = state ? state.ipv6Support : undefined;
             inputs["subnetIds"] = state ? state.subnetIds : undefined;
@@ -122,13 +133,14 @@ export class VpcAttachmentAccepter extends pulumi.CustomResource {
             inputs["vpcOwnerId"] = state ? state.vpcOwnerId : undefined;
         } else {
             const args = argsOrState as VpcAttachmentAccepterArgs | undefined;
-            if (!args || args.transitGatewayAttachmentId === undefined) {
+            if ((!args || args.transitGatewayAttachmentId === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'transitGatewayAttachmentId'");
             }
             inputs["tags"] = args ? args.tags : undefined;
             inputs["transitGatewayAttachmentId"] = args ? args.transitGatewayAttachmentId : undefined;
             inputs["transitGatewayDefaultRouteTableAssociation"] = args ? args.transitGatewayDefaultRouteTableAssociation : undefined;
             inputs["transitGatewayDefaultRouteTablePropagation"] = args ? args.transitGatewayDefaultRouteTablePropagation : undefined;
+            inputs["applianceModeSupport"] = undefined /*out*/;
             inputs["dnsSupport"] = undefined /*out*/;
             inputs["ipv6Support"] = undefined /*out*/;
             inputs["subnetIds"] = undefined /*out*/;
@@ -151,6 +163,10 @@ export class VpcAttachmentAccepter extends pulumi.CustomResource {
  * Input properties used for looking up and filtering VpcAttachmentAccepter resources.
  */
 export interface VpcAttachmentAccepterState {
+    /**
+     * Whether Appliance Mode support is enabled. Valid values: `disable`, `enable`.
+     */
+    readonly applianceModeSupport?: pulumi.Input<string>;
     /**
      * Whether DNS support is enabled. Valid values: `disable`, `enable`.
      */

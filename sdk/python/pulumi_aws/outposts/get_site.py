@@ -5,9 +5,16 @@
 import warnings
 import pulumi
 import pulumi.runtime
-from typing import Union
-from .. import utilities, tables
+from typing import Any, Mapping, Optional, Sequence, Union
+from .. import _utilities, _tables
 
+__all__ = [
+    'GetSiteResult',
+    'AwaitableGetSiteResult',
+    'get_site',
+]
+
+@pulumi.output_type
 class GetSiteResult:
     """
     A collection of values returned by getSite.
@@ -15,22 +22,44 @@ class GetSiteResult:
     def __init__(__self__, account_id=None, description=None, id=None, name=None):
         if account_id and not isinstance(account_id, str):
             raise TypeError("Expected argument 'account_id' to be a str")
-        __self__.account_id = account_id
+        pulumi.set(__self__, "account_id", account_id)
+        if description and not isinstance(description, str):
+            raise TypeError("Expected argument 'description' to be a str")
+        pulumi.set(__self__, "description", description)
+        if id and not isinstance(id, str):
+            raise TypeError("Expected argument 'id' to be a str")
+        pulumi.set(__self__, "id", id)
+        if name and not isinstance(name, str):
+            raise TypeError("Expected argument 'name' to be a str")
+        pulumi.set(__self__, "name", name)
+
+    @property
+    @pulumi.getter(name="accountId")
+    def account_id(self) -> str:
         """
         AWS Account identifier.
         """
-        if description and not isinstance(description, str):
-            raise TypeError("Expected argument 'description' to be a str")
-        __self__.description = description
+        return pulumi.get(self, "account_id")
+
+    @property
+    @pulumi.getter
+    def description(self) -> str:
         """
         Description.
         """
-        if id and not isinstance(id, str):
-            raise TypeError("Expected argument 'id' to be a str")
-        __self__.id = id
-        if name and not isinstance(name, str):
-            raise TypeError("Expected argument 'name' to be a str")
-        __self__.name = name
+        return pulumi.get(self, "description")
+
+    @property
+    @pulumi.getter
+    def id(self) -> str:
+        return pulumi.get(self, "id")
+
+    @property
+    @pulumi.getter
+    def name(self) -> str:
+        return pulumi.get(self, "name")
+
+
 class AwaitableGetSiteResult(GetSiteResult):
     # pylint: disable=using-constant-test
     def __await__(self):
@@ -42,7 +71,10 @@ class AwaitableGetSiteResult(GetSiteResult):
             id=self.id,
             name=self.name)
 
-def get_site(id=None,name=None,opts=None):
+
+def get_site(id: Optional[str] = None,
+             name: Optional[str] = None,
+             opts: Optional[pulumi.InvokeOptions] = None) -> AwaitableGetSiteResult:
     """
     Provides details about an Outposts Site.
 
@@ -60,18 +92,16 @@ def get_site(id=None,name=None,opts=None):
     :param str name: Name of the Site.
     """
     __args__ = dict()
-
-
     __args__['id'] = id
     __args__['name'] = name
     if opts is None:
         opts = pulumi.InvokeOptions()
     if opts.version is None:
-        opts.version = utilities.get_version()
-    __ret__ = pulumi.runtime.invoke('aws:outposts/getSite:getSite', __args__, opts=opts).value
+        opts.version = _utilities.get_version()
+    __ret__ = pulumi.runtime.invoke('aws:outposts/getSite:getSite', __args__, opts=opts, typ=GetSiteResult).value
 
     return AwaitableGetSiteResult(
-        account_id=__ret__.get('accountId'),
-        description=__ret__.get('description'),
-        id=__ret__.get('id'),
-        name=__ret__.get('name'))
+        account_id=__ret__.account_id,
+        description=__ret__.description,
+        id=__ret__.id,
+        name=__ret__.name)

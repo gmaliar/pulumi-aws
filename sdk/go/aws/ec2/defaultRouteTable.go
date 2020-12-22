@@ -4,6 +4,7 @@
 package ec2
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -48,14 +49,14 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/ec2"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/ec2"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
 // func main() {
 // 	pulumi.Run(func(ctx *pulumi.Context) error {
 // 		_, err := ec2.NewDefaultRouteTable(ctx, "defaultRouteTable", &ec2.DefaultRouteTableArgs{
-// 			DefaultRouteTableId: pulumi.String(aws_vpc.Foo.Default_route_table_id),
+// 			DefaultRouteTableId: pulumi.Any(aws_vpc.Foo.Default_route_table_id),
 // 			Routes: ec2.DefaultRouteTableRouteArray{
 // 				nil,
 // 			},
@@ -70,6 +71,16 @@ import (
 // 	})
 // }
 // ```
+//
+// ## Import
+//
+// Default VPC Routing tables can be imported using the `vpc_id`, e.g.
+//
+// ```sh
+//  $ pulumi import aws:ec2/defaultRouteTable:DefaultRouteTable example vpc-33cc44dd
+// ```
+//
+//  [aws-route-tables]http://docs.aws.amazon.com/AmazonVPC/latest/UserGuide/VPC_Route_Tables.html#Route_Replacing_Main_Table [tf-route-tables]/docs/providers/aws/r/route_table.html
 type DefaultRouteTable struct {
 	pulumi.CustomResourceState
 
@@ -89,11 +100,12 @@ type DefaultRouteTable struct {
 // NewDefaultRouteTable registers a new resource with the given unique name, arguments, and options.
 func NewDefaultRouteTable(ctx *pulumi.Context,
 	name string, args *DefaultRouteTableArgs, opts ...pulumi.ResourceOption) (*DefaultRouteTable, error) {
-	if args == nil || args.DefaultRouteTableId == nil {
-		return nil, errors.New("missing required argument 'DefaultRouteTableId'")
-	}
 	if args == nil {
-		args = &DefaultRouteTableArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.DefaultRouteTableId == nil {
+		return nil, errors.New("invalid value for required argument 'DefaultRouteTableId'")
 	}
 	var resource DefaultRouteTable
 	err := ctx.RegisterResource("aws:ec2/defaultRouteTable:DefaultRouteTable", name, args, &resource, opts...)
@@ -173,4 +185,43 @@ type DefaultRouteTableArgs struct {
 
 func (DefaultRouteTableArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*defaultRouteTableArgs)(nil)).Elem()
+}
+
+type DefaultRouteTableInput interface {
+	pulumi.Input
+
+	ToDefaultRouteTableOutput() DefaultRouteTableOutput
+	ToDefaultRouteTableOutputWithContext(ctx context.Context) DefaultRouteTableOutput
+}
+
+func (DefaultRouteTable) ElementType() reflect.Type {
+	return reflect.TypeOf((*DefaultRouteTable)(nil)).Elem()
+}
+
+func (i DefaultRouteTable) ToDefaultRouteTableOutput() DefaultRouteTableOutput {
+	return i.ToDefaultRouteTableOutputWithContext(context.Background())
+}
+
+func (i DefaultRouteTable) ToDefaultRouteTableOutputWithContext(ctx context.Context) DefaultRouteTableOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(DefaultRouteTableOutput)
+}
+
+type DefaultRouteTableOutput struct {
+	*pulumi.OutputState
+}
+
+func (DefaultRouteTableOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*DefaultRouteTableOutput)(nil)).Elem()
+}
+
+func (o DefaultRouteTableOutput) ToDefaultRouteTableOutput() DefaultRouteTableOutput {
+	return o
+}
+
+func (o DefaultRouteTableOutput) ToDefaultRouteTableOutputWithContext(ctx context.Context) DefaultRouteTableOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(DefaultRouteTableOutput{})
 }

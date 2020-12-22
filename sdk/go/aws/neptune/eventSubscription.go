@@ -4,6 +4,7 @@
 package neptune
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -16,30 +17,30 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/neptune"
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/sns"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/neptune"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/sns"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
 // func main() {
 // 	pulumi.Run(func(ctx *pulumi.Context) error {
 // 		defaultCluster, err := neptune.NewCluster(ctx, "defaultCluster", &neptune.ClusterArgs{
-// 			ApplyImmediately:                 pulumi.Bool(true),
-// 			BackupRetentionPeriod:            pulumi.Int(5),
 // 			ClusterIdentifier:                pulumi.String("neptune-cluster-demo"),
 // 			Engine:                           pulumi.String("neptune"),
-// 			IamDatabaseAuthenticationEnabled: pulumi.Bool(true),
+// 			BackupRetentionPeriod:            pulumi.Int(5),
 // 			PreferredBackupWindow:            pulumi.String("07:00-09:00"),
 // 			SkipFinalSnapshot:                pulumi.Bool(true),
+// 			IamDatabaseAuthenticationEnabled: pulumi.Bool(true),
+// 			ApplyImmediately:                 pulumi.Bool(true),
 // 		})
 // 		if err != nil {
 // 			return err
 // 		}
 // 		example, err := neptune.NewClusterInstance(ctx, "example", &neptune.ClusterInstanceArgs{
-// 			ApplyImmediately:  pulumi.Bool(true),
 // 			ClusterIdentifier: defaultCluster.ID(),
 // 			Engine:            pulumi.String("neptune"),
 // 			InstanceClass:     pulumi.String("db.r4.large"),
+// 			ApplyImmediately:  pulumi.Bool(true),
 // 		})
 // 		if err != nil {
 // 			return err
@@ -49,6 +50,11 @@ import (
 // 			return err
 // 		}
 // 		_, err = neptune.NewEventSubscription(ctx, "defaultEventSubscription", &neptune.EventSubscriptionArgs{
+// 			SnsTopicArn: defaultTopic.Arn,
+// 			SourceType:  pulumi.String("db-instance"),
+// 			SourceIds: pulumi.StringArray{
+// 				example.ID(),
+// 			},
 // 			EventCategories: pulumi.StringArray{
 // 				pulumi.String("maintenance"),
 // 				pulumi.String("availability"),
@@ -63,11 +69,6 @@ import (
 // 				pulumi.String("configuration change"),
 // 				pulumi.String("read replica"),
 // 			},
-// 			SnsTopicArn: defaultTopic.Arn,
-// 			SourceIds: pulumi.StringArray{
-// 				example.ID(),
-// 			},
-// 			SourceType: pulumi.String("db-instance"),
 // 			Tags: pulumi.StringMap{
 // 				"env": pulumi.String("test"),
 // 			},
@@ -86,6 +87,14 @@ import (
 // * `id` - The name of the Neptune event notification subscription.
 // * `arn` - The Amazon Resource Name of the Neptune event notification subscription.
 // * `customerAwsId` - The AWS customer account associated with the Neptune event notification subscription.
+//
+// ## Import
+//
+// `aws_neptune_event_subscription` can be imported by using the event subscription name, e.g.
+//
+// ```sh
+//  $ pulumi import aws:neptune/eventSubscription:EventSubscription example my-event-subscription
+// ```
 type EventSubscription struct {
 	pulumi.CustomResourceState
 
@@ -112,11 +121,12 @@ type EventSubscription struct {
 // NewEventSubscription registers a new resource with the given unique name, arguments, and options.
 func NewEventSubscription(ctx *pulumi.Context,
 	name string, args *EventSubscriptionArgs, opts ...pulumi.ResourceOption) (*EventSubscription, error) {
-	if args == nil || args.SnsTopicArn == nil {
-		return nil, errors.New("missing required argument 'SnsTopicArn'")
-	}
 	if args == nil {
-		args = &EventSubscriptionArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.SnsTopicArn == nil {
+		return nil, errors.New("invalid value for required argument 'SnsTopicArn'")
 	}
 	var resource EventSubscription
 	err := ctx.RegisterResource("aws:neptune/eventSubscription:EventSubscription", name, args, &resource, opts...)
@@ -226,4 +236,43 @@ type EventSubscriptionArgs struct {
 
 func (EventSubscriptionArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*eventSubscriptionArgs)(nil)).Elem()
+}
+
+type EventSubscriptionInput interface {
+	pulumi.Input
+
+	ToEventSubscriptionOutput() EventSubscriptionOutput
+	ToEventSubscriptionOutputWithContext(ctx context.Context) EventSubscriptionOutput
+}
+
+func (EventSubscription) ElementType() reflect.Type {
+	return reflect.TypeOf((*EventSubscription)(nil)).Elem()
+}
+
+func (i EventSubscription) ToEventSubscriptionOutput() EventSubscriptionOutput {
+	return i.ToEventSubscriptionOutputWithContext(context.Background())
+}
+
+func (i EventSubscription) ToEventSubscriptionOutputWithContext(ctx context.Context) EventSubscriptionOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(EventSubscriptionOutput)
+}
+
+type EventSubscriptionOutput struct {
+	*pulumi.OutputState
+}
+
+func (EventSubscriptionOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*EventSubscriptionOutput)(nil)).Elem()
+}
+
+func (o EventSubscriptionOutput) ToEventSubscriptionOutput() EventSubscriptionOutput {
+	return o
+}
+
+func (o EventSubscriptionOutput) ToEventSubscriptionOutputWithContext(ctx context.Context) EventSubscriptionOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(EventSubscriptionOutput{})
 }

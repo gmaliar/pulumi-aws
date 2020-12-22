@@ -38,15 +38,14 @@ namespace Pulumi.Aws.Lambda
     ///     }
     ///   ]
     /// }
-    /// 
     /// ",
     ///         });
     ///         var testLambda = new Aws.Lambda.Function("testLambda", new Aws.Lambda.FunctionArgs
     ///         {
     ///             Code = new FileArchive("lambdatest.zip"),
-    ///             Handler = "exports.handler",
     ///             Role = iamForLambda.Arn,
-    ///             Runtime = "nodejs8.10",
+    ///             Handler = "exports.handler",
+    ///             Runtime = "nodejs12.x",
     ///         });
     ///         var testAlias = new Aws.Lambda.Alias("testAlias", new Aws.Lambda.AliasArgs
     ///         {
@@ -59,8 +58,8 @@ namespace Pulumi.Aws.Lambda
     ///             Action = "lambda:InvokeFunction",
     ///             Function = testLambda.Name,
     ///             Principal = "events.amazonaws.com",
-    ///             Qualifier = testAlias.Name,
     ///             SourceArn = "arn:aws:events:eu-west-1:111122223333:rule/RunDaily",
+    ///             Qualifier = testAlias.Name,
     ///         });
     ///     }
     /// 
@@ -94,14 +93,13 @@ namespace Pulumi.Aws.Lambda
     ///     }
     ///   ]
     /// }
-    /// 
     /// ",
     ///         });
     ///         var func = new Aws.Lambda.Function("func", new Aws.Lambda.FunctionArgs
     ///         {
     ///             Code = new FileArchive("lambdatest.zip"),
-    ///             Handler = "exports.handler",
     ///             Role = defaultRole.Arn,
+    ///             Handler = "exports.handler",
     ///             Runtime = "python2.7",
     ///         });
     ///         var withSns = new Aws.Lambda.Permission("withSns", new Aws.Lambda.PermissionArgs
@@ -113,9 +111,9 @@ namespace Pulumi.Aws.Lambda
     ///         });
     ///         var lambda = new Aws.Sns.TopicSubscription("lambda", new Aws.Sns.TopicSubscriptionArgs
     ///         {
-    ///             Endpoint = func.Arn,
-    ///             Protocol = "lambda",
     ///             Topic = defaultTopic.Arn,
+    ///             Protocol = "lambda",
+    ///             Endpoint = func.Arn,
     ///         });
     ///     }
     /// 
@@ -146,6 +144,18 @@ namespace Pulumi.Aws.Lambda
     /// 
     /// }
     /// ```
+    /// 
+    /// ## Import
+    /// 
+    /// Lambda permission statements can be imported using function_name/statement_id, with an optional qualifier, e.g.
+    /// 
+    /// ```sh
+    ///  $ pulumi import aws:lambda/permission:Permission test_lambda_permission my_test_lambda_function/AllowExecutionFromCloudWatch
+    /// ```
+    /// 
+    /// ```sh
+    ///  $ pulumi import aws:lambda/permission:Permission test_lambda_permission my_test_lambda_function:qualifier_name/AllowExecutionFromCloudWatch
+    /// ```
     /// </summary>
     public partial class Permission : Pulumi.CustomResource
     {
@@ -168,17 +178,13 @@ namespace Pulumi.Aws.Lambda
         public Output<string> Function { get; private set; } = null!;
 
         /// <summary>
-        /// The principal who is getting this permission.
-        /// e.g. `s3.amazonaws.com`, an AWS account ID, or any valid AWS service principal
-        /// such as `events.amazonaws.com` or `sns.amazonaws.com`.
+        /// The principal who is getting this permission. e.g. `s3.amazonaws.com`, an AWS account ID, or any valid AWS service principal such as `events.amazonaws.com` or `sns.amazonaws.com`.
         /// </summary>
         [Output("principal")]
         public Output<string> Principal { get; private set; } = null!;
 
         /// <summary>
-        /// Query parameter to specify function version or alias name.
-        /// The permission will then apply to the specific qualified ARN.
-        /// e.g. `arn:aws:lambda:aws-region:acct-id:function:function-name:2`
+        /// Query parameter to specify function version or alias name. The permission will then apply to the specific qualified ARN. e.g. `arn:aws:lambda:aws-region:acct-id:function:function-name:2`
         /// </summary>
         [Output("qualifier")]
         public Output<string?> Qualifier { get; private set; } = null!;
@@ -276,17 +282,13 @@ namespace Pulumi.Aws.Lambda
         public Input<string> Function { get; set; } = null!;
 
         /// <summary>
-        /// The principal who is getting this permission.
-        /// e.g. `s3.amazonaws.com`, an AWS account ID, or any valid AWS service principal
-        /// such as `events.amazonaws.com` or `sns.amazonaws.com`.
+        /// The principal who is getting this permission. e.g. `s3.amazonaws.com`, an AWS account ID, or any valid AWS service principal such as `events.amazonaws.com` or `sns.amazonaws.com`.
         /// </summary>
         [Input("principal", required: true)]
         public Input<string> Principal { get; set; } = null!;
 
         /// <summary>
-        /// Query parameter to specify function version or alias name.
-        /// The permission will then apply to the specific qualified ARN.
-        /// e.g. `arn:aws:lambda:aws-region:acct-id:function:function-name:2`
+        /// Query parameter to specify function version or alias name. The permission will then apply to the specific qualified ARN. e.g. `arn:aws:lambda:aws-region:acct-id:function:function-name:2`
         /// </summary>
         [Input("qualifier")]
         public Input<string>? Qualifier { get; set; }
@@ -345,17 +347,13 @@ namespace Pulumi.Aws.Lambda
         public Input<string>? Function { get; set; }
 
         /// <summary>
-        /// The principal who is getting this permission.
-        /// e.g. `s3.amazonaws.com`, an AWS account ID, or any valid AWS service principal
-        /// such as `events.amazonaws.com` or `sns.amazonaws.com`.
+        /// The principal who is getting this permission. e.g. `s3.amazonaws.com`, an AWS account ID, or any valid AWS service principal such as `events.amazonaws.com` or `sns.amazonaws.com`.
         /// </summary>
         [Input("principal")]
         public Input<string>? Principal { get; set; }
 
         /// <summary>
-        /// Query parameter to specify function version or alias name.
-        /// The permission will then apply to the specific qualified ARN.
-        /// e.g. `arn:aws:lambda:aws-region:acct-id:function:function-name:2`
+        /// Query parameter to specify function version or alias name. The permission will then apply to the specific qualified ARN. e.g. `arn:aws:lambda:aws-region:acct-id:function:function-name:2`
         /// </summary>
         [Input("qualifier")]
         public Input<string>? Qualifier { get; set; }

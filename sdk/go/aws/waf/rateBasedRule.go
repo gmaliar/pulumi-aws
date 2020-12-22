@@ -4,6 +4,7 @@
 package waf
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -18,7 +19,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/waf"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/waf"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -37,6 +38,8 @@ import (
 // 		}
 // 		_, err = waf.NewRateBasedRule(ctx, "wafrule", &waf.RateBasedRuleArgs{
 // 			MetricName: pulumi.String("tfWAFRule"),
+// 			RateKey:    pulumi.String("IP"),
+// 			RateLimit:  pulumi.Int(100),
 // 			Predicates: waf.RateBasedRulePredicateArray{
 // 				&waf.RateBasedRulePredicateArgs{
 // 					DataId:  ipset.ID(),
@@ -44,10 +47,8 @@ import (
 // 					Type:    pulumi.String("IPMatch"),
 // 				},
 // 			},
-// 			RateKey:   pulumi.String("IP"),
-// 			RateLimit: pulumi.Int(100),
 // 		}, pulumi.DependsOn([]pulumi.Resource{
-// 			"aws_waf_ipset.ipset",
+// 			ipset,
 // 		}))
 // 		if err != nil {
 // 			return err
@@ -55,6 +56,14 @@ import (
 // 		return nil
 // 	})
 // }
+// ```
+//
+// ## Import
+//
+// WAF Rated Based Rule can be imported using the id, e.g.
+//
+// ```sh
+//  $ pulumi import aws:waf/rateBasedRule:RateBasedRule wafrule a1b2c3d4-d5f6-7777-8888-9999aaaabbbbcccc
 // ```
 type RateBasedRule struct {
 	pulumi.CustomResourceState
@@ -78,17 +87,18 @@ type RateBasedRule struct {
 // NewRateBasedRule registers a new resource with the given unique name, arguments, and options.
 func NewRateBasedRule(ctx *pulumi.Context,
 	name string, args *RateBasedRuleArgs, opts ...pulumi.ResourceOption) (*RateBasedRule, error) {
-	if args == nil || args.MetricName == nil {
-		return nil, errors.New("missing required argument 'MetricName'")
-	}
-	if args == nil || args.RateKey == nil {
-		return nil, errors.New("missing required argument 'RateKey'")
-	}
-	if args == nil || args.RateLimit == nil {
-		return nil, errors.New("missing required argument 'RateLimit'")
-	}
 	if args == nil {
-		args = &RateBasedRuleArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.MetricName == nil {
+		return nil, errors.New("invalid value for required argument 'MetricName'")
+	}
+	if args.RateKey == nil {
+		return nil, errors.New("invalid value for required argument 'RateKey'")
+	}
+	if args.RateLimit == nil {
+		return nil, errors.New("invalid value for required argument 'RateLimit'")
 	}
 	var resource RateBasedRule
 	err := ctx.RegisterResource("aws:waf/rateBasedRule:RateBasedRule", name, args, &resource, opts...)
@@ -182,4 +192,43 @@ type RateBasedRuleArgs struct {
 
 func (RateBasedRuleArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*rateBasedRuleArgs)(nil)).Elem()
+}
+
+type RateBasedRuleInput interface {
+	pulumi.Input
+
+	ToRateBasedRuleOutput() RateBasedRuleOutput
+	ToRateBasedRuleOutputWithContext(ctx context.Context) RateBasedRuleOutput
+}
+
+func (RateBasedRule) ElementType() reflect.Type {
+	return reflect.TypeOf((*RateBasedRule)(nil)).Elem()
+}
+
+func (i RateBasedRule) ToRateBasedRuleOutput() RateBasedRuleOutput {
+	return i.ToRateBasedRuleOutputWithContext(context.Background())
+}
+
+func (i RateBasedRule) ToRateBasedRuleOutputWithContext(ctx context.Context) RateBasedRuleOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(RateBasedRuleOutput)
+}
+
+type RateBasedRuleOutput struct {
+	*pulumi.OutputState
+}
+
+func (RateBasedRuleOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*RateBasedRuleOutput)(nil)).Elem()
+}
+
+func (o RateBasedRuleOutput) ToRateBasedRuleOutput() RateBasedRuleOutput {
+	return o
+}
+
+func (o RateBasedRuleOutput) ToRateBasedRuleOutputWithContext(ctx context.Context) RateBasedRuleOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(RateBasedRuleOutput{})
 }

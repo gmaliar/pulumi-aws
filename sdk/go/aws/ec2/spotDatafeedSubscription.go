@@ -4,6 +4,7 @@
 package ec2
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -21,8 +22,8 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/ec2"
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/s3"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/ec2"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/s3"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -43,6 +44,14 @@ import (
 // 	})
 // }
 // ```
+//
+// ## Import
+//
+// A Spot Datafeed Subscription can be imported using the word `spot-datafeed-subscription`, e.g.
+//
+// ```sh
+//  $ pulumi import aws:ec2/spotDatafeedSubscription:SpotDatafeedSubscription mysubscription spot-datafeed-subscription
+// ```
 type SpotDatafeedSubscription struct {
 	pulumi.CustomResourceState
 
@@ -55,11 +64,12 @@ type SpotDatafeedSubscription struct {
 // NewSpotDatafeedSubscription registers a new resource with the given unique name, arguments, and options.
 func NewSpotDatafeedSubscription(ctx *pulumi.Context,
 	name string, args *SpotDatafeedSubscriptionArgs, opts ...pulumi.ResourceOption) (*SpotDatafeedSubscription, error) {
-	if args == nil || args.Bucket == nil {
-		return nil, errors.New("missing required argument 'Bucket'")
-	}
 	if args == nil {
-		args = &SpotDatafeedSubscriptionArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.Bucket == nil {
+		return nil, errors.New("invalid value for required argument 'Bucket'")
 	}
 	var resource SpotDatafeedSubscription
 	err := ctx.RegisterResource("aws:ec2/spotDatafeedSubscription:SpotDatafeedSubscription", name, args, &resource, opts...)
@@ -117,4 +127,43 @@ type SpotDatafeedSubscriptionArgs struct {
 
 func (SpotDatafeedSubscriptionArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*spotDatafeedSubscriptionArgs)(nil)).Elem()
+}
+
+type SpotDatafeedSubscriptionInput interface {
+	pulumi.Input
+
+	ToSpotDatafeedSubscriptionOutput() SpotDatafeedSubscriptionOutput
+	ToSpotDatafeedSubscriptionOutputWithContext(ctx context.Context) SpotDatafeedSubscriptionOutput
+}
+
+func (SpotDatafeedSubscription) ElementType() reflect.Type {
+	return reflect.TypeOf((*SpotDatafeedSubscription)(nil)).Elem()
+}
+
+func (i SpotDatafeedSubscription) ToSpotDatafeedSubscriptionOutput() SpotDatafeedSubscriptionOutput {
+	return i.ToSpotDatafeedSubscriptionOutputWithContext(context.Background())
+}
+
+func (i SpotDatafeedSubscription) ToSpotDatafeedSubscriptionOutputWithContext(ctx context.Context) SpotDatafeedSubscriptionOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(SpotDatafeedSubscriptionOutput)
+}
+
+type SpotDatafeedSubscriptionOutput struct {
+	*pulumi.OutputState
+}
+
+func (SpotDatafeedSubscriptionOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*SpotDatafeedSubscriptionOutput)(nil)).Elem()
+}
+
+func (o SpotDatafeedSubscriptionOutput) ToSpotDatafeedSubscriptionOutput() SpotDatafeedSubscriptionOutput {
+	return o
+}
+
+func (o SpotDatafeedSubscriptionOutput) ToSpotDatafeedSubscriptionOutputWithContext(ctx context.Context) SpotDatafeedSubscriptionOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(SpotDatafeedSubscriptionOutput{})
 }

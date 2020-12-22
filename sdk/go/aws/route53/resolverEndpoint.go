@@ -4,6 +4,7 @@
 package route53
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -18,7 +19,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/route53"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/route53"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -26,18 +27,18 @@ import (
 // 	pulumi.Run(func(ctx *pulumi.Context) error {
 // 		_, err := route53.NewResolverEndpoint(ctx, "foo", &route53.ResolverEndpointArgs{
 // 			Direction: pulumi.String("INBOUND"),
+// 			SecurityGroupIds: pulumi.StringArray{
+// 				pulumi.Any(aws_security_group.Sg1.Id),
+// 				pulumi.Any(aws_security_group.Sg2.Id),
+// 			},
 // 			IpAddresses: route53.ResolverEndpointIpAddressArray{
 // 				&route53.ResolverEndpointIpAddressArgs{
-// 					SubnetId: pulumi.String(aws_subnet.Sn1.Id),
+// 					SubnetId: pulumi.Any(aws_subnet.Sn1.Id),
 // 				},
 // 				&route53.ResolverEndpointIpAddressArgs{
+// 					SubnetId: pulumi.Any(aws_subnet.Sn2.Id),
 // 					Ip:       pulumi.String("10.0.64.4"),
-// 					SubnetId: pulumi.String(aws_subnet.Sn2.Id),
 // 				},
-// 			},
-// 			SecurityGroupIds: pulumi.StringArray{
-// 				pulumi.String(aws_security_group.Sg1.Id),
-// 				pulumi.String(aws_security_group.Sg2.Id),
 // 			},
 // 			Tags: pulumi.StringMap{
 // 				"Environment": pulumi.String("Prod"),
@@ -49,6 +50,14 @@ import (
 // 		return nil
 // 	})
 // }
+// ```
+//
+// ## Import
+//
+//  Route 53 Resolver endpoints can be imported using the Route 53 Resolver endpoint ID, e.g.
+//
+// ```sh
+//  $ pulumi import aws:route53/resolverEndpoint:ResolverEndpoint foo rslvr-in-abcdef01234567890
 // ```
 type ResolverEndpoint struct {
 	pulumi.CustomResourceState
@@ -75,17 +84,18 @@ type ResolverEndpoint struct {
 // NewResolverEndpoint registers a new resource with the given unique name, arguments, and options.
 func NewResolverEndpoint(ctx *pulumi.Context,
 	name string, args *ResolverEndpointArgs, opts ...pulumi.ResourceOption) (*ResolverEndpoint, error) {
-	if args == nil || args.Direction == nil {
-		return nil, errors.New("missing required argument 'Direction'")
-	}
-	if args == nil || args.IpAddresses == nil {
-		return nil, errors.New("missing required argument 'IpAddresses'")
-	}
-	if args == nil || args.SecurityGroupIds == nil {
-		return nil, errors.New("missing required argument 'SecurityGroupIds'")
-	}
 	if args == nil {
-		args = &ResolverEndpointArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.Direction == nil {
+		return nil, errors.New("invalid value for required argument 'Direction'")
+	}
+	if args.IpAddresses == nil {
+		return nil, errors.New("invalid value for required argument 'IpAddresses'")
+	}
+	if args.SecurityGroupIds == nil {
+		return nil, errors.New("invalid value for required argument 'SecurityGroupIds'")
 	}
 	var resource ResolverEndpoint
 	err := ctx.RegisterResource("aws:route53/resolverEndpoint:ResolverEndpoint", name, args, &resource, opts...)
@@ -187,4 +197,43 @@ type ResolverEndpointArgs struct {
 
 func (ResolverEndpointArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*resolverEndpointArgs)(nil)).Elem()
+}
+
+type ResolverEndpointInput interface {
+	pulumi.Input
+
+	ToResolverEndpointOutput() ResolverEndpointOutput
+	ToResolverEndpointOutputWithContext(ctx context.Context) ResolverEndpointOutput
+}
+
+func (ResolverEndpoint) ElementType() reflect.Type {
+	return reflect.TypeOf((*ResolverEndpoint)(nil)).Elem()
+}
+
+func (i ResolverEndpoint) ToResolverEndpointOutput() ResolverEndpointOutput {
+	return i.ToResolverEndpointOutputWithContext(context.Background())
+}
+
+func (i ResolverEndpoint) ToResolverEndpointOutputWithContext(ctx context.Context) ResolverEndpointOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(ResolverEndpointOutput)
+}
+
+type ResolverEndpointOutput struct {
+	*pulumi.OutputState
+}
+
+func (ResolverEndpointOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*ResolverEndpointOutput)(nil)).Elem()
+}
+
+func (o ResolverEndpointOutput) ToResolverEndpointOutput() ResolverEndpointOutput {
+	return o
+}
+
+func (o ResolverEndpointOutput) ToResolverEndpointOutputWithContext(ctx context.Context) ResolverEndpointOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(ResolverEndpointOutput{})
 }

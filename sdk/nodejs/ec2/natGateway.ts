@@ -14,8 +14,8 @@ import * as utilities from "../utilities";
  * import * as aws from "@pulumi/aws";
  *
  * const gw = new aws.ec2.NatGateway("gw", {
- *     allocationId: aws_eip_nat.id,
- *     subnetId: aws_subnet_example.id,
+ *     allocationId: aws_eip.nat.id,
+ *     subnetId: aws_subnet.example.id,
  * });
  * ```
  *
@@ -26,12 +26,20 @@ import * as utilities from "../utilities";
  * import * as aws from "@pulumi/aws";
  *
  * const gw = new aws.ec2.NatGateway("gw", {
- *     allocationId: aws_eip_nat.id,
- *     subnetId: aws_subnet_example.id,
+ *     allocationId: aws_eip.nat.id,
+ *     subnetId: aws_subnet.example.id,
  *     tags: {
  *         Name: "gw NAT",
  *     },
  * });
+ * ```
+ *
+ * ## Import
+ *
+ * NAT Gateways can be imported using the `id`, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:ec2/natGateway:NatGateway private_gw nat-05dba92075d71c408
  * ```
  */
 export class NatGateway extends pulumi.CustomResource {
@@ -107,10 +115,10 @@ export class NatGateway extends pulumi.CustomResource {
             inputs["tags"] = state ? state.tags : undefined;
         } else {
             const args = argsOrState as NatGatewayArgs | undefined;
-            if (!args || args.allocationId === undefined) {
+            if ((!args || args.allocationId === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'allocationId'");
             }
-            if (!args || args.subnetId === undefined) {
+            if ((!args || args.subnetId === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'subnetId'");
             }
             inputs["allocationId"] = args ? args.allocationId : undefined;

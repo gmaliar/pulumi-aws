@@ -31,24 +31,32 @@ namespace Pulumi.Aws.Cognito
     ///         });
     ///         var exampleProvider = new Aws.Cognito.IdentityProvider("exampleProvider", new Aws.Cognito.IdentityProviderArgs
     ///         {
-    ///             AttributeMapping = 
-    ///             {
-    ///                 { "email", "email" },
-    ///                 { "username", "sub" },
-    ///             },
+    ///             UserPoolId = example.Id,
+    ///             ProviderName = "Google",
+    ///             ProviderType = "Google",
     ///             ProviderDetails = 
     ///             {
     ///                 { "authorize_scopes", "email" },
     ///                 { "client_id", "your client_id" },
     ///                 { "client_secret", "your client_secret" },
     ///             },
-    ///             ProviderName = "Google",
-    ///             ProviderType = "Google",
-    ///             UserPoolId = example.Id,
+    ///             AttributeMapping = 
+    ///             {
+    ///                 { "email", "email" },
+    ///                 { "username", "sub" },
+    ///             },
     ///         });
     ///     }
     /// 
     /// }
+    /// ```
+    /// 
+    /// ## Import
+    /// 
+    /// `aws_cognito_identity_provider` resources can be imported using their User Pool ID and Provider Name, e.g.
+    /// 
+    /// ```sh
+    ///  $ pulumi import aws:cognito/identityProvider:IdentityProvider example xxx_yyyyy:example
     /// ```
     /// </summary>
     public partial class IdentityProvider : Pulumi.CustomResource

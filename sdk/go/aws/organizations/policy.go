@@ -4,6 +4,7 @@
 package organizations
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -20,7 +21,7 @@ import (
 // import (
 // 	"fmt"
 //
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/organizations"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/organizations"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -36,6 +37,14 @@ import (
 // 	})
 // }
 // ```
+//
+// ## Import
+//
+// `aws_organizations_policy` can be imported by using the policy ID, e.g.
+//
+// ```sh
+//  $ pulumi import aws:organizations/policy:Policy example p-12345678
+// ```
 type Policy struct {
 	pulumi.CustomResourceState
 
@@ -47,18 +56,21 @@ type Policy struct {
 	Description pulumi.StringPtrOutput `pulumi:"description"`
 	// The friendly name to assign to the policy.
 	Name pulumi.StringOutput `pulumi:"name"`
-	// The type of policy to create. Valid values are `BACKUP_POLICY`, `SERVICE_CONTROL_POLICY` (SCP), and `TAG_POLICY`. Defaults to `SERVICE_CONTROL_POLICY`.
+	// Key-value map of resource tags.
+	Tags pulumi.StringMapOutput `pulumi:"tags"`
+	// The type of policy to create. Valid values are `AISERVICES_OPT_OUT_POLICY`, `BACKUP_POLICY`, `SERVICE_CONTROL_POLICY` (SCP), and `TAG_POLICY`. Defaults to `SERVICE_CONTROL_POLICY`.
 	Type pulumi.StringPtrOutput `pulumi:"type"`
 }
 
 // NewPolicy registers a new resource with the given unique name, arguments, and options.
 func NewPolicy(ctx *pulumi.Context,
 	name string, args *PolicyArgs, opts ...pulumi.ResourceOption) (*Policy, error) {
-	if args == nil || args.Content == nil {
-		return nil, errors.New("missing required argument 'Content'")
-	}
 	if args == nil {
-		args = &PolicyArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.Content == nil {
+		return nil, errors.New("invalid value for required argument 'Content'")
 	}
 	var resource Policy
 	err := ctx.RegisterResource("aws:organizations/policy:Policy", name, args, &resource, opts...)
@@ -90,7 +102,9 @@ type policyState struct {
 	Description *string `pulumi:"description"`
 	// The friendly name to assign to the policy.
 	Name *string `pulumi:"name"`
-	// The type of policy to create. Valid values are `BACKUP_POLICY`, `SERVICE_CONTROL_POLICY` (SCP), and `TAG_POLICY`. Defaults to `SERVICE_CONTROL_POLICY`.
+	// Key-value map of resource tags.
+	Tags map[string]string `pulumi:"tags"`
+	// The type of policy to create. Valid values are `AISERVICES_OPT_OUT_POLICY`, `BACKUP_POLICY`, `SERVICE_CONTROL_POLICY` (SCP), and `TAG_POLICY`. Defaults to `SERVICE_CONTROL_POLICY`.
 	Type *string `pulumi:"type"`
 }
 
@@ -103,7 +117,9 @@ type PolicyState struct {
 	Description pulumi.StringPtrInput
 	// The friendly name to assign to the policy.
 	Name pulumi.StringPtrInput
-	// The type of policy to create. Valid values are `BACKUP_POLICY`, `SERVICE_CONTROL_POLICY` (SCP), and `TAG_POLICY`. Defaults to `SERVICE_CONTROL_POLICY`.
+	// Key-value map of resource tags.
+	Tags pulumi.StringMapInput
+	// The type of policy to create. Valid values are `AISERVICES_OPT_OUT_POLICY`, `BACKUP_POLICY`, `SERVICE_CONTROL_POLICY` (SCP), and `TAG_POLICY`. Defaults to `SERVICE_CONTROL_POLICY`.
 	Type pulumi.StringPtrInput
 }
 
@@ -118,7 +134,9 @@ type policyArgs struct {
 	Description *string `pulumi:"description"`
 	// The friendly name to assign to the policy.
 	Name *string `pulumi:"name"`
-	// The type of policy to create. Valid values are `BACKUP_POLICY`, `SERVICE_CONTROL_POLICY` (SCP), and `TAG_POLICY`. Defaults to `SERVICE_CONTROL_POLICY`.
+	// Key-value map of resource tags.
+	Tags map[string]string `pulumi:"tags"`
+	// The type of policy to create. Valid values are `AISERVICES_OPT_OUT_POLICY`, `BACKUP_POLICY`, `SERVICE_CONTROL_POLICY` (SCP), and `TAG_POLICY`. Defaults to `SERVICE_CONTROL_POLICY`.
 	Type *string `pulumi:"type"`
 }
 
@@ -130,10 +148,51 @@ type PolicyArgs struct {
 	Description pulumi.StringPtrInput
 	// The friendly name to assign to the policy.
 	Name pulumi.StringPtrInput
-	// The type of policy to create. Valid values are `BACKUP_POLICY`, `SERVICE_CONTROL_POLICY` (SCP), and `TAG_POLICY`. Defaults to `SERVICE_CONTROL_POLICY`.
+	// Key-value map of resource tags.
+	Tags pulumi.StringMapInput
+	// The type of policy to create. Valid values are `AISERVICES_OPT_OUT_POLICY`, `BACKUP_POLICY`, `SERVICE_CONTROL_POLICY` (SCP), and `TAG_POLICY`. Defaults to `SERVICE_CONTROL_POLICY`.
 	Type pulumi.StringPtrInput
 }
 
 func (PolicyArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*policyArgs)(nil)).Elem()
+}
+
+type PolicyInput interface {
+	pulumi.Input
+
+	ToPolicyOutput() PolicyOutput
+	ToPolicyOutputWithContext(ctx context.Context) PolicyOutput
+}
+
+func (Policy) ElementType() reflect.Type {
+	return reflect.TypeOf((*Policy)(nil)).Elem()
+}
+
+func (i Policy) ToPolicyOutput() PolicyOutput {
+	return i.ToPolicyOutputWithContext(context.Background())
+}
+
+func (i Policy) ToPolicyOutputWithContext(ctx context.Context) PolicyOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(PolicyOutput)
+}
+
+type PolicyOutput struct {
+	*pulumi.OutputState
+}
+
+func (PolicyOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*PolicyOutput)(nil)).Elem()
+}
+
+func (o PolicyOutput) ToPolicyOutput() PolicyOutput {
+	return o
+}
+
+func (o PolicyOutput) ToPolicyOutputWithContext(ctx context.Context) PolicyOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(PolicyOutput{})
 }

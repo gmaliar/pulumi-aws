@@ -2,8 +2,7 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 /**
@@ -20,25 +19,25 @@ import * as utilities from "../utilities";
  *
  * const prod = new aws.rds.Instance("prod", {
  *     allocatedStorage: 10,
- *     dbSubnetGroupName: "my_database_subnet_group",
  *     engine: "mysql",
  *     engineVersion: "5.6.17",
  *     instanceClass: "db.t2.micro",
  *     name: "mydb",
- *     parameterGroupName: "default.mysql5.6",
- *     password: "bar",
  *     username: "foo",
+ *     password: "bar",
+ *     dbSubnetGroupName: "my_database_subnet_group",
+ *     parameterGroupName: "default.mysql5.6",
  * });
  * const latestProdSnapshot = prod.id.apply(id => aws.rds.getSnapshot({
  *     dbInstanceIdentifier: id,
  *     mostRecent: true,
- * }, { async: true }));
+ * }));
  * // Use the latest production snapshot to create a dev instance.
  * const dev = new aws.rds.Instance("dev", {
  *     instanceClass: "db.t2.micro",
  *     name: "mydbdev",
  *     snapshotIdentifier: latestProdSnapshot.id,
- * }, { ignoreChanges: ["snapshotIdentifier"] });
+ * });
  * ```
  */
 export function getSnapshot(args?: GetSnapshotArgs, opts?: pulumi.InvokeOptions): Promise<GetSnapshotResult> {

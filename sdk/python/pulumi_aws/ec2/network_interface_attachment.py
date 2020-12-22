@@ -5,32 +5,22 @@
 import warnings
 import pulumi
 import pulumi.runtime
-from typing import Union
-from .. import utilities, tables
+from typing import Any, Mapping, Optional, Sequence, Union
+from .. import _utilities, _tables
+
+__all__ = ['NetworkInterfaceAttachment']
 
 
 class NetworkInterfaceAttachment(pulumi.CustomResource):
-    attachment_id: pulumi.Output[str]
-    """
-    The ENI Attachment ID.
-    """
-    device_index: pulumi.Output[float]
-    """
-    Network interface index (int).
-    """
-    instance_id: pulumi.Output[str]
-    """
-    Instance ID to attach.
-    """
-    network_interface_id: pulumi.Output[str]
-    """
-    ENI ID to attach.
-    """
-    status: pulumi.Output[str]
-    """
-    The status of the Network Interface Attachment.
-    """
-    def __init__(__self__, resource_name, opts=None, device_index=None, instance_id=None, network_interface_id=None, __props__=None, __name__=None, __opts__=None):
+    def __init__(__self__,
+                 resource_name: str,
+                 opts: Optional[pulumi.ResourceOptions] = None,
+                 device_index: Optional[pulumi.Input[int]] = None,
+                 instance_id: Optional[pulumi.Input[str]] = None,
+                 network_interface_id: Optional[pulumi.Input[str]] = None,
+                 __props__=None,
+                 __name__=None,
+                 __opts__=None):
         """
         Attach an Elastic network interface (ENI) resource with EC2 instance.
 
@@ -41,14 +31,14 @@ class NetworkInterfaceAttachment(pulumi.CustomResource):
         import pulumi_aws as aws
 
         test = aws.ec2.NetworkInterfaceAttachment("test",
-            device_index=0,
             instance_id=aws_instance["test"]["id"],
-            network_interface_id=aws_network_interface["test"]["id"])
+            network_interface_id=aws_network_interface["test"]["id"],
+            device_index=0)
         ```
 
         :param str resource_name: The name of the resource.
         :param pulumi.ResourceOptions opts: Options for the resource.
-        :param pulumi.Input[float] device_index: Network interface index (int).
+        :param pulumi.Input[int] device_index: Network interface index (int).
         :param pulumi.Input[str] instance_id: Instance ID to attach.
         :param pulumi.Input[str] network_interface_id: ENI ID to attach.
         """
@@ -63,19 +53,19 @@ class NetworkInterfaceAttachment(pulumi.CustomResource):
         if not isinstance(opts, pulumi.ResourceOptions):
             raise TypeError('Expected resource options to be a ResourceOptions instance')
         if opts.version is None:
-            opts.version = utilities.get_version()
+            opts.version = _utilities.get_version()
         if opts.id is None:
             if __props__ is not None:
                 raise TypeError('__props__ is only valid when passed in combination with a valid opts.id to get an existing resource')
             __props__ = dict()
 
-            if device_index is None:
+            if device_index is None and not opts.urn:
                 raise TypeError("Missing required property 'device_index'")
             __props__['device_index'] = device_index
-            if instance_id is None:
+            if instance_id is None and not opts.urn:
                 raise TypeError("Missing required property 'instance_id'")
             __props__['instance_id'] = instance_id
-            if network_interface_id is None:
+            if network_interface_id is None and not opts.urn:
                 raise TypeError("Missing required property 'network_interface_id'")
             __props__['network_interface_id'] = network_interface_id
             __props__['attachment_id'] = None
@@ -87,16 +77,23 @@ class NetworkInterfaceAttachment(pulumi.CustomResource):
             opts)
 
     @staticmethod
-    def get(resource_name, id, opts=None, attachment_id=None, device_index=None, instance_id=None, network_interface_id=None, status=None):
+    def get(resource_name: str,
+            id: pulumi.Input[str],
+            opts: Optional[pulumi.ResourceOptions] = None,
+            attachment_id: Optional[pulumi.Input[str]] = None,
+            device_index: Optional[pulumi.Input[int]] = None,
+            instance_id: Optional[pulumi.Input[str]] = None,
+            network_interface_id: Optional[pulumi.Input[str]] = None,
+            status: Optional[pulumi.Input[str]] = None) -> 'NetworkInterfaceAttachment':
         """
         Get an existing NetworkInterfaceAttachment resource's state with the given name, id, and optional extra
         properties used to qualify the lookup.
 
         :param str resource_name: The unique name of the resulting resource.
-        :param str id: The unique provider ID of the resource to lookup.
+        :param pulumi.Input[str] id: The unique provider ID of the resource to lookup.
         :param pulumi.ResourceOptions opts: Options for the resource.
         :param pulumi.Input[str] attachment_id: The ENI Attachment ID.
-        :param pulumi.Input[float] device_index: Network interface index (int).
+        :param pulumi.Input[int] device_index: Network interface index (int).
         :param pulumi.Input[str] instance_id: Instance ID to attach.
         :param pulumi.Input[str] network_interface_id: ENI ID to attach.
         :param pulumi.Input[str] status: The status of the Network Interface Attachment.
@@ -112,8 +109,49 @@ class NetworkInterfaceAttachment(pulumi.CustomResource):
         __props__["status"] = status
         return NetworkInterfaceAttachment(resource_name, opts=opts, __props__=__props__)
 
+    @property
+    @pulumi.getter(name="attachmentId")
+    def attachment_id(self) -> pulumi.Output[str]:
+        """
+        The ENI Attachment ID.
+        """
+        return pulumi.get(self, "attachment_id")
+
+    @property
+    @pulumi.getter(name="deviceIndex")
+    def device_index(self) -> pulumi.Output[int]:
+        """
+        Network interface index (int).
+        """
+        return pulumi.get(self, "device_index")
+
+    @property
+    @pulumi.getter(name="instanceId")
+    def instance_id(self) -> pulumi.Output[str]:
+        """
+        Instance ID to attach.
+        """
+        return pulumi.get(self, "instance_id")
+
+    @property
+    @pulumi.getter(name="networkInterfaceId")
+    def network_interface_id(self) -> pulumi.Output[str]:
+        """
+        ENI ID to attach.
+        """
+        return pulumi.get(self, "network_interface_id")
+
+    @property
+    @pulumi.getter
+    def status(self) -> pulumi.Output[str]:
+        """
+        The status of the Network Interface Attachment.
+        """
+        return pulumi.get(self, "status")
+
     def translate_output_property(self, prop):
-        return tables._CAMEL_TO_SNAKE_CASE_TABLE.get(prop) or prop
+        return _tables.CAMEL_TO_SNAKE_CASE_TABLE.get(prop) or prop
 
     def translate_input_property(self, prop):
-        return tables._SNAKE_TO_CAMEL_CASE_TABLE.get(prop) or prop
+        return _tables.SNAKE_TO_CAMEL_CASE_TABLE.get(prop) or prop
+

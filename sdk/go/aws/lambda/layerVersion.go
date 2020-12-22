@@ -4,6 +4,7 @@
 package lambda
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -25,6 +26,18 @@ import (
 //
 // For larger deployment packages it is recommended by Amazon to upload via S3, since the S3 API has better support for uploading
 // large files efficiently.
+//
+// ## Import
+//
+// Lambda Layers can be imported using `arn`.
+//
+// ```sh
+//  $ pulumi import aws:lambda/layerVersion:LayerVersion \
+// ```
+//
+//  aws_lambda_layer_version.test_layer \
+//
+//  arn:aws:lambda:_REGION_:_ACCOUNT_ID_:layer:_LAYER_NAME_:_LAYER_VERSION_
 type LayerVersion struct {
 	pulumi.CustomResourceState
 
@@ -50,6 +63,10 @@ type LayerVersion struct {
 	S3Key pulumi.StringPtrOutput `pulumi:"s3Key"`
 	// The object version containing the function's deployment package. Conflicts with `filename`.
 	S3ObjectVersion pulumi.StringPtrOutput `pulumi:"s3ObjectVersion"`
+	// The Amazon Resource Name (ARN) of a signing job.
+	SigningJobArn pulumi.StringOutput `pulumi:"signingJobArn"`
+	// The Amazon Resource Name (ARN) for a signing profile version.
+	SigningProfileVersionArn pulumi.StringOutput `pulumi:"signingProfileVersionArn"`
 	// Used to trigger updates. Must be set to a base64-encoded SHA256 hash of the package file specified with either `filename` or `s3Key`. The usual way to set this is `${filebase64sha256("file.zip")}` (this provider 0.11.12 or later) or `${base64sha256(file("file.zip"))}` (this provider 0.11.11 and earlier), where "file.zip" is the local filename of the lambda layer source archive.
 	SourceCodeHash pulumi.StringOutput `pulumi:"sourceCodeHash"`
 	// The size in bytes of the function .zip file.
@@ -61,11 +78,12 @@ type LayerVersion struct {
 // NewLayerVersion registers a new resource with the given unique name, arguments, and options.
 func NewLayerVersion(ctx *pulumi.Context,
 	name string, args *LayerVersionArgs, opts ...pulumi.ResourceOption) (*LayerVersion, error) {
-	if args == nil || args.LayerName == nil {
-		return nil, errors.New("missing required argument 'LayerName'")
-	}
 	if args == nil {
-		args = &LayerVersionArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.LayerName == nil {
+		return nil, errors.New("invalid value for required argument 'LayerName'")
 	}
 	var resource LayerVersion
 	err := ctx.RegisterResource("aws:lambda/layerVersion:LayerVersion", name, args, &resource, opts...)
@@ -111,6 +129,10 @@ type layerVersionState struct {
 	S3Key *string `pulumi:"s3Key"`
 	// The object version containing the function's deployment package. Conflicts with `filename`.
 	S3ObjectVersion *string `pulumi:"s3ObjectVersion"`
+	// The Amazon Resource Name (ARN) of a signing job.
+	SigningJobArn *string `pulumi:"signingJobArn"`
+	// The Amazon Resource Name (ARN) for a signing profile version.
+	SigningProfileVersionArn *string `pulumi:"signingProfileVersionArn"`
 	// Used to trigger updates. Must be set to a base64-encoded SHA256 hash of the package file specified with either `filename` or `s3Key`. The usual way to set this is `${filebase64sha256("file.zip")}` (this provider 0.11.12 or later) or `${base64sha256(file("file.zip"))}` (this provider 0.11.11 and earlier), where "file.zip" is the local filename of the lambda layer source archive.
 	SourceCodeHash *string `pulumi:"sourceCodeHash"`
 	// The size in bytes of the function .zip file.
@@ -142,6 +164,10 @@ type LayerVersionState struct {
 	S3Key pulumi.StringPtrInput
 	// The object version containing the function's deployment package. Conflicts with `filename`.
 	S3ObjectVersion pulumi.StringPtrInput
+	// The Amazon Resource Name (ARN) of a signing job.
+	SigningJobArn pulumi.StringPtrInput
+	// The Amazon Resource Name (ARN) for a signing profile version.
+	SigningProfileVersionArn pulumi.StringPtrInput
 	// Used to trigger updates. Must be set to a base64-encoded SHA256 hash of the package file specified with either `filename` or `s3Key`. The usual way to set this is `${filebase64sha256("file.zip")}` (this provider 0.11.12 or later) or `${base64sha256(file("file.zip"))}` (this provider 0.11.11 and earlier), where "file.zip" is the local filename of the lambda layer source archive.
 	SourceCodeHash pulumi.StringPtrInput
 	// The size in bytes of the function .zip file.
@@ -199,4 +225,43 @@ type LayerVersionArgs struct {
 
 func (LayerVersionArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*layerVersionArgs)(nil)).Elem()
+}
+
+type LayerVersionInput interface {
+	pulumi.Input
+
+	ToLayerVersionOutput() LayerVersionOutput
+	ToLayerVersionOutputWithContext(ctx context.Context) LayerVersionOutput
+}
+
+func (LayerVersion) ElementType() reflect.Type {
+	return reflect.TypeOf((*LayerVersion)(nil)).Elem()
+}
+
+func (i LayerVersion) ToLayerVersionOutput() LayerVersionOutput {
+	return i.ToLayerVersionOutputWithContext(context.Background())
+}
+
+func (i LayerVersion) ToLayerVersionOutputWithContext(ctx context.Context) LayerVersionOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(LayerVersionOutput)
+}
+
+type LayerVersionOutput struct {
+	*pulumi.OutputState
+}
+
+func (LayerVersionOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*LayerVersionOutput)(nil)).Elem()
+}
+
+func (o LayerVersionOutput) ToLayerVersionOutput() LayerVersionOutput {
+	return o
+}
+
+func (o LayerVersionOutput) ToLayerVersionOutputWithContext(ctx context.Context) LayerVersionOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(LayerVersionOutput{})
 }

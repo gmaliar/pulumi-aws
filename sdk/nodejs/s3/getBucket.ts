@@ -2,8 +2,7 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 /**
@@ -19,20 +18,20 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const selected = pulumi.output(aws.s3.getBucket({
+ * const selected = aws.s3.getBucket({
  *     bucket: "bucket.test.com",
- * }, { async: true }));
- * const testZone = pulumi.output(aws.route53.getZone({
+ * });
+ * const testZone = aws.route53.getZone({
  *     name: "test.com.",
- * }, { async: true }));
+ * });
  * const example = new aws.route53.Record("example", {
- *     aliases: [{
- *         name: selected.websiteDomain,
- *         zoneId: selected.hostedZoneId,
- *     }],
+ *     zoneId: testZone.then(testZone => testZone.id),
  *     name: "bucket",
  *     type: "A",
- *     zoneId: testZone.id,
+ *     aliases: [{
+ *         name: selected.then(selected => selected.websiteDomain),
+ *         zoneId: selected.then(selected => selected.hostedZoneId),
+ *     }],
  * });
  * ```
  * ### CloudFront Origin
@@ -41,15 +40,13 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const selected = pulumi.output(aws.s3.getBucket({
+ * const selected = aws.s3.getBucket({
  *     bucket: "a-test-bucket",
- * }, { async: true }));
- * const test = new aws.cloudfront.Distribution("test", {
- *     origins: [{
- *         domainName: selected.bucketDomainName,
- *         originId: "s3-selected-bucket",
- *     }],
  * });
+ * const test = new aws.cloudfront.Distribution("test", {origins: [{
+ *     domainName: selected.then(selected => selected.bucketDomainName),
+ *     originId: "s3-selected-bucket",
+ * }]});
  * ```
  */
 export function getBucket(args: GetBucketArgs, opts?: pulumi.InvokeOptions): Promise<GetBucketResult> {

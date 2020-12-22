@@ -4,6 +4,7 @@
 package storagegateway
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -20,15 +21,15 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/storagegateway"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/storagegateway"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
 // func main() {
 // 	pulumi.Run(func(ctx *pulumi.Context) error {
 // 		_, err := storagegateway.NewWorkingStorage(ctx, "example", &storagegateway.WorkingStorageArgs{
-// 			DiskId:     pulumi.String(data.Aws_storagegateway_local_disk.Example.Id),
-// 			GatewayArn: pulumi.String(aws_storagegateway_gateway.Example.Arn),
+// 			DiskId:     pulumi.Any(data.Aws_storagegateway_local_disk.Example.Id),
+// 			GatewayArn: pulumi.Any(aws_storagegateway_gateway.Example.Arn),
 // 		})
 // 		if err != nil {
 // 			return err
@@ -36,6 +37,14 @@ import (
 // 		return nil
 // 	})
 // }
+// ```
+//
+// ## Import
+//
+// `aws_storagegateway_working_storage` can be imported by using the gateway Amazon Resource Name (ARN) and local disk identifier separated with a colon (`:`), e.g.
+//
+// ```sh
+//  $ pulumi import aws:storagegateway/workingStorage:WorkingStorage example arn:aws:storagegateway:us-east-1:123456789012:gateway/sgw-12345678:pci-0000:03:00.0-scsi-0:0:0:0
 // ```
 type WorkingStorage struct {
 	pulumi.CustomResourceState
@@ -49,14 +58,15 @@ type WorkingStorage struct {
 // NewWorkingStorage registers a new resource with the given unique name, arguments, and options.
 func NewWorkingStorage(ctx *pulumi.Context,
 	name string, args *WorkingStorageArgs, opts ...pulumi.ResourceOption) (*WorkingStorage, error) {
-	if args == nil || args.DiskId == nil {
-		return nil, errors.New("missing required argument 'DiskId'")
-	}
-	if args == nil || args.GatewayArn == nil {
-		return nil, errors.New("missing required argument 'GatewayArn'")
-	}
 	if args == nil {
-		args = &WorkingStorageArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.DiskId == nil {
+		return nil, errors.New("invalid value for required argument 'DiskId'")
+	}
+	if args.GatewayArn == nil {
+		return nil, errors.New("invalid value for required argument 'GatewayArn'")
 	}
 	var resource WorkingStorage
 	err := ctx.RegisterResource("aws:storagegateway/workingStorage:WorkingStorage", name, args, &resource, opts...)
@@ -114,4 +124,43 @@ type WorkingStorageArgs struct {
 
 func (WorkingStorageArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*workingStorageArgs)(nil)).Elem()
+}
+
+type WorkingStorageInput interface {
+	pulumi.Input
+
+	ToWorkingStorageOutput() WorkingStorageOutput
+	ToWorkingStorageOutputWithContext(ctx context.Context) WorkingStorageOutput
+}
+
+func (WorkingStorage) ElementType() reflect.Type {
+	return reflect.TypeOf((*WorkingStorage)(nil)).Elem()
+}
+
+func (i WorkingStorage) ToWorkingStorageOutput() WorkingStorageOutput {
+	return i.ToWorkingStorageOutputWithContext(context.Background())
+}
+
+func (i WorkingStorage) ToWorkingStorageOutputWithContext(ctx context.Context) WorkingStorageOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(WorkingStorageOutput)
+}
+
+type WorkingStorageOutput struct {
+	*pulumi.OutputState
+}
+
+func (WorkingStorageOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*WorkingStorageOutput)(nil)).Elem()
+}
+
+func (o WorkingStorageOutput) ToWorkingStorageOutput() WorkingStorageOutput {
+	return o
+}
+
+func (o WorkingStorageOutput) ToWorkingStorageOutputWithContext(ctx context.Context) WorkingStorageOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(WorkingStorageOutput{})
 }

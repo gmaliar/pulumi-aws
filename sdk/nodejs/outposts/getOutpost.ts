@@ -2,8 +2,7 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 /**
@@ -30,6 +29,7 @@ export function getOutpost(args?: GetOutpostArgs, opts?: pulumi.InvokeOptions): 
         opts.version = utilities.getVersion();
     }
     return pulumi.runtime.invoke("aws:outposts/getOutpost:getOutpost", {
+        "arn": args.arn,
         "id": args.id,
         "name": args.name,
     }, opts);
@@ -39,6 +39,10 @@ export function getOutpost(args?: GetOutpostArgs, opts?: pulumi.InvokeOptions): 
  * A collection of arguments for invoking getOutpost.
  */
 export interface GetOutpostArgs {
+    /**
+     * Amazon Resource Name (ARN).
+     */
+    readonly arn?: string;
     /**
      * Identifier of the Outpost.
      */
@@ -53,9 +57,6 @@ export interface GetOutpostArgs {
  * A collection of values returned by getOutpost.
  */
 export interface GetOutpostResult {
-    /**
-     * Amazon Resource Name (ARN).
-     */
     readonly arn: string;
     /**
      * Availability Zone name.

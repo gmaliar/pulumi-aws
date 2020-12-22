@@ -4,6 +4,7 @@
 package elasticloadbalancing
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -28,6 +29,14 @@ import (
 // P256 and P384 curves.  Using a certificate signed by a key using a different
 // curve could produce the error `ERR_SSL_VERSION_OR_CIPHER_MISMATCH` in your
 // browser.
+//
+// ## Import
+//
+// ELBs can be imported using the `name`, e.g.
+//
+// ```sh
+//  $ pulumi import aws:elasticloadbalancing/loadBalancer:LoadBalancer bar elb-production-12345
+// ```
 //
 // Deprecated: aws.elasticloadbalancing.LoadBalancer has been deprecated in favor of aws.elb.LoadBalancer
 type LoadBalancer struct {
@@ -84,11 +93,12 @@ type LoadBalancer struct {
 // NewLoadBalancer registers a new resource with the given unique name, arguments, and options.
 func NewLoadBalancer(ctx *pulumi.Context,
 	name string, args *LoadBalancerArgs, opts ...pulumi.ResourceOption) (*LoadBalancer, error) {
-	if args == nil || args.Listeners == nil {
-		return nil, errors.New("missing required argument 'Listeners'")
-	}
 	if args == nil {
-		args = &LoadBalancerArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.Listeners == nil {
+		return nil, errors.New("invalid value for required argument 'Listeners'")
 	}
 	var resource LoadBalancer
 	err := ctx.RegisterResource("aws:elasticloadbalancing/loadBalancer:LoadBalancer", name, args, &resource, opts...)
@@ -294,4 +304,43 @@ type LoadBalancerArgs struct {
 
 func (LoadBalancerArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*loadBalancerArgs)(nil)).Elem()
+}
+
+type LoadBalancerInput interface {
+	pulumi.Input
+
+	ToLoadBalancerOutput() LoadBalancerOutput
+	ToLoadBalancerOutputWithContext(ctx context.Context) LoadBalancerOutput
+}
+
+func (LoadBalancer) ElementType() reflect.Type {
+	return reflect.TypeOf((*LoadBalancer)(nil)).Elem()
+}
+
+func (i LoadBalancer) ToLoadBalancerOutput() LoadBalancerOutput {
+	return i.ToLoadBalancerOutputWithContext(context.Background())
+}
+
+func (i LoadBalancer) ToLoadBalancerOutputWithContext(ctx context.Context) LoadBalancerOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(LoadBalancerOutput)
+}
+
+type LoadBalancerOutput struct {
+	*pulumi.OutputState
+}
+
+func (LoadBalancerOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*LoadBalancerOutput)(nil)).Elem()
+}
+
+func (o LoadBalancerOutput) ToLoadBalancerOutput() LoadBalancerOutput {
+	return o
+}
+
+func (o LoadBalancerOutput) ToLoadBalancerOutputWithContext(ctx context.Context) LoadBalancerOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(LoadBalancerOutput{})
 }

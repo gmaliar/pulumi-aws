@@ -28,24 +28,26 @@ namespace Pulumi.Aws.ApplicationLoadBalancing
     ///         var frontEndLoadBalancer = new Aws.LB.LoadBalancer("frontEndLoadBalancer", new Aws.LB.LoadBalancerArgs
     ///         {
     ///         });
+    ///         // ...
     ///         var frontEndTargetGroup = new Aws.LB.TargetGroup("frontEndTargetGroup", new Aws.LB.TargetGroupArgs
     ///         {
     ///         });
+    ///         // ...
     ///         var frontEndListener = new Aws.LB.Listener("frontEndListener", new Aws.LB.ListenerArgs
     ///         {
+    ///             LoadBalancerArn = frontEndLoadBalancer.Arn,
+    ///             Port = 443,
+    ///             Protocol = "HTTPS",
+    ///             SslPolicy = "ELBSecurityPolicy-2016-08",
     ///             CertificateArn = "arn:aws:iam::187416307283:server-certificate/test_cert_rab3wuqwgja25ct3n4jdj2tzu4",
     ///             DefaultActions = 
     ///             {
     ///                 new Aws.LB.Inputs.ListenerDefaultActionArgs
     ///                 {
-    ///                     TargetGroupArn = frontEndTargetGroup.Arn,
     ///                     Type = "forward",
+    ///                     TargetGroupArn = frontEndTargetGroup.Arn,
     ///                 },
     ///             },
-    ///             LoadBalancerArn = frontEndLoadBalancer.Arn,
-    ///             Port = 443,
-    ///             Protocol = "HTTPS",
-    ///             SslPolicy = "ELBSecurityPolicy-2016-08",
     ///         });
     ///     }
     /// 
@@ -64,24 +66,25 @@ namespace Pulumi.Aws.ApplicationLoadBalancing
     ///         var frontEndLoadBalancer = new Aws.LB.LoadBalancer("frontEndLoadBalancer", new Aws.LB.LoadBalancerArgs
     ///         {
     ///         });
+    ///         // ...
     ///         var frontEndListener = new Aws.LB.Listener("frontEndListener", new Aws.LB.ListenerArgs
     ///         {
+    ///             LoadBalancerArn = frontEndLoadBalancer.Arn,
+    ///             Port = 80,
+    ///             Protocol = "HTTP",
     ///             DefaultActions = 
     ///             {
     ///                 new Aws.LB.Inputs.ListenerDefaultActionArgs
     ///                 {
+    ///                     Type = "redirect",
     ///                     Redirect = new Aws.LB.Inputs.ListenerDefaultActionRedirectArgs
     ///                     {
     ///                         Port = "443",
     ///                         Protocol = "HTTPS",
     ///                         StatusCode = "HTTP_301",
     ///                     },
-    ///                     Type = "redirect",
     ///                 },
     ///             },
-    ///             LoadBalancerArn = frontEndLoadBalancer.Arn,
-    ///             Port = 80,
-    ///             Protocol = "HTTP",
     ///         });
     ///     }
     /// 
@@ -100,24 +103,25 @@ namespace Pulumi.Aws.ApplicationLoadBalancing
     ///         var frontEndLoadBalancer = new Aws.LB.LoadBalancer("frontEndLoadBalancer", new Aws.LB.LoadBalancerArgs
     ///         {
     ///         });
+    ///         // ...
     ///         var frontEndListener = new Aws.LB.Listener("frontEndListener", new Aws.LB.ListenerArgs
     ///         {
+    ///             LoadBalancerArn = frontEndLoadBalancer.Arn,
+    ///             Port = 80,
+    ///             Protocol = "HTTP",
     ///             DefaultActions = 
     ///             {
     ///                 new Aws.LB.Inputs.ListenerDefaultActionArgs
     ///                 {
+    ///                     Type = "fixed-response",
     ///                     FixedResponse = new Aws.LB.Inputs.ListenerDefaultActionFixedResponseArgs
     ///                     {
     ///                         ContentType = "text/plain",
     ///                         MessageBody = "Fixed response content",
     ///                         StatusCode = "200",
     ///                     },
-    ///                     Type = "fixed-response",
     ///                 },
     ///             },
-    ///             LoadBalancerArn = frontEndLoadBalancer.Arn,
-    ///             Port = 80,
-    ///             Protocol = "HTTP",
     ///         });
     ///     }
     /// 
@@ -136,41 +140,46 @@ namespace Pulumi.Aws.ApplicationLoadBalancing
     ///         var frontEndLoadBalancer = new Aws.LB.LoadBalancer("frontEndLoadBalancer", new Aws.LB.LoadBalancerArgs
     ///         {
     ///         });
+    ///         // ...
     ///         var frontEndTargetGroup = new Aws.LB.TargetGroup("frontEndTargetGroup", new Aws.LB.TargetGroupArgs
     ///         {
     ///         });
+    ///         // ...
     ///         var pool = new Aws.Cognito.UserPool("pool", new Aws.Cognito.UserPoolArgs
     ///         {
     ///         });
+    ///         // ...
     ///         var client = new Aws.Cognito.UserPoolClient("client", new Aws.Cognito.UserPoolClientArgs
     ///         {
     ///         });
+    ///         // ...
     ///         var domain = new Aws.Cognito.UserPoolDomain("domain", new Aws.Cognito.UserPoolDomainArgs
     ///         {
     ///         });
+    ///         // ...
     ///         var frontEndListener = new Aws.LB.Listener("frontEndListener", new Aws.LB.ListenerArgs
     ///         {
+    ///             LoadBalancerArn = frontEndLoadBalancer.Arn,
+    ///             Port = 80,
+    ///             Protocol = "HTTP",
     ///             DefaultActions = 
     ///             {
     ///                 new Aws.LB.Inputs.ListenerDefaultActionArgs
     ///                 {
+    ///                     Type = "authenticate-cognito",
     ///                     AuthenticateCognito = new Aws.LB.Inputs.ListenerDefaultActionAuthenticateCognitoArgs
     ///                     {
     ///                         UserPoolArn = pool.Arn,
     ///                         UserPoolClientId = client.Id,
     ///                         UserPoolDomain = domain.Domain,
     ///                     },
-    ///                     Type = "authenticate-cognito",
     ///                 },
     ///                 new Aws.LB.Inputs.ListenerDefaultActionArgs
     ///                 {
-    ///                     TargetGroupArn = frontEndTargetGroup.Arn,
     ///                     Type = "forward",
+    ///                     TargetGroupArn = frontEndTargetGroup.Arn,
     ///                 },
     ///             },
-    ///             LoadBalancerArn = frontEndLoadBalancer.Arn,
-    ///             Port = 80,
-    ///             Protocol = "HTTP",
     ///         });
     ///     }
     /// 
@@ -189,15 +198,21 @@ namespace Pulumi.Aws.ApplicationLoadBalancing
     ///         var frontEndLoadBalancer = new Aws.LB.LoadBalancer("frontEndLoadBalancer", new Aws.LB.LoadBalancerArgs
     ///         {
     ///         });
+    ///         // ...
     ///         var frontEndTargetGroup = new Aws.LB.TargetGroup("frontEndTargetGroup", new Aws.LB.TargetGroupArgs
     ///         {
     ///         });
+    ///         // ...
     ///         var frontEndListener = new Aws.LB.Listener("frontEndListener", new Aws.LB.ListenerArgs
     ///         {
+    ///             LoadBalancerArn = frontEndLoadBalancer.Arn,
+    ///             Port = 80,
+    ///             Protocol = "HTTP",
     ///             DefaultActions = 
     ///             {
     ///                 new Aws.LB.Inputs.ListenerDefaultActionArgs
     ///                 {
+    ///                     Type = "authenticate-oidc",
     ///                     AuthenticateOidc = new Aws.LB.Inputs.ListenerDefaultActionAuthenticateOidcArgs
     ///                     {
     ///                         AuthorizationEndpoint = "https://example.com/authorization_endpoint",
@@ -207,21 +222,73 @@ namespace Pulumi.Aws.ApplicationLoadBalancing
     ///                         TokenEndpoint = "https://example.com/token_endpoint",
     ///                         UserInfoEndpoint = "https://example.com/user_info_endpoint",
     ///                     },
-    ///                     Type = "authenticate-oidc",
     ///                 },
     ///                 new Aws.LB.Inputs.ListenerDefaultActionArgs
     ///                 {
-    ///                     TargetGroupArn = frontEndTargetGroup.Arn,
     ///                     Type = "forward",
+    ///                     TargetGroupArn = frontEndTargetGroup.Arn,
     ///                 },
     ///             },
-    ///             LoadBalancerArn = frontEndLoadBalancer.Arn,
-    ///             Port = 80,
-    ///             Protocol = "HTTP",
     ///         });
     ///     }
     /// 
     /// }
+    /// ```
+    /// ### Gateway Load Balancer Listener
+    /// 
+    /// ```csharp
+    /// using Pulumi;
+    /// using Aws = Pulumi.Aws;
+    /// 
+    /// class MyStack : Stack
+    /// {
+    ///     public MyStack()
+    ///     {
+    ///         var exampleLoadBalancer = new Aws.LB.LoadBalancer("exampleLoadBalancer", new Aws.LB.LoadBalancerArgs
+    ///         {
+    ///             LoadBalancerType = "gateway",
+    ///             SubnetMappings = 
+    ///             {
+    ///                 new Aws.LB.Inputs.LoadBalancerSubnetMappingArgs
+    ///                 {
+    ///                     SubnetId = aws_subnet.Example.Id,
+    ///                 },
+    ///             },
+    ///         });
+    ///         var exampleTargetGroup = new Aws.LB.TargetGroup("exampleTargetGroup", new Aws.LB.TargetGroupArgs
+    ///         {
+    ///             Port = 6081,
+    ///             Protocol = "GENEVE",
+    ///             VpcId = aws_vpc.Example.Id,
+    ///             HealthCheck = new Aws.LB.Inputs.TargetGroupHealthCheckArgs
+    ///             {
+    ///                 Port = "80",
+    ///                 Protocol = "HTTP",
+    ///             },
+    ///         });
+    ///         var exampleListener = new Aws.LB.Listener("exampleListener", new Aws.LB.ListenerArgs
+    ///         {
+    ///             LoadBalancerArn = exampleLoadBalancer.Id,
+    ///             DefaultActions = 
+    ///             {
+    ///                 new Aws.LB.Inputs.ListenerDefaultActionArgs
+    ///                 {
+    ///                     TargetGroupArn = exampleTargetGroup.Id,
+    ///                     Type = "forward",
+    ///                 },
+    ///             },
+    ///         });
+    ///     }
+    /// 
+    /// }
+    /// ```
+    /// 
+    /// ## Import
+    /// 
+    /// Listeners can be imported using their ARN, e.g.
+    /// 
+    /// ```sh
+    ///  $ pulumi import aws:applicationloadbalancing/listener:Listener front_end arn:aws:elasticloadbalancing:us-west-2:187416307283:listener/app/front-end-alb/8e4497da625e2d8a/9ab28ade35828f96
     /// ```
     /// </summary>
     [Obsolete(@"aws.applicationloadbalancing.Listener has been deprecated in favor of aws.alb.Listener")]
@@ -252,16 +319,16 @@ namespace Pulumi.Aws.ApplicationLoadBalancing
         public Output<string> LoadBalancerArn { get; private set; } = null!;
 
         /// <summary>
-        /// The port on which the load balancer is listening.
+        /// The port on which the load balancer is listening. Not valid for Gateway Load Balancers.
         /// </summary>
         [Output("port")]
-        public Output<int> Port { get; private set; } = null!;
+        public Output<int?> Port { get; private set; } = null!;
 
         /// <summary>
-        /// The protocol for connections from clients to the load balancer. Valid values are `TCP`, `TLS`, `UDP`, `TCP_UDP`, `HTTP` and `HTTPS`. Defaults to `HTTP`.
+        /// The protocol for connections from clients to the load balancer. For Application Load Balancers, valid values are `HTTP` and `HTTPS`, with a default of `HTTP`. For Network Load Balancers, valid values are `TCP`, `TLS`, `UDP`, and `TCP_UDP`. Not valid to use `UDP` or `TCP_UDP` if dual-stack mode is enabled. Not valid for Gateway Load Balancers.
         /// </summary>
         [Output("protocol")]
-        public Output<string?> Protocol { get; private set; } = null!;
+        public Output<string> Protocol { get; private set; } = null!;
 
         /// <summary>
         /// The name of the SSL Policy for the listener. Required if `protocol` is `HTTPS` or `TLS`.
@@ -340,13 +407,13 @@ namespace Pulumi.Aws.ApplicationLoadBalancing
         public Input<string> LoadBalancerArn { get; set; } = null!;
 
         /// <summary>
-        /// The port on which the load balancer is listening.
+        /// The port on which the load balancer is listening. Not valid for Gateway Load Balancers.
         /// </summary>
-        [Input("port", required: true)]
-        public Input<int> Port { get; set; } = null!;
+        [Input("port")]
+        public Input<int>? Port { get; set; }
 
         /// <summary>
-        /// The protocol for connections from clients to the load balancer. Valid values are `TCP`, `TLS`, `UDP`, `TCP_UDP`, `HTTP` and `HTTPS`. Defaults to `HTTP`.
+        /// The protocol for connections from clients to the load balancer. For Application Load Balancers, valid values are `HTTP` and `HTTPS`, with a default of `HTTP`. For Network Load Balancers, valid values are `TCP`, `TLS`, `UDP`, and `TCP_UDP`. Not valid to use `UDP` or `TCP_UDP` if dual-stack mode is enabled. Not valid for Gateway Load Balancers.
         /// </summary>
         [Input("protocol")]
         public Input<string>? Protocol { get; set; }
@@ -395,13 +462,13 @@ namespace Pulumi.Aws.ApplicationLoadBalancing
         public Input<string>? LoadBalancerArn { get; set; }
 
         /// <summary>
-        /// The port on which the load balancer is listening.
+        /// The port on which the load balancer is listening. Not valid for Gateway Load Balancers.
         /// </summary>
         [Input("port")]
         public Input<int>? Port { get; set; }
 
         /// <summary>
-        /// The protocol for connections from clients to the load balancer. Valid values are `TCP`, `TLS`, `UDP`, `TCP_UDP`, `HTTP` and `HTTPS`. Defaults to `HTTP`.
+        /// The protocol for connections from clients to the load balancer. For Application Load Balancers, valid values are `HTTP` and `HTTPS`, with a default of `HTTP`. For Network Load Balancers, valid values are `TCP`, `TLS`, `UDP`, and `TCP_UDP`. Not valid to use `UDP` or `TCP_UDP` if dual-stack mode is enabled. Not valid for Gateway Load Balancers.
         /// </summary>
         [Input("protocol")]
         public Input<string>? Protocol { get; set; }

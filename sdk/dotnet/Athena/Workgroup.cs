@@ -30,18 +30,26 @@ namespace Pulumi.Aws.Athena
     ///                 PublishCloudwatchMetricsEnabled = true,
     ///                 ResultConfiguration = new Aws.Athena.Inputs.WorkgroupConfigurationResultConfigurationArgs
     ///                 {
+    ///                     OutputLocation = $"s3://{aws_s3_bucket.Example.Bucket}/output/",
     ///                     EncryptionConfiguration = new Aws.Athena.Inputs.WorkgroupConfigurationResultConfigurationEncryptionConfigurationArgs
     ///                     {
     ///                         EncryptionOption = "SSE_KMS",
     ///                         KmsKeyArn = aws_kms_key.Example.Arn,
     ///                     },
-    ///                     OutputLocation = "s3://{aws_s3_bucket.example.bucket}/output/",
     ///                 },
     ///             },
     ///         });
     ///     }
     /// 
     /// }
+    /// ```
+    /// 
+    /// ## Import
+    /// 
+    /// Athena Workgroups can be imported using their name, e.g.
+    /// 
+    /// ```sh
+    ///  $ pulumi import aws:athena/workgroup:Workgroup example example
     /// ```
     /// </summary>
     public partial class Workgroup : Pulumi.CustomResource

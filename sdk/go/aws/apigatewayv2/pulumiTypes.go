@@ -597,6 +597,291 @@ func (o DomainNameDomainNameConfigurationPtrOutput) TargetDomainName() pulumi.St
 	}).(pulumi.StringPtrOutput)
 }
 
+type DomainNameMutualTlsAuthentication struct {
+	// An Amazon S3 URL that specifies the truststore for mutual TLS authentication, for example, `s3://bucket-name/key-name`.
+	// The truststore can contain certificates from public or private certificate authorities. To update the truststore, upload a new version to S3, and then update your custom domain name to use the new version.
+	TruststoreUri string `pulumi:"truststoreUri"`
+	// The version of the S3 object that contains the truststore. To specify a version, you must have versioning enabled for the S3 bucket.
+	TruststoreVersion *string `pulumi:"truststoreVersion"`
+}
+
+// DomainNameMutualTlsAuthenticationInput is an input type that accepts DomainNameMutualTlsAuthenticationArgs and DomainNameMutualTlsAuthenticationOutput values.
+// You can construct a concrete instance of `DomainNameMutualTlsAuthenticationInput` via:
+//
+//          DomainNameMutualTlsAuthenticationArgs{...}
+type DomainNameMutualTlsAuthenticationInput interface {
+	pulumi.Input
+
+	ToDomainNameMutualTlsAuthenticationOutput() DomainNameMutualTlsAuthenticationOutput
+	ToDomainNameMutualTlsAuthenticationOutputWithContext(context.Context) DomainNameMutualTlsAuthenticationOutput
+}
+
+type DomainNameMutualTlsAuthenticationArgs struct {
+	// An Amazon S3 URL that specifies the truststore for mutual TLS authentication, for example, `s3://bucket-name/key-name`.
+	// The truststore can contain certificates from public or private certificate authorities. To update the truststore, upload a new version to S3, and then update your custom domain name to use the new version.
+	TruststoreUri pulumi.StringInput `pulumi:"truststoreUri"`
+	// The version of the S3 object that contains the truststore. To specify a version, you must have versioning enabled for the S3 bucket.
+	TruststoreVersion pulumi.StringPtrInput `pulumi:"truststoreVersion"`
+}
+
+func (DomainNameMutualTlsAuthenticationArgs) ElementType() reflect.Type {
+	return reflect.TypeOf((*DomainNameMutualTlsAuthentication)(nil)).Elem()
+}
+
+func (i DomainNameMutualTlsAuthenticationArgs) ToDomainNameMutualTlsAuthenticationOutput() DomainNameMutualTlsAuthenticationOutput {
+	return i.ToDomainNameMutualTlsAuthenticationOutputWithContext(context.Background())
+}
+
+func (i DomainNameMutualTlsAuthenticationArgs) ToDomainNameMutualTlsAuthenticationOutputWithContext(ctx context.Context) DomainNameMutualTlsAuthenticationOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(DomainNameMutualTlsAuthenticationOutput)
+}
+
+func (i DomainNameMutualTlsAuthenticationArgs) ToDomainNameMutualTlsAuthenticationPtrOutput() DomainNameMutualTlsAuthenticationPtrOutput {
+	return i.ToDomainNameMutualTlsAuthenticationPtrOutputWithContext(context.Background())
+}
+
+func (i DomainNameMutualTlsAuthenticationArgs) ToDomainNameMutualTlsAuthenticationPtrOutputWithContext(ctx context.Context) DomainNameMutualTlsAuthenticationPtrOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(DomainNameMutualTlsAuthenticationOutput).ToDomainNameMutualTlsAuthenticationPtrOutputWithContext(ctx)
+}
+
+// DomainNameMutualTlsAuthenticationPtrInput is an input type that accepts DomainNameMutualTlsAuthenticationArgs, DomainNameMutualTlsAuthenticationPtr and DomainNameMutualTlsAuthenticationPtrOutput values.
+// You can construct a concrete instance of `DomainNameMutualTlsAuthenticationPtrInput` via:
+//
+//          DomainNameMutualTlsAuthenticationArgs{...}
+//
+//  or:
+//
+//          nil
+type DomainNameMutualTlsAuthenticationPtrInput interface {
+	pulumi.Input
+
+	ToDomainNameMutualTlsAuthenticationPtrOutput() DomainNameMutualTlsAuthenticationPtrOutput
+	ToDomainNameMutualTlsAuthenticationPtrOutputWithContext(context.Context) DomainNameMutualTlsAuthenticationPtrOutput
+}
+
+type domainNameMutualTlsAuthenticationPtrType DomainNameMutualTlsAuthenticationArgs
+
+func DomainNameMutualTlsAuthenticationPtr(v *DomainNameMutualTlsAuthenticationArgs) DomainNameMutualTlsAuthenticationPtrInput {
+	return (*domainNameMutualTlsAuthenticationPtrType)(v)
+}
+
+func (*domainNameMutualTlsAuthenticationPtrType) ElementType() reflect.Type {
+	return reflect.TypeOf((**DomainNameMutualTlsAuthentication)(nil)).Elem()
+}
+
+func (i *domainNameMutualTlsAuthenticationPtrType) ToDomainNameMutualTlsAuthenticationPtrOutput() DomainNameMutualTlsAuthenticationPtrOutput {
+	return i.ToDomainNameMutualTlsAuthenticationPtrOutputWithContext(context.Background())
+}
+
+func (i *domainNameMutualTlsAuthenticationPtrType) ToDomainNameMutualTlsAuthenticationPtrOutputWithContext(ctx context.Context) DomainNameMutualTlsAuthenticationPtrOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(DomainNameMutualTlsAuthenticationPtrOutput)
+}
+
+type DomainNameMutualTlsAuthenticationOutput struct{ *pulumi.OutputState }
+
+func (DomainNameMutualTlsAuthenticationOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*DomainNameMutualTlsAuthentication)(nil)).Elem()
+}
+
+func (o DomainNameMutualTlsAuthenticationOutput) ToDomainNameMutualTlsAuthenticationOutput() DomainNameMutualTlsAuthenticationOutput {
+	return o
+}
+
+func (o DomainNameMutualTlsAuthenticationOutput) ToDomainNameMutualTlsAuthenticationOutputWithContext(ctx context.Context) DomainNameMutualTlsAuthenticationOutput {
+	return o
+}
+
+func (o DomainNameMutualTlsAuthenticationOutput) ToDomainNameMutualTlsAuthenticationPtrOutput() DomainNameMutualTlsAuthenticationPtrOutput {
+	return o.ToDomainNameMutualTlsAuthenticationPtrOutputWithContext(context.Background())
+}
+
+func (o DomainNameMutualTlsAuthenticationOutput) ToDomainNameMutualTlsAuthenticationPtrOutputWithContext(ctx context.Context) DomainNameMutualTlsAuthenticationPtrOutput {
+	return o.ApplyT(func(v DomainNameMutualTlsAuthentication) *DomainNameMutualTlsAuthentication {
+		return &v
+	}).(DomainNameMutualTlsAuthenticationPtrOutput)
+}
+
+// An Amazon S3 URL that specifies the truststore for mutual TLS authentication, for example, `s3://bucket-name/key-name`.
+// The truststore can contain certificates from public or private certificate authorities. To update the truststore, upload a new version to S3, and then update your custom domain name to use the new version.
+func (o DomainNameMutualTlsAuthenticationOutput) TruststoreUri() pulumi.StringOutput {
+	return o.ApplyT(func(v DomainNameMutualTlsAuthentication) string { return v.TruststoreUri }).(pulumi.StringOutput)
+}
+
+// The version of the S3 object that contains the truststore. To specify a version, you must have versioning enabled for the S3 bucket.
+func (o DomainNameMutualTlsAuthenticationOutput) TruststoreVersion() pulumi.StringPtrOutput {
+	return o.ApplyT(func(v DomainNameMutualTlsAuthentication) *string { return v.TruststoreVersion }).(pulumi.StringPtrOutput)
+}
+
+type DomainNameMutualTlsAuthenticationPtrOutput struct{ *pulumi.OutputState }
+
+func (DomainNameMutualTlsAuthenticationPtrOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((**DomainNameMutualTlsAuthentication)(nil)).Elem()
+}
+
+func (o DomainNameMutualTlsAuthenticationPtrOutput) ToDomainNameMutualTlsAuthenticationPtrOutput() DomainNameMutualTlsAuthenticationPtrOutput {
+	return o
+}
+
+func (o DomainNameMutualTlsAuthenticationPtrOutput) ToDomainNameMutualTlsAuthenticationPtrOutputWithContext(ctx context.Context) DomainNameMutualTlsAuthenticationPtrOutput {
+	return o
+}
+
+func (o DomainNameMutualTlsAuthenticationPtrOutput) Elem() DomainNameMutualTlsAuthenticationOutput {
+	return o.ApplyT(func(v *DomainNameMutualTlsAuthentication) DomainNameMutualTlsAuthentication { return *v }).(DomainNameMutualTlsAuthenticationOutput)
+}
+
+// An Amazon S3 URL that specifies the truststore for mutual TLS authentication, for example, `s3://bucket-name/key-name`.
+// The truststore can contain certificates from public or private certificate authorities. To update the truststore, upload a new version to S3, and then update your custom domain name to use the new version.
+func (o DomainNameMutualTlsAuthenticationPtrOutput) TruststoreUri() pulumi.StringPtrOutput {
+	return o.ApplyT(func(v *DomainNameMutualTlsAuthentication) *string {
+		if v == nil {
+			return nil
+		}
+		return &v.TruststoreUri
+	}).(pulumi.StringPtrOutput)
+}
+
+// The version of the S3 object that contains the truststore. To specify a version, you must have versioning enabled for the S3 bucket.
+func (o DomainNameMutualTlsAuthenticationPtrOutput) TruststoreVersion() pulumi.StringPtrOutput {
+	return o.ApplyT(func(v *DomainNameMutualTlsAuthentication) *string {
+		if v == nil {
+			return nil
+		}
+		return v.TruststoreVersion
+	}).(pulumi.StringPtrOutput)
+}
+
+type IntegrationTlsConfig struct {
+	// If you specify a server name, API Gateway uses it to verify the hostname on the integration's certificate. The server name is also included in the TLS handshake to support Server Name Indication (SNI) or virtual hosting.
+	ServerNameToVerify *string `pulumi:"serverNameToVerify"`
+}
+
+// IntegrationTlsConfigInput is an input type that accepts IntegrationTlsConfigArgs and IntegrationTlsConfigOutput values.
+// You can construct a concrete instance of `IntegrationTlsConfigInput` via:
+//
+//          IntegrationTlsConfigArgs{...}
+type IntegrationTlsConfigInput interface {
+	pulumi.Input
+
+	ToIntegrationTlsConfigOutput() IntegrationTlsConfigOutput
+	ToIntegrationTlsConfigOutputWithContext(context.Context) IntegrationTlsConfigOutput
+}
+
+type IntegrationTlsConfigArgs struct {
+	// If you specify a server name, API Gateway uses it to verify the hostname on the integration's certificate. The server name is also included in the TLS handshake to support Server Name Indication (SNI) or virtual hosting.
+	ServerNameToVerify pulumi.StringPtrInput `pulumi:"serverNameToVerify"`
+}
+
+func (IntegrationTlsConfigArgs) ElementType() reflect.Type {
+	return reflect.TypeOf((*IntegrationTlsConfig)(nil)).Elem()
+}
+
+func (i IntegrationTlsConfigArgs) ToIntegrationTlsConfigOutput() IntegrationTlsConfigOutput {
+	return i.ToIntegrationTlsConfigOutputWithContext(context.Background())
+}
+
+func (i IntegrationTlsConfigArgs) ToIntegrationTlsConfigOutputWithContext(ctx context.Context) IntegrationTlsConfigOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(IntegrationTlsConfigOutput)
+}
+
+func (i IntegrationTlsConfigArgs) ToIntegrationTlsConfigPtrOutput() IntegrationTlsConfigPtrOutput {
+	return i.ToIntegrationTlsConfigPtrOutputWithContext(context.Background())
+}
+
+func (i IntegrationTlsConfigArgs) ToIntegrationTlsConfigPtrOutputWithContext(ctx context.Context) IntegrationTlsConfigPtrOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(IntegrationTlsConfigOutput).ToIntegrationTlsConfigPtrOutputWithContext(ctx)
+}
+
+// IntegrationTlsConfigPtrInput is an input type that accepts IntegrationTlsConfigArgs, IntegrationTlsConfigPtr and IntegrationTlsConfigPtrOutput values.
+// You can construct a concrete instance of `IntegrationTlsConfigPtrInput` via:
+//
+//          IntegrationTlsConfigArgs{...}
+//
+//  or:
+//
+//          nil
+type IntegrationTlsConfigPtrInput interface {
+	pulumi.Input
+
+	ToIntegrationTlsConfigPtrOutput() IntegrationTlsConfigPtrOutput
+	ToIntegrationTlsConfigPtrOutputWithContext(context.Context) IntegrationTlsConfigPtrOutput
+}
+
+type integrationTlsConfigPtrType IntegrationTlsConfigArgs
+
+func IntegrationTlsConfigPtr(v *IntegrationTlsConfigArgs) IntegrationTlsConfigPtrInput {
+	return (*integrationTlsConfigPtrType)(v)
+}
+
+func (*integrationTlsConfigPtrType) ElementType() reflect.Type {
+	return reflect.TypeOf((**IntegrationTlsConfig)(nil)).Elem()
+}
+
+func (i *integrationTlsConfigPtrType) ToIntegrationTlsConfigPtrOutput() IntegrationTlsConfigPtrOutput {
+	return i.ToIntegrationTlsConfigPtrOutputWithContext(context.Background())
+}
+
+func (i *integrationTlsConfigPtrType) ToIntegrationTlsConfigPtrOutputWithContext(ctx context.Context) IntegrationTlsConfigPtrOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(IntegrationTlsConfigPtrOutput)
+}
+
+type IntegrationTlsConfigOutput struct{ *pulumi.OutputState }
+
+func (IntegrationTlsConfigOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*IntegrationTlsConfig)(nil)).Elem()
+}
+
+func (o IntegrationTlsConfigOutput) ToIntegrationTlsConfigOutput() IntegrationTlsConfigOutput {
+	return o
+}
+
+func (o IntegrationTlsConfigOutput) ToIntegrationTlsConfigOutputWithContext(ctx context.Context) IntegrationTlsConfigOutput {
+	return o
+}
+
+func (o IntegrationTlsConfigOutput) ToIntegrationTlsConfigPtrOutput() IntegrationTlsConfigPtrOutput {
+	return o.ToIntegrationTlsConfigPtrOutputWithContext(context.Background())
+}
+
+func (o IntegrationTlsConfigOutput) ToIntegrationTlsConfigPtrOutputWithContext(ctx context.Context) IntegrationTlsConfigPtrOutput {
+	return o.ApplyT(func(v IntegrationTlsConfig) *IntegrationTlsConfig {
+		return &v
+	}).(IntegrationTlsConfigPtrOutput)
+}
+
+// If you specify a server name, API Gateway uses it to verify the hostname on the integration's certificate. The server name is also included in the TLS handshake to support Server Name Indication (SNI) or virtual hosting.
+func (o IntegrationTlsConfigOutput) ServerNameToVerify() pulumi.StringPtrOutput {
+	return o.ApplyT(func(v IntegrationTlsConfig) *string { return v.ServerNameToVerify }).(pulumi.StringPtrOutput)
+}
+
+type IntegrationTlsConfigPtrOutput struct{ *pulumi.OutputState }
+
+func (IntegrationTlsConfigPtrOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((**IntegrationTlsConfig)(nil)).Elem()
+}
+
+func (o IntegrationTlsConfigPtrOutput) ToIntegrationTlsConfigPtrOutput() IntegrationTlsConfigPtrOutput {
+	return o
+}
+
+func (o IntegrationTlsConfigPtrOutput) ToIntegrationTlsConfigPtrOutputWithContext(ctx context.Context) IntegrationTlsConfigPtrOutput {
+	return o
+}
+
+func (o IntegrationTlsConfigPtrOutput) Elem() IntegrationTlsConfigOutput {
+	return o.ApplyT(func(v *IntegrationTlsConfig) IntegrationTlsConfig { return *v }).(IntegrationTlsConfigOutput)
+}
+
+// If you specify a server name, API Gateway uses it to verify the hostname on the integration's certificate. The server name is also included in the TLS handshake to support Server Name Indication (SNI) or virtual hosting.
+func (o IntegrationTlsConfigPtrOutput) ServerNameToVerify() pulumi.StringPtrOutput {
+	return o.ApplyT(func(v *IntegrationTlsConfig) *string {
+		if v == nil {
+			return nil
+		}
+		return v.ServerNameToVerify
+	}).(pulumi.StringPtrOutput)
+}
+
 type StageAccessLogSettings struct {
 	// The ARN of the CloudWatch Logs log group to receive access logs. Any trailing `:*` is trimmed from the ARN.
 	DestinationArn string `pulumi:"destinationArn"`
@@ -754,7 +1039,7 @@ type StageDefaultRouteSettings struct {
 	// Whether detailed metrics are enabled for the default route. Defaults to `false`.
 	DetailedMetricsEnabled *bool `pulumi:"detailedMetricsEnabled"`
 	// The logging level for the default route. Affects the log entries pushed to Amazon CloudWatch Logs.
-	// Valid values: `ERROR`, `INFO`, `OFF`. Defaults to `OFF`. Supported only for WebSocket APIs.
+	// Valid values: `ERROR`, `INFO`, `OFF`. Defaults to `OFF`. Supported only for WebSocket APIs. This provider will only perform drift detection of its value when present in a configuration.
 	LoggingLevel *string `pulumi:"loggingLevel"`
 	// The throttling burst limit for the default route.
 	ThrottlingBurstLimit *int `pulumi:"throttlingBurstLimit"`
@@ -780,7 +1065,7 @@ type StageDefaultRouteSettingsArgs struct {
 	// Whether detailed metrics are enabled for the default route. Defaults to `false`.
 	DetailedMetricsEnabled pulumi.BoolPtrInput `pulumi:"detailedMetricsEnabled"`
 	// The logging level for the default route. Affects the log entries pushed to Amazon CloudWatch Logs.
-	// Valid values: `ERROR`, `INFO`, `OFF`. Defaults to `OFF`. Supported only for WebSocket APIs.
+	// Valid values: `ERROR`, `INFO`, `OFF`. Defaults to `OFF`. Supported only for WebSocket APIs. This provider will only perform drift detection of its value when present in a configuration.
 	LoggingLevel pulumi.StringPtrInput `pulumi:"loggingLevel"`
 	// The throttling burst limit for the default route.
 	ThrottlingBurstLimit pulumi.IntPtrInput `pulumi:"throttlingBurstLimit"`
@@ -877,7 +1162,7 @@ func (o StageDefaultRouteSettingsOutput) DetailedMetricsEnabled() pulumi.BoolPtr
 }
 
 // The logging level for the default route. Affects the log entries pushed to Amazon CloudWatch Logs.
-// Valid values: `ERROR`, `INFO`, `OFF`. Defaults to `OFF`. Supported only for WebSocket APIs.
+// Valid values: `ERROR`, `INFO`, `OFF`. Defaults to `OFF`. Supported only for WebSocket APIs. This provider will only perform drift detection of its value when present in a configuration.
 func (o StageDefaultRouteSettingsOutput) LoggingLevel() pulumi.StringPtrOutput {
 	return o.ApplyT(func(v StageDefaultRouteSettings) *string { return v.LoggingLevel }).(pulumi.StringPtrOutput)
 }
@@ -932,7 +1217,7 @@ func (o StageDefaultRouteSettingsPtrOutput) DetailedMetricsEnabled() pulumi.Bool
 }
 
 // The logging level for the default route. Affects the log entries pushed to Amazon CloudWatch Logs.
-// Valid values: `ERROR`, `INFO`, `OFF`. Defaults to `OFF`. Supported only for WebSocket APIs.
+// Valid values: `ERROR`, `INFO`, `OFF`. Defaults to `OFF`. Supported only for WebSocket APIs. This provider will only perform drift detection of its value when present in a configuration.
 func (o StageDefaultRouteSettingsPtrOutput) LoggingLevel() pulumi.StringPtrOutput {
 	return o.ApplyT(func(v *StageDefaultRouteSettings) *string {
 		if v == nil {
@@ -969,7 +1254,7 @@ type StageRouteSetting struct {
 	// Whether detailed metrics are enabled for the route. Defaults to `false`.
 	DetailedMetricsEnabled *bool `pulumi:"detailedMetricsEnabled"`
 	// The logging level for the route. Affects the log entries pushed to Amazon CloudWatch Logs.
-	// Valid values: `ERROR`, `INFO`, `OFF`. Defaults to `OFF`. Supported only for WebSocket APIs.
+	// Valid values: `ERROR`, `INFO`, `OFF`. Defaults to `OFF`. Supported only for WebSocket APIs. This provider will only perform drift detection of its value when present in a configuration.
 	LoggingLevel *string `pulumi:"loggingLevel"`
 	// Route key.
 	RouteKey string `pulumi:"routeKey"`
@@ -997,7 +1282,7 @@ type StageRouteSettingArgs struct {
 	// Whether detailed metrics are enabled for the route. Defaults to `false`.
 	DetailedMetricsEnabled pulumi.BoolPtrInput `pulumi:"detailedMetricsEnabled"`
 	// The logging level for the route. Affects the log entries pushed to Amazon CloudWatch Logs.
-	// Valid values: `ERROR`, `INFO`, `OFF`. Defaults to `OFF`. Supported only for WebSocket APIs.
+	// Valid values: `ERROR`, `INFO`, `OFF`. Defaults to `OFF`. Supported only for WebSocket APIs. This provider will only perform drift detection of its value when present in a configuration.
 	LoggingLevel pulumi.StringPtrInput `pulumi:"loggingLevel"`
 	// Route key.
 	RouteKey pulumi.StringInput `pulumi:"routeKey"`
@@ -1070,7 +1355,7 @@ func (o StageRouteSettingOutput) DetailedMetricsEnabled() pulumi.BoolPtrOutput {
 }
 
 // The logging level for the route. Affects the log entries pushed to Amazon CloudWatch Logs.
-// Valid values: `ERROR`, `INFO`, `OFF`. Defaults to `OFF`. Supported only for WebSocket APIs.
+// Valid values: `ERROR`, `INFO`, `OFF`. Defaults to `OFF`. Supported only for WebSocket APIs. This provider will only perform drift detection of its value when present in a configuration.
 func (o StageRouteSettingOutput) LoggingLevel() pulumi.StringPtrOutput {
 	return o.ApplyT(func(v StageRouteSetting) *string { return v.LoggingLevel }).(pulumi.StringPtrOutput)
 }
@@ -1117,6 +1402,10 @@ func init() {
 	pulumi.RegisterOutputType(AuthorizerJwtConfigurationPtrOutput{})
 	pulumi.RegisterOutputType(DomainNameDomainNameConfigurationOutput{})
 	pulumi.RegisterOutputType(DomainNameDomainNameConfigurationPtrOutput{})
+	pulumi.RegisterOutputType(DomainNameMutualTlsAuthenticationOutput{})
+	pulumi.RegisterOutputType(DomainNameMutualTlsAuthenticationPtrOutput{})
+	pulumi.RegisterOutputType(IntegrationTlsConfigOutput{})
+	pulumi.RegisterOutputType(IntegrationTlsConfigPtrOutput{})
 	pulumi.RegisterOutputType(StageAccessLogSettingsOutput{})
 	pulumi.RegisterOutputType(StageAccessLogSettingsPtrOutput{})
 	pulumi.RegisterOutputType(StageDefaultRouteSettingsOutput{})

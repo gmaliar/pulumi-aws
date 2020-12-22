@@ -15,10 +15,9 @@ import {PolicyDocument} from "../iam";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const example = new aws.elasticsearch.Domain("example", {
- *     elasticsearchVersion: "2.3",
- * });
+ * const example = new aws.elasticsearch.Domain("example", {elasticsearchVersion: "2.3"});
  * const main = new aws.elasticsearch.DomainPolicy("main", {
+ *     domainName: example.domainName,
  *     accessPolicies: pulumi.interpolate`{
  *     "Version": "2012-10-17",
  *     "Statement": [
@@ -34,7 +33,6 @@ import {PolicyDocument} from "../iam";
  *     ]
  * }
  * `,
- *     domainName: example.domainName,
  * });
  * ```
  */
@@ -91,10 +89,10 @@ export class DomainPolicy extends pulumi.CustomResource {
             inputs["domainName"] = state ? state.domainName : undefined;
         } else {
             const args = argsOrState as DomainPolicyArgs | undefined;
-            if (!args || args.accessPolicies === undefined) {
+            if ((!args || args.accessPolicies === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'accessPolicies'");
             }
-            if (!args || args.domainName === undefined) {
+            if ((!args || args.domainName === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'domainName'");
             }
             inputs["accessPolicies"] = args ? args.accessPolicies : undefined;

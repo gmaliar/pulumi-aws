@@ -24,15 +24,23 @@ namespace Pulumi.Aws.CloudWatch
     ///     {
     ///         var testLambdafunctionLogfilter = new Aws.CloudWatch.LogSubscriptionFilter("testLambdafunctionLogfilter", new Aws.CloudWatch.LogSubscriptionFilterArgs
     ///         {
+    ///             RoleArn = aws_iam_role.Iam_for_lambda.Arn,
+    ///             LogGroup = "/aws/lambda/example_lambda_name",
+    ///             FilterPattern = "logtype test",
     ///             DestinationArn = aws_kinesis_stream.Test_logstream.Arn,
     ///             Distribution = "Random",
-    ///             FilterPattern = "logtype test",
-    ///             LogGroup = "/aws/lambda/example_lambda_name",
-    ///             RoleArn = aws_iam_role.Iam_for_lambda.Arn,
     ///         });
     ///     }
     /// 
     /// }
+    /// ```
+    /// 
+    /// ## Import
+    /// 
+    /// CloudWatch Logs subscription filter can be imported using the log group name and subscription filter name separated by `|`.
+    /// 
+    /// ```sh
+    ///  $ pulumi import aws:cloudwatch/logSubscriptionFilter:LogSubscriptionFilter test_lambdafunction_logfilter /aws/lambda/example_lambda_name|test_lambdafunction_logfilter
     /// ```
     /// </summary>
     public partial class LogSubscriptionFilter : Pulumi.CustomResource

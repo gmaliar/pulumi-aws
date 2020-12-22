@@ -17,11 +17,11 @@ import * as utilities from "../utilities";
  * import * as aws from "@pulumi/aws";
  *
  * const main = new aws.ec2.Subnet("main", {
+ *     vpcId: aws_vpc.main.id,
  *     cidrBlock: "10.0.1.0/24",
  *     tags: {
  *         Name: "Main",
  *     },
- *     vpcId: aws_vpc_main.id,
  * });
  * ```
  * ### Subnets In Secondary VPC CIDR Blocks
@@ -33,14 +33,22 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const secondaryCidr = new aws.ec2.VpcIpv4CidrBlockAssociation("secondary_cidr", {
+ * const secondaryCidr = new aws.ec2.VpcIpv4CidrBlockAssociation("secondaryCidr", {
+ *     vpcId: aws_vpc.main.id,
  *     cidrBlock: "172.2.0.0/16",
- *     vpcId: aws_vpc_main.id,
  * });
- * const inSecondaryCidr = new aws.ec2.Subnet("in_secondary_cidr", {
- *     cidrBlock: "172.2.0.0/24",
+ * const inSecondaryCidr = new aws.ec2.Subnet("inSecondaryCidr", {
  *     vpcId: secondaryCidr.vpcId,
+ *     cidrBlock: "172.2.0.0/24",
  * });
+ * ```
+ *
+ * ## Import
+ *
+ * Subnets can be imported using the `subnet id`, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:ec2/subnet:Subnet public_subnet subnet-9d4a7b6c
  * ```
  */
 export class Subnet extends pulumi.CustomResource {
@@ -97,7 +105,7 @@ export class Subnet extends pulumi.CustomResource {
      * The IPv6 network range for the subnet,
      * in CIDR notation. The subnet size must use a /64 prefix length.
      */
-    public readonly ipv6CidrBlock!: pulumi.Output<string>;
+    public readonly ipv6CidrBlock!: pulumi.Output<string | undefined>;
     /**
      * The association ID for the IPv6 CIDR block.
      */
@@ -151,10 +159,10 @@ export class Subnet extends pulumi.CustomResource {
             inputs["vpcId"] = state ? state.vpcId : undefined;
         } else {
             const args = argsOrState as SubnetArgs | undefined;
-            if (!args || args.cidrBlock === undefined) {
+            if ((!args || args.cidrBlock === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'cidrBlock'");
             }
-            if (!args || args.vpcId === undefined) {
+            if ((!args || args.vpcId === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'vpcId'");
             }
             inputs["assignIpv6AddressOnCreation"] = args ? args.assignIpv6AddressOnCreation : undefined;

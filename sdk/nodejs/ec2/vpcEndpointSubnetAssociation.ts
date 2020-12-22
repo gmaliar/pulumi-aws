@@ -21,9 +21,9 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const snEc2 = new aws.ec2.VpcEndpointSubnetAssociation("sn_ec2", {
- *     subnetId: aws_subnet_sn.id,
- *     vpcEndpointId: aws_vpc_endpoint_ec2.id,
+ * const snEc2 = new aws.ec2.VpcEndpointSubnetAssociation("snEc2", {
+ *     vpcEndpointId: aws_vpc_endpoint.ec2.id,
+ *     subnetId: aws_subnet.sn.id,
  * });
  * ```
  */
@@ -80,10 +80,10 @@ export class VpcEndpointSubnetAssociation extends pulumi.CustomResource {
             inputs["vpcEndpointId"] = state ? state.vpcEndpointId : undefined;
         } else {
             const args = argsOrState as VpcEndpointSubnetAssociationArgs | undefined;
-            if (!args || args.subnetId === undefined) {
+            if ((!args || args.subnetId === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'subnetId'");
             }
-            if (!args || args.vpcEndpointId === undefined) {
+            if ((!args || args.vpcEndpointId === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'vpcEndpointId'");
             }
             inputs["subnetId"] = args ? args.subnetId : undefined;

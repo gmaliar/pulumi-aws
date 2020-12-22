@@ -26,33 +26,33 @@ namespace Pulumi.Aws.AppMesh
     ///         var serviceb = new Aws.AppMesh.Route("serviceb", new Aws.AppMesh.RouteArgs
     ///         {
     ///             MeshName = aws_appmesh_mesh.Simple.Id,
+    ///             VirtualRouterName = aws_appmesh_virtual_router.Serviceb.Name,
     ///             Spec = new Aws.AppMesh.Inputs.RouteSpecArgs
     ///             {
     ///                 HttpRoute = new Aws.AppMesh.Inputs.RouteSpecHttpRouteArgs
     ///                 {
-    ///                     Action = new Aws.AppMesh.Inputs.RouteSpecHttpRouteActionArgs
-    ///                     {
-    ///                         WeightedTarget = 
-    ///                         {
-    ///                             
-    ///                             {
-    ///                                 { "virtualNode", aws_appmesh_virtual_node.Serviceb1.Name },
-    ///                                 { "weight", 90 },
-    ///                             },
-    ///                             
-    ///                             {
-    ///                                 { "virtualNode", aws_appmesh_virtual_node.Serviceb2.Name },
-    ///                                 { "weight", 10 },
-    ///                             },
-    ///                         },
-    ///                     },
     ///                     Match = new Aws.AppMesh.Inputs.RouteSpecHttpRouteMatchArgs
     ///                     {
     ///                         Prefix = "/",
     ///                     },
+    ///                     Action = new Aws.AppMesh.Inputs.RouteSpecHttpRouteActionArgs
+    ///                     {
+    ///                         WeightedTargets = 
+    ///                         {
+    ///                             new Aws.AppMesh.Inputs.RouteSpecHttpRouteActionWeightedTargetArgs
+    ///                             {
+    ///                                 VirtualNode = aws_appmesh_virtual_node.Serviceb1.Name,
+    ///                                 Weight = 90,
+    ///                             },
+    ///                             new Aws.AppMesh.Inputs.RouteSpecHttpRouteActionWeightedTargetArgs
+    ///                             {
+    ///                                 VirtualNode = aws_appmesh_virtual_node.Serviceb2.Name,
+    ///                                 Weight = 10,
+    ///                             },
+    ///                         },
+    ///                     },
     ///                 },
     ///             },
-    ///             VirtualRouterName = aws_appmesh_virtual_router.Serviceb.Name,
     ///         });
     ///     }
     /// 
@@ -71,41 +71,94 @@ namespace Pulumi.Aws.AppMesh
     ///         var serviceb = new Aws.AppMesh.Route("serviceb", new Aws.AppMesh.RouteArgs
     ///         {
     ///             MeshName = aws_appmesh_mesh.Simple.Id,
+    ///             VirtualRouterName = aws_appmesh_virtual_router.Serviceb.Name,
     ///             Spec = new Aws.AppMesh.Inputs.RouteSpecArgs
     ///             {
     ///                 HttpRoute = new Aws.AppMesh.Inputs.RouteSpecHttpRouteArgs
     ///                 {
-    ///                     Action = new Aws.AppMesh.Inputs.RouteSpecHttpRouteActionArgs
-    ///                     {
-    ///                         WeightedTarget = 
-    ///                         {
-    ///                             
-    ///                             {
-    ///                                 { "virtualNode", aws_appmesh_virtual_node.Serviceb.Name },
-    ///                                 { "weight", 100 },
-    ///                             },
-    ///                         },
-    ///                     },
     ///                     Match = new Aws.AppMesh.Inputs.RouteSpecHttpRouteMatchArgs
     ///                     {
-    ///                         Header = 
-    ///                         {
-    ///                             
-    ///                             {
-    ///                                 { "match", 
-    ///                                 {
-    ///                                     { "prefix", "123" },
-    ///                                 } },
-    ///                                 { "name", "clientRequestId" },
-    ///                             },
-    ///                         },
     ///                         Method = "POST",
     ///                         Prefix = "/",
     ///                         Scheme = "https",
+    ///                         Headers = 
+    ///                         {
+    ///                             new Aws.AppMesh.Inputs.RouteSpecHttpRouteMatchHeaderArgs
+    ///                             {
+    ///                                 Name = "clientRequestId",
+    ///                                 Match = new Aws.AppMesh.Inputs.RouteSpecHttpRouteMatchHeaderMatchArgs
+    ///                                 {
+    ///                                     Prefix = "123",
+    ///                                 },
+    ///                             },
+    ///                         },
+    ///                     },
+    ///                     Action = new Aws.AppMesh.Inputs.RouteSpecHttpRouteActionArgs
+    ///                     {
+    ///                         WeightedTargets = 
+    ///                         {
+    ///                             new Aws.AppMesh.Inputs.RouteSpecHttpRouteActionWeightedTargetArgs
+    ///                             {
+    ///                                 VirtualNode = aws_appmesh_virtual_node.Serviceb.Name,
+    ///                                 Weight = 100,
+    ///                             },
+    ///                         },
     ///                     },
     ///                 },
     ///             },
+    ///         });
+    ///     }
+    /// 
+    /// }
+    /// ```
+    /// ### Retry Policy
+    /// 
+    /// ```csharp
+    /// using Pulumi;
+    /// using Aws = Pulumi.Aws;
+    /// 
+    /// class MyStack : Stack
+    /// {
+    ///     public MyStack()
+    ///     {
+    ///         var serviceb = new Aws.AppMesh.Route("serviceb", new Aws.AppMesh.RouteArgs
+    ///         {
+    ///             MeshName = aws_appmesh_mesh.Simple.Id,
     ///             VirtualRouterName = aws_appmesh_virtual_router.Serviceb.Name,
+    ///             Spec = new Aws.AppMesh.Inputs.RouteSpecArgs
+    ///             {
+    ///                 HttpRoute = new Aws.AppMesh.Inputs.RouteSpecHttpRouteArgs
+    ///                 {
+    ///                     Match = new Aws.AppMesh.Inputs.RouteSpecHttpRouteMatchArgs
+    ///                     {
+    ///                         Prefix = "/",
+    ///                     },
+    ///                     RetryPolicy = new Aws.AppMesh.Inputs.RouteSpecHttpRouteRetryPolicyArgs
+    ///                     {
+    ///                         HttpRetryEvents = 
+    ///                         {
+    ///                             "server-error",
+    ///                         },
+    ///                         MaxRetries = 1,
+    ///                         PerRetryTimeout = new Aws.AppMesh.Inputs.RouteSpecHttpRouteRetryPolicyPerRetryTimeoutArgs
+    ///                         {
+    ///                             Unit = "s",
+    ///                             Value = 15,
+    ///                         },
+    ///                     },
+    ///                     Action = new Aws.AppMesh.Inputs.RouteSpecHttpRouteActionArgs
+    ///                     {
+    ///                         WeightedTargets = 
+    ///                         {
+    ///                             new Aws.AppMesh.Inputs.RouteSpecHttpRouteActionWeightedTargetArgs
+    ///                             {
+    ///                                 VirtualNode = aws_appmesh_virtual_node.Serviceb.Name,
+    ///                                 Weight = 100,
+    ///                             },
+    ///                         },
+    ///                     },
+    ///                 },
+    ///             },
     ///         });
     ///     }
     /// 
@@ -124,29 +177,39 @@ namespace Pulumi.Aws.AppMesh
     ///         var serviceb = new Aws.AppMesh.Route("serviceb", new Aws.AppMesh.RouteArgs
     ///         {
     ///             MeshName = aws_appmesh_mesh.Simple.Id,
+    ///             VirtualRouterName = aws_appmesh_virtual_router.Serviceb.Name,
     ///             Spec = new Aws.AppMesh.Inputs.RouteSpecArgs
     ///             {
     ///                 TcpRoute = new Aws.AppMesh.Inputs.RouteSpecTcpRouteArgs
     ///                 {
     ///                     Action = new Aws.AppMesh.Inputs.RouteSpecTcpRouteActionArgs
     ///                     {
-    ///                         WeightedTarget = 
+    ///                         WeightedTargets = 
     ///                         {
-    ///                             
+    ///                             new Aws.AppMesh.Inputs.RouteSpecTcpRouteActionWeightedTargetArgs
     ///                             {
-    ///                                 { "virtualNode", aws_appmesh_virtual_node.Serviceb1.Name },
-    ///                                 { "weight", 100 },
+    ///                                 VirtualNode = aws_appmesh_virtual_node.Serviceb1.Name,
+    ///                                 Weight = 100,
     ///                             },
     ///                         },
     ///                     },
     ///                 },
     ///             },
-    ///             VirtualRouterName = aws_appmesh_virtual_router.Serviceb.Name,
     ///         });
     ///     }
     /// 
     /// }
     /// ```
+    /// 
+    /// ## Import
+    /// 
+    /// App Mesh virtual routes can be imported using `mesh_name` and `virtual_router_name` together with the route's `name`, e.g.
+    /// 
+    /// ```sh
+    ///  $ pulumi import aws:appmesh/route:Route serviceb simpleapp/serviceB/serviceB-route
+    /// ```
+    /// 
+    ///  [1]/docs/providers/aws/index.html
     /// </summary>
     public partial class Route : Pulumi.CustomResource
     {
@@ -169,16 +232,28 @@ namespace Pulumi.Aws.AppMesh
         public Output<string> LastUpdatedDate { get; private set; } = null!;
 
         /// <summary>
-        /// The name of the service mesh in which to create the route.
+        /// The name of the service mesh in which to create the route. Must be between 1 and 255 characters in length.
         /// </summary>
         [Output("meshName")]
         public Output<string> MeshName { get; private set; } = null!;
 
         /// <summary>
-        /// The name to use for the route.
+        /// The AWS account ID of the service mesh's owner. Defaults to the account ID the [AWS provider](https://www.terraform.io/docs/providers/aws/index.html) is currently connected to.
+        /// </summary>
+        [Output("meshOwner")]
+        public Output<string> MeshOwner { get; private set; } = null!;
+
+        /// <summary>
+        /// The name to use for the route. Must be between 1 and 255 characters in length.
         /// </summary>
         [Output("name")]
         public Output<string> Name { get; private set; } = null!;
+
+        /// <summary>
+        /// The resource owner's AWS account ID.
+        /// </summary>
+        [Output("resourceOwner")]
+        public Output<string> ResourceOwner { get; private set; } = null!;
 
         /// <summary>
         /// The route specification to apply.
@@ -193,7 +268,7 @@ namespace Pulumi.Aws.AppMesh
         public Output<ImmutableDictionary<string, string>?> Tags { get; private set; } = null!;
 
         /// <summary>
-        /// The name of the virtual router in which to create the route.
+        /// The name of the virtual router in which to create the route. Must be between 1 and 255 characters in length.
         /// </summary>
         [Output("virtualRouterName")]
         public Output<string> VirtualRouterName { get; private set; } = null!;
@@ -245,13 +320,19 @@ namespace Pulumi.Aws.AppMesh
     public sealed class RouteArgs : Pulumi.ResourceArgs
     {
         /// <summary>
-        /// The name of the service mesh in which to create the route.
+        /// The name of the service mesh in which to create the route. Must be between 1 and 255 characters in length.
         /// </summary>
         [Input("meshName", required: true)]
         public Input<string> MeshName { get; set; } = null!;
 
         /// <summary>
-        /// The name to use for the route.
+        /// The AWS account ID of the service mesh's owner. Defaults to the account ID the [AWS provider](https://www.terraform.io/docs/providers/aws/index.html) is currently connected to.
+        /// </summary>
+        [Input("meshOwner")]
+        public Input<string>? MeshOwner { get; set; }
+
+        /// <summary>
+        /// The name to use for the route. Must be between 1 and 255 characters in length.
         /// </summary>
         [Input("name")]
         public Input<string>? Name { get; set; }
@@ -275,7 +356,7 @@ namespace Pulumi.Aws.AppMesh
         }
 
         /// <summary>
-        /// The name of the virtual router in which to create the route.
+        /// The name of the virtual router in which to create the route. Must be between 1 and 255 characters in length.
         /// </summary>
         [Input("virtualRouterName", required: true)]
         public Input<string> VirtualRouterName { get; set; } = null!;
@@ -306,16 +387,28 @@ namespace Pulumi.Aws.AppMesh
         public Input<string>? LastUpdatedDate { get; set; }
 
         /// <summary>
-        /// The name of the service mesh in which to create the route.
+        /// The name of the service mesh in which to create the route. Must be between 1 and 255 characters in length.
         /// </summary>
         [Input("meshName")]
         public Input<string>? MeshName { get; set; }
 
         /// <summary>
-        /// The name to use for the route.
+        /// The AWS account ID of the service mesh's owner. Defaults to the account ID the [AWS provider](https://www.terraform.io/docs/providers/aws/index.html) is currently connected to.
+        /// </summary>
+        [Input("meshOwner")]
+        public Input<string>? MeshOwner { get; set; }
+
+        /// <summary>
+        /// The name to use for the route. Must be between 1 and 255 characters in length.
         /// </summary>
         [Input("name")]
         public Input<string>? Name { get; set; }
+
+        /// <summary>
+        /// The resource owner's AWS account ID.
+        /// </summary>
+        [Input("resourceOwner")]
+        public Input<string>? ResourceOwner { get; set; }
 
         /// <summary>
         /// The route specification to apply.
@@ -336,7 +429,7 @@ namespace Pulumi.Aws.AppMesh
         }
 
         /// <summary>
-        /// The name of the virtual router in which to create the route.
+        /// The name of the virtual router in which to create the route. Must be between 1 and 255 characters in length.
         /// </summary>
         [Input("virtualRouterName")]
         public Input<string>? VirtualRouterName { get; set; }

@@ -2,8 +2,7 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 /**
@@ -24,31 +23,39 @@ import * as utilities from "../utilities";
  * });
  * const ruleout = new aws.ec2.TrafficMirrorFilterRule("ruleout", {
  *     description: "test rule",
- *     destinationCidrBlock: "10.0.0.0/8",
- *     ruleAction: "accept",
- *     ruleNumber: 1,
- *     sourceCidrBlock: "10.0.0.0/8",
- *     trafficDirection: "egress",
  *     trafficMirrorFilterId: filter.id,
+ *     destinationCidrBlock: "10.0.0.0/8",
+ *     sourceCidrBlock: "10.0.0.0/8",
+ *     ruleNumber: 1,
+ *     ruleAction: "accept",
+ *     trafficDirection: "egress",
  * });
  * const rulein = new aws.ec2.TrafficMirrorFilterRule("rulein", {
  *     description: "test rule",
+ *     trafficMirrorFilterId: filter.id,
  *     destinationCidrBlock: "10.0.0.0/8",
+ *     sourceCidrBlock: "10.0.0.0/8",
+ *     ruleNumber: 1,
+ *     ruleAction: "accept",
+ *     trafficDirection: "ingress",
+ *     protocol: 6,
  *     destinationPortRange: {
  *         fromPort: 22,
  *         toPort: 53,
  *     },
- *     protocol: 6,
- *     ruleAction: "accept",
- *     ruleNumber: 1,
- *     sourceCidrBlock: "10.0.0.0/8",
  *     sourcePortRange: {
  *         fromPort: 0,
  *         toPort: 10,
  *     },
- *     trafficDirection: "ingress",
- *     trafficMirrorFilterId: filter.id,
  * });
+ * ```
+ *
+ * ## Import
+ *
+ * Traffic mirror rules can be imported using the `traffic_mirror_filter_id` and `id` separated by `:` e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:ec2/trafficMirrorFilterRule:TrafficMirrorFilterRule rule tmf-0fbb93ddf38198f64:tmfr-05a458f06445d0aee
  * ```
  */
 export class TrafficMirrorFilterRule extends pulumi.CustomResource {
@@ -144,22 +151,22 @@ export class TrafficMirrorFilterRule extends pulumi.CustomResource {
             inputs["trafficMirrorFilterId"] = state ? state.trafficMirrorFilterId : undefined;
         } else {
             const args = argsOrState as TrafficMirrorFilterRuleArgs | undefined;
-            if (!args || args.destinationCidrBlock === undefined) {
+            if ((!args || args.destinationCidrBlock === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'destinationCidrBlock'");
             }
-            if (!args || args.ruleAction === undefined) {
+            if ((!args || args.ruleAction === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'ruleAction'");
             }
-            if (!args || args.ruleNumber === undefined) {
+            if ((!args || args.ruleNumber === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'ruleNumber'");
             }
-            if (!args || args.sourceCidrBlock === undefined) {
+            if ((!args || args.sourceCidrBlock === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'sourceCidrBlock'");
             }
-            if (!args || args.trafficDirection === undefined) {
+            if ((!args || args.trafficDirection === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'trafficDirection'");
             }
-            if (!args || args.trafficMirrorFilterId === undefined) {
+            if ((!args || args.trafficMirrorFilterId === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'trafficMirrorFilterId'");
             }
             inputs["description"] = args ? args.description : undefined;

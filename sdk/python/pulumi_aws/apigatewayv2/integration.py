@@ -5,75 +5,38 @@
 import warnings
 import pulumi
 import pulumi.runtime
-from typing import Union
-from .. import utilities, tables
+from typing import Any, Mapping, Optional, Sequence, Union
+from .. import _utilities, _tables
+from . import outputs
+from ._inputs import *
+
+__all__ = ['Integration']
 
 
 class Integration(pulumi.CustomResource):
-    api_id: pulumi.Output[str]
-    """
-    The API identifier.
-    """
-    connection_id: pulumi.Output[str]
-    """
-    The ID of the VPC link for a private integration. Supported only for HTTP APIs.
-    """
-    connection_type: pulumi.Output[str]
-    """
-    The type of the network connection to the integration endpoint. Valid values: `INTERNET`, `VPC_LINK`. Default is `INTERNET`.
-    """
-    content_handling_strategy: pulumi.Output[str]
-    """
-    How to handle response payload content type conversions. Valid values: `CONVERT_TO_BINARY`, `CONVERT_TO_TEXT`. Supported only for WebSocket APIs.
-    """
-    credentials_arn: pulumi.Output[str]
-    """
-    The credentials required for the integration, if any.
-    """
-    description: pulumi.Output[str]
-    """
-    The description of the integration.
-    """
-    integration_method: pulumi.Output[str]
-    """
-    The integration's HTTP method. Must be specified if `integration_type` is not `MOCK`.
-    """
-    integration_response_selection_expression: pulumi.Output[str]
-    """
-    The [integration response selection expression](https://docs.aws.amazon.com/apigateway/latest/developerguide/apigateway-websocket-api-selection-expressions.html#apigateway-websocket-api-integration-response-selection-expressions) for the integration.
-    """
-    integration_type: pulumi.Output[str]
-    """
-    The integration type of an integration.
-    Valid values: `AWS`, `AWS_PROXY`, `HTTP`, `HTTP_PROXY`, `MOCK`.
-    """
-    integration_uri: pulumi.Output[str]
-    """
-    The URI of the Lambda function for a Lambda proxy integration, when `integration_type` is `AWS_PROXY`.
-    For an `HTTP` integration, specify a fully-qualified URL. For an HTTP API private integration, specify the ARN of an Application Load Balancer listener, Network Load Balancer listener, or AWS Cloud Map service.
-    """
-    passthrough_behavior: pulumi.Output[str]
-    """
-    The pass-through behavior for incoming requests based on the Content-Type header in the request, and the available mapping templates specified as the `request_templates` attribute.
-    Valid values: `WHEN_NO_MATCH`, `WHEN_NO_TEMPLATES`, `NEVER`. Default is `WHEN_NO_MATCH`. Supported only for WebSocket APIs.
-    """
-    payload_format_version: pulumi.Output[str]
-    """
-    The [format of the payload](https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api-develop-integrations-lambda.html#http-api-develop-integrations-lambda.proxy-format) sent to an integration. Valid values: `1.0`, `2.0`. Default is `1.0`.
-    """
-    request_templates: pulumi.Output[dict]
-    """
-    A map of Velocity templates that are applied on the request payload based on the value of the Content-Type header sent by the client. Supported only for WebSocket APIs.
-    """
-    template_selection_expression: pulumi.Output[str]
-    """
-    The [template selection expression](https://docs.aws.amazon.com/apigateway/latest/developerguide/apigateway-websocket-api-selection-expressions.html#apigateway-websocket-api-template-selection-expressions) for the integration.
-    """
-    timeout_milliseconds: pulumi.Output[float]
-    """
-    Custom timeout between 50 and 29,000 milliseconds. The default value is 29,000 milliseconds or 29 seconds.
-    """
-    def __init__(__self__, resource_name, opts=None, api_id=None, connection_id=None, connection_type=None, content_handling_strategy=None, credentials_arn=None, description=None, integration_method=None, integration_type=None, integration_uri=None, passthrough_behavior=None, payload_format_version=None, request_templates=None, template_selection_expression=None, timeout_milliseconds=None, __props__=None, __name__=None, __opts__=None):
+    def __init__(__self__,
+                 resource_name: str,
+                 opts: Optional[pulumi.ResourceOptions] = None,
+                 api_id: Optional[pulumi.Input[str]] = None,
+                 connection_id: Optional[pulumi.Input[str]] = None,
+                 connection_type: Optional[pulumi.Input[str]] = None,
+                 content_handling_strategy: Optional[pulumi.Input[str]] = None,
+                 credentials_arn: Optional[pulumi.Input[str]] = None,
+                 description: Optional[pulumi.Input[str]] = None,
+                 integration_method: Optional[pulumi.Input[str]] = None,
+                 integration_subtype: Optional[pulumi.Input[str]] = None,
+                 integration_type: Optional[pulumi.Input[str]] = None,
+                 integration_uri: Optional[pulumi.Input[str]] = None,
+                 passthrough_behavior: Optional[pulumi.Input[str]] = None,
+                 payload_format_version: Optional[pulumi.Input[str]] = None,
+                 request_parameters: Optional[pulumi.Input[Mapping[str, pulumi.Input[str]]]] = None,
+                 request_templates: Optional[pulumi.Input[Mapping[str, pulumi.Input[str]]]] = None,
+                 template_selection_expression: Optional[pulumi.Input[str]] = None,
+                 timeout_milliseconds: Optional[pulumi.Input[int]] = None,
+                 tls_config: Optional[pulumi.Input[pulumi.InputType['IntegrationTlsConfigArgs']]] = None,
+                 __props__=None,
+                 __name__=None,
+                 __opts__=None):
         """
         Manages an Amazon API Gateway Version 2 integration.
         More information can be found in the [Amazon API Gateway Developer Guide](https://docs.aws.amazon.com/apigateway/latest/developerguide/apigateway-websocket-api.html).
@@ -97,29 +60,55 @@ class Integration(pulumi.CustomResource):
 
         example_function = aws.lambda_.Function("exampleFunction",
             code=pulumi.FileArchive("example.zip"),
-            handler="index.handler",
             role=aws_iam_role["example"]["arn"],
-            runtime="nodejs10.x")
+            handler="index.handler",
+            runtime="nodejs12.x")
         example_integration = aws.apigatewayv2.Integration("exampleIntegration",
             api_id=aws_apigatewayv2_api["example"]["id"],
+            integration_type="AWS",
             connection_type="INTERNET",
             content_handling_strategy="CONVERT_TO_TEXT",
             description="Lambda example",
             integration_method="POST",
-            integration_type="AWS",
             integration_uri=example_function.invoke_arn,
             passthrough_behavior="WHEN_NO_MATCH")
+        ```
+        ### AWS Service Integration
+
+        ```python
+        import pulumi
+        import pulumi_aws as aws
+
+        example = aws.apigatewayv2.Integration("example",
+            api_id=aws_apigatewayv2_api["example"]["id"],
+            credentials_arn=aws_iam_role["example"]["arn"],
+            description="SQS example",
+            integration_type="AWS_PROXY",
+            integration_subtype="SQS-SendMessage",
+            request_parameters={
+                "QueueUrl": "$request.header.queueUrl",
+                "MessageBody": "$request.body.message",
+            })
+        ```
+
+        ## Import
+
+        `aws_apigatewayv2_integration` can be imported by using the API identifier and integration identifier, e.g.
+
+        ```sh
+         $ pulumi import aws:apigatewayv2/integration:Integration example aabbccddee/1122334
         ```
 
         :param str resource_name: The name of the resource.
         :param pulumi.ResourceOptions opts: Options for the resource.
         :param pulumi.Input[str] api_id: The API identifier.
-        :param pulumi.Input[str] connection_id: The ID of the VPC link for a private integration. Supported only for HTTP APIs.
+        :param pulumi.Input[str] connection_id: The ID of the VPC link for a private integration. Supported only for HTTP APIs. Must be between 1 and 1024 characters in length.
         :param pulumi.Input[str] connection_type: The type of the network connection to the integration endpoint. Valid values: `INTERNET`, `VPC_LINK`. Default is `INTERNET`.
         :param pulumi.Input[str] content_handling_strategy: How to handle response payload content type conversions. Valid values: `CONVERT_TO_BINARY`, `CONVERT_TO_TEXT`. Supported only for WebSocket APIs.
         :param pulumi.Input[str] credentials_arn: The credentials required for the integration, if any.
         :param pulumi.Input[str] description: The description of the integration.
         :param pulumi.Input[str] integration_method: The integration's HTTP method. Must be specified if `integration_type` is not `MOCK`.
+        :param pulumi.Input[str] integration_subtype: Specifies the AWS service action to invoke. Supported only for HTTP APIs when `integration_type` is `AWS_PROXY`. See the [AWS service integration reference](https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api-develop-integrations-aws-services-reference.html) documentation for supported values. Must be between 1 and 128 characters in length.
         :param pulumi.Input[str] integration_type: The integration type of an integration.
                Valid values: `AWS`, `AWS_PROXY`, `HTTP`, `HTTP_PROXY`, `MOCK`.
         :param pulumi.Input[str] integration_uri: The URI of the Lambda function for a Lambda proxy integration, when `integration_type` is `AWS_PROXY`.
@@ -127,9 +116,11 @@ class Integration(pulumi.CustomResource):
         :param pulumi.Input[str] passthrough_behavior: The pass-through behavior for incoming requests based on the Content-Type header in the request, and the available mapping templates specified as the `request_templates` attribute.
                Valid values: `WHEN_NO_MATCH`, `WHEN_NO_TEMPLATES`, `NEVER`. Default is `WHEN_NO_MATCH`. Supported only for WebSocket APIs.
         :param pulumi.Input[str] payload_format_version: The [format of the payload](https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api-develop-integrations-lambda.html#http-api-develop-integrations-lambda.proxy-format) sent to an integration. Valid values: `1.0`, `2.0`. Default is `1.0`.
-        :param pulumi.Input[dict] request_templates: A map of Velocity templates that are applied on the request payload based on the value of the Content-Type header sent by the client. Supported only for WebSocket APIs.
+        :param pulumi.Input[Mapping[str, pulumi.Input[str]]] request_parameters: A key-value map specifying request parameters that are passed from the method request to the backend.
+               Supported only for WebSocket APIs.
+        :param pulumi.Input[Mapping[str, pulumi.Input[str]]] request_templates: A map of Velocity templates that are applied on the request payload based on the value of the Content-Type header sent by the client. Supported only for WebSocket APIs.
         :param pulumi.Input[str] template_selection_expression: The [template selection expression](https://docs.aws.amazon.com/apigateway/latest/developerguide/apigateway-websocket-api-selection-expressions.html#apigateway-websocket-api-template-selection-expressions) for the integration.
-        :param pulumi.Input[float] timeout_milliseconds: Custom timeout between 50 and 29,000 milliseconds. The default value is 29,000 milliseconds or 29 seconds.
+        :param pulumi.Input[pulumi.InputType['IntegrationTlsConfigArgs']] tls_config: The TLS configuration for a private integration. Supported only for HTTP APIs.
         """
         if __name__ is not None:
             warnings.warn("explicit use of __name__ is deprecated", DeprecationWarning)
@@ -142,13 +133,13 @@ class Integration(pulumi.CustomResource):
         if not isinstance(opts, pulumi.ResourceOptions):
             raise TypeError('Expected resource options to be a ResourceOptions instance')
         if opts.version is None:
-            opts.version = utilities.get_version()
+            opts.version = _utilities.get_version()
         if opts.id is None:
             if __props__ is not None:
                 raise TypeError('__props__ is only valid when passed in combination with a valid opts.id to get an existing resource')
             __props__ = dict()
 
-            if api_id is None:
+            if api_id is None and not opts.urn:
                 raise TypeError("Missing required property 'api_id'")
             __props__['api_id'] = api_id
             __props__['connection_id'] = connection_id
@@ -157,15 +148,18 @@ class Integration(pulumi.CustomResource):
             __props__['credentials_arn'] = credentials_arn
             __props__['description'] = description
             __props__['integration_method'] = integration_method
-            if integration_type is None:
+            __props__['integration_subtype'] = integration_subtype
+            if integration_type is None and not opts.urn:
                 raise TypeError("Missing required property 'integration_type'")
             __props__['integration_type'] = integration_type
             __props__['integration_uri'] = integration_uri
             __props__['passthrough_behavior'] = passthrough_behavior
             __props__['payload_format_version'] = payload_format_version
+            __props__['request_parameters'] = request_parameters
             __props__['request_templates'] = request_templates
             __props__['template_selection_expression'] = template_selection_expression
             __props__['timeout_milliseconds'] = timeout_milliseconds
+            __props__['tls_config'] = tls_config
             __props__['integration_response_selection_expression'] = None
         super(Integration, __self__).__init__(
             'aws:apigatewayv2/integration:Integration',
@@ -174,22 +168,43 @@ class Integration(pulumi.CustomResource):
             opts)
 
     @staticmethod
-    def get(resource_name, id, opts=None, api_id=None, connection_id=None, connection_type=None, content_handling_strategy=None, credentials_arn=None, description=None, integration_method=None, integration_response_selection_expression=None, integration_type=None, integration_uri=None, passthrough_behavior=None, payload_format_version=None, request_templates=None, template_selection_expression=None, timeout_milliseconds=None):
+    def get(resource_name: str,
+            id: pulumi.Input[str],
+            opts: Optional[pulumi.ResourceOptions] = None,
+            api_id: Optional[pulumi.Input[str]] = None,
+            connection_id: Optional[pulumi.Input[str]] = None,
+            connection_type: Optional[pulumi.Input[str]] = None,
+            content_handling_strategy: Optional[pulumi.Input[str]] = None,
+            credentials_arn: Optional[pulumi.Input[str]] = None,
+            description: Optional[pulumi.Input[str]] = None,
+            integration_method: Optional[pulumi.Input[str]] = None,
+            integration_response_selection_expression: Optional[pulumi.Input[str]] = None,
+            integration_subtype: Optional[pulumi.Input[str]] = None,
+            integration_type: Optional[pulumi.Input[str]] = None,
+            integration_uri: Optional[pulumi.Input[str]] = None,
+            passthrough_behavior: Optional[pulumi.Input[str]] = None,
+            payload_format_version: Optional[pulumi.Input[str]] = None,
+            request_parameters: Optional[pulumi.Input[Mapping[str, pulumi.Input[str]]]] = None,
+            request_templates: Optional[pulumi.Input[Mapping[str, pulumi.Input[str]]]] = None,
+            template_selection_expression: Optional[pulumi.Input[str]] = None,
+            timeout_milliseconds: Optional[pulumi.Input[int]] = None,
+            tls_config: Optional[pulumi.Input[pulumi.InputType['IntegrationTlsConfigArgs']]] = None) -> 'Integration':
         """
         Get an existing Integration resource's state with the given name, id, and optional extra
         properties used to qualify the lookup.
 
         :param str resource_name: The unique name of the resulting resource.
-        :param str id: The unique provider ID of the resource to lookup.
+        :param pulumi.Input[str] id: The unique provider ID of the resource to lookup.
         :param pulumi.ResourceOptions opts: Options for the resource.
         :param pulumi.Input[str] api_id: The API identifier.
-        :param pulumi.Input[str] connection_id: The ID of the VPC link for a private integration. Supported only for HTTP APIs.
+        :param pulumi.Input[str] connection_id: The ID of the VPC link for a private integration. Supported only for HTTP APIs. Must be between 1 and 1024 characters in length.
         :param pulumi.Input[str] connection_type: The type of the network connection to the integration endpoint. Valid values: `INTERNET`, `VPC_LINK`. Default is `INTERNET`.
         :param pulumi.Input[str] content_handling_strategy: How to handle response payload content type conversions. Valid values: `CONVERT_TO_BINARY`, `CONVERT_TO_TEXT`. Supported only for WebSocket APIs.
         :param pulumi.Input[str] credentials_arn: The credentials required for the integration, if any.
         :param pulumi.Input[str] description: The description of the integration.
         :param pulumi.Input[str] integration_method: The integration's HTTP method. Must be specified if `integration_type` is not `MOCK`.
         :param pulumi.Input[str] integration_response_selection_expression: The [integration response selection expression](https://docs.aws.amazon.com/apigateway/latest/developerguide/apigateway-websocket-api-selection-expressions.html#apigateway-websocket-api-integration-response-selection-expressions) for the integration.
+        :param pulumi.Input[str] integration_subtype: Specifies the AWS service action to invoke. Supported only for HTTP APIs when `integration_type` is `AWS_PROXY`. See the [AWS service integration reference](https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api-develop-integrations-aws-services-reference.html) documentation for supported values. Must be between 1 and 128 characters in length.
         :param pulumi.Input[str] integration_type: The integration type of an integration.
                Valid values: `AWS`, `AWS_PROXY`, `HTTP`, `HTTP_PROXY`, `MOCK`.
         :param pulumi.Input[str] integration_uri: The URI of the Lambda function for a Lambda proxy integration, when `integration_type` is `AWS_PROXY`.
@@ -197,9 +212,11 @@ class Integration(pulumi.CustomResource):
         :param pulumi.Input[str] passthrough_behavior: The pass-through behavior for incoming requests based on the Content-Type header in the request, and the available mapping templates specified as the `request_templates` attribute.
                Valid values: `WHEN_NO_MATCH`, `WHEN_NO_TEMPLATES`, `NEVER`. Default is `WHEN_NO_MATCH`. Supported only for WebSocket APIs.
         :param pulumi.Input[str] payload_format_version: The [format of the payload](https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api-develop-integrations-lambda.html#http-api-develop-integrations-lambda.proxy-format) sent to an integration. Valid values: `1.0`, `2.0`. Default is `1.0`.
-        :param pulumi.Input[dict] request_templates: A map of Velocity templates that are applied on the request payload based on the value of the Content-Type header sent by the client. Supported only for WebSocket APIs.
+        :param pulumi.Input[Mapping[str, pulumi.Input[str]]] request_parameters: A key-value map specifying request parameters that are passed from the method request to the backend.
+               Supported only for WebSocket APIs.
+        :param pulumi.Input[Mapping[str, pulumi.Input[str]]] request_templates: A map of Velocity templates that are applied on the request payload based on the value of the Content-Type header sent by the client. Supported only for WebSocket APIs.
         :param pulumi.Input[str] template_selection_expression: The [template selection expression](https://docs.aws.amazon.com/apigateway/latest/developerguide/apigateway-websocket-api-selection-expressions.html#apigateway-websocket-api-template-selection-expressions) for the integration.
-        :param pulumi.Input[float] timeout_milliseconds: Custom timeout between 50 and 29,000 milliseconds. The default value is 29,000 milliseconds or 29 seconds.
+        :param pulumi.Input[pulumi.InputType['IntegrationTlsConfigArgs']] tls_config: The TLS configuration for a private integration. Supported only for HTTP APIs.
         """
         opts = pulumi.ResourceOptions.merge(opts, pulumi.ResourceOptions(id=id))
 
@@ -213,17 +230,166 @@ class Integration(pulumi.CustomResource):
         __props__["description"] = description
         __props__["integration_method"] = integration_method
         __props__["integration_response_selection_expression"] = integration_response_selection_expression
+        __props__["integration_subtype"] = integration_subtype
         __props__["integration_type"] = integration_type
         __props__["integration_uri"] = integration_uri
         __props__["passthrough_behavior"] = passthrough_behavior
         __props__["payload_format_version"] = payload_format_version
+        __props__["request_parameters"] = request_parameters
         __props__["request_templates"] = request_templates
         __props__["template_selection_expression"] = template_selection_expression
         __props__["timeout_milliseconds"] = timeout_milliseconds
+        __props__["tls_config"] = tls_config
         return Integration(resource_name, opts=opts, __props__=__props__)
 
+    @property
+    @pulumi.getter(name="apiId")
+    def api_id(self) -> pulumi.Output[str]:
+        """
+        The API identifier.
+        """
+        return pulumi.get(self, "api_id")
+
+    @property
+    @pulumi.getter(name="connectionId")
+    def connection_id(self) -> pulumi.Output[Optional[str]]:
+        """
+        The ID of the VPC link for a private integration. Supported only for HTTP APIs. Must be between 1 and 1024 characters in length.
+        """
+        return pulumi.get(self, "connection_id")
+
+    @property
+    @pulumi.getter(name="connectionType")
+    def connection_type(self) -> pulumi.Output[Optional[str]]:
+        """
+        The type of the network connection to the integration endpoint. Valid values: `INTERNET`, `VPC_LINK`. Default is `INTERNET`.
+        """
+        return pulumi.get(self, "connection_type")
+
+    @property
+    @pulumi.getter(name="contentHandlingStrategy")
+    def content_handling_strategy(self) -> pulumi.Output[Optional[str]]:
+        """
+        How to handle response payload content type conversions. Valid values: `CONVERT_TO_BINARY`, `CONVERT_TO_TEXT`. Supported only for WebSocket APIs.
+        """
+        return pulumi.get(self, "content_handling_strategy")
+
+    @property
+    @pulumi.getter(name="credentialsArn")
+    def credentials_arn(self) -> pulumi.Output[Optional[str]]:
+        """
+        The credentials required for the integration, if any.
+        """
+        return pulumi.get(self, "credentials_arn")
+
+    @property
+    @pulumi.getter
+    def description(self) -> pulumi.Output[Optional[str]]:
+        """
+        The description of the integration.
+        """
+        return pulumi.get(self, "description")
+
+    @property
+    @pulumi.getter(name="integrationMethod")
+    def integration_method(self) -> pulumi.Output[Optional[str]]:
+        """
+        The integration's HTTP method. Must be specified if `integration_type` is not `MOCK`.
+        """
+        return pulumi.get(self, "integration_method")
+
+    @property
+    @pulumi.getter(name="integrationResponseSelectionExpression")
+    def integration_response_selection_expression(self) -> pulumi.Output[str]:
+        """
+        The [integration response selection expression](https://docs.aws.amazon.com/apigateway/latest/developerguide/apigateway-websocket-api-selection-expressions.html#apigateway-websocket-api-integration-response-selection-expressions) for the integration.
+        """
+        return pulumi.get(self, "integration_response_selection_expression")
+
+    @property
+    @pulumi.getter(name="integrationSubtype")
+    def integration_subtype(self) -> pulumi.Output[Optional[str]]:
+        """
+        Specifies the AWS service action to invoke. Supported only for HTTP APIs when `integration_type` is `AWS_PROXY`. See the [AWS service integration reference](https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api-develop-integrations-aws-services-reference.html) documentation for supported values. Must be between 1 and 128 characters in length.
+        """
+        return pulumi.get(self, "integration_subtype")
+
+    @property
+    @pulumi.getter(name="integrationType")
+    def integration_type(self) -> pulumi.Output[str]:
+        """
+        The integration type of an integration.
+        Valid values: `AWS`, `AWS_PROXY`, `HTTP`, `HTTP_PROXY`, `MOCK`.
+        """
+        return pulumi.get(self, "integration_type")
+
+    @property
+    @pulumi.getter(name="integrationUri")
+    def integration_uri(self) -> pulumi.Output[Optional[str]]:
+        """
+        The URI of the Lambda function for a Lambda proxy integration, when `integration_type` is `AWS_PROXY`.
+        For an `HTTP` integration, specify a fully-qualified URL. For an HTTP API private integration, specify the ARN of an Application Load Balancer listener, Network Load Balancer listener, or AWS Cloud Map service.
+        """
+        return pulumi.get(self, "integration_uri")
+
+    @property
+    @pulumi.getter(name="passthroughBehavior")
+    def passthrough_behavior(self) -> pulumi.Output[Optional[str]]:
+        """
+        The pass-through behavior for incoming requests based on the Content-Type header in the request, and the available mapping templates specified as the `request_templates` attribute.
+        Valid values: `WHEN_NO_MATCH`, `WHEN_NO_TEMPLATES`, `NEVER`. Default is `WHEN_NO_MATCH`. Supported only for WebSocket APIs.
+        """
+        return pulumi.get(self, "passthrough_behavior")
+
+    @property
+    @pulumi.getter(name="payloadFormatVersion")
+    def payload_format_version(self) -> pulumi.Output[Optional[str]]:
+        """
+        The [format of the payload](https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api-develop-integrations-lambda.html#http-api-develop-integrations-lambda.proxy-format) sent to an integration. Valid values: `1.0`, `2.0`. Default is `1.0`.
+        """
+        return pulumi.get(self, "payload_format_version")
+
+    @property
+    @pulumi.getter(name="requestParameters")
+    def request_parameters(self) -> pulumi.Output[Optional[Mapping[str, str]]]:
+        """
+        A key-value map specifying request parameters that are passed from the method request to the backend.
+        Supported only for WebSocket APIs.
+        """
+        return pulumi.get(self, "request_parameters")
+
+    @property
+    @pulumi.getter(name="requestTemplates")
+    def request_templates(self) -> pulumi.Output[Optional[Mapping[str, str]]]:
+        """
+        A map of Velocity templates that are applied on the request payload based on the value of the Content-Type header sent by the client. Supported only for WebSocket APIs.
+        """
+        return pulumi.get(self, "request_templates")
+
+    @property
+    @pulumi.getter(name="templateSelectionExpression")
+    def template_selection_expression(self) -> pulumi.Output[Optional[str]]:
+        """
+        The [template selection expression](https://docs.aws.amazon.com/apigateway/latest/developerguide/apigateway-websocket-api-selection-expressions.html#apigateway-websocket-api-template-selection-expressions) for the integration.
+        """
+        return pulumi.get(self, "template_selection_expression")
+
+    @property
+    @pulumi.getter(name="timeoutMilliseconds")
+    def timeout_milliseconds(self) -> pulumi.Output[int]:
+        return pulumi.get(self, "timeout_milliseconds")
+
+    @property
+    @pulumi.getter(name="tlsConfig")
+    def tls_config(self) -> pulumi.Output[Optional['outputs.IntegrationTlsConfig']]:
+        """
+        The TLS configuration for a private integration. Supported only for HTTP APIs.
+        """
+        return pulumi.get(self, "tls_config")
+
     def translate_output_property(self, prop):
-        return tables._CAMEL_TO_SNAKE_CASE_TABLE.get(prop) or prop
+        return _tables.CAMEL_TO_SNAKE_CASE_TABLE.get(prop) or prop
 
     def translate_input_property(self, prop):
-        return tables._SNAKE_TO_CAMEL_CASE_TABLE.get(prop) or prop
+        return _tables.SNAKE_TO_CAMEL_CASE_TABLE.get(prop) or prop
+

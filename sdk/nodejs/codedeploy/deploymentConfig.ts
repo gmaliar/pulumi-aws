@@ -2,8 +2,7 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 /**
@@ -16,36 +15,36 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const fooDeploymentConfig = new aws.codedeploy.DeploymentConfig("foo", {
+ * const fooDeploymentConfig = new aws.codedeploy.DeploymentConfig("fooDeploymentConfig", {
  *     deploymentConfigName: "test-deployment-config",
  *     minimumHealthyHosts: {
  *         type: "HOST_COUNT",
  *         value: 2,
  *     },
  * });
- * const fooDeploymentGroup = new aws.codedeploy.DeploymentGroup("foo", {
- *     alarmConfiguration: {
- *         alarms: ["my-alarm-name"],
- *         enabled: true,
- *     },
- *     appName: aws_codedeploy_app_foo_app.name,
- *     autoRollbackConfiguration: {
- *         enabled: true,
- *         events: ["DEPLOYMENT_FAILURE"],
- *     },
- *     deploymentConfigName: fooDeploymentConfig.id,
+ * const fooDeploymentGroup = new aws.codedeploy.DeploymentGroup("fooDeploymentGroup", {
+ *     appName: aws_codedeploy_app.foo_app.name,
  *     deploymentGroupName: "bar",
+ *     serviceRoleArn: aws_iam_role.foo_role.arn,
+ *     deploymentConfigName: fooDeploymentConfig.id,
  *     ec2TagFilters: [{
  *         key: "filterkey",
  *         type: "KEY_AND_VALUE",
  *         value: "filtervalue",
  *     }],
- *     serviceRoleArn: aws_iam_role_foo_role.arn,
  *     triggerConfigurations: [{
  *         triggerEvents: ["DeploymentFailure"],
  *         triggerName: "foo-trigger",
  *         triggerTargetArn: "foo-topic-arn",
  *     }],
+ *     autoRollbackConfiguration: {
+ *         enabled: true,
+ *         events: ["DEPLOYMENT_FAILURE"],
+ *     },
+ *     alarmConfiguration: {
+ *         alarms: ["my-alarm-name"],
+ *         enabled: true,
+ *     },
  * });
  * ```
  * ### Lambda Usage
@@ -54,31 +53,39 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const fooDeploymentConfig = new aws.codedeploy.DeploymentConfig("foo", {
- *     computePlatform: "Lambda",
+ * const fooDeploymentConfig = new aws.codedeploy.DeploymentConfig("fooDeploymentConfig", {
  *     deploymentConfigName: "test-deployment-config",
+ *     computePlatform: "Lambda",
  *     trafficRoutingConfig: {
+ *         type: "TimeBasedLinear",
  *         timeBasedLinear: {
  *             interval: 10,
  *             percentage: 10,
  *         },
- *         type: "TimeBasedLinear",
  *     },
  * });
- * const fooDeploymentGroup = new aws.codedeploy.DeploymentGroup("foo", {
- *     alarmConfiguration: {
- *         alarms: ["my-alarm-name"],
- *         enabled: true,
- *     },
- *     appName: aws_codedeploy_app_foo_app.name,
+ * const fooDeploymentGroup = new aws.codedeploy.DeploymentGroup("fooDeploymentGroup", {
+ *     appName: aws_codedeploy_app.foo_app.name,
+ *     deploymentGroupName: "bar",
+ *     serviceRoleArn: aws_iam_role.foo_role.arn,
+ *     deploymentConfigName: fooDeploymentConfig.id,
  *     autoRollbackConfiguration: {
  *         enabled: true,
  *         events: ["DEPLOYMENT_STOP_ON_ALARM"],
  *     },
- *     deploymentConfigName: fooDeploymentConfig.id,
- *     deploymentGroupName: "bar",
- *     serviceRoleArn: aws_iam_role_foo_role.arn,
+ *     alarmConfiguration: {
+ *         alarms: ["my-alarm-name"],
+ *         enabled: true,
+ *     },
  * });
+ * ```
+ *
+ * ## Import
+ *
+ * CodeDeploy Deployment Configurations can be imported using the `deployment_config_name`, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:codedeploy/deploymentConfig:DeploymentConfig example my-deployment-config
  * ```
  */
 export class DeploymentConfig extends pulumi.CustomResource {
@@ -149,7 +156,7 @@ export class DeploymentConfig extends pulumi.CustomResource {
             inputs["trafficRoutingConfig"] = state ? state.trafficRoutingConfig : undefined;
         } else {
             const args = argsOrState as DeploymentConfigArgs | undefined;
-            if (!args || args.deploymentConfigName === undefined) {
+            if ((!args || args.deploymentConfigName === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'deploymentConfigName'");
             }
             inputs["computePlatform"] = args ? args.computePlatform : undefined;

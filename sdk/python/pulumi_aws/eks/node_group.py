@@ -5,92 +5,37 @@
 import warnings
 import pulumi
 import pulumi.runtime
-from typing import Union
-from .. import utilities, tables
+from typing import Any, Mapping, Optional, Sequence, Union
+from .. import _utilities, _tables
+from . import outputs
+from ._inputs import *
+
+__all__ = ['NodeGroup']
 
 
 class NodeGroup(pulumi.CustomResource):
-    ami_type: pulumi.Output[str]
-    """
-    Type of Amazon Machine Image (AMI) associated with the EKS Node Group. Defaults to `AL2_x86_64`. Valid values: `AL2_x86_64`, `AL2_x86_64_GPU`. This provider will only perform drift detection if a configuration value is provided.
-    """
-    arn: pulumi.Output[str]
-    """
-    Amazon Resource Name (ARN) of the EKS Node Group.
-    """
-    cluster_name: pulumi.Output[str]
-    """
-    Name of the EKS Cluster.
-    """
-    disk_size: pulumi.Output[float]
-    """
-    Disk size in GiB for worker nodes. Defaults to `20`. This provider will only perform drift detection if a configuration value is provided.
-    """
-    force_update_version: pulumi.Output[bool]
-    """
-    Force version update if existing pods are unable to be drained due to a pod disruption budget issue.
-    """
-    instance_types: pulumi.Output[str]
-    """
-    Set of instance types associated with the EKS Node Group. Defaults to `["t3.medium"]`. This provider will only perform drift detection if a configuration value is provided. Currently, the EKS API only accepts a single value in the set.
-    """
-    labels: pulumi.Output[dict]
-    """
-    Key-value map of Kubernetes labels. Only labels that are applied with the EKS API are managed by this argument. Other Kubernetes labels applied to the EKS Node Group will not be managed.
-    """
-    node_group_name: pulumi.Output[str]
-    """
-    Name of the EKS Node Group.
-    """
-    node_role_arn: pulumi.Output[str]
-    """
-    Amazon Resource Name (ARN) of the IAM Role that provides permissions for the EKS Node Group.
-    """
-    release_version: pulumi.Output[str]
-    """
-    AMI version of the EKS Node Group. Defaults to latest version for Kubernetes version.
-    """
-    remote_access: pulumi.Output[dict]
-    """
-    Configuration block with remote access settings. Detailed below.
-
-      * `ec2SshKey` (`str`) - EC2 Key Pair name that provides access for SSH communication with the worker nodes in the EKS Node Group. If you specify this configuration, but do not specify `source_security_group_ids` when you create an EKS Node Group, port 22 on the worker nodes is opened to the Internet (0.0.0.0/0).
-      * `sourceSecurityGroupIds` (`list`) - Set of EC2 Security Group IDs to allow SSH access (port 22) from on the worker nodes. If you specify `ec2_ssh_key`, but do not specify this configuration when you create an EKS Node Group, port 22 on the worker nodes is opened to the Internet (0.0.0.0/0).
-    """
-    resources: pulumi.Output[list]
-    """
-    List of objects containing information about underlying resources.
-
-      * `autoscaling_groups` (`list`) - List of objects containing information about AutoScaling Groups.
-        * `name` (`str`) - Name of the AutoScaling Group.
-
-      * `remoteAccessSecurityGroupId` (`str`) - Identifier of the remote access EC2 Security Group.
-    """
-    scaling_config: pulumi.Output[dict]
-    """
-    Configuration block with scaling settings. Detailed below.
-
-      * `desiredSize` (`float`) - Desired number of worker nodes.
-      * `max_size` (`float`) - Maximum number of worker nodes.
-      * `min_size` (`float`) - Minimum number of worker nodes.
-    """
-    status: pulumi.Output[str]
-    """
-    Status of the EKS Node Group.
-    """
-    subnet_ids: pulumi.Output[list]
-    """
-    Identifiers of EC2 Subnets to associate with the EKS Node Group. These subnets must have the following resource tag: `kubernetes.io/cluster/CLUSTER_NAME` (where `CLUSTER_NAME` is replaced with the name of the EKS Cluster).
-    """
-    tags: pulumi.Output[dict]
-    """
-    Key-value mapping of resource tags.
-    """
-    version: pulumi.Output[str]
-    """
-    Kubernetes version. Defaults to EKS Cluster Kubernetes version. This provider will only perform drift detection if a configuration value is provided.
-    """
-    def __init__(__self__, resource_name, opts=None, ami_type=None, cluster_name=None, disk_size=None, force_update_version=None, instance_types=None, labels=None, node_group_name=None, node_role_arn=None, release_version=None, remote_access=None, scaling_config=None, subnet_ids=None, tags=None, version=None, __props__=None, __name__=None, __opts__=None):
+    def __init__(__self__,
+                 resource_name: str,
+                 opts: Optional[pulumi.ResourceOptions] = None,
+                 ami_type: Optional[pulumi.Input[str]] = None,
+                 capacity_type: Optional[pulumi.Input[str]] = None,
+                 cluster_name: Optional[pulumi.Input[str]] = None,
+                 disk_size: Optional[pulumi.Input[int]] = None,
+                 force_update_version: Optional[pulumi.Input[bool]] = None,
+                 instance_types: Optional[pulumi.Input[Sequence[pulumi.Input[str]]]] = None,
+                 labels: Optional[pulumi.Input[Mapping[str, pulumi.Input[str]]]] = None,
+                 launch_template: Optional[pulumi.Input[pulumi.InputType['NodeGroupLaunchTemplateArgs']]] = None,
+                 node_group_name: Optional[pulumi.Input[str]] = None,
+                 node_role_arn: Optional[pulumi.Input[str]] = None,
+                 release_version: Optional[pulumi.Input[str]] = None,
+                 remote_access: Optional[pulumi.Input[pulumi.InputType['NodeGroupRemoteAccessArgs']]] = None,
+                 scaling_config: Optional[pulumi.Input[pulumi.InputType['NodeGroupScalingConfigArgs']]] = None,
+                 subnet_ids: Optional[pulumi.Input[Sequence[pulumi.Input[str]]]] = None,
+                 tags: Optional[pulumi.Input[Mapping[str, pulumi.Input[str]]]] = None,
+                 version: Optional[pulumi.Input[str]] = None,
+                 __props__=None,
+                 __name__=None,
+                 __opts__=None):
         """
         Manages an EKS Node Group, which can provision and optionally update an Auto Scaling Group of Kubernetes worker nodes compatible with EKS. Additional documentation about this functionality can be found in the [EKS User Guide](https://docs.aws.amazon.com/eks/latest/userguide/managed-node-groups.html).
 
@@ -104,12 +49,12 @@ class NodeGroup(pulumi.CustomResource):
             cluster_name=aws_eks_cluster["example"]["name"],
             node_role_arn=aws_iam_role["example"]["arn"],
             subnet_ids=[__item["id"] for __item in aws_subnet["example"]],
-            scaling_config={
-                "desiredSize": 1,
-                "max_size": 1,
-                "min_size": 1,
-            },
-            opts=ResourceOptions(depends_on=[
+            scaling_config=aws.eks.NodeGroupScalingConfigArgs(
+                desired_size=1,
+                max_size=1,
+                min_size=1,
+            ),
+            opts=pulumi.ResourceOptions(depends_on=[
                     aws_iam_role_policy_attachment["example-AmazonEKSWorkerNodePolicy"],
                     aws_iam_role_policy_attachment["example-AmazonEKS_CNI_Policy"],
                     aws_iam_role_policy_attachment["example-AmazonEC2ContainerRegistryReadOnly"],
@@ -124,9 +69,9 @@ class NodeGroup(pulumi.CustomResource):
         import pulumi_aws as aws
 
         # ... other configurations ...
-        example = aws.eks.NodeGroup("example", scaling_config={
-            "desiredSize": 2,
-        })
+        example = aws.eks.NodeGroup("example", scaling_config=aws.eks.NodeGroupScalingConfigArgs(
+            desired_size=2,
+        ))
         ```
         ### Example IAM Role for EKS Node Group
 
@@ -156,33 +101,32 @@ class NodeGroup(pulumi.CustomResource):
             role=example.name)
         ```
 
+        ## Import
+
+        EKS Node Groups can be imported using the `cluster_name` and `node_group_name` separated by a colon (`:`), e.g.
+
+        ```sh
+         $ pulumi import aws:eks/nodeGroup:NodeGroup my_node_group my_cluster:my_node_group
+        ```
+
         :param str resource_name: The name of the resource.
         :param pulumi.ResourceOptions opts: Options for the resource.
-        :param pulumi.Input[str] ami_type: Type of Amazon Machine Image (AMI) associated with the EKS Node Group. Defaults to `AL2_x86_64`. Valid values: `AL2_x86_64`, `AL2_x86_64_GPU`. This provider will only perform drift detection if a configuration value is provided.
+        :param pulumi.Input[str] ami_type: Type of Amazon Machine Image (AMI) associated with the EKS Node Group. Defaults to `AL2_x86_64`. Valid values: `AL2_x86_64`, `AL2_x86_64_GPU`, `AL2_ARM_64`. This provider will only perform drift detection if a configuration value is provided.
+        :param pulumi.Input[str] capacity_type: Type of capacity associated with the EKS Node Group. Valid values: `ON_DEMAND`, `SPOT`. This provider will only perform drift detection if a configuration value is provided.
         :param pulumi.Input[str] cluster_name: Name of the EKS Cluster.
-        :param pulumi.Input[float] disk_size: Disk size in GiB for worker nodes. Defaults to `20`. This provider will only perform drift detection if a configuration value is provided.
+        :param pulumi.Input[int] disk_size: Disk size in GiB for worker nodes. Defaults to `20`. This provider will only perform drift detection if a configuration value is provided.
         :param pulumi.Input[bool] force_update_version: Force version update if existing pods are unable to be drained due to a pod disruption budget issue.
-        :param pulumi.Input[str] instance_types: Set of instance types associated with the EKS Node Group. Defaults to `["t3.medium"]`. This provider will only perform drift detection if a configuration value is provided. Currently, the EKS API only accepts a single value in the set.
-        :param pulumi.Input[dict] labels: Key-value map of Kubernetes labels. Only labels that are applied with the EKS API are managed by this argument. Other Kubernetes labels applied to the EKS Node Group will not be managed.
+        :param pulumi.Input[Sequence[pulumi.Input[str]]] instance_types: List of instance types associated with the EKS Node Group. Defaults to `["t3.medium"]`. This provider will only perform drift detection if a configuration value is provided.
+        :param pulumi.Input[Mapping[str, pulumi.Input[str]]] labels: Key-value map of Kubernetes labels. Only labels that are applied with the EKS API are managed by this argument. Other Kubernetes labels applied to the EKS Node Group will not be managed.
+        :param pulumi.Input[pulumi.InputType['NodeGroupLaunchTemplateArgs']] launch_template: Configuration block with Launch Template settings. Detailed below.
         :param pulumi.Input[str] node_group_name: Name of the EKS Node Group.
         :param pulumi.Input[str] node_role_arn: Amazon Resource Name (ARN) of the IAM Role that provides permissions for the EKS Node Group.
         :param pulumi.Input[str] release_version: AMI version of the EKS Node Group. Defaults to latest version for Kubernetes version.
-        :param pulumi.Input[dict] remote_access: Configuration block with remote access settings. Detailed below.
-        :param pulumi.Input[dict] scaling_config: Configuration block with scaling settings. Detailed below.
-        :param pulumi.Input[list] subnet_ids: Identifiers of EC2 Subnets to associate with the EKS Node Group. These subnets must have the following resource tag: `kubernetes.io/cluster/CLUSTER_NAME` (where `CLUSTER_NAME` is replaced with the name of the EKS Cluster).
-        :param pulumi.Input[dict] tags: Key-value mapping of resource tags.
-        :param pulumi.Input[str] version: Kubernetes version. Defaults to EKS Cluster Kubernetes version. This provider will only perform drift detection if a configuration value is provided.
-
-        The **remote_access** object supports the following:
-
-          * `ec2SshKey` (`pulumi.Input[str]`) - EC2 Key Pair name that provides access for SSH communication with the worker nodes in the EKS Node Group. If you specify this configuration, but do not specify `source_security_group_ids` when you create an EKS Node Group, port 22 on the worker nodes is opened to the Internet (0.0.0.0/0).
-          * `sourceSecurityGroupIds` (`pulumi.Input[list]`) - Set of EC2 Security Group IDs to allow SSH access (port 22) from on the worker nodes. If you specify `ec2_ssh_key`, but do not specify this configuration when you create an EKS Node Group, port 22 on the worker nodes is opened to the Internet (0.0.0.0/0).
-
-        The **scaling_config** object supports the following:
-
-          * `desiredSize` (`pulumi.Input[float]`) - Desired number of worker nodes.
-          * `max_size` (`pulumi.Input[float]`) - Maximum number of worker nodes.
-          * `min_size` (`pulumi.Input[float]`) - Minimum number of worker nodes.
+        :param pulumi.Input[pulumi.InputType['NodeGroupRemoteAccessArgs']] remote_access: Configuration block with remote access settings. Detailed below.
+        :param pulumi.Input[pulumi.InputType['NodeGroupScalingConfigArgs']] scaling_config: Configuration block with scaling settings. Detailed below.
+        :param pulumi.Input[Sequence[pulumi.Input[str]]] subnet_ids: Identifiers of EC2 Subnets to associate with the EKS Node Group. These subnets must have the following resource tag: `kubernetes.io/cluster/CLUSTER_NAME` (where `CLUSTER_NAME` is replaced with the name of the EKS Cluster).
+        :param pulumi.Input[Mapping[str, pulumi.Input[str]]] tags: Key-value mapping of resource tags.
+        :param pulumi.Input[str] version: EC2 Launch Template version number. While the API accepts values like `$Default` and `$Latest`, the API will convert the value to the associated version number (e.g. `1`) on read and This provider will show a difference on next plan. Using the `default_version` or `latest_version` attribute of the `ec2.LaunchTemplate` resource or data source is recommended for this argument.
         """
         if __name__ is not None:
             warnings.warn("explicit use of __name__ is deprecated", DeprecationWarning)
@@ -195,30 +139,32 @@ class NodeGroup(pulumi.CustomResource):
         if not isinstance(opts, pulumi.ResourceOptions):
             raise TypeError('Expected resource options to be a ResourceOptions instance')
         if opts.version is None:
-            opts.version = utilities.get_version()
+            opts.version = _utilities.get_version()
         if opts.id is None:
             if __props__ is not None:
                 raise TypeError('__props__ is only valid when passed in combination with a valid opts.id to get an existing resource')
             __props__ = dict()
 
             __props__['ami_type'] = ami_type
-            if cluster_name is None:
+            __props__['capacity_type'] = capacity_type
+            if cluster_name is None and not opts.urn:
                 raise TypeError("Missing required property 'cluster_name'")
             __props__['cluster_name'] = cluster_name
             __props__['disk_size'] = disk_size
             __props__['force_update_version'] = force_update_version
             __props__['instance_types'] = instance_types
             __props__['labels'] = labels
+            __props__['launch_template'] = launch_template
             __props__['node_group_name'] = node_group_name
-            if node_role_arn is None:
+            if node_role_arn is None and not opts.urn:
                 raise TypeError("Missing required property 'node_role_arn'")
             __props__['node_role_arn'] = node_role_arn
             __props__['release_version'] = release_version
             __props__['remote_access'] = remote_access
-            if scaling_config is None:
+            if scaling_config is None and not opts.urn:
                 raise TypeError("Missing required property 'scaling_config'")
             __props__['scaling_config'] = scaling_config
-            if subnet_ids is None:
+            if subnet_ids is None and not opts.urn:
                 raise TypeError("Missing required property 'subnet_ids'")
             __props__['subnet_ids'] = subnet_ids
             __props__['tags'] = tags
@@ -233,49 +179,54 @@ class NodeGroup(pulumi.CustomResource):
             opts)
 
     @staticmethod
-    def get(resource_name, id, opts=None, ami_type=None, arn=None, cluster_name=None, disk_size=None, force_update_version=None, instance_types=None, labels=None, node_group_name=None, node_role_arn=None, release_version=None, remote_access=None, resources=None, scaling_config=None, status=None, subnet_ids=None, tags=None, version=None):
+    def get(resource_name: str,
+            id: pulumi.Input[str],
+            opts: Optional[pulumi.ResourceOptions] = None,
+            ami_type: Optional[pulumi.Input[str]] = None,
+            arn: Optional[pulumi.Input[str]] = None,
+            capacity_type: Optional[pulumi.Input[str]] = None,
+            cluster_name: Optional[pulumi.Input[str]] = None,
+            disk_size: Optional[pulumi.Input[int]] = None,
+            force_update_version: Optional[pulumi.Input[bool]] = None,
+            instance_types: Optional[pulumi.Input[Sequence[pulumi.Input[str]]]] = None,
+            labels: Optional[pulumi.Input[Mapping[str, pulumi.Input[str]]]] = None,
+            launch_template: Optional[pulumi.Input[pulumi.InputType['NodeGroupLaunchTemplateArgs']]] = None,
+            node_group_name: Optional[pulumi.Input[str]] = None,
+            node_role_arn: Optional[pulumi.Input[str]] = None,
+            release_version: Optional[pulumi.Input[str]] = None,
+            remote_access: Optional[pulumi.Input[pulumi.InputType['NodeGroupRemoteAccessArgs']]] = None,
+            resources: Optional[pulumi.Input[Sequence[pulumi.Input[pulumi.InputType['NodeGroupResourceArgs']]]]] = None,
+            scaling_config: Optional[pulumi.Input[pulumi.InputType['NodeGroupScalingConfigArgs']]] = None,
+            status: Optional[pulumi.Input[str]] = None,
+            subnet_ids: Optional[pulumi.Input[Sequence[pulumi.Input[str]]]] = None,
+            tags: Optional[pulumi.Input[Mapping[str, pulumi.Input[str]]]] = None,
+            version: Optional[pulumi.Input[str]] = None) -> 'NodeGroup':
         """
         Get an existing NodeGroup resource's state with the given name, id, and optional extra
         properties used to qualify the lookup.
 
         :param str resource_name: The unique name of the resulting resource.
-        :param str id: The unique provider ID of the resource to lookup.
+        :param pulumi.Input[str] id: The unique provider ID of the resource to lookup.
         :param pulumi.ResourceOptions opts: Options for the resource.
-        :param pulumi.Input[str] ami_type: Type of Amazon Machine Image (AMI) associated with the EKS Node Group. Defaults to `AL2_x86_64`. Valid values: `AL2_x86_64`, `AL2_x86_64_GPU`. This provider will only perform drift detection if a configuration value is provided.
+        :param pulumi.Input[str] ami_type: Type of Amazon Machine Image (AMI) associated with the EKS Node Group. Defaults to `AL2_x86_64`. Valid values: `AL2_x86_64`, `AL2_x86_64_GPU`, `AL2_ARM_64`. This provider will only perform drift detection if a configuration value is provided.
         :param pulumi.Input[str] arn: Amazon Resource Name (ARN) of the EKS Node Group.
+        :param pulumi.Input[str] capacity_type: Type of capacity associated with the EKS Node Group. Valid values: `ON_DEMAND`, `SPOT`. This provider will only perform drift detection if a configuration value is provided.
         :param pulumi.Input[str] cluster_name: Name of the EKS Cluster.
-        :param pulumi.Input[float] disk_size: Disk size in GiB for worker nodes. Defaults to `20`. This provider will only perform drift detection if a configuration value is provided.
+        :param pulumi.Input[int] disk_size: Disk size in GiB for worker nodes. Defaults to `20`. This provider will only perform drift detection if a configuration value is provided.
         :param pulumi.Input[bool] force_update_version: Force version update if existing pods are unable to be drained due to a pod disruption budget issue.
-        :param pulumi.Input[str] instance_types: Set of instance types associated with the EKS Node Group. Defaults to `["t3.medium"]`. This provider will only perform drift detection if a configuration value is provided. Currently, the EKS API only accepts a single value in the set.
-        :param pulumi.Input[dict] labels: Key-value map of Kubernetes labels. Only labels that are applied with the EKS API are managed by this argument. Other Kubernetes labels applied to the EKS Node Group will not be managed.
+        :param pulumi.Input[Sequence[pulumi.Input[str]]] instance_types: List of instance types associated with the EKS Node Group. Defaults to `["t3.medium"]`. This provider will only perform drift detection if a configuration value is provided.
+        :param pulumi.Input[Mapping[str, pulumi.Input[str]]] labels: Key-value map of Kubernetes labels. Only labels that are applied with the EKS API are managed by this argument. Other Kubernetes labels applied to the EKS Node Group will not be managed.
+        :param pulumi.Input[pulumi.InputType['NodeGroupLaunchTemplateArgs']] launch_template: Configuration block with Launch Template settings. Detailed below.
         :param pulumi.Input[str] node_group_name: Name of the EKS Node Group.
         :param pulumi.Input[str] node_role_arn: Amazon Resource Name (ARN) of the IAM Role that provides permissions for the EKS Node Group.
         :param pulumi.Input[str] release_version: AMI version of the EKS Node Group. Defaults to latest version for Kubernetes version.
-        :param pulumi.Input[dict] remote_access: Configuration block with remote access settings. Detailed below.
-        :param pulumi.Input[list] resources: List of objects containing information about underlying resources.
-        :param pulumi.Input[dict] scaling_config: Configuration block with scaling settings. Detailed below.
+        :param pulumi.Input[pulumi.InputType['NodeGroupRemoteAccessArgs']] remote_access: Configuration block with remote access settings. Detailed below.
+        :param pulumi.Input[Sequence[pulumi.Input[pulumi.InputType['NodeGroupResourceArgs']]]] resources: List of objects containing information about underlying resources.
+        :param pulumi.Input[pulumi.InputType['NodeGroupScalingConfigArgs']] scaling_config: Configuration block with scaling settings. Detailed below.
         :param pulumi.Input[str] status: Status of the EKS Node Group.
-        :param pulumi.Input[list] subnet_ids: Identifiers of EC2 Subnets to associate with the EKS Node Group. These subnets must have the following resource tag: `kubernetes.io/cluster/CLUSTER_NAME` (where `CLUSTER_NAME` is replaced with the name of the EKS Cluster).
-        :param pulumi.Input[dict] tags: Key-value mapping of resource tags.
-        :param pulumi.Input[str] version: Kubernetes version. Defaults to EKS Cluster Kubernetes version. This provider will only perform drift detection if a configuration value is provided.
-
-        The **remote_access** object supports the following:
-
-          * `ec2SshKey` (`pulumi.Input[str]`) - EC2 Key Pair name that provides access for SSH communication with the worker nodes in the EKS Node Group. If you specify this configuration, but do not specify `source_security_group_ids` when you create an EKS Node Group, port 22 on the worker nodes is opened to the Internet (0.0.0.0/0).
-          * `sourceSecurityGroupIds` (`pulumi.Input[list]`) - Set of EC2 Security Group IDs to allow SSH access (port 22) from on the worker nodes. If you specify `ec2_ssh_key`, but do not specify this configuration when you create an EKS Node Group, port 22 on the worker nodes is opened to the Internet (0.0.0.0/0).
-
-        The **resources** object supports the following:
-
-          * `autoscaling_groups` (`pulumi.Input[list]`) - List of objects containing information about AutoScaling Groups.
-            * `name` (`pulumi.Input[str]`) - Name of the AutoScaling Group.
-
-          * `remoteAccessSecurityGroupId` (`pulumi.Input[str]`) - Identifier of the remote access EC2 Security Group.
-
-        The **scaling_config** object supports the following:
-
-          * `desiredSize` (`pulumi.Input[float]`) - Desired number of worker nodes.
-          * `max_size` (`pulumi.Input[float]`) - Maximum number of worker nodes.
-          * `min_size` (`pulumi.Input[float]`) - Minimum number of worker nodes.
+        :param pulumi.Input[Sequence[pulumi.Input[str]]] subnet_ids: Identifiers of EC2 Subnets to associate with the EKS Node Group. These subnets must have the following resource tag: `kubernetes.io/cluster/CLUSTER_NAME` (where `CLUSTER_NAME` is replaced with the name of the EKS Cluster).
+        :param pulumi.Input[Mapping[str, pulumi.Input[str]]] tags: Key-value mapping of resource tags.
+        :param pulumi.Input[str] version: EC2 Launch Template version number. While the API accepts values like `$Default` and `$Latest`, the API will convert the value to the associated version number (e.g. `1`) on read and This provider will show a difference on next plan. Using the `default_version` or `latest_version` attribute of the `ec2.LaunchTemplate` resource or data source is recommended for this argument.
         """
         opts = pulumi.ResourceOptions.merge(opts, pulumi.ResourceOptions(id=id))
 
@@ -283,11 +234,13 @@ class NodeGroup(pulumi.CustomResource):
 
         __props__["ami_type"] = ami_type
         __props__["arn"] = arn
+        __props__["capacity_type"] = capacity_type
         __props__["cluster_name"] = cluster_name
         __props__["disk_size"] = disk_size
         __props__["force_update_version"] = force_update_version
         __props__["instance_types"] = instance_types
         __props__["labels"] = labels
+        __props__["launch_template"] = launch_template
         __props__["node_group_name"] = node_group_name
         __props__["node_role_arn"] = node_role_arn
         __props__["release_version"] = release_version
@@ -300,8 +253,161 @@ class NodeGroup(pulumi.CustomResource):
         __props__["version"] = version
         return NodeGroup(resource_name, opts=opts, __props__=__props__)
 
+    @property
+    @pulumi.getter(name="amiType")
+    def ami_type(self) -> pulumi.Output[str]:
+        """
+        Type of Amazon Machine Image (AMI) associated with the EKS Node Group. Defaults to `AL2_x86_64`. Valid values: `AL2_x86_64`, `AL2_x86_64_GPU`, `AL2_ARM_64`. This provider will only perform drift detection if a configuration value is provided.
+        """
+        return pulumi.get(self, "ami_type")
+
+    @property
+    @pulumi.getter
+    def arn(self) -> pulumi.Output[str]:
+        """
+        Amazon Resource Name (ARN) of the EKS Node Group.
+        """
+        return pulumi.get(self, "arn")
+
+    @property
+    @pulumi.getter(name="capacityType")
+    def capacity_type(self) -> pulumi.Output[str]:
+        """
+        Type of capacity associated with the EKS Node Group. Valid values: `ON_DEMAND`, `SPOT`. This provider will only perform drift detection if a configuration value is provided.
+        """
+        return pulumi.get(self, "capacity_type")
+
+    @property
+    @pulumi.getter(name="clusterName")
+    def cluster_name(self) -> pulumi.Output[str]:
+        """
+        Name of the EKS Cluster.
+        """
+        return pulumi.get(self, "cluster_name")
+
+    @property
+    @pulumi.getter(name="diskSize")
+    def disk_size(self) -> pulumi.Output[int]:
+        """
+        Disk size in GiB for worker nodes. Defaults to `20`. This provider will only perform drift detection if a configuration value is provided.
+        """
+        return pulumi.get(self, "disk_size")
+
+    @property
+    @pulumi.getter(name="forceUpdateVersion")
+    def force_update_version(self) -> pulumi.Output[Optional[bool]]:
+        """
+        Force version update if existing pods are unable to be drained due to a pod disruption budget issue.
+        """
+        return pulumi.get(self, "force_update_version")
+
+    @property
+    @pulumi.getter(name="instanceTypes")
+    def instance_types(self) -> pulumi.Output[Sequence[str]]:
+        """
+        List of instance types associated with the EKS Node Group. Defaults to `["t3.medium"]`. This provider will only perform drift detection if a configuration value is provided.
+        """
+        return pulumi.get(self, "instance_types")
+
+    @property
+    @pulumi.getter
+    def labels(self) -> pulumi.Output[Optional[Mapping[str, str]]]:
+        """
+        Key-value map of Kubernetes labels. Only labels that are applied with the EKS API are managed by this argument. Other Kubernetes labels applied to the EKS Node Group will not be managed.
+        """
+        return pulumi.get(self, "labels")
+
+    @property
+    @pulumi.getter(name="launchTemplate")
+    def launch_template(self) -> pulumi.Output[Optional['outputs.NodeGroupLaunchTemplate']]:
+        """
+        Configuration block with Launch Template settings. Detailed below.
+        """
+        return pulumi.get(self, "launch_template")
+
+    @property
+    @pulumi.getter(name="nodeGroupName")
+    def node_group_name(self) -> pulumi.Output[str]:
+        """
+        Name of the EKS Node Group.
+        """
+        return pulumi.get(self, "node_group_name")
+
+    @property
+    @pulumi.getter(name="nodeRoleArn")
+    def node_role_arn(self) -> pulumi.Output[str]:
+        """
+        Amazon Resource Name (ARN) of the IAM Role that provides permissions for the EKS Node Group.
+        """
+        return pulumi.get(self, "node_role_arn")
+
+    @property
+    @pulumi.getter(name="releaseVersion")
+    def release_version(self) -> pulumi.Output[str]:
+        """
+        AMI version of the EKS Node Group. Defaults to latest version for Kubernetes version.
+        """
+        return pulumi.get(self, "release_version")
+
+    @property
+    @pulumi.getter(name="remoteAccess")
+    def remote_access(self) -> pulumi.Output[Optional['outputs.NodeGroupRemoteAccess']]:
+        """
+        Configuration block with remote access settings. Detailed below.
+        """
+        return pulumi.get(self, "remote_access")
+
+    @property
+    @pulumi.getter
+    def resources(self) -> pulumi.Output[Sequence['outputs.NodeGroupResource']]:
+        """
+        List of objects containing information about underlying resources.
+        """
+        return pulumi.get(self, "resources")
+
+    @property
+    @pulumi.getter(name="scalingConfig")
+    def scaling_config(self) -> pulumi.Output['outputs.NodeGroupScalingConfig']:
+        """
+        Configuration block with scaling settings. Detailed below.
+        """
+        return pulumi.get(self, "scaling_config")
+
+    @property
+    @pulumi.getter
+    def status(self) -> pulumi.Output[str]:
+        """
+        Status of the EKS Node Group.
+        """
+        return pulumi.get(self, "status")
+
+    @property
+    @pulumi.getter(name="subnetIds")
+    def subnet_ids(self) -> pulumi.Output[Sequence[str]]:
+        """
+        Identifiers of EC2 Subnets to associate with the EKS Node Group. These subnets must have the following resource tag: `kubernetes.io/cluster/CLUSTER_NAME` (where `CLUSTER_NAME` is replaced with the name of the EKS Cluster).
+        """
+        return pulumi.get(self, "subnet_ids")
+
+    @property
+    @pulumi.getter
+    def tags(self) -> pulumi.Output[Optional[Mapping[str, str]]]:
+        """
+        Key-value mapping of resource tags.
+        """
+        return pulumi.get(self, "tags")
+
+    @property
+    @pulumi.getter
+    def version(self) -> pulumi.Output[str]:
+        """
+        EC2 Launch Template version number. While the API accepts values like `$Default` and `$Latest`, the API will convert the value to the associated version number (e.g. `1`) on read and This provider will show a difference on next plan. Using the `default_version` or `latest_version` attribute of the `ec2.LaunchTemplate` resource or data source is recommended for this argument.
+        """
+        return pulumi.get(self, "version")
+
     def translate_output_property(self, prop):
-        return tables._CAMEL_TO_SNAKE_CASE_TABLE.get(prop) or prop
+        return _tables.CAMEL_TO_SNAKE_CASE_TABLE.get(prop) or prop
 
     def translate_input_property(self, prop):
-        return tables._SNAKE_TO_CAMEL_CASE_TABLE.get(prop) or prop
+        return _tables.SNAKE_TO_CAMEL_CASE_TABLE.get(prop) or prop
+

@@ -13,8 +13,7 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const testRole = new aws.iam.Role("test_role", {
- *     assumeRolePolicy: `  {
+ * const testRole = new aws.iam.Role("testRole", {assumeRolePolicy: `  {
  *     "Version": "2012-10-17",
  *     "Statement": {
  *       "Effect": "Allow",
@@ -22,17 +21,26 @@ import * as utilities from "../utilities";
  *       "Action": "sts:AssumeRole"
  *     }
  *   }
- * `,
- * });
- * const testAttach = new aws.iam.RolePolicyAttachment("test_attach", {
- *     policyArn: "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore",
+ * `});
+ * const testAttach = new aws.iam.RolePolicyAttachment("testAttach", {
  *     role: testRole.name,
+ *     policyArn: "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore",
  * });
  * const foo = new aws.ssm.Activation("foo", {
  *     description: "Test",
  *     iamRole: testRole.id,
- *     registrationLimit: 5,
- * }, { dependsOn: [testAttach] });
+ *     registrationLimit: "5",
+ * }, {
+ *     dependsOn: [testAttach],
+ * });
+ * ```
+ *
+ * ## Import
+ *
+ * AWS SSM Activation can be imported using the `id`, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:ssm/activation:Activation example e488f2f6-e686-4afb-8a04-ef6dfEXAMPLE
  * ```
  */
 export class Activation extends pulumi.CustomResource {
@@ -123,7 +131,7 @@ export class Activation extends pulumi.CustomResource {
             inputs["tags"] = state ? state.tags : undefined;
         } else {
             const args = argsOrState as ActivationArgs | undefined;
-            if (!args || args.iamRole === undefined) {
+            if ((!args || args.iamRole === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'iamRole'");
             }
             inputs["description"] = args ? args.description : undefined;

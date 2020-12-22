@@ -12,8 +12,55 @@ namespace Pulumi.Aws.Workspaces
     /// <summary>
     /// Provides a workspace in [AWS Workspaces](https://docs.aws.amazon.com/workspaces/latest/adminguide/amazon-workspaces.html) Service
     /// 
-    /// &gt; **NOTE:** During deletion of an `aws.workspaces.Workspace` resource, the service role `workspaces_DefaultRole` must be attached to the
-    /// policy `arn:aws:iam::aws:policy/AmazonWorkSpacesServiceAccess`, or it will leak the ENI that the Workspaces service creates for the Workspace.
+    /// &gt; **NOTE:** AWS WorkSpaces service requires [`workspaces_DefaultRole`](https://docs.aws.amazon.com/workspaces/latest/adminguide/workspaces-access-control.html#create-default-role) IAM role to operate normally.
+    /// 
+    /// ## Example Usage
+    /// 
+    /// ```csharp
+    /// using Pulumi;
+    /// using Aws = Pulumi.Aws;
+    /// 
+    /// class MyStack : Stack
+    /// {
+    ///     public MyStack()
+    ///     {
+    ///         var valueWindows10 = Output.Create(Aws.Workspaces.GetBundle.InvokeAsync(new Aws.Workspaces.GetBundleArgs
+    ///         {
+    ///             BundleId = "wsb-bh8rsxt14",
+    ///         }));
+    ///         var example = new Aws.Workspaces.Workspace("example", new Aws.Workspaces.WorkspaceArgs
+    ///         {
+    ///             DirectoryId = aws_workspaces_directory.Example.Id,
+    ///             BundleId = valueWindows10.Apply(valueWindows10 =&gt; valueWindows10.Id),
+    ///             UserName = "john.doe",
+    ///             RootVolumeEncryptionEnabled = true,
+    ///             UserVolumeEncryptionEnabled = true,
+    ///             VolumeEncryptionKey = "alias/aws/workspaces",
+    ///             WorkspaceProperties = new Aws.Workspaces.Inputs.WorkspaceWorkspacePropertiesArgs
+    ///             {
+    ///                 ComputeTypeName = "VALUE",
+    ///                 UserVolumeSizeGib = 10,
+    ///                 RootVolumeSizeGib = 80,
+    ///                 RunningMode = "AUTO_STOP",
+    ///                 RunningModeAutoStopTimeoutInMinutes = 60,
+    ///             },
+    ///             Tags = 
+    ///             {
+    ///                 { "Department", "IT" },
+    ///             },
+    ///         });
+    ///     }
+    /// 
+    /// }
+    /// ```
+    /// 
+    /// ## Import
+    /// 
+    /// Workspaces can be imported using their ID, e.g.
+    /// 
+    /// ```sh
+    ///  $ pulumi import aws:workspaces/workspace:Workspace example ws-9z9zmbkhv
+    /// ```
     /// </summary>
     public partial class Workspace : Pulumi.CustomResource
     {

@@ -4,6 +4,7 @@
 package apigatewayv2
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -20,14 +21,14 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/apigatewayv2"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/apigatewayv2"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
 // func main() {
 // 	pulumi.Run(func(ctx *pulumi.Context) error {
 // 		_, err := apigatewayv2.NewStage(ctx, "example", &apigatewayv2.StageArgs{
-// 			ApiId: pulumi.String(aws_apigatewayv2_api.Example.Id),
+// 			ApiId: pulumi.Any(aws_apigatewayv2_api.Example.Id),
 // 		})
 // 		if err != nil {
 // 			return err
@@ -35,6 +36,14 @@ import (
 // 		return nil
 // 	})
 // }
+// ```
+//
+// ## Import
+//
+// `aws_apigatewayv2_stage` can be imported by using the API identifier and stage name, e.g.
+//
+// ```sh
+//  $ pulumi import aws:apigatewayv2/stage:Stage example aabbccddee/example-stage
 // ```
 type Stage struct {
 	pulumi.CustomResourceState
@@ -53,19 +62,18 @@ type Stage struct {
 	ClientCertificateId pulumi.StringPtrOutput `pulumi:"clientCertificateId"`
 	// The default route settings for the stage.
 	DefaultRouteSettings StageDefaultRouteSettingsPtrOutput `pulumi:"defaultRouteSettings"`
-	// The deployment identifier of the stage. Use the `apigatewayv2.Deployment` resource to configure a deployment.
-	DeploymentId pulumi.StringPtrOutput `pulumi:"deploymentId"`
-	// The description for the stage.
+	// The deployment identifier of the stage. Use the [`apigatewayv2.Deployment`](https://www.terraform.io/docs/providers/aws/r/apigatewayv2_deployment.html) resource to configure a deployment.
+	DeploymentId pulumi.StringOutput `pulumi:"deploymentId"`
+	// The description for the stage. Must be less than or equal to 1024 characters in length.
 	Description pulumi.StringPtrOutput `pulumi:"description"`
-	// The ARN prefix to be used in an `lambda.Permission`'s `sourceArn` attribute
-	// or in an `iam.Policy` to authorize access to the [`@connections` API](https://docs.aws.amazon.com/apigateway/latest/developerguide/apigateway-how-to-call-websocket-api-connections.html).
+	// The ARN prefix to be used in an `lambda.Permission` `sourceArn` attribute.
+	// For WebSocket APIs this attribute can additionally be used in an `iam.Policy` to authorize access to the [`@connections` API](https://docs.aws.amazon.com/apigateway/latest/developerguide/apigateway-how-to-call-websocket-api-connections.html).
 	// See the [Amazon API Gateway Developer Guide](https://docs.aws.amazon.com/apigateway/latest/developerguide/apigateway-websocket-control-access-iam.html) for details.
-	// Set only for WebSocket APIs.
 	ExecutionArn pulumi.StringOutput `pulumi:"executionArn"`
 	// The URL to invoke the API pointing to the stage,
 	// e.g. `wss://z4675bid1j.execute-api.eu-west-2.amazonaws.com/example-stage`, or `https://z4675bid1j.execute-api.eu-west-2.amazonaws.com/`
 	InvokeUrl pulumi.StringOutput `pulumi:"invokeUrl"`
-	// The name of the stage.
+	// The name of the stage. Must be between 1 and 128 characters in length.
 	Name pulumi.StringOutput `pulumi:"name"`
 	// Route settings for the stage.
 	RouteSettings StageRouteSettingArrayOutput `pulumi:"routeSettings"`
@@ -78,11 +86,12 @@ type Stage struct {
 // NewStage registers a new resource with the given unique name, arguments, and options.
 func NewStage(ctx *pulumi.Context,
 	name string, args *StageArgs, opts ...pulumi.ResourceOption) (*Stage, error) {
-	if args == nil || args.ApiId == nil {
-		return nil, errors.New("missing required argument 'ApiId'")
-	}
 	if args == nil {
-		args = &StageArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.ApiId == nil {
+		return nil, errors.New("invalid value for required argument 'ApiId'")
 	}
 	var resource Stage
 	err := ctx.RegisterResource("aws:apigatewayv2/stage:Stage", name, args, &resource, opts...)
@@ -120,19 +129,18 @@ type stageState struct {
 	ClientCertificateId *string `pulumi:"clientCertificateId"`
 	// The default route settings for the stage.
 	DefaultRouteSettings *StageDefaultRouteSettings `pulumi:"defaultRouteSettings"`
-	// The deployment identifier of the stage. Use the `apigatewayv2.Deployment` resource to configure a deployment.
+	// The deployment identifier of the stage. Use the [`apigatewayv2.Deployment`](https://www.terraform.io/docs/providers/aws/r/apigatewayv2_deployment.html) resource to configure a deployment.
 	DeploymentId *string `pulumi:"deploymentId"`
-	// The description for the stage.
+	// The description for the stage. Must be less than or equal to 1024 characters in length.
 	Description *string `pulumi:"description"`
-	// The ARN prefix to be used in an `lambda.Permission`'s `sourceArn` attribute
-	// or in an `iam.Policy` to authorize access to the [`@connections` API](https://docs.aws.amazon.com/apigateway/latest/developerguide/apigateway-how-to-call-websocket-api-connections.html).
+	// The ARN prefix to be used in an `lambda.Permission` `sourceArn` attribute.
+	// For WebSocket APIs this attribute can additionally be used in an `iam.Policy` to authorize access to the [`@connections` API](https://docs.aws.amazon.com/apigateway/latest/developerguide/apigateway-how-to-call-websocket-api-connections.html).
 	// See the [Amazon API Gateway Developer Guide](https://docs.aws.amazon.com/apigateway/latest/developerguide/apigateway-websocket-control-access-iam.html) for details.
-	// Set only for WebSocket APIs.
 	ExecutionArn *string `pulumi:"executionArn"`
 	// The URL to invoke the API pointing to the stage,
 	// e.g. `wss://z4675bid1j.execute-api.eu-west-2.amazonaws.com/example-stage`, or `https://z4675bid1j.execute-api.eu-west-2.amazonaws.com/`
 	InvokeUrl *string `pulumi:"invokeUrl"`
-	// The name of the stage.
+	// The name of the stage. Must be between 1 and 128 characters in length.
 	Name *string `pulumi:"name"`
 	// Route settings for the stage.
 	RouteSettings []StageRouteSetting `pulumi:"routeSettings"`
@@ -157,19 +165,18 @@ type StageState struct {
 	ClientCertificateId pulumi.StringPtrInput
 	// The default route settings for the stage.
 	DefaultRouteSettings StageDefaultRouteSettingsPtrInput
-	// The deployment identifier of the stage. Use the `apigatewayv2.Deployment` resource to configure a deployment.
+	// The deployment identifier of the stage. Use the [`apigatewayv2.Deployment`](https://www.terraform.io/docs/providers/aws/r/apigatewayv2_deployment.html) resource to configure a deployment.
 	DeploymentId pulumi.StringPtrInput
-	// The description for the stage.
+	// The description for the stage. Must be less than or equal to 1024 characters in length.
 	Description pulumi.StringPtrInput
-	// The ARN prefix to be used in an `lambda.Permission`'s `sourceArn` attribute
-	// or in an `iam.Policy` to authorize access to the [`@connections` API](https://docs.aws.amazon.com/apigateway/latest/developerguide/apigateway-how-to-call-websocket-api-connections.html).
+	// The ARN prefix to be used in an `lambda.Permission` `sourceArn` attribute.
+	// For WebSocket APIs this attribute can additionally be used in an `iam.Policy` to authorize access to the [`@connections` API](https://docs.aws.amazon.com/apigateway/latest/developerguide/apigateway-how-to-call-websocket-api-connections.html).
 	// See the [Amazon API Gateway Developer Guide](https://docs.aws.amazon.com/apigateway/latest/developerguide/apigateway-websocket-control-access-iam.html) for details.
-	// Set only for WebSocket APIs.
 	ExecutionArn pulumi.StringPtrInput
 	// The URL to invoke the API pointing to the stage,
 	// e.g. `wss://z4675bid1j.execute-api.eu-west-2.amazonaws.com/example-stage`, or `https://z4675bid1j.execute-api.eu-west-2.amazonaws.com/`
 	InvokeUrl pulumi.StringPtrInput
-	// The name of the stage.
+	// The name of the stage. Must be between 1 and 128 characters in length.
 	Name pulumi.StringPtrInput
 	// Route settings for the stage.
 	RouteSettings StageRouteSettingArrayInput
@@ -196,11 +203,11 @@ type stageArgs struct {
 	ClientCertificateId *string `pulumi:"clientCertificateId"`
 	// The default route settings for the stage.
 	DefaultRouteSettings *StageDefaultRouteSettings `pulumi:"defaultRouteSettings"`
-	// The deployment identifier of the stage. Use the `apigatewayv2.Deployment` resource to configure a deployment.
+	// The deployment identifier of the stage. Use the [`apigatewayv2.Deployment`](https://www.terraform.io/docs/providers/aws/r/apigatewayv2_deployment.html) resource to configure a deployment.
 	DeploymentId *string `pulumi:"deploymentId"`
-	// The description for the stage.
+	// The description for the stage. Must be less than or equal to 1024 characters in length.
 	Description *string `pulumi:"description"`
-	// The name of the stage.
+	// The name of the stage. Must be between 1 and 128 characters in length.
 	Name *string `pulumi:"name"`
 	// Route settings for the stage.
 	RouteSettings []StageRouteSetting `pulumi:"routeSettings"`
@@ -224,11 +231,11 @@ type StageArgs struct {
 	ClientCertificateId pulumi.StringPtrInput
 	// The default route settings for the stage.
 	DefaultRouteSettings StageDefaultRouteSettingsPtrInput
-	// The deployment identifier of the stage. Use the `apigatewayv2.Deployment` resource to configure a deployment.
+	// The deployment identifier of the stage. Use the [`apigatewayv2.Deployment`](https://www.terraform.io/docs/providers/aws/r/apigatewayv2_deployment.html) resource to configure a deployment.
 	DeploymentId pulumi.StringPtrInput
-	// The description for the stage.
+	// The description for the stage. Must be less than or equal to 1024 characters in length.
 	Description pulumi.StringPtrInput
-	// The name of the stage.
+	// The name of the stage. Must be between 1 and 128 characters in length.
 	Name pulumi.StringPtrInput
 	// Route settings for the stage.
 	RouteSettings StageRouteSettingArrayInput
@@ -240,4 +247,43 @@ type StageArgs struct {
 
 func (StageArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*stageArgs)(nil)).Elem()
+}
+
+type StageInput interface {
+	pulumi.Input
+
+	ToStageOutput() StageOutput
+	ToStageOutputWithContext(ctx context.Context) StageOutput
+}
+
+func (Stage) ElementType() reflect.Type {
+	return reflect.TypeOf((*Stage)(nil)).Elem()
+}
+
+func (i Stage) ToStageOutput() StageOutput {
+	return i.ToStageOutputWithContext(context.Background())
+}
+
+func (i Stage) ToStageOutputWithContext(ctx context.Context) StageOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(StageOutput)
+}
+
+type StageOutput struct {
+	*pulumi.OutputState
+}
+
+func (StageOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*StageOutput)(nil)).Elem()
+}
+
+func (o StageOutput) ToStageOutput() StageOutput {
+	return o
+}
+
+func (o StageOutput) ToStageOutputWithContext(ctx context.Context) StageOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(StageOutput{})
 }

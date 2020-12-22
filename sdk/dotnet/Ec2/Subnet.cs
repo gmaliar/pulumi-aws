@@ -27,12 +27,12 @@ namespace Pulumi.Aws.Ec2
     ///     {
     ///         var main = new Aws.Ec2.Subnet("main", new Aws.Ec2.SubnetArgs
     ///         {
+    ///             VpcId = aws_vpc.Main.Id,
     ///             CidrBlock = "10.0.1.0/24",
     ///             Tags = 
     ///             {
     ///                 { "Name", "Main" },
     ///             },
-    ///             VpcId = aws_vpc.Main.Id,
     ///         });
     ///     }
     /// 
@@ -53,17 +53,25 @@ namespace Pulumi.Aws.Ec2
     ///     {
     ///         var secondaryCidr = new Aws.Ec2.VpcIpv4CidrBlockAssociation("secondaryCidr", new Aws.Ec2.VpcIpv4CidrBlockAssociationArgs
     ///         {
-    ///             CidrBlock = "172.2.0.0/16",
     ///             VpcId = aws_vpc.Main.Id,
+    ///             CidrBlock = "172.2.0.0/16",
     ///         });
     ///         var inSecondaryCidr = new Aws.Ec2.Subnet("inSecondaryCidr", new Aws.Ec2.SubnetArgs
     ///         {
-    ///             CidrBlock = "172.2.0.0/24",
     ///             VpcId = secondaryCidr.VpcId,
+    ///             CidrBlock = "172.2.0.0/24",
     ///         });
     ///     }
     /// 
     /// }
+    /// ```
+    /// 
+    /// ## Import
+    /// 
+    /// Subnets can be imported using the `subnet id`, e.g.
+    /// 
+    /// ```sh
+    ///  $ pulumi import aws:ec2/subnet:Subnet public_subnet subnet-9d4a7b6c
     /// ```
     /// </summary>
     public partial class Subnet : Pulumi.CustomResource
@@ -105,7 +113,7 @@ namespace Pulumi.Aws.Ec2
         /// in CIDR notation. The subnet size must use a /64 prefix length.
         /// </summary>
         [Output("ipv6CidrBlock")]
-        public Output<string> Ipv6CidrBlock { get; private set; } = null!;
+        public Output<string?> Ipv6CidrBlock { get; private set; } = null!;
 
         /// <summary>
         /// The association ID for the IPv6 CIDR block.

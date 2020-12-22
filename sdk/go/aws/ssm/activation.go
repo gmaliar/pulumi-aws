@@ -4,6 +4,7 @@
 package ssm
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -20,22 +21,22 @@ import (
 // import (
 // 	"fmt"
 //
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/iam"
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/ssm"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/iam"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/ssm"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
 // func main() {
 // 	pulumi.Run(func(ctx *pulumi.Context) error {
 // 		testRole, err := iam.NewRole(ctx, "testRole", &iam.RoleArgs{
-// 			AssumeRolePolicy: pulumi.String(fmt.Sprintf("%v%v%v%v%v%v%v%v%v", "  {\n", "    \"Version\": \"2012-10-17\",\n", "    \"Statement\": {\n", "      \"Effect\": \"Allow\",\n", "      \"Principal\": {\"Service\": \"ssm.amazonaws.com\"},\n", "      \"Action\": \"sts:AssumeRole\"\n", "    }\n", "  }\n", "\n")),
+// 			AssumeRolePolicy: pulumi.String(fmt.Sprintf("%v%v%v%v%v%v%v%v", "  {\n", "    \"Version\": \"2012-10-17\",\n", "    \"Statement\": {\n", "      \"Effect\": \"Allow\",\n", "      \"Principal\": {\"Service\": \"ssm.amazonaws.com\"},\n", "      \"Action\": \"sts:AssumeRole\"\n", "    }\n", "  }\n")),
 // 		})
 // 		if err != nil {
 // 			return err
 // 		}
-// 		_, err = iam.NewRolePolicyAttachment(ctx, "testAttach", &iam.RolePolicyAttachmentArgs{
-// 			PolicyArn: pulumi.String("arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"),
+// 		testAttach, err := iam.NewRolePolicyAttachment(ctx, "testAttach", &iam.RolePolicyAttachmentArgs{
 // 			Role:      testRole.Name,
+// 			PolicyArn: pulumi.String("arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"),
 // 		})
 // 		if err != nil {
 // 			return err
@@ -45,7 +46,7 @@ import (
 // 			IamRole:           testRole.ID(),
 // 			RegistrationLimit: pulumi.Int(5),
 // 		}, pulumi.DependsOn([]pulumi.Resource{
-// 			"aws_iam_role_policy_attachment.test_attach",
+// 			testAttach,
 // 		}))
 // 		if err != nil {
 // 			return err
@@ -53,6 +54,14 @@ import (
 // 		return nil
 // 	})
 // }
+// ```
+//
+// ## Import
+//
+// AWS SSM Activation can be imported using the `id`, e.g.
+//
+// ```sh
+//  $ pulumi import aws:ssm/activation:Activation example e488f2f6-e686-4afb-8a04-ef6dfEXAMPLE
 // ```
 type Activation struct {
 	pulumi.CustomResourceState
@@ -80,11 +89,12 @@ type Activation struct {
 // NewActivation registers a new resource with the given unique name, arguments, and options.
 func NewActivation(ctx *pulumi.Context,
 	name string, args *ActivationArgs, opts ...pulumi.ResourceOption) (*Activation, error) {
-	if args == nil || args.IamRole == nil {
-		return nil, errors.New("missing required argument 'IamRole'")
-	}
 	if args == nil {
-		args = &ActivationArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.IamRole == nil {
+		return nil, errors.New("invalid value for required argument 'IamRole'")
 	}
 	var resource Activation
 	err := ctx.RegisterResource("aws:ssm/activation:Activation", name, args, &resource, opts...)
@@ -186,4 +196,43 @@ type ActivationArgs struct {
 
 func (ActivationArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*activationArgs)(nil)).Elem()
+}
+
+type ActivationInput interface {
+	pulumi.Input
+
+	ToActivationOutput() ActivationOutput
+	ToActivationOutputWithContext(ctx context.Context) ActivationOutput
+}
+
+func (Activation) ElementType() reflect.Type {
+	return reflect.TypeOf((*Activation)(nil)).Elem()
+}
+
+func (i Activation) ToActivationOutput() ActivationOutput {
+	return i.ToActivationOutputWithContext(context.Background())
+}
+
+func (i Activation) ToActivationOutputWithContext(ctx context.Context) ActivationOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(ActivationOutput)
+}
+
+type ActivationOutput struct {
+	*pulumi.OutputState
+}
+
+func (ActivationOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*ActivationOutput)(nil)).Elem()
+}
+
+func (o ActivationOutput) ToActivationOutput() ActivationOutput {
+	return o
+}
+
+func (o ActivationOutput) ToActivationOutputWithContext(ctx context.Context) ActivationOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(ActivationOutput{})
 }

@@ -34,6 +34,14 @@ import * as utilities from "../utilities";
  *     },
  * });
  * ```
+ *
+ * ## Import
+ *
+ * VPCs can be imported using the `vpc id`, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:ec2/vpc:Vpc test_vpc vpc-a01106c2
+ * ```
  */
 export class Vpc extends pulumi.CustomResource {
     /**
@@ -168,7 +176,7 @@ export class Vpc extends pulumi.CustomResource {
             inputs["tags"] = state ? state.tags : undefined;
         } else {
             const args = argsOrState as VpcArgs | undefined;
-            if (!args || args.cidrBlock === undefined) {
+            if ((!args || args.cidrBlock === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'cidrBlock'");
             }
             inputs["assignGeneratedIpv6CidrBlock"] = args ? args.assignGeneratedIpv6CidrBlock : undefined;

@@ -16,7 +16,7 @@ import * as utilities from "../utilities";
  * import * as aws from "@pulumi/aws";
  *
  * const lambdaLayer = new aws.lambda.LayerVersion("lambda_layer", {
- *     compatibleRuntimes: ["nodejs8.10"],
+ *     compatibleRuntimes: ["nodejs12.x"],
  *     code: new pulumi.asset.FileArchive("lambda_layer_payload.zip"),
  *     layerName: "lambda_layer_name",
  * });
@@ -32,6 +32,18 @@ import * as utilities from "../utilities";
  *
  * For larger deployment packages it is recommended by Amazon to upload via S3, since the S3 API has better support for uploading
  * large files efficiently.
+ *
+ * ## Import
+ *
+ * Lambda Layers can be imported using `arn`.
+ *
+ * ```sh
+ *  $ pulumi import aws:lambda/layerVersion:LayerVersion \
+ * ```
+ *
+ *  aws_lambda_layer_version.test_layer \
+ *
+ *  arn:aws:lambda:_REGION_:_ACCOUNT_ID_:layer:_LAYER_NAME_:_LAYER_VERSION_
  */
 export class LayerVersion extends pulumi.CustomResource {
     /**
@@ -106,6 +118,14 @@ export class LayerVersion extends pulumi.CustomResource {
      */
     public readonly s3ObjectVersion!: pulumi.Output<string | undefined>;
     /**
+     * The Amazon Resource Name (ARN) of a signing job.
+     */
+    public /*out*/ readonly signingJobArn!: pulumi.Output<string>;
+    /**
+     * The Amazon Resource Name (ARN) for a signing profile version.
+     */
+    public /*out*/ readonly signingProfileVersionArn!: pulumi.Output<string>;
+    /**
      * Used to trigger updates. Must be set to a base64-encoded SHA256 hash of the package file specified with either `filename` or `s3Key`. The usual way to set this is `${filebase64sha256("file.zip")}` (this provider 0.11.12 or later) or `${base64sha256(file("file.zip"))}` (this provider 0.11.11 and earlier), where "file.zip" is the local filename of the lambda layer source archive.
      */
     public readonly sourceCodeHash!: pulumi.Output<string>;
@@ -141,12 +161,14 @@ export class LayerVersion extends pulumi.CustomResource {
             inputs["s3Bucket"] = state ? state.s3Bucket : undefined;
             inputs["s3Key"] = state ? state.s3Key : undefined;
             inputs["s3ObjectVersion"] = state ? state.s3ObjectVersion : undefined;
+            inputs["signingJobArn"] = state ? state.signingJobArn : undefined;
+            inputs["signingProfileVersionArn"] = state ? state.signingProfileVersionArn : undefined;
             inputs["sourceCodeHash"] = state ? state.sourceCodeHash : undefined;
             inputs["sourceCodeSize"] = state ? state.sourceCodeSize : undefined;
             inputs["version"] = state ? state.version : undefined;
         } else {
             const args = argsOrState as LayerVersionArgs | undefined;
-            if (!args || args.layerName === undefined) {
+            if ((!args || args.layerName === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'layerName'");
             }
             inputs["code"] = args ? args.code : undefined;
@@ -161,6 +183,8 @@ export class LayerVersion extends pulumi.CustomResource {
             inputs["arn"] = undefined /*out*/;
             inputs["createdDate"] = undefined /*out*/;
             inputs["layerArn"] = undefined /*out*/;
+            inputs["signingJobArn"] = undefined /*out*/;
+            inputs["signingProfileVersionArn"] = undefined /*out*/;
             inputs["sourceCodeSize"] = undefined /*out*/;
             inputs["version"] = undefined /*out*/;
         }
@@ -223,6 +247,14 @@ export interface LayerVersionState {
      * The object version containing the function's deployment package. Conflicts with `filename`.
      */
     readonly s3ObjectVersion?: pulumi.Input<string>;
+    /**
+     * The Amazon Resource Name (ARN) of a signing job.
+     */
+    readonly signingJobArn?: pulumi.Input<string>;
+    /**
+     * The Amazon Resource Name (ARN) for a signing profile version.
+     */
+    readonly signingProfileVersionArn?: pulumi.Input<string>;
     /**
      * Used to trigger updates. Must be set to a base64-encoded SHA256 hash of the package file specified with either `filename` or `s3Key`. The usual way to set this is `${filebase64sha256("file.zip")}` (this provider 0.11.12 or later) or `${base64sha256(file("file.zip"))}` (this provider 0.11.11 and earlier), where "file.zip" is the local filename of the lambda layer source archive.
      */

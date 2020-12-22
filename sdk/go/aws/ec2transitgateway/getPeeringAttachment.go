@@ -16,7 +16,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/ec2transitgateway"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/ec2transitgateway"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -45,7 +45,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/ec2transitgateway"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/ec2transitgateway"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -85,7 +85,7 @@ type LookupPeeringAttachmentArgs struct {
 // A collection of values returned by getPeeringAttachment.
 type LookupPeeringAttachmentResult struct {
 	Filters []GetPeeringAttachmentFilter `pulumi:"filters"`
-	Id      *string                      `pulumi:"id"`
+	Id      string                       `pulumi:"id"`
 	// Identifier of the peer AWS account
 	PeerAccountId string `pulumi:"peerAccountId"`
 	// Identifier of the peer AWS region

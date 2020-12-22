@@ -4,6 +4,7 @@
 package elasticache
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -23,6 +24,84 @@ import (
 // servers reboots.
 //
 // ## Example Usage
+// ### Redis Cluster Mode Disabled
+//
+// To create a single shard primary with single read replica:
+//
+// ```go
+// package main
+//
+// import (
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/elasticache"
+// 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
+// )
+//
+// func main() {
+// 	pulumi.Run(func(ctx *pulumi.Context) error {
+// 		_, err := elasticache.NewReplicationGroup(ctx, "example", &elasticache.ReplicationGroupArgs{
+// 			AutomaticFailoverEnabled: pulumi.Bool(true),
+// 			AvailabilityZones: pulumi.StringArray{
+// 				pulumi.String("us-west-2a"),
+// 				pulumi.String("us-west-2b"),
+// 			},
+// 			NodeType:                    pulumi.String("cache.m4.large"),
+// 			NumberCacheClusters:         pulumi.Int(2),
+// 			ParameterGroupName:          pulumi.String("default.redis3.2"),
+// 			Port:                        pulumi.Int(6379),
+// 			ReplicationGroupDescription: pulumi.String("test description"),
+// 		})
+// 		if err != nil {
+// 			return err
+// 		}
+// 		return nil
+// 	})
+// }
+// ```
+//
+// You have two options for adjusting the number of replicas:
+//
+// * Adjusting `numberCacheClusters` directly. This will attempt to automatically add or remove replicas, but provides no granular control (e.g. preferred availability zone, cache cluster ID) for the added or removed replicas. This also currently expects cache cluster IDs in the form of `replication_group_id-00#`.
+// * Otherwise for fine grained control of the underlying cache clusters, they can be added or removed with the `elasticache.Cluster` resource and its `replicationGroupId` attribute. In this situation, you will need to utilize [`ignoreChanges`](https://www.pulumi.com/docs/intro/concepts/programming-model/#ignorechanges) to prevent perpetual differences with the `numberCacheCluster` attribute.
+//
+// ```go
+// package main
+//
+// import (
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/elasticache"
+// 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
+// )
+//
+// func main() {
+// 	pulumi.Run(func(ctx *pulumi.Context) error {
+// 		example, err := elasticache.NewReplicationGroup(ctx, "example", &elasticache.ReplicationGroupArgs{
+// 			AutomaticFailoverEnabled: pulumi.Bool(true),
+// 			AvailabilityZones: pulumi.StringArray{
+// 				pulumi.String("us-west-2a"),
+// 				pulumi.String("us-west-2b"),
+// 			},
+// 			ReplicationGroupDescription: pulumi.String("test description"),
+// 			NodeType:                    pulumi.String("cache.m4.large"),
+// 			NumberCacheClusters:         pulumi.Int(2),
+// 			ParameterGroupName:          pulumi.String("default.redis3.2"),
+// 			Port:                        pulumi.Int(6379),
+// 		})
+// 		if err != nil {
+// 			return err
+// 		}
+// 		var replica []*elasticache.Cluster
+// 		for key0, _ := range 1 == true {
+// 			__res, err := elasticache.NewCluster(ctx, fmt.Sprintf("replica-%v", key0), &elasticache.ClusterArgs{
+// 				ReplicationGroupId: example.ID(),
+// 			})
+// 			if err != nil {
+// 				return err
+// 			}
+// 			replica = append(replica, __res)
+// 		}
+// 		return nil
+// 	})
+// }
+// ```
 // ### Redis Cluster Mode Enabled
 //
 // To create two shards with a primary and a single read replica each:
@@ -31,7 +110,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/elasticache"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/elasticache"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -61,6 +140,14 @@ import (
 // > **Note:** Automatic Failover is unavailable for Redis versions earlier than 2.8.6,
 // and unavailable on T1 node types. For T2 node types, it is only available on Redis version 3.2.4 or later with cluster mode enabled. See the [High Availability Using Replication Groups](https://docs.aws.amazon.com/AmazonElastiCache/latest/red-ug/Replication.html) guide
 // for full details on using Replication Groups.
+//
+// ## Import
+//
+// ElastiCache Replication Groups can be imported using the `replication_group_id`, e.g.
+//
+// ```sh
+//  $ pulumi import aws:elasticache/replicationGroup:ReplicationGroup my_replication_group replication-group-1
+// ```
 type ReplicationGroup struct {
 	pulumi.CustomResourceState
 
@@ -124,14 +211,14 @@ type ReplicationGroup struct {
 	// retain automatic cache cluster snapshots before deleting them. For example, if you set
 	// SnapshotRetentionLimit to 5, then a snapshot that was taken today will be retained for 5 days
 	// before being deleted. If the value of SnapshotRetentionLimit is set to zero (0), backups are turned off.
-	// Please note that setting a `snapshotRetentionLimit` is not supported on cache.t1.micro or cache.t2.* cache nodes
+	// Please note that setting a `snapshotRetentionLimit` is not supported on cache.t1.micro cache nodes
 	SnapshotRetentionLimit pulumi.IntPtrOutput `pulumi:"snapshotRetentionLimit"`
 	// The daily time range (in UTC) during which ElastiCache will
 	// begin taking a daily snapshot of your cache cluster. The minimum snapshot window is a 60 minute period. Example: `05:00-09:00`
 	SnapshotWindow pulumi.StringOutput `pulumi:"snapshotWindow"`
 	// The name of the cache subnet group to be used for the replication group.
 	SubnetGroupName pulumi.StringOutput `pulumi:"subnetGroupName"`
-	// A map of tags to assign to the resource
+	// A map of tags to assign to the resource. Adding tags to this resource will add or overwrite any existing tags on the clusters in the replication group and not to the group itself.
 	Tags pulumi.StringMapOutput `pulumi:"tags"`
 	// Whether to enable encryption in transit.
 	TransitEncryptionEnabled pulumi.BoolPtrOutput `pulumi:"transitEncryptionEnabled"`
@@ -140,11 +227,12 @@ type ReplicationGroup struct {
 // NewReplicationGroup registers a new resource with the given unique name, arguments, and options.
 func NewReplicationGroup(ctx *pulumi.Context,
 	name string, args *ReplicationGroupArgs, opts ...pulumi.ResourceOption) (*ReplicationGroup, error) {
-	if args == nil || args.ReplicationGroupDescription == nil {
-		return nil, errors.New("missing required argument 'ReplicationGroupDescription'")
-	}
 	if args == nil {
-		args = &ReplicationGroupArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.ReplicationGroupDescription == nil {
+		return nil, errors.New("invalid value for required argument 'ReplicationGroupDescription'")
 	}
 	var resource ReplicationGroup
 	err := ctx.RegisterResource("aws:elasticache/replicationGroup:ReplicationGroup", name, args, &resource, opts...)
@@ -228,14 +316,14 @@ type replicationGroupState struct {
 	// retain automatic cache cluster snapshots before deleting them. For example, if you set
 	// SnapshotRetentionLimit to 5, then a snapshot that was taken today will be retained for 5 days
 	// before being deleted. If the value of SnapshotRetentionLimit is set to zero (0), backups are turned off.
-	// Please note that setting a `snapshotRetentionLimit` is not supported on cache.t1.micro or cache.t2.* cache nodes
+	// Please note that setting a `snapshotRetentionLimit` is not supported on cache.t1.micro cache nodes
 	SnapshotRetentionLimit *int `pulumi:"snapshotRetentionLimit"`
 	// The daily time range (in UTC) during which ElastiCache will
 	// begin taking a daily snapshot of your cache cluster. The minimum snapshot window is a 60 minute period. Example: `05:00-09:00`
 	SnapshotWindow *string `pulumi:"snapshotWindow"`
 	// The name of the cache subnet group to be used for the replication group.
 	SubnetGroupName *string `pulumi:"subnetGroupName"`
-	// A map of tags to assign to the resource
+	// A map of tags to assign to the resource. Adding tags to this resource will add or overwrite any existing tags on the clusters in the replication group and not to the group itself.
 	Tags map[string]string `pulumi:"tags"`
 	// Whether to enable encryption in transit.
 	TransitEncryptionEnabled *bool `pulumi:"transitEncryptionEnabled"`
@@ -302,14 +390,14 @@ type ReplicationGroupState struct {
 	// retain automatic cache cluster snapshots before deleting them. For example, if you set
 	// SnapshotRetentionLimit to 5, then a snapshot that was taken today will be retained for 5 days
 	// before being deleted. If the value of SnapshotRetentionLimit is set to zero (0), backups are turned off.
-	// Please note that setting a `snapshotRetentionLimit` is not supported on cache.t1.micro or cache.t2.* cache nodes
+	// Please note that setting a `snapshotRetentionLimit` is not supported on cache.t1.micro cache nodes
 	SnapshotRetentionLimit pulumi.IntPtrInput
 	// The daily time range (in UTC) during which ElastiCache will
 	// begin taking a daily snapshot of your cache cluster. The minimum snapshot window is a 60 minute period. Example: `05:00-09:00`
 	SnapshotWindow pulumi.StringPtrInput
 	// The name of the cache subnet group to be used for the replication group.
 	SubnetGroupName pulumi.StringPtrInput
-	// A map of tags to assign to the resource
+	// A map of tags to assign to the resource. Adding tags to this resource will add or overwrite any existing tags on the clusters in the replication group and not to the group itself.
 	Tags pulumi.StringMapInput
 	// Whether to enable encryption in transit.
 	TransitEncryptionEnabled pulumi.BoolPtrInput
@@ -374,14 +462,14 @@ type replicationGroupArgs struct {
 	// retain automatic cache cluster snapshots before deleting them. For example, if you set
 	// SnapshotRetentionLimit to 5, then a snapshot that was taken today will be retained for 5 days
 	// before being deleted. If the value of SnapshotRetentionLimit is set to zero (0), backups are turned off.
-	// Please note that setting a `snapshotRetentionLimit` is not supported on cache.t1.micro or cache.t2.* cache nodes
+	// Please note that setting a `snapshotRetentionLimit` is not supported on cache.t1.micro cache nodes
 	SnapshotRetentionLimit *int `pulumi:"snapshotRetentionLimit"`
 	// The daily time range (in UTC) during which ElastiCache will
 	// begin taking a daily snapshot of your cache cluster. The minimum snapshot window is a 60 minute period. Example: `05:00-09:00`
 	SnapshotWindow *string `pulumi:"snapshotWindow"`
 	// The name of the cache subnet group to be used for the replication group.
 	SubnetGroupName *string `pulumi:"subnetGroupName"`
-	// A map of tags to assign to the resource
+	// A map of tags to assign to the resource. Adding tags to this resource will add or overwrite any existing tags on the clusters in the replication group and not to the group itself.
 	Tags map[string]string `pulumi:"tags"`
 	// Whether to enable encryption in transit.
 	TransitEncryptionEnabled *bool `pulumi:"transitEncryptionEnabled"`
@@ -443,14 +531,14 @@ type ReplicationGroupArgs struct {
 	// retain automatic cache cluster snapshots before deleting them. For example, if you set
 	// SnapshotRetentionLimit to 5, then a snapshot that was taken today will be retained for 5 days
 	// before being deleted. If the value of SnapshotRetentionLimit is set to zero (0), backups are turned off.
-	// Please note that setting a `snapshotRetentionLimit` is not supported on cache.t1.micro or cache.t2.* cache nodes
+	// Please note that setting a `snapshotRetentionLimit` is not supported on cache.t1.micro cache nodes
 	SnapshotRetentionLimit pulumi.IntPtrInput
 	// The daily time range (in UTC) during which ElastiCache will
 	// begin taking a daily snapshot of your cache cluster. The minimum snapshot window is a 60 minute period. Example: `05:00-09:00`
 	SnapshotWindow pulumi.StringPtrInput
 	// The name of the cache subnet group to be used for the replication group.
 	SubnetGroupName pulumi.StringPtrInput
-	// A map of tags to assign to the resource
+	// A map of tags to assign to the resource. Adding tags to this resource will add or overwrite any existing tags on the clusters in the replication group and not to the group itself.
 	Tags pulumi.StringMapInput
 	// Whether to enable encryption in transit.
 	TransitEncryptionEnabled pulumi.BoolPtrInput
@@ -458,4 +546,43 @@ type ReplicationGroupArgs struct {
 
 func (ReplicationGroupArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*replicationGroupArgs)(nil)).Elem()
+}
+
+type ReplicationGroupInput interface {
+	pulumi.Input
+
+	ToReplicationGroupOutput() ReplicationGroupOutput
+	ToReplicationGroupOutputWithContext(ctx context.Context) ReplicationGroupOutput
+}
+
+func (ReplicationGroup) ElementType() reflect.Type {
+	return reflect.TypeOf((*ReplicationGroup)(nil)).Elem()
+}
+
+func (i ReplicationGroup) ToReplicationGroupOutput() ReplicationGroupOutput {
+	return i.ToReplicationGroupOutputWithContext(context.Background())
+}
+
+func (i ReplicationGroup) ToReplicationGroupOutputWithContext(ctx context.Context) ReplicationGroupOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(ReplicationGroupOutput)
+}
+
+type ReplicationGroupOutput struct {
+	*pulumi.OutputState
+}
+
+func (ReplicationGroupOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*ReplicationGroupOutput)(nil)).Elem()
+}
+
+func (o ReplicationGroupOutput) ToReplicationGroupOutput() ReplicationGroupOutput {
+	return o
+}
+
+func (o ReplicationGroupOutput) ToReplicationGroupOutputWithContext(ctx context.Context) ReplicationGroupOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(ReplicationGroupOutput{})
 }

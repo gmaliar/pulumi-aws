@@ -16,8 +16,8 @@ import {PolicyDocument} from "../iam";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const bucket = new aws.s3.Bucket("b", {});
- * const bucketPolicy = new aws.s3.BucketPolicy("b", {
+ * const bucket = new aws.s3.Bucket("bucket", {});
+ * const bucketPolicy = new aws.s3.BucketPolicy("bucketPolicy", {
  *     bucket: bucket.id,
  *     policy: `{
  *   "Version": "2012-10-17",
@@ -37,6 +37,14 @@ import {PolicyDocument} from "../iam";
  * }
  * `,
  * });
+ * ```
+ *
+ * ## Import
+ *
+ * S3 bucket policies can be imported using the bucket name, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:s3/bucketPolicy:BucketPolicy example my-bucket-name
  * ```
  */
 export class BucketPolicy extends pulumi.CustomResource {
@@ -92,10 +100,10 @@ export class BucketPolicy extends pulumi.CustomResource {
             inputs["policy"] = state ? state.policy : undefined;
         } else {
             const args = argsOrState as BucketPolicyArgs | undefined;
-            if (!args || args.bucket === undefined) {
+            if ((!args || args.bucket === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'bucket'");
             }
-            if (!args || args.policy === undefined) {
+            if ((!args || args.policy === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'policy'");
             }
             inputs["bucket"] = args ? args.bucket : undefined;

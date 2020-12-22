@@ -2,25 +2,11 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 /**
  * Provides information for multiple EC2 Customer-Owned IP Pools, such as their identifiers.
- *
- * ## Example Usage
- *
- * The following shows outputing all COIP Pool Ids.
- *
- * ```typescript
- * import * as pulumi from "@pulumi/pulumi";
- * import * as aws from "@pulumi/aws";
- *
- * const fooCoipPools = pulumi.output(aws.ec2.getCoipPools({ async: true }));
- *
- * export const foo = fooCoipPools.ids;
- * ```
  */
 export function getCoipPools(args?: GetCoipPoolsArgs, opts?: pulumi.InvokeOptions): Promise<GetCoipPoolsResult> {
     args = args || {};

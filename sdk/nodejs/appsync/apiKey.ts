@@ -13,13 +13,19 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const exampleGraphQLApi = new aws.appsync.GraphQLApi("example", {
- *     authenticationType: "API_KEY",
- * });
- * const exampleApiKey = new aws.appsync.ApiKey("example", {
+ * const exampleGraphQLApi = new aws.appsync.GraphQLApi("exampleGraphQLApi", {authenticationType: "API_KEY"});
+ * const exampleApiKey = new aws.appsync.ApiKey("exampleApiKey", {
  *     apiId: exampleGraphQLApi.id,
  *     expires: "2018-05-03T04:00:00Z",
  * });
+ * ```
+ *
+ * ## Import
+ *
+ * `aws_appsync_api_key` can be imported using the AppSync API ID and key separated by `:`, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:appsync/apiKey:ApiKey example xxxxx:yyyyy
  * ```
  */
 export class ApiKey extends pulumi.CustomResource {
@@ -85,7 +91,7 @@ export class ApiKey extends pulumi.CustomResource {
             inputs["key"] = state ? state.key : undefined;
         } else {
             const args = argsOrState as ApiKeyArgs | undefined;
-            if (!args || args.apiId === undefined) {
+            if ((!args || args.apiId === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'apiId'");
             }
             inputs["apiId"] = args ? args.apiId : undefined;

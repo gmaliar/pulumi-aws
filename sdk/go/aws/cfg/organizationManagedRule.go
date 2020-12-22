@@ -4,6 +4,7 @@
 package cfg
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -22,14 +23,14 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/cfg"
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/organizations"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/cfg"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/organizations"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
 // func main() {
 // 	pulumi.Run(func(ctx *pulumi.Context) error {
-// 		_, err := organizations.NewOrganization(ctx, "exampleOrganization", &organizations.OrganizationArgs{
+// 		exampleOrganization, err := organizations.NewOrganization(ctx, "exampleOrganization", &organizations.OrganizationArgs{
 // 			AwsServiceAccessPrincipals: pulumi.StringArray{
 // 				pulumi.String("config-multiaccountsetup.amazonaws.com"),
 // 			},
@@ -41,7 +42,7 @@ import (
 // 		_, err = cfg.NewOrganizationManagedRule(ctx, "exampleOrganizationManagedRule", &cfg.OrganizationManagedRuleArgs{
 // 			RuleIdentifier: pulumi.String("IAM_PASSWORD_POLICY"),
 // 		}, pulumi.DependsOn([]pulumi.Resource{
-// 			"aws_organizations_organization.example",
+// 			exampleOrganization,
 // 		}))
 // 		if err != nil {
 // 			return err
@@ -49,6 +50,14 @@ import (
 // 		return nil
 // 	})
 // }
+// ```
+//
+// ## Import
+//
+// Config Organization Managed Rules can be imported using the name, e.g.
+//
+// ```sh
+//  $ pulumi import aws:cfg/organizationManagedRule:OrganizationManagedRule example example
 // ```
 type OrganizationManagedRule struct {
 	pulumi.CustomResourceState
@@ -80,11 +89,12 @@ type OrganizationManagedRule struct {
 // NewOrganizationManagedRule registers a new resource with the given unique name, arguments, and options.
 func NewOrganizationManagedRule(ctx *pulumi.Context,
 	name string, args *OrganizationManagedRuleArgs, opts ...pulumi.ResourceOption) (*OrganizationManagedRule, error) {
-	if args == nil || args.RuleIdentifier == nil {
-		return nil, errors.New("missing required argument 'RuleIdentifier'")
-	}
 	if args == nil {
-		args = &OrganizationManagedRuleArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.RuleIdentifier == nil {
+		return nil, errors.New("invalid value for required argument 'RuleIdentifier'")
 	}
 	var resource OrganizationManagedRule
 	err := ctx.RegisterResource("aws:cfg/organizationManagedRule:OrganizationManagedRule", name, args, &resource, opts...)
@@ -210,4 +220,43 @@ type OrganizationManagedRuleArgs struct {
 
 func (OrganizationManagedRuleArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*organizationManagedRuleArgs)(nil)).Elem()
+}
+
+type OrganizationManagedRuleInput interface {
+	pulumi.Input
+
+	ToOrganizationManagedRuleOutput() OrganizationManagedRuleOutput
+	ToOrganizationManagedRuleOutputWithContext(ctx context.Context) OrganizationManagedRuleOutput
+}
+
+func (OrganizationManagedRule) ElementType() reflect.Type {
+	return reflect.TypeOf((*OrganizationManagedRule)(nil)).Elem()
+}
+
+func (i OrganizationManagedRule) ToOrganizationManagedRuleOutput() OrganizationManagedRuleOutput {
+	return i.ToOrganizationManagedRuleOutputWithContext(context.Background())
+}
+
+func (i OrganizationManagedRule) ToOrganizationManagedRuleOutputWithContext(ctx context.Context) OrganizationManagedRuleOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(OrganizationManagedRuleOutput)
+}
+
+type OrganizationManagedRuleOutput struct {
+	*pulumi.OutputState
+}
+
+func (OrganizationManagedRuleOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*OrganizationManagedRuleOutput)(nil)).Elem()
+}
+
+func (o OrganizationManagedRuleOutput) ToOrganizationManagedRuleOutput() OrganizationManagedRuleOutput {
+	return o
+}
+
+func (o OrganizationManagedRuleOutput) ToOrganizationManagedRuleOutputWithContext(ctx context.Context) OrganizationManagedRuleOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(OrganizationManagedRuleOutput{})
 }

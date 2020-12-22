@@ -26,18 +26,26 @@ namespace Pulumi.Aws.DataSync
     ///     {
     ///         var example = new Aws.DataSync.LocationSmb("example", new Aws.DataSync.LocationSmbArgs
     ///         {
+    ///             ServerHostname = "smb.example.com",
+    ///             Subdirectory = "/exported/path",
+    ///             User = "Guest",
+    ///             Password = "ANotGreatPassword",
     ///             AgentArns = 
     ///             {
     ///                 aws_datasync_agent.Example.Arn,
     ///             },
-    ///             Password = "ANotGreatPassword",
-    ///             ServerHostname = "smb.example.com",
-    ///             Subdirectory = "/exported/path",
-    ///             User = "Guest",
     ///         });
     ///     }
     /// 
     /// }
+    /// ```
+    /// 
+    /// ## Import
+    /// 
+    /// `aws_datasync_location_smb` can be imported by using the Amazon Resource Name (ARN), e.g.
+    /// 
+    /// ```sh
+    ///  $ pulumi import aws:datasync/locationSmb:LocationSmb example arn:aws:datasync:us-east-1:123456789012:location/loc-12345678901234567
     /// ```
     /// </summary>
     public partial class LocationSmb : Pulumi.CustomResource

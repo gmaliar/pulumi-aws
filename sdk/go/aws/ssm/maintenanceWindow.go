@@ -4,6 +4,7 @@
 package ssm
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -18,7 +19,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/ssm"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/ssm"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -35,6 +36,16 @@ import (
 // 		return nil
 // 	})
 // }
+// ```
+//
+// ## Import
+//
+// SSM
+//
+// Maintenance Windows can be imported using the `maintenance window id`, e.g.
+//
+// ```sh
+//  $ pulumi import aws:ssm/maintenanceWindow:MaintenanceWindow imported-window mw-0123456789
 // ```
 type MaintenanceWindow struct {
 	pulumi.CustomResourceState
@@ -55,6 +66,8 @@ type MaintenanceWindow struct {
 	Name pulumi.StringOutput `pulumi:"name"`
 	// The schedule of the Maintenance Window in the form of a [cron](https://docs.aws.amazon.com/systems-manager/latest/userguide/sysman-maintenance-cron.html) or rate expression.
 	Schedule pulumi.StringOutput `pulumi:"schedule"`
+	// The number of days to wait after the date and time specified by a CRON expression before running the maintenance window.
+	ScheduleOffset pulumi.IntPtrOutput `pulumi:"scheduleOffset"`
 	// Timezone for schedule in [Internet Assigned Numbers Authority (IANA) Time Zone Database format](https://www.iana.org/time-zones). For example: `America/Los_Angeles`, `etc/UTC`, or `Asia/Seoul`.
 	ScheduleTimezone pulumi.StringPtrOutput `pulumi:"scheduleTimezone"`
 	// Timestamp in [ISO-8601 extended format](https://www.iso.org/iso-8601-date-and-time-format.html) when to begin the maintenance window.
@@ -66,17 +79,18 @@ type MaintenanceWindow struct {
 // NewMaintenanceWindow registers a new resource with the given unique name, arguments, and options.
 func NewMaintenanceWindow(ctx *pulumi.Context,
 	name string, args *MaintenanceWindowArgs, opts ...pulumi.ResourceOption) (*MaintenanceWindow, error) {
-	if args == nil || args.Cutoff == nil {
-		return nil, errors.New("missing required argument 'Cutoff'")
-	}
-	if args == nil || args.Duration == nil {
-		return nil, errors.New("missing required argument 'Duration'")
-	}
-	if args == nil || args.Schedule == nil {
-		return nil, errors.New("missing required argument 'Schedule'")
-	}
 	if args == nil {
-		args = &MaintenanceWindowArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.Cutoff == nil {
+		return nil, errors.New("invalid value for required argument 'Cutoff'")
+	}
+	if args.Duration == nil {
+		return nil, errors.New("invalid value for required argument 'Duration'")
+	}
+	if args.Schedule == nil {
+		return nil, errors.New("invalid value for required argument 'Schedule'")
 	}
 	var resource MaintenanceWindow
 	err := ctx.RegisterResource("aws:ssm/maintenanceWindow:MaintenanceWindow", name, args, &resource, opts...)
@@ -116,6 +130,8 @@ type maintenanceWindowState struct {
 	Name *string `pulumi:"name"`
 	// The schedule of the Maintenance Window in the form of a [cron](https://docs.aws.amazon.com/systems-manager/latest/userguide/sysman-maintenance-cron.html) or rate expression.
 	Schedule *string `pulumi:"schedule"`
+	// The number of days to wait after the date and time specified by a CRON expression before running the maintenance window.
+	ScheduleOffset *int `pulumi:"scheduleOffset"`
 	// Timezone for schedule in [Internet Assigned Numbers Authority (IANA) Time Zone Database format](https://www.iana.org/time-zones). For example: `America/Los_Angeles`, `etc/UTC`, or `Asia/Seoul`.
 	ScheduleTimezone *string `pulumi:"scheduleTimezone"`
 	// Timestamp in [ISO-8601 extended format](https://www.iso.org/iso-8601-date-and-time-format.html) when to begin the maintenance window.
@@ -141,6 +157,8 @@ type MaintenanceWindowState struct {
 	Name pulumi.StringPtrInput
 	// The schedule of the Maintenance Window in the form of a [cron](https://docs.aws.amazon.com/systems-manager/latest/userguide/sysman-maintenance-cron.html) or rate expression.
 	Schedule pulumi.StringPtrInput
+	// The number of days to wait after the date and time specified by a CRON expression before running the maintenance window.
+	ScheduleOffset pulumi.IntPtrInput
 	// Timezone for schedule in [Internet Assigned Numbers Authority (IANA) Time Zone Database format](https://www.iana.org/time-zones). For example: `America/Los_Angeles`, `etc/UTC`, or `Asia/Seoul`.
 	ScheduleTimezone pulumi.StringPtrInput
 	// Timestamp in [ISO-8601 extended format](https://www.iso.org/iso-8601-date-and-time-format.html) when to begin the maintenance window.
@@ -170,6 +188,8 @@ type maintenanceWindowArgs struct {
 	Name *string `pulumi:"name"`
 	// The schedule of the Maintenance Window in the form of a [cron](https://docs.aws.amazon.com/systems-manager/latest/userguide/sysman-maintenance-cron.html) or rate expression.
 	Schedule string `pulumi:"schedule"`
+	// The number of days to wait after the date and time specified by a CRON expression before running the maintenance window.
+	ScheduleOffset *int `pulumi:"scheduleOffset"`
 	// Timezone for schedule in [Internet Assigned Numbers Authority (IANA) Time Zone Database format](https://www.iana.org/time-zones). For example: `America/Los_Angeles`, `etc/UTC`, or `Asia/Seoul`.
 	ScheduleTimezone *string `pulumi:"scheduleTimezone"`
 	// Timestamp in [ISO-8601 extended format](https://www.iso.org/iso-8601-date-and-time-format.html) when to begin the maintenance window.
@@ -196,6 +216,8 @@ type MaintenanceWindowArgs struct {
 	Name pulumi.StringPtrInput
 	// The schedule of the Maintenance Window in the form of a [cron](https://docs.aws.amazon.com/systems-manager/latest/userguide/sysman-maintenance-cron.html) or rate expression.
 	Schedule pulumi.StringInput
+	// The number of days to wait after the date and time specified by a CRON expression before running the maintenance window.
+	ScheduleOffset pulumi.IntPtrInput
 	// Timezone for schedule in [Internet Assigned Numbers Authority (IANA) Time Zone Database format](https://www.iana.org/time-zones). For example: `America/Los_Angeles`, `etc/UTC`, or `Asia/Seoul`.
 	ScheduleTimezone pulumi.StringPtrInput
 	// Timestamp in [ISO-8601 extended format](https://www.iso.org/iso-8601-date-and-time-format.html) when to begin the maintenance window.
@@ -206,4 +228,43 @@ type MaintenanceWindowArgs struct {
 
 func (MaintenanceWindowArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*maintenanceWindowArgs)(nil)).Elem()
+}
+
+type MaintenanceWindowInput interface {
+	pulumi.Input
+
+	ToMaintenanceWindowOutput() MaintenanceWindowOutput
+	ToMaintenanceWindowOutputWithContext(ctx context.Context) MaintenanceWindowOutput
+}
+
+func (MaintenanceWindow) ElementType() reflect.Type {
+	return reflect.TypeOf((*MaintenanceWindow)(nil)).Elem()
+}
+
+func (i MaintenanceWindow) ToMaintenanceWindowOutput() MaintenanceWindowOutput {
+	return i.ToMaintenanceWindowOutputWithContext(context.Background())
+}
+
+func (i MaintenanceWindow) ToMaintenanceWindowOutputWithContext(ctx context.Context) MaintenanceWindowOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(MaintenanceWindowOutput)
+}
+
+type MaintenanceWindowOutput struct {
+	*pulumi.OutputState
+}
+
+func (MaintenanceWindowOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*MaintenanceWindowOutput)(nil)).Elem()
+}
+
+func (o MaintenanceWindowOutput) ToMaintenanceWindowOutput() MaintenanceWindowOutput {
+	return o
+}
+
+func (o MaintenanceWindowOutput) ToMaintenanceWindowOutputWithContext(ctx context.Context) MaintenanceWindowOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(MaintenanceWindowOutput{})
 }

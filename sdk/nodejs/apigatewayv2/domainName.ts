@@ -2,8 +2,7 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 /**
@@ -23,36 +22,19 @@ import * as utilities from "../utilities";
  * const example = new aws.apigatewayv2.DomainName("example", {
  *     domainName: "ws-api.example.com",
  *     domainNameConfiguration: {
- *         certificateArn: aws_acm_certificate_example.arn,
+ *         certificateArn: aws_acm_certificate.example.arn,
  *         endpointType: "REGIONAL",
  *         securityPolicy: "TLS_1_2",
  *     },
  * });
  * ```
- * ### Associated Route 53 Resource Record
  *
- * ```typescript
- * import * as pulumi from "@pulumi/pulumi";
- * import * as aws from "@pulumi/aws";
+ * ## Import
  *
- * const exampleDomainName = new aws.apigatewayv2.DomainName("example", {
- *     domainName: "http-api.example.com",
- *     domainNameConfiguration: {
- *         certificateArn: aws_acm_certificate_example.arn,
- *         endpointType: "REGIONAL",
- *         securityPolicy: "TLS_1_2",
- *     },
- * });
- * const exampleRecord = new aws.route53.Record("example", {
- *     aliases: [{
- *         evaluateTargetHealth: false,
- *         name: exampleDomainName.domainNameConfiguration.targetDomainName,
- *         zoneId: exampleDomainName.domainNameConfiguration.hostedZoneId,
- *     }],
- *     name: exampleDomainName.domainName,
- *     type: "A",
- *     zoneId: aws_route53_zone_example.zoneId,
- * });
+ * `aws_apigatewayv2_domain_name` can be imported by using the domain name, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:apigatewayv2/domainName:DomainName example ws-api.example.com
  * ```
  */
 export class DomainName extends pulumi.CustomResource {
@@ -92,13 +74,17 @@ export class DomainName extends pulumi.CustomResource {
      */
     public /*out*/ readonly arn!: pulumi.Output<string>;
     /**
-     * The domain name.
+     * The domain name. Must be between 1 and 512 characters in length.
      */
     public readonly domainName!: pulumi.Output<string>;
     /**
      * The domain name configuration.
      */
     public readonly domainNameConfiguration!: pulumi.Output<outputs.apigatewayv2.DomainNameDomainNameConfiguration>;
+    /**
+     * The mutual TLS authentication configuration for the domain name.
+     */
+    public readonly mutualTlsAuthentication!: pulumi.Output<outputs.apigatewayv2.DomainNameMutualTlsAuthentication | undefined>;
     /**
      * A map of tags to assign to the domain name.
      */
@@ -120,17 +106,19 @@ export class DomainName extends pulumi.CustomResource {
             inputs["arn"] = state ? state.arn : undefined;
             inputs["domainName"] = state ? state.domainName : undefined;
             inputs["domainNameConfiguration"] = state ? state.domainNameConfiguration : undefined;
+            inputs["mutualTlsAuthentication"] = state ? state.mutualTlsAuthentication : undefined;
             inputs["tags"] = state ? state.tags : undefined;
         } else {
             const args = argsOrState as DomainNameArgs | undefined;
-            if (!args || args.domainName === undefined) {
+            if ((!args || args.domainName === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'domainName'");
             }
-            if (!args || args.domainNameConfiguration === undefined) {
+            if ((!args || args.domainNameConfiguration === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'domainNameConfiguration'");
             }
             inputs["domainName"] = args ? args.domainName : undefined;
             inputs["domainNameConfiguration"] = args ? args.domainNameConfiguration : undefined;
+            inputs["mutualTlsAuthentication"] = args ? args.mutualTlsAuthentication : undefined;
             inputs["tags"] = args ? args.tags : undefined;
             inputs["apiMappingSelectionExpression"] = undefined /*out*/;
             inputs["arn"] = undefined /*out*/;
@@ -159,13 +147,17 @@ export interface DomainNameState {
      */
     readonly arn?: pulumi.Input<string>;
     /**
-     * The domain name.
+     * The domain name. Must be between 1 and 512 characters in length.
      */
     readonly domainName?: pulumi.Input<string>;
     /**
      * The domain name configuration.
      */
     readonly domainNameConfiguration?: pulumi.Input<inputs.apigatewayv2.DomainNameDomainNameConfiguration>;
+    /**
+     * The mutual TLS authentication configuration for the domain name.
+     */
+    readonly mutualTlsAuthentication?: pulumi.Input<inputs.apigatewayv2.DomainNameMutualTlsAuthentication>;
     /**
      * A map of tags to assign to the domain name.
      */
@@ -177,13 +169,17 @@ export interface DomainNameState {
  */
 export interface DomainNameArgs {
     /**
-     * The domain name.
+     * The domain name. Must be between 1 and 512 characters in length.
      */
     readonly domainName: pulumi.Input<string>;
     /**
      * The domain name configuration.
      */
     readonly domainNameConfiguration: pulumi.Input<inputs.apigatewayv2.DomainNameDomainNameConfiguration>;
+    /**
+     * The mutual TLS authentication configuration for the domain name.
+     */
+    readonly mutualTlsAuthentication?: pulumi.Input<inputs.apigatewayv2.DomainNameMutualTlsAuthentication>;
     /**
      * A map of tags to assign to the domain name.
      */

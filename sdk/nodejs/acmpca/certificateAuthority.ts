@@ -2,8 +2,7 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 /**
@@ -35,7 +34,7 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const exampleBucket = new aws.s3.Bucket("example", {});
+ * const exampleBucket = new aws.s3.Bucket("exampleBucket", {});
  * const acmpcaBucketAccess = pulumi.all([exampleBucket.arn, exampleBucket.arn]).apply(([exampleBucketArn, exampleBucketArn1]) => aws.iam.getPolicyDocument({
  *     statements: [{
  *         actions: [
@@ -44,21 +43,21 @@ import * as utilities from "../utilities";
  *             "s3:PutObject",
  *             "s3:PutObjectAcl",
  *         ],
- *         principals: [{
- *             identifiers: ["acm-pca.amazonaws.com"],
- *             type: "Service",
- *         }],
  *         resources: [
  *             exampleBucketArn,
  *             `${exampleBucketArn1}/*`,
  *         ],
+ *         principals: [{
+ *             identifiers: ["acm-pca.amazonaws.com"],
+ *             type: "Service",
+ *         }],
  *     }],
- * }, { async: true }));
- * const exampleBucketPolicy = new aws.s3.BucketPolicy("example", {
+ * }));
+ * const exampleBucketPolicy = new aws.s3.BucketPolicy("exampleBucketPolicy", {
  *     bucket: exampleBucket.id,
  *     policy: acmpcaBucketAccess.json,
  * });
- * const exampleCertificateAuthority = new aws.acmpca.CertificateAuthority("example", {
+ * const exampleCertificateAuthority = new aws.acmpca.CertificateAuthority("exampleCertificateAuthority", {
  *     certificateAuthorityConfiguration: {
  *         keyAlgorithm: "RSA_4096",
  *         signingAlgorithm: "SHA512WITHRSA",
@@ -74,7 +73,17 @@ import * as utilities from "../utilities";
  *             s3BucketName: exampleBucket.id,
  *         },
  *     },
- * }, { dependsOn: [exampleBucketPolicy] });
+ * }, {
+ *     dependsOn: [exampleBucketPolicy],
+ * });
+ * ```
+ *
+ * ## Import
+ *
+ * `aws_acmpca_certificate_authority` can be imported by using the certificate authority Amazon Resource Name (ARN), e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:acmpca/certificateAuthority:CertificateAuthority example arn:aws:acm-pca:us-east-1:123456789012:certificate-authority/12345678-1234-1234-1234-123456789012
  * ```
  */
 export class CertificateAuthority extends pulumi.CustomResource {
@@ -190,7 +199,7 @@ export class CertificateAuthority extends pulumi.CustomResource {
             inputs["type"] = state ? state.type : undefined;
         } else {
             const args = argsOrState as CertificateAuthorityArgs | undefined;
-            if (!args || args.certificateAuthorityConfiguration === undefined) {
+            if ((!args || args.certificateAuthorityConfiguration === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'certificateAuthorityConfiguration'");
             }
             inputs["certificateAuthorityConfiguration"] = args ? args.certificateAuthorityConfiguration : undefined;

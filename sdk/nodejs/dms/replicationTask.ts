@@ -15,18 +15,26 @@ import * as utilities from "../utilities";
  *
  * // Create a new replication task
  * const test = new aws.dms.ReplicationTask("test", {
- *     cdcStartTime: "1.48434688e+09",
+ *     cdcStartTime: 1484346880,
  *     migrationType: "full-load",
- *     replicationInstanceArn: aws_dms_replication_instance_test_dms_replication_instance_tf.replicationInstanceArn,
+ *     replicationInstanceArn: aws_dms_replication_instance["test-dms-replication-instance-tf"].replication_instance_arn,
  *     replicationTaskId: "test-dms-replication-task-tf",
  *     replicationTaskSettings: "...",
- *     sourceEndpointArn: aws_dms_endpoint_test_dms_source_endpoint_tf.endpointArn,
- *     tableMappings: "{\"rules\":[{\"rule-type\":\"selection\",\"rule-id\":\"1\",\"rule-name\":\"1\",\"object-locator\":{\"schema-name\":\"%\",\"table-name\":\"%\"},\"rule-action\":\"include\"}]}",
+ *     sourceEndpointArn: aws_dms_endpoint["test-dms-source-endpoint-tf"].endpoint_arn,
+ *     tableMappings: `{"rules":[{"rule-type":"selection","rule-id":"1","rule-name":"1","object-locator":{"schema-name":"%","table-name":"%"},"rule-action":"include"}]}`,
  *     tags: {
  *         Name: "test",
  *     },
- *     targetEndpointArn: aws_dms_endpoint_test_dms_target_endpoint_tf.endpointArn,
+ *     targetEndpointArn: aws_dms_endpoint["test-dms-target-endpoint-tf"].endpoint_arn,
  * });
+ * ```
+ *
+ * ## Import
+ *
+ * Replication tasks can be imported using the `replication_task_id`, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:dms/replicationTask:ReplicationTask test test-dms-replication-task-tf
  * ```
  */
 export class ReplicationTask extends pulumi.CustomResource {
@@ -122,22 +130,22 @@ export class ReplicationTask extends pulumi.CustomResource {
             inputs["targetEndpointArn"] = state ? state.targetEndpointArn : undefined;
         } else {
             const args = argsOrState as ReplicationTaskArgs | undefined;
-            if (!args || args.migrationType === undefined) {
+            if ((!args || args.migrationType === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'migrationType'");
             }
-            if (!args || args.replicationInstanceArn === undefined) {
+            if ((!args || args.replicationInstanceArn === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'replicationInstanceArn'");
             }
-            if (!args || args.replicationTaskId === undefined) {
+            if ((!args || args.replicationTaskId === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'replicationTaskId'");
             }
-            if (!args || args.sourceEndpointArn === undefined) {
+            if ((!args || args.sourceEndpointArn === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'sourceEndpointArn'");
             }
-            if (!args || args.tableMappings === undefined) {
+            if ((!args || args.tableMappings === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'tableMappings'");
             }
-            if (!args || args.targetEndpointArn === undefined) {
+            if ((!args || args.targetEndpointArn === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'targetEndpointArn'");
             }
             inputs["cdcStartTime"] = args ? args.cdcStartTime : undefined;

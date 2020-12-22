@@ -4,6 +4,7 @@
 package ses
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -18,8 +19,8 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/route53"
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/ses"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/route53"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/ses"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -32,13 +33,13 @@ import (
 // 			return err
 // 		}
 // 		_, err = route53.NewRecord(ctx, "exampleAmazonsesVerificationRecord", &route53.RecordArgs{
-// 			Name: pulumi.String("_amazonses.example.com"),
+// 			ZoneId: pulumi.String("ABCDEFGHIJ123"),
+// 			Name:   pulumi.String("_amazonses.example.com"),
+// 			Type:   pulumi.String("TXT"),
+// 			Ttl:    pulumi.Int(600),
 // 			Records: pulumi.StringArray{
 // 				example.VerificationToken,
 // 			},
-// 			Ttl:    pulumi.Int(600),
-// 			Type:   pulumi.String("TXT"),
-// 			ZoneId: pulumi.String("ABCDEFGHIJ123"),
 // 		})
 // 		if err != nil {
 // 			return err
@@ -46,6 +47,14 @@ import (
 // 		return nil
 // 	})
 // }
+// ```
+//
+// ## Import
+//
+// SES domain identities can be imported using the domain name.
+//
+// ```sh
+//  $ pulumi import aws:ses/domainIdentity:DomainIdentity example example.com
 // ```
 type DomainIdentity struct {
 	pulumi.CustomResourceState
@@ -67,11 +76,12 @@ type DomainIdentity struct {
 // NewDomainIdentity registers a new resource with the given unique name, arguments, and options.
 func NewDomainIdentity(ctx *pulumi.Context,
 	name string, args *DomainIdentityArgs, opts ...pulumi.ResourceOption) (*DomainIdentity, error) {
-	if args == nil || args.Domain == nil {
-		return nil, errors.New("missing required argument 'Domain'")
-	}
 	if args == nil {
-		args = &DomainIdentityArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.Domain == nil {
+		return nil, errors.New("invalid value for required argument 'Domain'")
 	}
 	var resource DomainIdentity
 	err := ctx.RegisterResource("aws:ses/domainIdentity:DomainIdentity", name, args, &resource, opts...)
@@ -141,4 +151,43 @@ type DomainIdentityArgs struct {
 
 func (DomainIdentityArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*domainIdentityArgs)(nil)).Elem()
+}
+
+type DomainIdentityInput interface {
+	pulumi.Input
+
+	ToDomainIdentityOutput() DomainIdentityOutput
+	ToDomainIdentityOutputWithContext(ctx context.Context) DomainIdentityOutput
+}
+
+func (DomainIdentity) ElementType() reflect.Type {
+	return reflect.TypeOf((*DomainIdentity)(nil)).Elem()
+}
+
+func (i DomainIdentity) ToDomainIdentityOutput() DomainIdentityOutput {
+	return i.ToDomainIdentityOutputWithContext(context.Background())
+}
+
+func (i DomainIdentity) ToDomainIdentityOutputWithContext(ctx context.Context) DomainIdentityOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(DomainIdentityOutput)
+}
+
+type DomainIdentityOutput struct {
+	*pulumi.OutputState
+}
+
+func (DomainIdentityOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*DomainIdentityOutput)(nil)).Elem()
+}
+
+func (o DomainIdentityOutput) ToDomainIdentityOutput() DomainIdentityOutput {
+	return o
+}
+
+func (o DomainIdentityOutput) ToDomainIdentityOutputWithContext(ctx context.Context) DomainIdentityOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(DomainIdentityOutput{})
 }

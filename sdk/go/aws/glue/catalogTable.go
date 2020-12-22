@@ -4,6 +4,7 @@
 package glue
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -19,7 +20,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/glue"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/glue"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -42,7 +43,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/glue"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/glue"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -101,6 +102,14 @@ import (
 // 	})
 // }
 // ```
+//
+// ## Import
+//
+// Glue Tables can be imported with their catalog ID (usually AWS account ID), database name, and table name, e.g.
+//
+// ```sh
+//  $ pulumi import aws:glue/catalogTable:CatalogTable MyTable 123456789012:MyDatabase:MyTable
+// ```
 type CatalogTable struct {
 	pulumi.CustomResourceState
 
@@ -118,13 +127,15 @@ type CatalogTable struct {
 	Owner pulumi.StringPtrOutput `pulumi:"owner"`
 	// A map of initialization parameters for the SerDe, in key-value form.
 	Parameters pulumi.StringMapOutput `pulumi:"parameters"`
-	// A list of columns by which the table is partitioned. Only primitive types are supported as partition keys.
+	// A list of partition indexes. see Partition Index below.
+	PartitionIndices CatalogTablePartitionIndexArrayOutput `pulumi:"partitionIndices"`
+	// A list of columns by which the table is partitioned. Only primitive types are supported as partition keys. see Partition Keys below.
 	PartitionKeys CatalogTablePartitionKeyArrayOutput `pulumi:"partitionKeys"`
 	// Retention time for this table.
 	Retention pulumi.IntPtrOutput `pulumi:"retention"`
 	// A storage descriptor object containing information about the physical storage of this table. You can refer to the [Glue Developer Guide](https://docs.aws.amazon.com/glue/latest/dg/aws-glue-api-catalog-tables.html#aws-glue-api-catalog-tables-StorageDescriptor) for a full explanation of this object.
 	StorageDescriptor CatalogTableStorageDescriptorPtrOutput `pulumi:"storageDescriptor"`
-	// The type of this table (EXTERNAL_TABLE, VIRTUAL_VIEW, etc.).
+	// The type of this table (EXTERNAL_TABLE, VIRTUAL_VIEW, etc.). While optional, some Athena DDL queries such as `ALTER TABLE` and `SHOW CREATE TABLE` will fail if this argument is empty.
 	TableType pulumi.StringPtrOutput `pulumi:"tableType"`
 	// If the table is a view, the expanded text of the view; otherwise null.
 	ViewExpandedText pulumi.StringPtrOutput `pulumi:"viewExpandedText"`
@@ -135,11 +146,12 @@ type CatalogTable struct {
 // NewCatalogTable registers a new resource with the given unique name, arguments, and options.
 func NewCatalogTable(ctx *pulumi.Context,
 	name string, args *CatalogTableArgs, opts ...pulumi.ResourceOption) (*CatalogTable, error) {
-	if args == nil || args.DatabaseName == nil {
-		return nil, errors.New("missing required argument 'DatabaseName'")
-	}
 	if args == nil {
-		args = &CatalogTableArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.DatabaseName == nil {
+		return nil, errors.New("invalid value for required argument 'DatabaseName'")
 	}
 	var resource CatalogTable
 	err := ctx.RegisterResource("aws:glue/catalogTable:CatalogTable", name, args, &resource, opts...)
@@ -177,13 +189,15 @@ type catalogTableState struct {
 	Owner *string `pulumi:"owner"`
 	// A map of initialization parameters for the SerDe, in key-value form.
 	Parameters map[string]string `pulumi:"parameters"`
-	// A list of columns by which the table is partitioned. Only primitive types are supported as partition keys.
+	// A list of partition indexes. see Partition Index below.
+	PartitionIndices []CatalogTablePartitionIndex `pulumi:"partitionIndices"`
+	// A list of columns by which the table is partitioned. Only primitive types are supported as partition keys. see Partition Keys below.
 	PartitionKeys []CatalogTablePartitionKey `pulumi:"partitionKeys"`
 	// Retention time for this table.
 	Retention *int `pulumi:"retention"`
 	// A storage descriptor object containing information about the physical storage of this table. You can refer to the [Glue Developer Guide](https://docs.aws.amazon.com/glue/latest/dg/aws-glue-api-catalog-tables.html#aws-glue-api-catalog-tables-StorageDescriptor) for a full explanation of this object.
 	StorageDescriptor *CatalogTableStorageDescriptor `pulumi:"storageDescriptor"`
-	// The type of this table (EXTERNAL_TABLE, VIRTUAL_VIEW, etc.).
+	// The type of this table (EXTERNAL_TABLE, VIRTUAL_VIEW, etc.). While optional, some Athena DDL queries such as `ALTER TABLE` and `SHOW CREATE TABLE` will fail if this argument is empty.
 	TableType *string `pulumi:"tableType"`
 	// If the table is a view, the expanded text of the view; otherwise null.
 	ViewExpandedText *string `pulumi:"viewExpandedText"`
@@ -206,13 +220,15 @@ type CatalogTableState struct {
 	Owner pulumi.StringPtrInput
 	// A map of initialization parameters for the SerDe, in key-value form.
 	Parameters pulumi.StringMapInput
-	// A list of columns by which the table is partitioned. Only primitive types are supported as partition keys.
+	// A list of partition indexes. see Partition Index below.
+	PartitionIndices CatalogTablePartitionIndexArrayInput
+	// A list of columns by which the table is partitioned. Only primitive types are supported as partition keys. see Partition Keys below.
 	PartitionKeys CatalogTablePartitionKeyArrayInput
 	// Retention time for this table.
 	Retention pulumi.IntPtrInput
 	// A storage descriptor object containing information about the physical storage of this table. You can refer to the [Glue Developer Guide](https://docs.aws.amazon.com/glue/latest/dg/aws-glue-api-catalog-tables.html#aws-glue-api-catalog-tables-StorageDescriptor) for a full explanation of this object.
 	StorageDescriptor CatalogTableStorageDescriptorPtrInput
-	// The type of this table (EXTERNAL_TABLE, VIRTUAL_VIEW, etc.).
+	// The type of this table (EXTERNAL_TABLE, VIRTUAL_VIEW, etc.). While optional, some Athena DDL queries such as `ALTER TABLE` and `SHOW CREATE TABLE` will fail if this argument is empty.
 	TableType pulumi.StringPtrInput
 	// If the table is a view, the expanded text of the view; otherwise null.
 	ViewExpandedText pulumi.StringPtrInput
@@ -237,13 +253,15 @@ type catalogTableArgs struct {
 	Owner *string `pulumi:"owner"`
 	// A map of initialization parameters for the SerDe, in key-value form.
 	Parameters map[string]string `pulumi:"parameters"`
-	// A list of columns by which the table is partitioned. Only primitive types are supported as partition keys.
+	// A list of partition indexes. see Partition Index below.
+	PartitionIndices []CatalogTablePartitionIndex `pulumi:"partitionIndices"`
+	// A list of columns by which the table is partitioned. Only primitive types are supported as partition keys. see Partition Keys below.
 	PartitionKeys []CatalogTablePartitionKey `pulumi:"partitionKeys"`
 	// Retention time for this table.
 	Retention *int `pulumi:"retention"`
 	// A storage descriptor object containing information about the physical storage of this table. You can refer to the [Glue Developer Guide](https://docs.aws.amazon.com/glue/latest/dg/aws-glue-api-catalog-tables.html#aws-glue-api-catalog-tables-StorageDescriptor) for a full explanation of this object.
 	StorageDescriptor *CatalogTableStorageDescriptor `pulumi:"storageDescriptor"`
-	// The type of this table (EXTERNAL_TABLE, VIRTUAL_VIEW, etc.).
+	// The type of this table (EXTERNAL_TABLE, VIRTUAL_VIEW, etc.). While optional, some Athena DDL queries such as `ALTER TABLE` and `SHOW CREATE TABLE` will fail if this argument is empty.
 	TableType *string `pulumi:"tableType"`
 	// If the table is a view, the expanded text of the view; otherwise null.
 	ViewExpandedText *string `pulumi:"viewExpandedText"`
@@ -265,13 +283,15 @@ type CatalogTableArgs struct {
 	Owner pulumi.StringPtrInput
 	// A map of initialization parameters for the SerDe, in key-value form.
 	Parameters pulumi.StringMapInput
-	// A list of columns by which the table is partitioned. Only primitive types are supported as partition keys.
+	// A list of partition indexes. see Partition Index below.
+	PartitionIndices CatalogTablePartitionIndexArrayInput
+	// A list of columns by which the table is partitioned. Only primitive types are supported as partition keys. see Partition Keys below.
 	PartitionKeys CatalogTablePartitionKeyArrayInput
 	// Retention time for this table.
 	Retention pulumi.IntPtrInput
 	// A storage descriptor object containing information about the physical storage of this table. You can refer to the [Glue Developer Guide](https://docs.aws.amazon.com/glue/latest/dg/aws-glue-api-catalog-tables.html#aws-glue-api-catalog-tables-StorageDescriptor) for a full explanation of this object.
 	StorageDescriptor CatalogTableStorageDescriptorPtrInput
-	// The type of this table (EXTERNAL_TABLE, VIRTUAL_VIEW, etc.).
+	// The type of this table (EXTERNAL_TABLE, VIRTUAL_VIEW, etc.). While optional, some Athena DDL queries such as `ALTER TABLE` and `SHOW CREATE TABLE` will fail if this argument is empty.
 	TableType pulumi.StringPtrInput
 	// If the table is a view, the expanded text of the view; otherwise null.
 	ViewExpandedText pulumi.StringPtrInput
@@ -281,4 +301,43 @@ type CatalogTableArgs struct {
 
 func (CatalogTableArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*catalogTableArgs)(nil)).Elem()
+}
+
+type CatalogTableInput interface {
+	pulumi.Input
+
+	ToCatalogTableOutput() CatalogTableOutput
+	ToCatalogTableOutputWithContext(ctx context.Context) CatalogTableOutput
+}
+
+func (CatalogTable) ElementType() reflect.Type {
+	return reflect.TypeOf((*CatalogTable)(nil)).Elem()
+}
+
+func (i CatalogTable) ToCatalogTableOutput() CatalogTableOutput {
+	return i.ToCatalogTableOutputWithContext(context.Background())
+}
+
+func (i CatalogTable) ToCatalogTableOutputWithContext(ctx context.Context) CatalogTableOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(CatalogTableOutput)
+}
+
+type CatalogTableOutput struct {
+	*pulumi.OutputState
+}
+
+func (CatalogTableOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*CatalogTableOutput)(nil)).Elem()
+}
+
+func (o CatalogTableOutput) ToCatalogTableOutput() CatalogTableOutput {
+	return o
+}
+
+func (o CatalogTableOutput) ToCatalogTableOutputWithContext(ctx context.Context) CatalogTableOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(CatalogTableOutput{})
 }

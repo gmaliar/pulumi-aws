@@ -5,24 +5,22 @@
 import warnings
 import pulumi
 import pulumi.runtime
-from typing import Union
-from .. import utilities, tables
+from typing import Any, Mapping, Optional, Sequence, Union
+from .. import _utilities, _tables
+
+__all__ = ['SshKey']
 
 
 class SshKey(pulumi.CustomResource):
-    body: pulumi.Output[str]
-    """
-    The public key portion of an SSH key pair.
-    """
-    server_id: pulumi.Output[str]
-    """
-    The Server ID of the Transfer Server (e.g. `s-12345678`)
-    """
-    user_name: pulumi.Output[str]
-    """
-    The name of the user account that is assigned to one or more servers.
-    """
-    def __init__(__self__, resource_name, opts=None, body=None, server_id=None, user_name=None, __props__=None, __name__=None, __opts__=None):
+    def __init__(__self__,
+                 resource_name: str,
+                 opts: Optional[pulumi.ResourceOptions] = None,
+                 body: Optional[pulumi.Input[str]] = None,
+                 server_id: Optional[pulumi.Input[str]] = None,
+                 user_name: Optional[pulumi.Input[str]] = None,
+                 __props__=None,
+                 __name__=None,
+                 __opts__=None):
         """
         Provides a AWS Transfer User SSH Key resource.
 
@@ -30,12 +28,12 @@ class SshKey(pulumi.CustomResource):
         import pulumi
         import pulumi_aws as aws
 
-        foo_server = aws.transfer.Server("fooServer",
+        example_server = aws.transfer.Server("exampleServer",
             identity_provider_type="SERVICE_MANAGED",
             tags={
                 "NAME": "tf-acc-test-transfer-server",
             })
-        foo_role = aws.iam.Role("fooRole", assume_role_policy=\"\"\"{
+        example_role = aws.iam.Role("exampleRole", assume_role_policy=\"\"\"{
         	"Version": "2012-10-17",
         	"Statement": [
         		{
@@ -47,9 +45,20 @@ class SshKey(pulumi.CustomResource):
         		}
         	]
         }
-
         \"\"\")
-        foo_role_policy = aws.iam.RolePolicy("fooRolePolicy",
+        example_user = aws.transfer.User("exampleUser",
+            server_id=example_server.id,
+            user_name="tftestuser",
+            role=example_role.arn,
+            tags={
+                "NAME": "tftestuser",
+            })
+        example_ssh_key = aws.transfer.SshKey("exampleSshKey",
+            server_id=example_server.id,
+            user_name=example_user.user_name,
+            body="... SSH key ...")
+        example_role_policy = aws.iam.RolePolicy("exampleRolePolicy",
+            role=example_role.id,
             policy=\"\"\"{
         	"Version": "2012-10-17",
         	"Statement": [
@@ -63,20 +72,15 @@ class SshKey(pulumi.CustomResource):
         		}
         	]
         }
+        \"\"\")
+        ```
 
-        \"\"\",
-            role=foo_role.id)
-        foo_user = aws.transfer.User("fooUser",
-            role=foo_role.arn,
-            server_id=foo_server.id,
-            tags={
-                "NAME": "tftestuser",
-            },
-            user_name="tftestuser")
-        foo_ssh_key = aws.transfer.SshKey("fooSshKey",
-            body="ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQD3F6tyPEFEzV0LX3X8BsXdMsQz1x2cEikKDEY0aIj41qgxMCP/iteneqXSIFZBp5vizPvaoIR3Um9xK7PGoW8giupGn+EPuxIA4cDM4vzOqOkiMPhz5XK0whEjkVzTo4+S0puvDZuwIsdiW9mxhJc7tgBNL0cYlWSYVkz4G/fslNfRPW5mYAM49f4fhtxPb5ok4Q2Lg9dPKVHO/Bgeu5woMc7RY0p1ej6D4CKFE6lymSDJpW0YHX/wqE9+cfEauh7xZcG0q9t2ta6F6fmX0agvpFyZo8aFbXeUBr7osSCJNgvavWbM/06niWrOvYX2xwWdhXmXSrbX8ZbabVohBK41 example@example.com",
-            server_id=foo_server.id,
-            user_name=foo_user.user_name)
+        ## Import
+
+        Transfer SSH Public Key can be imported using the `server_id` and `user_name` and `ssh_public_key_id` separated by `/`.
+
+        ```sh
+         $ pulumi import aws:transfer/sshKey:SshKey bar s-12345678/test-username/key-12345
         ```
 
         :param str resource_name: The name of the resource.
@@ -96,19 +100,19 @@ class SshKey(pulumi.CustomResource):
         if not isinstance(opts, pulumi.ResourceOptions):
             raise TypeError('Expected resource options to be a ResourceOptions instance')
         if opts.version is None:
-            opts.version = utilities.get_version()
+            opts.version = _utilities.get_version()
         if opts.id is None:
             if __props__ is not None:
                 raise TypeError('__props__ is only valid when passed in combination with a valid opts.id to get an existing resource')
             __props__ = dict()
 
-            if body is None:
+            if body is None and not opts.urn:
                 raise TypeError("Missing required property 'body'")
             __props__['body'] = body
-            if server_id is None:
+            if server_id is None and not opts.urn:
                 raise TypeError("Missing required property 'server_id'")
             __props__['server_id'] = server_id
-            if user_name is None:
+            if user_name is None and not opts.urn:
                 raise TypeError("Missing required property 'user_name'")
             __props__['user_name'] = user_name
         super(SshKey, __self__).__init__(
@@ -118,13 +122,18 @@ class SshKey(pulumi.CustomResource):
             opts)
 
     @staticmethod
-    def get(resource_name, id, opts=None, body=None, server_id=None, user_name=None):
+    def get(resource_name: str,
+            id: pulumi.Input[str],
+            opts: Optional[pulumi.ResourceOptions] = None,
+            body: Optional[pulumi.Input[str]] = None,
+            server_id: Optional[pulumi.Input[str]] = None,
+            user_name: Optional[pulumi.Input[str]] = None) -> 'SshKey':
         """
         Get an existing SshKey resource's state with the given name, id, and optional extra
         properties used to qualify the lookup.
 
         :param str resource_name: The unique name of the resulting resource.
-        :param str id: The unique provider ID of the resource to lookup.
+        :param pulumi.Input[str] id: The unique provider ID of the resource to lookup.
         :param pulumi.ResourceOptions opts: Options for the resource.
         :param pulumi.Input[str] body: The public key portion of an SSH key pair.
         :param pulumi.Input[str] server_id: The Server ID of the Transfer Server (e.g. `s-12345678`)
@@ -139,8 +148,33 @@ class SshKey(pulumi.CustomResource):
         __props__["user_name"] = user_name
         return SshKey(resource_name, opts=opts, __props__=__props__)
 
+    @property
+    @pulumi.getter
+    def body(self) -> pulumi.Output[str]:
+        """
+        The public key portion of an SSH key pair.
+        """
+        return pulumi.get(self, "body")
+
+    @property
+    @pulumi.getter(name="serverId")
+    def server_id(self) -> pulumi.Output[str]:
+        """
+        The Server ID of the Transfer Server (e.g. `s-12345678`)
+        """
+        return pulumi.get(self, "server_id")
+
+    @property
+    @pulumi.getter(name="userName")
+    def user_name(self) -> pulumi.Output[str]:
+        """
+        The name of the user account that is assigned to one or more servers.
+        """
+        return pulumi.get(self, "user_name")
+
     def translate_output_property(self, prop):
-        return tables._CAMEL_TO_SNAKE_CASE_TABLE.get(prop) or prop
+        return _tables.CAMEL_TO_SNAKE_CASE_TABLE.get(prop) or prop
 
     def translate_input_property(self, prop):
-        return tables._SNAKE_TO_CAMEL_CASE_TABLE.get(prop) or prop
+        return _tables.SNAKE_TO_CAMEL_CASE_TABLE.get(prop) or prop
+

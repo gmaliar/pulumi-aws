@@ -4,6 +4,7 @@
 package msk
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -11,8 +12,6 @@ import (
 )
 
 // Manages an Amazon Managed Streaming for Kafka configuration. More information can be found on the [MSK Developer Guide](https://docs.aws.amazon.com/msk/latest/developerguide/msk-configuration.html).
-//
-// > **NOTE:** The API does not support deleting MSK configurations. Removing this resource will only remove the this provider state for it.
 //
 // ## Example Usage
 //
@@ -22,7 +21,7 @@ import (
 // import (
 // 	"fmt"
 //
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/msk"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/msk"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -40,6 +39,14 @@ import (
 // 		return nil
 // 	})
 // }
+// ```
+//
+// ## Import
+//
+// MSK configurations can be imported using the configuration ARN, e.g.
+//
+// ```sh
+//  $ pulumi import aws:msk/configuration:Configuration example arn:aws:kafka:us-west-2:123456789012:configuration/example/279c0212-d057-4dba-9aa9-1c4e5a25bfc7-3
 // ```
 type Configuration struct {
 	pulumi.CustomResourceState
@@ -61,14 +68,15 @@ type Configuration struct {
 // NewConfiguration registers a new resource with the given unique name, arguments, and options.
 func NewConfiguration(ctx *pulumi.Context,
 	name string, args *ConfigurationArgs, opts ...pulumi.ResourceOption) (*Configuration, error) {
-	if args == nil || args.KafkaVersions == nil {
-		return nil, errors.New("missing required argument 'KafkaVersions'")
-	}
-	if args == nil || args.ServerProperties == nil {
-		return nil, errors.New("missing required argument 'ServerProperties'")
-	}
 	if args == nil {
-		args = &ConfigurationArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.KafkaVersions == nil {
+		return nil, errors.New("invalid value for required argument 'KafkaVersions'")
+	}
+	if args.ServerProperties == nil {
+		return nil, errors.New("invalid value for required argument 'ServerProperties'")
 	}
 	var resource Configuration
 	err := ctx.RegisterResource("aws:msk/configuration:Configuration", name, args, &resource, opts...)
@@ -150,4 +158,43 @@ type ConfigurationArgs struct {
 
 func (ConfigurationArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*configurationArgs)(nil)).Elem()
+}
+
+type ConfigurationInput interface {
+	pulumi.Input
+
+	ToConfigurationOutput() ConfigurationOutput
+	ToConfigurationOutputWithContext(ctx context.Context) ConfigurationOutput
+}
+
+func (Configuration) ElementType() reflect.Type {
+	return reflect.TypeOf((*Configuration)(nil)).Elem()
+}
+
+func (i Configuration) ToConfigurationOutput() ConfigurationOutput {
+	return i.ToConfigurationOutputWithContext(context.Background())
+}
+
+func (i Configuration) ToConfigurationOutputWithContext(ctx context.Context) ConfigurationOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(ConfigurationOutput)
+}
+
+type ConfigurationOutput struct {
+	*pulumi.OutputState
+}
+
+func (ConfigurationOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*ConfigurationOutput)(nil)).Elem()
+}
+
+func (o ConfigurationOutput) ToConfigurationOutput() ConfigurationOutput {
+	return o
+}
+
+func (o ConfigurationOutput) ToConfigurationOutputWithContext(ctx context.Context) ConfigurationOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(ConfigurationOutput{})
 }

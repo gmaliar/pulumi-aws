@@ -13,26 +13,32 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const exampleDomainIdentity = new aws.ses.DomainIdentity("example", {
- *     domain: "example.com",
- * });
+ * const exampleDomainIdentity = new aws.ses.DomainIdentity("exampleDomainIdentity", {domain: "example.com"});
  * const examplePolicyDocument = exampleDomainIdentity.arn.apply(arn => aws.iam.getPolicyDocument({
  *     statements: [{
  *         actions: [
  *             "SES:SendEmail",
  *             "SES:SendRawEmail",
  *         ],
+ *         resources: [arn],
  *         principals: [{
  *             identifiers: ["*"],
  *             type: "AWS",
  *         }],
- *         resources: [arn],
  *     }],
- * }, { async: true }));
- * const exampleIdentityPolicy = new aws.ses.IdentityPolicy("example", {
+ * }));
+ * const exampleIdentityPolicy = new aws.ses.IdentityPolicy("exampleIdentityPolicy", {
  *     identity: exampleDomainIdentity.arn,
  *     policy: examplePolicyDocument.json,
  * });
+ * ```
+ *
+ * ## Import
+ *
+ * SES Identity Policies can be imported using the identity and policy name, separated by a pipe character (`|`), e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:ses/identityPolicy:IdentityPolicy example 'example.com|example'
  * ```
  */
 export class IdentityPolicy extends pulumi.CustomResource {
@@ -93,10 +99,10 @@ export class IdentityPolicy extends pulumi.CustomResource {
             inputs["policy"] = state ? state.policy : undefined;
         } else {
             const args = argsOrState as IdentityPolicyArgs | undefined;
-            if (!args || args.identity === undefined) {
+            if ((!args || args.identity === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'identity'");
             }
-            if (!args || args.policy === undefined) {
+            if ((!args || args.policy === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'policy'");
             }
             inputs["identity"] = args ? args.identity : undefined;

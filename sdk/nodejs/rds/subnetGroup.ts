@@ -13,15 +13,23 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const defaultSubnetGroup = new aws.rds.SubnetGroup("default", {
+ * const _default = new aws.rds.SubnetGroup("default", {
  *     subnetIds: [
- *         aws_subnet_frontend.id,
- *         aws_subnet_backend.id,
+ *         aws_subnet.frontend.id,
+ *         aws_subnet.backend.id,
  *     ],
  *     tags: {
  *         Name: "My DB subnet group",
  *     },
  * });
+ * ```
+ *
+ * ## Import
+ *
+ * DB Subnet groups can be imported using the `name`, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:rds/subnetGroup:SubnetGroup default production-subnet-group
  * ```
  */
 export class SubnetGroup extends pulumi.CustomResource {
@@ -97,7 +105,7 @@ export class SubnetGroup extends pulumi.CustomResource {
             inputs["tags"] = state ? state.tags : undefined;
         } else {
             const args = argsOrState as SubnetGroupArgs | undefined;
-            if (!args || args.subnetIds === undefined) {
+            if ((!args || args.subnetIds === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'subnetIds'");
             }
             inputs["description"] = (args ? args.description : undefined) || "Managed by Pulumi";

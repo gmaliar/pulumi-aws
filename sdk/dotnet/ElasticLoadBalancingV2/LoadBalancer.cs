@@ -28,22 +28,19 @@ namespace Pulumi.Aws.ElasticLoadBalancingV2
     ///     {
     ///         var test = new Aws.LB.LoadBalancer("test", new Aws.LB.LoadBalancerArgs
     ///         {
-    ///             AccessLogs = new Aws.LB.Inputs.LoadBalancerAccessLogsArgs
-    ///             {
-    ///                 Bucket = aws_s3_bucket.Lb_logs.Bucket,
-    ///                 Enabled = true,
-    ///                 Prefix = "test-lb",
-    ///             },
-    ///             EnableDeletionProtection = true,
     ///             Internal = false,
     ///             LoadBalancerType = "application",
     ///             SecurityGroups = 
     ///             {
     ///                 aws_security_group.Lb_sg.Id,
     ///             },
-    ///             Subnets = 
+    ///             Subnets = aws_subnet.Public.Select(__item =&gt; __item.Id).ToList(),
+    ///             EnableDeletionProtection = true,
+    ///             AccessLogs = new Aws.LB.Inputs.LoadBalancerAccessLogsArgs
     ///             {
-    ///                 aws_subnet.Public.Select(__item =&gt; __item.Id).ToList(),
+    ///                 Bucket = aws_s3_bucket.Lb_logs.Bucket,
+    ///                 Prefix = "test-lb",
+    ///                 Enabled = true,
     ///             },
     ///             Tags = 
     ///             {
@@ -67,13 +64,10 @@ namespace Pulumi.Aws.ElasticLoadBalancingV2
     ///     {
     ///         var test = new Aws.LB.LoadBalancer("test", new Aws.LB.LoadBalancerArgs
     ///         {
-    ///             EnableDeletionProtection = true,
     ///             Internal = false,
     ///             LoadBalancerType = "network",
-    ///             Subnets = 
-    ///             {
-    ///                 aws_subnet.Public.Select(__item =&gt; __item.Id).ToList(),
-    ///             },
+    ///             Subnets = aws_subnet.Public.Select(__item =&gt; __item.Id).ToList(),
+    ///             EnableDeletionProtection = true,
     ///             Tags = 
     ///             {
     ///                 { "Environment", "production" },
@@ -100,19 +94,58 @@ namespace Pulumi.Aws.ElasticLoadBalancingV2
     ///             {
     ///                 new Aws.LB.Inputs.LoadBalancerSubnetMappingArgs
     ///                 {
-    ///                     AllocationId = aws_eip.Example1.Id,
     ///                     SubnetId = aws_subnet.Example1.Id,
+    ///                     AllocationId = aws_eip.Example1.Id,
     ///                 },
     ///                 new Aws.LB.Inputs.LoadBalancerSubnetMappingArgs
     ///                 {
-    ///                     AllocationId = aws_eip.Example2.Id,
     ///                     SubnetId = aws_subnet.Example2.Id,
+    ///                     AllocationId = aws_eip.Example2.Id,
     ///                 },
     ///             },
     ///         });
     ///     }
     /// 
     /// }
+    /// ```
+    /// ### Specifying private IP addresses for an internal-facing load balancer
+    /// 
+    /// ```csharp
+    /// using Pulumi;
+    /// using Aws = Pulumi.Aws;
+    /// 
+    /// class MyStack : Stack
+    /// {
+    ///     public MyStack()
+    ///     {
+    ///         var example = new Aws.LB.LoadBalancer("example", new Aws.LB.LoadBalancerArgs
+    ///         {
+    ///             LoadBalancerType = "network",
+    ///             SubnetMappings = 
+    ///             {
+    ///                 new Aws.LB.Inputs.LoadBalancerSubnetMappingArgs
+    ///                 {
+    ///                     SubnetId = aws_subnet.Example1.Id,
+    ///                     PrivateIpv4Address = "10.0.1.15",
+    ///                 },
+    ///                 new Aws.LB.Inputs.LoadBalancerSubnetMappingArgs
+    ///                 {
+    ///                     SubnetId = aws_subnet.Example2.Id,
+    ///                     PrivateIpv4Address = "10.0.2.15",
+    ///                 },
+    ///             },
+    ///         });
+    ///     }
+    /// 
+    /// }
+    /// ```
+    /// 
+    /// ## Import
+    /// 
+    /// LBs can be imported using their ARN, e.g.
+    /// 
+    /// ```sh
+    ///  $ pulumi import aws:elasticloadbalancingv2/loadBalancer:LoadBalancer bar arn:aws:elasticloadbalancing:us-west-2:123456789012:loadbalancer/app/my-load-balancer/50dc6c495c0c9188
     /// ```
     /// </summary>
     [Obsolete(@"aws.elasticloadbalancingv2.LoadBalancer has been deprecated in favor of aws.lb.LoadBalancer")]
@@ -135,6 +168,12 @@ namespace Pulumi.Aws.ElasticLoadBalancingV2
         /// </summary>
         [Output("arnSuffix")]
         public Output<string> ArnSuffix { get; private set; } = null!;
+
+        /// <summary>
+        /// The ID of the customer owned ipv4 pool to use for this load balancer.
+        /// </summary>
+        [Output("customerOwnedIpv4Pool")]
+        public Output<string?> CustomerOwnedIpv4Pool { get; private set; } = null!;
 
         /// <summary>
         /// The DNS name of the load balancer.
@@ -187,7 +226,7 @@ namespace Pulumi.Aws.ElasticLoadBalancingV2
         public Output<string> IpAddressType { get; private set; } = null!;
 
         /// <summary>
-        /// The type of load balancer to create. Possible values are `application` or `network`. The default value is `application`.
+        /// The type of load balancer to create. Possible values are `application`, `gateway`, or `network`. The default value is `application`.
         /// </summary>
         [Output("loadBalancerType")]
         public Output<string?> LoadBalancerType { get; private set; } = null!;
@@ -237,6 +276,7 @@ namespace Pulumi.Aws.ElasticLoadBalancingV2
 
         /// <summary>
         /// The canonical hosted zone ID of the load balancer (to be used in a Route 53 Alias record).
+        /// * `subnet_mapping.*.outpost_id` - ID of the Outpost containing the load balancer.
         /// </summary>
         [Output("zoneId")]
         public Output<string> ZoneId { get; private set; } = null!;
@@ -294,6 +334,12 @@ namespace Pulumi.Aws.ElasticLoadBalancingV2
         public Input<Inputs.LoadBalancerAccessLogsArgs>? AccessLogs { get; set; }
 
         /// <summary>
+        /// The ID of the customer owned ipv4 pool to use for this load balancer.
+        /// </summary>
+        [Input("customerOwnedIpv4Pool")]
+        public Input<string>? CustomerOwnedIpv4Pool { get; set; }
+
+        /// <summary>
         /// Indicates whether HTTP headers with header fields that are not valid are removed by the load balancer (true) or routed to targets (false). The default is false. Elastic Load Balancing requires that message header names contain only alphanumeric characters and hyphens. Only valid for Load Balancers of type `application`.
         /// </summary>
         [Input("dropInvalidHeaderFields")]
@@ -338,7 +384,7 @@ namespace Pulumi.Aws.ElasticLoadBalancingV2
         public Input<string>? IpAddressType { get; set; }
 
         /// <summary>
-        /// The type of load balancer to create. Possible values are `application` or `network`. The default value is `application`.
+        /// The type of load balancer to create. Possible values are `application`, `gateway`, or `network`. The default value is `application`.
         /// </summary>
         [Input("loadBalancerType")]
         public Input<string>? LoadBalancerType { get; set; }
@@ -433,6 +479,12 @@ namespace Pulumi.Aws.ElasticLoadBalancingV2
         public Input<string>? ArnSuffix { get; set; }
 
         /// <summary>
+        /// The ID of the customer owned ipv4 pool to use for this load balancer.
+        /// </summary>
+        [Input("customerOwnedIpv4Pool")]
+        public Input<string>? CustomerOwnedIpv4Pool { get; set; }
+
+        /// <summary>
         /// The DNS name of the load balancer.
         /// </summary>
         [Input("dnsName")]
@@ -483,7 +535,7 @@ namespace Pulumi.Aws.ElasticLoadBalancingV2
         public Input<string>? IpAddressType { get; set; }
 
         /// <summary>
-        /// The type of load balancer to create. Possible values are `application` or `network`. The default value is `application`.
+        /// The type of load balancer to create. Possible values are `application`, `gateway`, or `network`. The default value is `application`.
         /// </summary>
         [Input("loadBalancerType")]
         public Input<string>? LoadBalancerType { get; set; }
@@ -557,6 +609,7 @@ namespace Pulumi.Aws.ElasticLoadBalancingV2
 
         /// <summary>
         /// The canonical hosted zone ID of the load balancer (to be used in a Route 53 Alias record).
+        /// * `subnet_mapping.*.outpost_id` - ID of the Outpost containing the load balancer.
         /// </summary>
         [Input("zoneId")]
         public Input<string>? ZoneId { get; set; }

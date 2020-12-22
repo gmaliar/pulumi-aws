@@ -4,6 +4,7 @@
 package ec2
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -30,16 +31,16 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/ec2"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/ec2"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
 // func main() {
 // 	pulumi.Run(func(ctx *pulumi.Context) error {
 // 		_, err := ec2.NewVpcPeeringConnection(ctx, "foo", &ec2.VpcPeeringConnectionArgs{
-// 			PeerOwnerId: pulumi.String(_var.Peer_owner_id),
-// 			PeerVpcId:   pulumi.String(aws_vpc.Bar.Id),
-// 			VpcId:       pulumi.String(aws_vpc.Foo.Id),
+// 			PeerOwnerId: pulumi.Any(_var.Peer_owner_id),
+// 			PeerVpcId:   pulumi.Any(aws_vpc.Bar.Id),
+// 			VpcId:       pulumi.Any(aws_vpc.Foo.Id),
 // 		})
 // 		if err != nil {
 // 			return err
@@ -55,22 +56,22 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/ec2"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/ec2"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
 // func main() {
 // 	pulumi.Run(func(ctx *pulumi.Context) error {
 // 		_, err := ec2.NewVpcPeeringConnection(ctx, "foo", &ec2.VpcPeeringConnectionArgs{
+// 			PeerOwnerId: pulumi.Any(_var.Peer_owner_id),
+// 			PeerVpcId:   pulumi.Any(aws_vpc.Bar.Id),
+// 			VpcId:       pulumi.Any(aws_vpc.Foo.Id),
 // 			Accepter: &ec2.VpcPeeringConnectionAccepterArgs{
 // 				AllowRemoteVpcDnsResolution: pulumi.Bool(true),
 // 			},
-// 			PeerOwnerId: pulumi.String(_var.Peer_owner_id),
-// 			PeerVpcId:   pulumi.String(aws_vpc.Bar.Id),
 // 			Requester: &ec2.VpcPeeringConnectionRequesterArgs{
 // 				AllowRemoteVpcDnsResolution: pulumi.Bool(true),
 // 			},
-// 			VpcId: pulumi.String(aws_vpc.Foo.Id),
 // 		})
 // 		if err != nil {
 // 			return err
@@ -86,7 +87,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/ec2"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/ec2"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -105,13 +106,13 @@ import (
 // 			return err
 // 		}
 // 		_, err = ec2.NewVpcPeeringConnection(ctx, "fooVpcPeeringConnection", &ec2.VpcPeeringConnectionArgs{
-// 			AutoAccept:  pulumi.Bool(true),
-// 			PeerOwnerId: pulumi.String(_var.Peer_owner_id),
+// 			PeerOwnerId: pulumi.Any(_var.Peer_owner_id),
 // 			PeerVpcId:   bar.ID(),
+// 			VpcId:       fooVpc.ID(),
+// 			AutoAccept:  pulumi.Bool(true),
 // 			Tags: pulumi.StringMap{
 // 				"Name": pulumi.String("VPC Peering between foo and bar"),
 // 			},
-// 			VpcId: fooVpc.ID(),
 // 		})
 // 		if err != nil {
 // 			return err
@@ -127,7 +128,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/ec2"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/ec2"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -135,18 +136,18 @@ import (
 // 	pulumi.Run(func(ctx *pulumi.Context) error {
 // 		fooVpc, err := ec2.NewVpc(ctx, "fooVpc", &ec2.VpcArgs{
 // 			CidrBlock: pulumi.String("10.1.0.0/16"),
-// 		}, pulumi.Provider("aws.us-west-2"))
+// 		}, pulumi.Provider(aws.Us-west-2))
 // 		if err != nil {
 // 			return err
 // 		}
 // 		bar, err := ec2.NewVpc(ctx, "bar", &ec2.VpcArgs{
 // 			CidrBlock: pulumi.String("10.2.0.0/16"),
-// 		}, pulumi.Provider("aws.us-east-1"))
+// 		}, pulumi.Provider(aws.Us-east-1))
 // 		if err != nil {
 // 			return err
 // 		}
 // 		_, err = ec2.NewVpcPeeringConnection(ctx, "fooVpcPeeringConnection", &ec2.VpcPeeringConnectionArgs{
-// 			PeerOwnerId: pulumi.String(_var.Peer_owner_id),
+// 			PeerOwnerId: pulumi.Any(_var.Peer_owner_id),
 // 			PeerVpcId:   bar.ID(),
 // 			VpcId:       fooVpc.ID(),
 // 			PeerRegion:  pulumi.String("us-east-1"),
@@ -163,6 +164,16 @@ import (
 // If both VPCs are not in the same AWS account do not enable the `autoAccept` attribute.
 // The accepter can manage its side of the connection using the `ec2.VpcPeeringConnectionAccepter` resource
 // or accept the connection manually using the AWS Management Console, AWS CLI, through SDKs, etc.
+//
+// ## Import
+//
+// VPC Peering resources can be imported using the `vpc peering id`, e.g.
+//
+// ```sh
+//  $ pulumi import aws:ec2/vpcPeeringConnection:VpcPeeringConnection test_connection pcx-111aaa111
+// ```
+//
+//  [1]/docs/providers/aws/index.html
 type VpcPeeringConnection struct {
 	pulumi.CustomResourceState
 
@@ -195,14 +206,15 @@ type VpcPeeringConnection struct {
 // NewVpcPeeringConnection registers a new resource with the given unique name, arguments, and options.
 func NewVpcPeeringConnection(ctx *pulumi.Context,
 	name string, args *VpcPeeringConnectionArgs, opts ...pulumi.ResourceOption) (*VpcPeeringConnection, error) {
-	if args == nil || args.PeerVpcId == nil {
-		return nil, errors.New("missing required argument 'PeerVpcId'")
-	}
-	if args == nil || args.VpcId == nil {
-		return nil, errors.New("missing required argument 'VpcId'")
-	}
 	if args == nil {
-		args = &VpcPeeringConnectionArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.PeerVpcId == nil {
+		return nil, errors.New("invalid value for required argument 'PeerVpcId'")
+	}
+	if args.VpcId == nil {
+		return nil, errors.New("invalid value for required argument 'VpcId'")
 	}
 	var resource VpcPeeringConnection
 	err := ctx.RegisterResource("aws:ec2/vpcPeeringConnection:VpcPeeringConnection", name, args, &resource, opts...)
@@ -336,4 +348,43 @@ type VpcPeeringConnectionArgs struct {
 
 func (VpcPeeringConnectionArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*vpcPeeringConnectionArgs)(nil)).Elem()
+}
+
+type VpcPeeringConnectionInput interface {
+	pulumi.Input
+
+	ToVpcPeeringConnectionOutput() VpcPeeringConnectionOutput
+	ToVpcPeeringConnectionOutputWithContext(ctx context.Context) VpcPeeringConnectionOutput
+}
+
+func (VpcPeeringConnection) ElementType() reflect.Type {
+	return reflect.TypeOf((*VpcPeeringConnection)(nil)).Elem()
+}
+
+func (i VpcPeeringConnection) ToVpcPeeringConnectionOutput() VpcPeeringConnectionOutput {
+	return i.ToVpcPeeringConnectionOutputWithContext(context.Background())
+}
+
+func (i VpcPeeringConnection) ToVpcPeeringConnectionOutputWithContext(ctx context.Context) VpcPeeringConnectionOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(VpcPeeringConnectionOutput)
+}
+
+type VpcPeeringConnectionOutput struct {
+	*pulumi.OutputState
+}
+
+func (VpcPeeringConnectionOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*VpcPeeringConnectionOutput)(nil)).Elem()
+}
+
+func (o VpcPeeringConnectionOutput) ToVpcPeeringConnectionOutput() VpcPeeringConnectionOutput {
+	return o
+}
+
+func (o VpcPeeringConnectionOutput) ToVpcPeeringConnectionOutputWithContext(ctx context.Context) VpcPeeringConnectionOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(VpcPeeringConnectionOutput{})
 }

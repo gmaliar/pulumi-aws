@@ -18,6 +18,14 @@ import * as utilities from "../utilities";
  *     imageId: "ami-12345678",
  * });
  * ```
+ *
+ * ## Import
+ *
+ * AWS AMI Launch Permission can be imported using the `ACCOUNT-ID/IMAGE-ID`, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:ec2/amiLaunchPermission:AmiLaunchPermission example 123456789012/ami-12345678
+ * ```
  */
 export class AmiLaunchPermission extends pulumi.CustomResource {
     /**
@@ -72,10 +80,10 @@ export class AmiLaunchPermission extends pulumi.CustomResource {
             inputs["imageId"] = state ? state.imageId : undefined;
         } else {
             const args = argsOrState as AmiLaunchPermissionArgs | undefined;
-            if (!args || args.accountId === undefined) {
+            if ((!args || args.accountId === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'accountId'");
             }
-            if (!args || args.imageId === undefined) {
+            if ((!args || args.imageId === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'imageId'");
             }
             inputs["accountId"] = args ? args.accountId : undefined;

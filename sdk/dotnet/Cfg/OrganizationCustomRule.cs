@@ -51,13 +51,21 @@ namespace Pulumi.Aws.Cfg
     ///         {
     ///             DependsOn = 
     ///             {
-    ///                 "aws_lambda_permission.example",
-    ///                 "aws_organizations_organization.example",
+    ///                 examplePermission,
+    ///                 exampleOrganization,
     ///             },
     ///         });
     ///     }
     /// 
     /// }
+    /// ```
+    /// 
+    /// ## Import
+    /// 
+    /// Config Organization Custom Rules can be imported using the name, e.g.
+    /// 
+    /// ```sh
+    ///  $ pulumi import aws:cfg/organizationCustomRule:OrganizationCustomRule example example
     /// ```
     /// </summary>
     public partial class OrganizationCustomRule : Pulumi.CustomResource

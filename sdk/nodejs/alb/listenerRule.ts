@@ -2,8 +2,7 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 /**
@@ -17,12 +16,16 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const frontEndLoadBalancer = new aws.lb.LoadBalancer("front_end", {});
- * const frontEndListener = new aws.lb.Listener("front_end", {});
+ * const frontEndLoadBalancer = new aws.lb.LoadBalancer("frontEndLoadBalancer", {});
+ * // ...
+ * const frontEndListener = new aws.lb.Listener("frontEndListener", {});
+ * // Other parameters
  * const static = new aws.lb.ListenerRule("static", {
+ *     listenerArn: frontEndListener.arn,
+ *     priority: 100,
  *     actions: [{
- *         targetGroupArn: aws_lb_target_group_static.arn,
  *         type: "forward",
+ *         targetGroupArn: aws_lb_target_group.static.arn,
  *     }],
  *     conditions: [
  *         {
@@ -36,58 +39,60 @@ import * as utilities from "../utilities";
  *             },
  *         },
  *     ],
- *     listenerArn: frontEndListener.arn,
- *     priority: 100,
  * });
- * const hostBasedRouting = new aws.lb.ListenerRule("host_based_routing", {
+ * // Forward action
+ * const hostBasedWeightedRouting = new aws.lb.ListenerRule("hostBasedWeightedRouting", {
+ *     listenerArn: frontEndListener.arn,
+ *     priority: 99,
  *     actions: [{
- *         forward: {
- *             stickiness: {
- *                 duration: 600,
- *                 enabled: true,
- *             },
- *             targetGroups: [
- *                 {
- *                     arn: aws_lb_target_group_main.arn,
- *                     weight: 80,
- *                 },
- *                 {
- *                     arn: aws_lb_target_group_canary.arn,
- *                     weight: 20,
- *                 },
- *             ],
- *         },
  *         type: "forward",
+ *         targetGroupArn: aws_lb_target_group.static.arn,
  *     }],
  *     conditions: [{
  *         hostHeader: {
  *             values: ["my-service.*.mycompany.io"],
  *         },
  *     }],
+ * });
+ * // Weighted Forward action
+ * const hostBasedRouting = new aws.lb.ListenerRule("hostBasedRouting", {
  *     listenerArn: frontEndListener.arn,
  *     priority: 99,
- * });
- * const hostBasedWeightedRouting = new aws.lb.ListenerRule("host_based_weighted_routing", {
  *     actions: [{
- *         targetGroupArn: aws_lb_target_group_static.arn,
  *         type: "forward",
+ *         forward: {
+ *             targetGroups: [
+ *                 {
+ *                     arn: aws_lb_target_group.main.arn,
+ *                     weight: 80,
+ *                 },
+ *                 {
+ *                     arn: aws_lb_target_group.canary.arn,
+ *                     weight: 20,
+ *                 },
+ *             ],
+ *             stickiness: {
+ *                 enabled: true,
+ *                 duration: 600,
+ *             },
+ *         },
  *     }],
  *     conditions: [{
  *         hostHeader: {
- *             values: ["my-service.*.mydomain.io"],
+ *             values: ["my-service.*.mycompany.io"],
  *         },
  *     }],
- *     listenerArn: frontEndListener.arn,
- *     priority: 99,
  * });
- * const redirectHttpToHttps = new aws.lb.ListenerRule("redirect_http_to_https", {
+ * // Redirect action
+ * const redirectHttpToHttps = new aws.lb.ListenerRule("redirectHttpToHttps", {
+ *     listenerArn: frontEndListener.arn,
  *     actions: [{
+ *         type: "redirect",
  *         redirect: {
  *             port: "443",
  *             protocol: "HTTPS",
  *             statusCode: "HTTP_301",
  *         },
- *         type: "redirect",
  *     }],
  *     conditions: [{
  *         httpHeader: {
@@ -95,16 +100,17 @@ import * as utilities from "../utilities";
  *             values: ["192.168.1.*"],
  *         },
  *     }],
- *     listenerArn: frontEndListener.arn,
  * });
- * const healthCheck = new aws.lb.ListenerRule("health_check", {
+ * // Fixed-response action
+ * const healthCheck = new aws.lb.ListenerRule("healthCheck", {
+ *     listenerArn: frontEndListener.arn,
  *     actions: [{
+ *         type: "fixed-response",
  *         fixedResponse: {
  *             contentType: "text/plain",
  *             messageBody: "HEALTHY",
  *             statusCode: "200",
  *         },
- *         type: "fixed-response",
  *     }],
  *     conditions: [{
  *         queryStrings: [
@@ -117,14 +123,37 @@ import * as utilities from "../utilities";
  *             },
  *         ],
  *     }],
- *     listenerArn: frontEndListener.arn,
  * });
+ * // Authenticate-cognito Action
  * const pool = new aws.cognito.UserPool("pool", {});
+ * // ...
  * const client = new aws.cognito.UserPoolClient("client", {});
+ * // ...
  * const domain = new aws.cognito.UserPoolDomain("domain", {});
+ * // ...
  * const admin = new aws.lb.ListenerRule("admin", {
+ *     listenerArn: frontEndListener.arn,
  *     actions: [
  *         {
+ *             type: "authenticate-cognito",
+ *             authenticateCognito: {
+ *                 userPoolArn: pool.arn,
+ *                 userPoolClientId: client.id,
+ *                 userPoolDomain: domain.domain,
+ *             },
+ *         },
+ *         {
+ *             type: "forward",
+ *             targetGroupArn: aws_lb_target_group.static.arn,
+ *         },
+ *     ],
+ * });
+ * // Authenticate-oidc Action
+ * const oidc = new aws.lb.ListenerRule("oidc", {
+ *     listenerArn: frontEndListener.arn,
+ *     actions: [
+ *         {
+ *             type: "authenticate-oidc",
  *             authenticateOidc: {
  *                 authorizationEndpoint: "https://example.com/authorization_endpoint",
  *                 clientId: "client_id",
@@ -133,15 +162,21 @@ import * as utilities from "../utilities";
  *                 tokenEndpoint: "https://example.com/token_endpoint",
  *                 userInfoEndpoint: "https://example.com/user_info_endpoint",
  *             },
- *             type: "authenticate-oidc",
  *         },
  *         {
- *             targetGroupArn: aws_lb_target_group_static.arn,
  *             type: "forward",
+ *             targetGroupArn: aws_lb_target_group.static.arn,
  *         },
  *     ],
- *     listenerArn: frontEndListener.arn,
  * });
+ * ```
+ *
+ * ## Import
+ *
+ * Rules can be imported using their ARN, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:alb/listenerRule:ListenerRule front_end arn:aws:elasticloadbalancing:us-west-2:187416307283:listener-rule/app/test/8e4497da625e2d8a/9ab28ade35828f96/67b3d2d36dd7c26b
  * ```
  */
 export class ListenerRule extends pulumi.CustomResource {
@@ -212,13 +247,13 @@ export class ListenerRule extends pulumi.CustomResource {
             inputs["priority"] = state ? state.priority : undefined;
         } else {
             const args = argsOrState as ListenerRuleArgs | undefined;
-            if (!args || args.actions === undefined) {
+            if ((!args || args.actions === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'actions'");
             }
-            if (!args || args.conditions === undefined) {
+            if ((!args || args.conditions === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'conditions'");
             }
-            if (!args || args.listenerArn === undefined) {
+            if ((!args || args.listenerArn === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'listenerArn'");
             }
             inputs["actions"] = args ? args.actions : undefined;

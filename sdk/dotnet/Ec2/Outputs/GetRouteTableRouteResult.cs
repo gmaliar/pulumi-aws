@@ -34,6 +34,10 @@ namespace Pulumi.Aws.Ec2.Outputs
         /// </summary>
         public readonly string Ipv6CidrBlock;
         /// <summary>
+        /// The Local Gateway ID.
+        /// </summary>
+        public readonly string LocalGatewayId;
+        /// <summary>
         /// The NAT Gateway ID.
         /// </summary>
         public readonly string NatGatewayId;
@@ -45,6 +49,10 @@ namespace Pulumi.Aws.Ec2.Outputs
         /// The EC2 Transit Gateway ID.
         /// </summary>
         public readonly string TransitGatewayId;
+        /// <summary>
+        /// The VPC Endpoint ID.
+        /// </summary>
+        public readonly string VpcEndpointId;
         /// <summary>
         /// The VPC Peering ID.
         /// </summary>
@@ -62,11 +70,15 @@ namespace Pulumi.Aws.Ec2.Outputs
 
             string ipv6CidrBlock,
 
+            string localGatewayId,
+
             string natGatewayId,
 
             string networkInterfaceId,
 
             string transitGatewayId,
+
+            string vpcEndpointId,
 
             string vpcPeeringConnectionId)
         {
@@ -75,9 +87,11 @@ namespace Pulumi.Aws.Ec2.Outputs
             GatewayId = gatewayId;
             InstanceId = instanceId;
             Ipv6CidrBlock = ipv6CidrBlock;
+            LocalGatewayId = localGatewayId;
             NatGatewayId = natGatewayId;
             NetworkInterfaceId = networkInterfaceId;
             TransitGatewayId = transitGatewayId;
+            VpcEndpointId = vpcEndpointId;
             VpcPeeringConnectionId = vpcPeeringConnectionId;
         }
     }

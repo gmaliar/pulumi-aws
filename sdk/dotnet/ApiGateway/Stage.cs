@@ -26,6 +26,26 @@ namespace Pulumi.Aws.ApiGateway
     ///         {
     ///             Description = "This is my API for demonstration purposes",
     ///         });
+    ///         var testResource = new Aws.ApiGateway.Resource("testResource", new Aws.ApiGateway.ResourceArgs
+    ///         {
+    ///             RestApi = testRestApi.Id,
+    ///             ParentId = testRestApi.RootResourceId,
+    ///             PathPart = "mytestresource",
+    ///         });
+    ///         var testMethod = new Aws.ApiGateway.Method("testMethod", new Aws.ApiGateway.MethodArgs
+    ///         {
+    ///             RestApi = testRestApi.Id,
+    ///             ResourceId = testResource.Id,
+    ///             HttpMethod = "GET",
+    ///             Authorization = "NONE",
+    ///         });
+    ///         var testIntegration = new Aws.ApiGateway.Integration("testIntegration", new Aws.ApiGateway.IntegrationArgs
+    ///         {
+    ///             RestApi = testRestApi.Id,
+    ///             ResourceId = testResource.Id,
+    ///             HttpMethod = testMethod.HttpMethod,
+    ///             Type = "MOCK",
+    ///         });
     ///         var testDeployment = new Aws.ApiGateway.Deployment("testDeployment", new Aws.ApiGateway.DeploymentArgs
     ///         {
     ///             RestApi = testRestApi.Id,
@@ -34,54 +54,82 @@ namespace Pulumi.Aws.ApiGateway
     ///         {
     ///             DependsOn = 
     ///             {
-    ///                 "aws_api_gateway_integration.test",
+    ///                 testIntegration,
     ///             },
     ///         });
     ///         var testStage = new Aws.ApiGateway.Stage("testStage", new Aws.ApiGateway.StageArgs
     ///         {
-    ///             Deployment = testDeployment.Id,
-    ///             RestApi = testRestApi.Id,
     ///             StageName = "prod",
-    ///         });
-    ///         var testResource = new Aws.ApiGateway.Resource("testResource", new Aws.ApiGateway.ResourceArgs
-    ///         {
-    ///             ParentId = testRestApi.RootResourceId,
-    ///             PathPart = "mytestresource",
     ///             RestApi = testRestApi.Id,
-    ///         });
-    ///         var testMethod = new Aws.ApiGateway.Method("testMethod", new Aws.ApiGateway.MethodArgs
-    ///         {
-    ///             Authorization = "NONE",
-    ///             HttpMethod = "GET",
-    ///             ResourceId = testResource.Id,
-    ///             RestApi = testRestApi.Id,
+    ///             Deployment = testDeployment.Id,
     ///         });
     ///         var methodSettings = new Aws.ApiGateway.MethodSettings("methodSettings", new Aws.ApiGateway.MethodSettingsArgs
     ///         {
+    ///             RestApi = testRestApi.Id,
+    ///             StageName = testStage.StageName,
     ///             MethodPath = Output.Tuple(testResource.PathPart, testMethod.HttpMethod).Apply(values =&gt;
     ///             {
     ///                 var pathPart = values.Item1;
     ///                 var httpMethod = values.Item2;
     ///                 return $"{pathPart}/{httpMethod}";
     ///             }),
-    ///             RestApi = testRestApi.Id,
     ///             Settings = new Aws.ApiGateway.Inputs.MethodSettingsSettingsArgs
     ///             {
-    ///                 LoggingLevel = "INFO",
     ///                 MetricsEnabled = true,
+    ///                 LoggingLevel = "INFO",
     ///             },
-    ///             StageName = testStage.StageName,
-    ///         });
-    ///         var testIntegration = new Aws.ApiGateway.Integration("testIntegration", new Aws.ApiGateway.IntegrationArgs
-    ///         {
-    ///             HttpMethod = testMethod.HttpMethod,
-    ///             ResourceId = testResource.Id,
-    ///             RestApi = testRestApi.Id,
-    ///             Type = "MOCK",
     ///         });
     ///     }
     /// 
     /// }
+    /// ```
+    /// ### Managing the API Logging CloudWatch Log Group
+    /// 
+    /// API Gateway provides the ability to [enable CloudWatch API logging](https://docs.aws.amazon.com/apigateway/latest/developerguide/set-up-logging.html). To manage the CloudWatch Log Group when this feature is enabled, the `aws.cloudwatch.LogGroup` resource can be used where the name matches the API Gateway naming convention. If the CloudWatch Log Group previously exists, the `aws.cloudwatch.LogGroup` resource can be imported as a one time operation and recreation of the environment can occur without import.
+    /// 
+    /// &gt; The below configuration uses [`dependsOn`](https://www.pulumi.com/docs/intro/concepts/programming-model/#dependson) to prevent ordering issues with API Gateway automatically creating the log group first and a variable for naming consistency. Other ordering and naming methodologies may be more appropriate for your environment.
+    /// 
+    /// ```csharp
+    /// using Pulumi;
+    /// using Aws = Pulumi.Aws;
+    /// 
+    /// class MyStack : Stack
+    /// {
+    ///     public MyStack()
+    ///     {
+    ///         var config = new Config();
+    ///         var stageName = config.Get("stageName") ?? "example";
+    ///         var exampleRestApi = new Aws.ApiGateway.RestApi("exampleRestApi", new Aws.ApiGateway.RestApiArgs
+    ///         {
+    ///         });
+    ///         // ... other configuration ...
+    ///         var exampleLogGroup = new Aws.CloudWatch.LogGroup("exampleLogGroup", new Aws.CloudWatch.LogGroupArgs
+    ///         {
+    ///             RetentionInDays = 7,
+    ///         });
+    ///         // ... potentially other configuration ...
+    ///         var exampleStage = new Aws.ApiGateway.Stage("exampleStage", new Aws.ApiGateway.StageArgs
+    ///         {
+    ///             StageName = stageName,
+    ///         }, new CustomResourceOptions
+    ///         {
+    ///             DependsOn = 
+    ///             {
+    ///                 exampleLogGroup,
+    ///             },
+    ///         });
+    ///         // ... other configuration ...
+    ///     }
+    /// 
+    /// }
+    /// ```
+    /// 
+    /// ## Import
+    /// 
+    /// `aws_api_gateway_stage` can be imported using `REST-API-ID/STAGE-NAME`, e.g.
+    /// 
+    /// ```sh
+    ///  $ pulumi import aws:apigateway/stage:Stage example 12345abcde/example
     /// ```
     /// </summary>
     public partial class Stage : Pulumi.CustomResource
@@ -105,8 +153,7 @@ namespace Pulumi.Aws.ApiGateway
         public Output<bool?> CacheClusterEnabled { get; private set; } = null!;
 
         /// <summary>
-        /// The size of the cache cluster for the stage, if enabled.
-        /// Allowed values include `0.5`, `1.6`, `6.1`, `13.5`, `28.4`, `58.2`, `118` and `237`.
+        /// The size of the cache cluster for the stage, if enabled. Allowed values include `0.5`, `1.6`, `6.1`, `13.5`, `28.4`, `58.2`, `118` and `237`.
         /// </summary>
         [Output("cacheClusterSize")]
         public Output<string?> CacheClusterSize { get; private set; } = null!;
@@ -239,8 +286,7 @@ namespace Pulumi.Aws.ApiGateway
         public Input<bool>? CacheClusterEnabled { get; set; }
 
         /// <summary>
-        /// The size of the cache cluster for the stage, if enabled.
-        /// Allowed values include `0.5`, `1.6`, `6.1`, `13.5`, `28.4`, `58.2`, `118` and `237`.
+        /// The size of the cache cluster for the stage, if enabled. Allowed values include `0.5`, `1.6`, `6.1`, `13.5`, `28.4`, `58.2`, `118` and `237`.
         /// </summary>
         [Input("cacheClusterSize")]
         public Input<string>? CacheClusterSize { get; set; }
@@ -337,8 +383,7 @@ namespace Pulumi.Aws.ApiGateway
         public Input<bool>? CacheClusterEnabled { get; set; }
 
         /// <summary>
-        /// The size of the cache cluster for the stage, if enabled.
-        /// Allowed values include `0.5`, `1.6`, `6.1`, `13.5`, `28.4`, `58.2`, `118` and `237`.
+        /// The size of the cache cluster for the stage, if enabled. Allowed values include `0.5`, `1.6`, `6.1`, `13.5`, `28.4`, `58.2`, `118` and `237`.
         /// </summary>
         [Input("cacheClusterSize")]
         public Input<string>? CacheClusterSize { get; set; }

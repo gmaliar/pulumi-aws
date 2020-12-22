@@ -13,16 +13,22 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const example = new aws.ses.DomainIdentity("example", {
- *     domain: "example.com",
- * });
- * const exampleAmazonsesVerificationRecord = new aws.route53.Record("example_amazonses_verification_record", {
- *     name: "_amazonses.example.com",
- *     records: [example.verificationToken],
- *     ttl: 600,
- *     type: "TXT",
+ * const example = new aws.ses.DomainIdentity("example", {domain: "example.com"});
+ * const exampleAmazonsesVerificationRecord = new aws.route53.Record("exampleAmazonsesVerificationRecord", {
  *     zoneId: "ABCDEFGHIJ123",
+ *     name: "_amazonses.example.com",
+ *     type: "TXT",
+ *     ttl: "600",
+ *     records: [example.verificationToken],
  * });
+ * ```
+ *
+ * ## Import
+ *
+ * SES domain identities can be imported using the domain name.
+ *
+ * ```sh
+ *  $ pulumi import aws:ses/domainIdentity:DomainIdentity example example.com
  * ```
  */
 export class DomainIdentity extends pulumi.CustomResource {
@@ -89,7 +95,7 @@ export class DomainIdentity extends pulumi.CustomResource {
             inputs["verificationToken"] = state ? state.verificationToken : undefined;
         } else {
             const args = argsOrState as DomainIdentityArgs | undefined;
-            if (!args || args.domain === undefined) {
+            if ((!args || args.domain === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'domain'");
             }
             inputs["domain"] = args ? args.domain : undefined;

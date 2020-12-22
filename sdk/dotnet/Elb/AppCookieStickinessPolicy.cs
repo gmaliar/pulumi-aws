@@ -41,13 +41,21 @@ namespace Pulumi.Aws.Elb
     ///         });
     ///         var foo = new Aws.Elb.AppCookieStickinessPolicy("foo", new Aws.Elb.AppCookieStickinessPolicyArgs
     ///         {
-    ///             CookieName = "MyAppCookie",
-    ///             LbPort = 80,
     ///             LoadBalancer = lb.Name,
+    ///             LbPort = 80,
+    ///             CookieName = "MyAppCookie",
     ///         });
     ///     }
     /// 
     /// }
+    /// ```
+    /// 
+    /// ## Import
+    /// 
+    /// Application cookie stickiness policies can be imported using the ELB name, port, and policy name separated by colons (`:`), e.g.
+    /// 
+    /// ```sh
+    ///  $ pulumi import aws:elb/appCookieStickinessPolicy:AppCookieStickinessPolicy example my-elb:80:my-policy
     /// ```
     /// </summary>
     public partial class AppCookieStickinessPolicy : Pulumi.CustomResource
@@ -104,7 +112,7 @@ namespace Pulumi.Aws.Elb
                 Version = Utilities.Version,
                 Aliases =
                 {
-                    new Alias { Type = "aws:elasticloadbalancing/appCookieStickinessPolicy:AppCookieStickinessPolicy"},
+                    new Pulumi.Alias { Type = "aws:elasticloadbalancing/appCookieStickinessPolicy:AppCookieStickinessPolicy"},
                 },
             };
             var merged = CustomResourceOptions.Merge(defaultOptions, options);

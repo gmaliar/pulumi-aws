@@ -31,6 +31,14 @@ import * as utilities from "../utilities";
  *     platformCredential: "<GCM API KEY>",
  * });
  * ```
+ *
+ * ## Import
+ *
+ * SNS platform applications can be imported using the ARN, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:sns/platformApplication:PlatformApplication gcm_application arn:aws:sns:us-west-2:0123456789012:app/GCM/gcm_application
+ * ```
  */
 export class PlatformApplication extends pulumi.CustomResource {
     /**
@@ -135,10 +143,10 @@ export class PlatformApplication extends pulumi.CustomResource {
             inputs["successFeedbackSampleRate"] = state ? state.successFeedbackSampleRate : undefined;
         } else {
             const args = argsOrState as PlatformApplicationArgs | undefined;
-            if (!args || args.platform === undefined) {
+            if ((!args || args.platform === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'platform'");
             }
-            if (!args || args.platformCredential === undefined) {
+            if ((!args || args.platformCredential === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'platformCredential'");
             }
             inputs["eventDeliveryFailureTopicArn"] = args ? args.eventDeliveryFailureTopicArn : undefined;

@@ -4,6 +4,7 @@
 package iam
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -20,7 +21,7 @@ import (
 // import (
 // 	"fmt"
 //
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/iam"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/iam"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -33,8 +34,8 @@ import (
 // 			return err
 // 		}
 // 		_, err = iam.NewUserPolicy(ctx, "lbRo", &iam.UserPolicyArgs{
-// 			Policy: pulumi.String(fmt.Sprintf("%v%v%v%v%v%v%v%v%v%v%v%v%v", "{\n", "  \"Version\": \"2012-10-17\",\n", "  \"Statement\": [\n", "    {\n", "      \"Action\": [\n", "        \"ec2:Describe*\"\n", "      ],\n", "      \"Effect\": \"Allow\",\n", "      \"Resource\": \"*\"\n", "    }\n", "  ]\n", "}\n", "\n")),
 // 			User:   lbUser.Name,
+// 			Policy: pulumi.String(fmt.Sprintf("%v%v%v%v%v%v%v%v%v%v%v%v", "{\n", "  \"Version\": \"2012-10-17\",\n", "  \"Statement\": [\n", "    {\n", "      \"Action\": [\n", "        \"ec2:Describe*\"\n", "      ],\n", "      \"Effect\": \"Allow\",\n", "      \"Resource\": \"*\"\n", "    }\n", "  ]\n", "}\n")),
 // 		})
 // 		if err != nil {
 // 			return err
@@ -48,6 +49,14 @@ import (
 // 		return nil
 // 	})
 // }
+// ```
+//
+// ## Import
+//
+// IAM User Policies can be imported using the `user_name:user_policy_name`, e.g.
+//
+// ```sh
+//  $ pulumi import aws:iam/userPolicy:UserPolicy mypolicy user_of_mypolicy_name:mypolicy_name
 // ```
 type UserPolicy struct {
 	pulumi.CustomResourceState
@@ -65,14 +74,15 @@ type UserPolicy struct {
 // NewUserPolicy registers a new resource with the given unique name, arguments, and options.
 func NewUserPolicy(ctx *pulumi.Context,
 	name string, args *UserPolicyArgs, opts ...pulumi.ResourceOption) (*UserPolicy, error) {
-	if args == nil || args.Policy == nil {
-		return nil, errors.New("missing required argument 'Policy'")
-	}
-	if args == nil || args.User == nil {
-		return nil, errors.New("missing required argument 'User'")
-	}
 	if args == nil {
-		args = &UserPolicyArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.Policy == nil {
+		return nil, errors.New("invalid value for required argument 'Policy'")
+	}
+	if args.User == nil {
+		return nil, errors.New("invalid value for required argument 'User'")
 	}
 	var resource UserPolicy
 	err := ctx.RegisterResource("aws:iam/userPolicy:UserPolicy", name, args, &resource, opts...)
@@ -146,4 +156,43 @@ type UserPolicyArgs struct {
 
 func (UserPolicyArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*userPolicyArgs)(nil)).Elem()
+}
+
+type UserPolicyInput interface {
+	pulumi.Input
+
+	ToUserPolicyOutput() UserPolicyOutput
+	ToUserPolicyOutputWithContext(ctx context.Context) UserPolicyOutput
+}
+
+func (UserPolicy) ElementType() reflect.Type {
+	return reflect.TypeOf((*UserPolicy)(nil)).Elem()
+}
+
+func (i UserPolicy) ToUserPolicyOutput() UserPolicyOutput {
+	return i.ToUserPolicyOutputWithContext(context.Background())
+}
+
+func (i UserPolicy) ToUserPolicyOutputWithContext(ctx context.Context) UserPolicyOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(UserPolicyOutput)
+}
+
+type UserPolicyOutput struct {
+	*pulumi.OutputState
+}
+
+func (UserPolicyOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*UserPolicyOutput)(nil)).Elem()
+}
+
+func (o UserPolicyOutput) ToUserPolicyOutput() UserPolicyOutput {
+	return o
+}
+
+func (o UserPolicyOutput) ToUserPolicyOutputWithContext(ctx context.Context) UserPolicyOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(UserPolicyOutput{})
 }

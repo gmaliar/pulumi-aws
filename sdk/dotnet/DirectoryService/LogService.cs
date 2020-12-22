@@ -37,7 +37,6 @@ namespace Pulumi.Aws.DirectoryService
     ///                         "logs:CreateLogStream",
     ///                         "logs:PutLogEvents",
     ///                     },
-    ///                     Effect = "Allow",
     ///                     Principals = 
     ///                     {
     ///                         new Aws.Iam.Inputs.GetPolicyDocumentStatementPrincipalArgs
@@ -51,8 +50,9 @@ namespace Pulumi.Aws.DirectoryService
     ///                     },
     ///                     Resources = 
     ///                     {
-    ///                         arn,
+    ///                         $"{arn}:*",
     ///                     },
+    ///                     Effect = "Allow",
     ///                 },
     ///             },
     ///         }));
@@ -69,6 +69,14 @@ namespace Pulumi.Aws.DirectoryService
     ///     }
     /// 
     /// }
+    /// ```
+    /// 
+    /// ## Import
+    /// 
+    /// Directory Service Log Subscriptions can be imported using the directory id, e.g.
+    /// 
+    /// ```sh
+    ///  $ pulumi import aws:directoryservice/logService:LogService msad d-1234567890
     /// ```
     /// </summary>
     public partial class LogService : Pulumi.CustomResource

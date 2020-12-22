@@ -2,8 +2,7 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 /**
@@ -17,8 +16,8 @@ import * as utilities from "../utilities";
  *
  * const test = new aws.gamelift.GameSessionQueue("test", {
  *     destinations: [
- *         aws_gamelift_fleet_us_west_2_fleet.arn,
- *         aws_gamelift_fleet_eu_central_1_fleet.arn,
+ *         aws_gamelift_fleet.us_west_2_fleet.arn,
+ *         aws_gamelift_fleet.eu_central_1_fleet.arn,
  *     ],
  *     playerLatencyPolicies: [
  *         {
@@ -31,6 +30,14 @@ import * as utilities from "../utilities";
  *     ],
  *     timeoutInSeconds: 60,
  * });
+ * ```
+ *
+ * ## Import
+ *
+ * Gamelift Game Session Queues can be imported by their `name`, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:gamelift/gameSessionQueue:GameSessionQueue example example
  * ```
  */
 export class GameSessionQueue extends pulumi.CustomResource {

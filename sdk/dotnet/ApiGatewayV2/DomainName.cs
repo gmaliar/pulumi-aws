@@ -41,6 +41,14 @@ namespace Pulumi.Aws.ApiGatewayV2
     /// 
     /// }
     /// ```
+    /// 
+    /// ## Import
+    /// 
+    /// `aws_apigatewayv2_domain_name` can be imported by using the domain name, e.g.
+    /// 
+    /// ```sh
+    ///  $ pulumi import aws:apigatewayv2/domainName:DomainName example ws-api.example.com
+    /// ```
     /// </summary>
     public partial class DomainName : Pulumi.CustomResource
     {
@@ -57,7 +65,7 @@ namespace Pulumi.Aws.ApiGatewayV2
         public Output<string> Arn { get; private set; } = null!;
 
         /// <summary>
-        /// The domain name.
+        /// The domain name. Must be between 1 and 512 characters in length.
         /// </summary>
         [Output("domainName")]
         public Output<string> Domain { get; private set; } = null!;
@@ -67,6 +75,12 @@ namespace Pulumi.Aws.ApiGatewayV2
         /// </summary>
         [Output("domainNameConfiguration")]
         public Output<Outputs.DomainNameDomainNameConfiguration> DomainNameConfiguration { get; private set; } = null!;
+
+        /// <summary>
+        /// The mutual TLS authentication configuration for the domain name.
+        /// </summary>
+        [Output("mutualTlsAuthentication")]
+        public Output<Outputs.DomainNameMutualTlsAuthentication?> MutualTlsAuthentication { get; private set; } = null!;
 
         /// <summary>
         /// A map of tags to assign to the domain name.
@@ -121,7 +135,7 @@ namespace Pulumi.Aws.ApiGatewayV2
     public sealed class DomainNameArgs : Pulumi.ResourceArgs
     {
         /// <summary>
-        /// The domain name.
+        /// The domain name. Must be between 1 and 512 characters in length.
         /// </summary>
         [Input("domainName", required: true)]
         public Input<string> Domain { get; set; } = null!;
@@ -131,6 +145,12 @@ namespace Pulumi.Aws.ApiGatewayV2
         /// </summary>
         [Input("domainNameConfiguration", required: true)]
         public Input<Inputs.DomainNameDomainNameConfigurationArgs> DomainNameConfiguration { get; set; } = null!;
+
+        /// <summary>
+        /// The mutual TLS authentication configuration for the domain name.
+        /// </summary>
+        [Input("mutualTlsAuthentication")]
+        public Input<Inputs.DomainNameMutualTlsAuthenticationArgs>? MutualTlsAuthentication { get; set; }
 
         [Input("tags")]
         private InputMap<string>? _tags;
@@ -164,7 +184,7 @@ namespace Pulumi.Aws.ApiGatewayV2
         public Input<string>? Arn { get; set; }
 
         /// <summary>
-        /// The domain name.
+        /// The domain name. Must be between 1 and 512 characters in length.
         /// </summary>
         [Input("domainName")]
         public Input<string>? Domain { get; set; }
@@ -174,6 +194,12 @@ namespace Pulumi.Aws.ApiGatewayV2
         /// </summary>
         [Input("domainNameConfiguration")]
         public Input<Inputs.DomainNameDomainNameConfigurationGetArgs>? DomainNameConfiguration { get; set; }
+
+        /// <summary>
+        /// The mutual TLS authentication configuration for the domain name.
+        /// </summary>
+        [Input("mutualTlsAuthentication")]
+        public Input<Inputs.DomainNameMutualTlsAuthenticationGetArgs>? MutualTlsAuthentication { get; set; }
 
         [Input("tags")]
         private InputMap<string>? _tags;

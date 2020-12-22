@@ -2,8 +2,7 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 /**
@@ -15,10 +14,10 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const hogeBucket = new aws.s3.Bucket("hoge", {});
- * const hogeDatabase = new aws.athena.Database("hoge", {
- *     bucket: hogeBucket.bucket,
+ * const hogeBucket = new aws.s3.Bucket("hogeBucket", {});
+ * const hogeDatabase = new aws.athena.Database("hogeDatabase", {
  *     name: "database_name",
+ *     bucket: hogeBucket.bucket,
  * });
  * ```
  */
@@ -85,7 +84,7 @@ export class Database extends pulumi.CustomResource {
             inputs["name"] = state ? state.name : undefined;
         } else {
             const args = argsOrState as DatabaseArgs | undefined;
-            if (!args || args.bucket === undefined) {
+            if ((!args || args.bucket === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'bucket'");
             }
             inputs["bucket"] = args ? args.bucket : undefined;

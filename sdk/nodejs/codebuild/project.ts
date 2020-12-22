@@ -2,8 +2,7 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 /**
@@ -15,11 +14,8 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const exampleBucket = new aws.s3.Bucket("example", {
- *     acl: "private",
- * });
- * const exampleRole = new aws.iam.Role("example", {
- *     assumeRolePolicy: `{
+ * const exampleBucket = new aws.s3.Bucket("exampleBucket", {acl: "private"});
+ * const exampleRole = new aws.iam.Role("exampleRole", {assumeRolePolicy: `{
  *   "Version": "2012-10-17",
  *   "Statement": [
  *     {
@@ -31,9 +27,9 @@ import * as utilities from "../utilities";
  *     }
  *   ]
  * }
- * `,
- * });
- * const exampleRolePolicy = new aws.iam.RolePolicy("example", {
+ * `});
+ * const exampleRolePolicy = new aws.iam.RolePolicy("exampleRolePolicy", {
+ *     role: exampleRole.name,
  *     policy: pulumi.interpolate`{
  *   "Version": "2012-10-17",
  *   "Statement": [
@@ -72,8 +68,8 @@ import * as utilities from "../utilities";
  *       "Condition": {
  *         "StringEquals": {
  *           "ec2:Subnet": [
- *             "${aws_subnet_example1.arn}",
- *             "${aws_subnet_example2.arn}"
+ *             "${aws_subnet.example1.arn}",
+ *             "${aws_subnet.example2.arn}"
  *           ],
  *           "ec2:AuthorizedService": "codebuild.amazonaws.com"
  *         }
@@ -92,20 +88,23 @@ import * as utilities from "../utilities";
  *   ]
  * }
  * `,
- *     role: exampleRole.name,
  * });
- * const exampleProject = new aws.codebuild.Project("example", {
+ * const exampleProject = new aws.codebuild.Project("exampleProject", {
+ *     description: "test_codebuild_project",
+ *     buildTimeout: "5",
+ *     serviceRole: exampleRole.arn,
  *     artifacts: {
  *         type: "NO_ARTIFACTS",
  *     },
- *     buildTimeout: 5,
  *     cache: {
- *         location: exampleBucket.bucket,
  *         type: "S3",
+ *         location: exampleBucket.bucket,
  *     },
- *     description: "test_codebuild_project",
  *     environment: {
  *         computeType: "BUILD_GENERAL1_SMALL",
+ *         image: "aws/codebuild/standard:1.0",
+ *         type: "LINUX_CONTAINER",
+ *         imagePullCredentialsType: "CODEBUILD",
  *         environmentVariables: [
  *             {
  *                 name: "SOME_KEY1",
@@ -113,13 +112,10 @@ import * as utilities from "../utilities";
  *             },
  *             {
  *                 name: "SOME_KEY2",
- *                 type: "PARAMETER_STORE",
  *                 value: "SOME_VALUE2",
+ *                 type: "PARAMETER_STORE",
  *             },
  *         ],
- *         image: "aws/codebuild/standard:1.0",
- *         imagePullCredentialsType: "CODEBUILD",
- *         type: "LINUX_CONTAINER",
  *     },
  *     logsConfig: {
  *         cloudwatchLogs: {
@@ -127,69 +123,76 @@ import * as utilities from "../utilities";
  *             streamName: "log-stream",
  *         },
  *         s3Logs: {
- *             location: pulumi.interpolate`${exampleBucket.id}/build-log`,
  *             status: "ENABLED",
+ *             location: pulumi.interpolate`${exampleBucket.id}/build-log`,
  *         },
  *     },
- *     serviceRole: exampleRole.arn,
  *     source: {
+ *         type: "GITHUB",
+ *         location: "https://github.com/mitchellh/packer.git",
  *         gitCloneDepth: 1,
  *         gitSubmodulesConfig: {
  *             fetchSubmodules: true,
  *         },
- *         location: "https://github.com/mitchellh/packer.git",
- *         type: "GITHUB",
  *     },
  *     sourceVersion: "master",
+ *     vpcConfig: {
+ *         vpcId: aws_vpc.example.id,
+ *         subnets: [
+ *             aws_subnet.example1.id,
+ *             aws_subnet.example2.id,
+ *         ],
+ *         securityGroupIds: [
+ *             aws_security_group.example1.id,
+ *             aws_security_group.example2.id,
+ *         ],
+ *     },
  *     tags: {
  *         Environment: "Test",
  *     },
- *     vpcConfig: {
- *         securityGroupIds: [
- *             aws_security_group_example1.id,
- *             aws_security_group_example2.id,
- *         ],
- *         subnets: [
- *             aws_subnet_example1.id,
- *             aws_subnet_example2.id,
- *         ],
- *         vpcId: aws_vpc_example.id,
- *     },
  * });
  * const project_with_cache = new aws.codebuild.Project("project-with-cache", {
+ *     description: "test_codebuild_project_cache",
+ *     buildTimeout: "5",
+ *     queuedTimeout: "5",
+ *     serviceRole: exampleRole.arn,
  *     artifacts: {
  *         type: "NO_ARTIFACTS",
  *     },
- *     buildTimeout: 5,
  *     cache: {
+ *         type: "LOCAL",
  *         modes: [
  *             "LOCAL_DOCKER_LAYER_CACHE",
  *             "LOCAL_SOURCE_CACHE",
  *         ],
- *         type: "LOCAL",
  *     },
- *     description: "test_codebuild_project_cache",
  *     environment: {
  *         computeType: "BUILD_GENERAL1_SMALL",
+ *         image: "aws/codebuild/standard:1.0",
+ *         type: "LINUX_CONTAINER",
+ *         imagePullCredentialsType: "CODEBUILD",
  *         environmentVariables: [{
  *             name: "SOME_KEY1",
  *             value: "SOME_VALUE1",
  *         }],
- *         image: "aws/codebuild/standard:1.0",
- *         imagePullCredentialsType: "CODEBUILD",
- *         type: "LINUX_CONTAINER",
  *     },
- *     queuedTimeout: 5,
- *     serviceRole: exampleRole.arn,
  *     source: {
- *         gitCloneDepth: 1,
- *         location: "https://github.com/mitchellh/packer.git",
  *         type: "GITHUB",
+ *         location: "https://github.com/mitchellh/packer.git",
+ *         gitCloneDepth: 1,
  *     },
  *     tags: {
  *         Environment: "Test",
  *     },
  * });
+ * ```
+ *
+ * ## Import
+ *
+ * CodeBuild Project can be imported using the `name`, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:codebuild/project:Project name project-name
  * ```
  */
 export class Project extends pulumi.CustomResource {
@@ -330,16 +333,16 @@ export class Project extends pulumi.CustomResource {
             inputs["vpcConfig"] = state ? state.vpcConfig : undefined;
         } else {
             const args = argsOrState as ProjectArgs | undefined;
-            if (!args || args.artifacts === undefined) {
+            if ((!args || args.artifacts === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'artifacts'");
             }
-            if (!args || args.environment === undefined) {
+            if ((!args || args.environment === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'environment'");
             }
-            if (!args || args.serviceRole === undefined) {
+            if ((!args || args.serviceRole === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'serviceRole'");
             }
-            if (!args || args.source === undefined) {
+            if ((!args || args.source === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'source'");
             }
             inputs["artifacts"] = args ? args.artifacts : undefined;

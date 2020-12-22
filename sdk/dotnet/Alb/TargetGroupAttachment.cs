@@ -27,14 +27,16 @@ namespace Pulumi.Aws.Alb
     ///         var testTargetGroup = new Aws.LB.TargetGroup("testTargetGroup", new Aws.LB.TargetGroupArgs
     ///         {
     ///         });
+    ///         // ... other configuration ...
     ///         var testInstance = new Aws.Ec2.Instance("testInstance", new Aws.Ec2.InstanceArgs
     ///         {
     ///         });
+    ///         // ... other configuration ...
     ///         var testTargetGroupAttachment = new Aws.LB.TargetGroupAttachment("testTargetGroupAttachment", new Aws.LB.TargetGroupAttachmentArgs
     ///         {
-    ///             Port = 80,
     ///             TargetGroupArn = testTargetGroup.Arn,
     ///             TargetId = testInstance.Id,
+    ///             Port = 80,
     ///         });
     ///     }
     /// 
@@ -57,6 +59,7 @@ namespace Pulumi.Aws.Alb
     ///         var testFunction = new Aws.Lambda.Function("testFunction", new Aws.Lambda.FunctionArgs
     ///         {
     ///         });
+    ///         // ... other configuration ...
     ///         var withLb = new Aws.Lambda.Permission("withLb", new Aws.Lambda.PermissionArgs
     ///         {
     ///             Action = "lambda:InvokeFunction",
@@ -72,13 +75,17 @@ namespace Pulumi.Aws.Alb
     ///         {
     ///             DependsOn = 
     ///             {
-    ///                 "aws_lambda_permission.with_lb",
+    ///                 withLb,
     ///             },
     ///         });
     ///     }
     /// 
     /// }
     /// ```
+    /// 
+    /// ## Import
+    /// 
+    /// Target Group Attachments cannot be imported.
     /// </summary>
     public partial class TargetGroupAttachment : Pulumi.CustomResource
     {
@@ -131,7 +138,7 @@ namespace Pulumi.Aws.Alb
                 Version = Utilities.Version,
                 Aliases =
                 {
-                    new Alias { Type = "aws:applicationloadbalancing/targetGroupAttachment:TargetGroupAttachment"},
+                    new Pulumi.Alias { Type = "aws:applicationloadbalancing/targetGroupAttachment:TargetGroupAttachment"},
                 },
             };
             var merged = CustomResourceOptions.Merge(defaultOptions, options);

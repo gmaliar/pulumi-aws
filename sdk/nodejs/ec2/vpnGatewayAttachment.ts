@@ -18,15 +18,11 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const network = new aws.ec2.Vpc("network", {
- *     cidrBlock: "10.0.0.0/16",
- * });
- * const vpn = new aws.ec2.VpnGateway("vpn", {
- *     tags: {
- *         Name: "example-vpn-gateway",
- *     },
- * });
- * const vpnAttachment = new aws.ec2.VpnGatewayAttachment("vpn_attachment", {
+ * const network = new aws.ec2.Vpc("network", {cidrBlock: "10.0.0.0/16"});
+ * const vpn = new aws.ec2.VpnGateway("vpn", {tags: {
+ *     Name: "example-vpn-gateway",
+ * }});
+ * const vpnAttachment = new aws.ec2.VpnGatewayAttachment("vpnAttachment", {
  *     vpcId: network.id,
  *     vpnGatewayId: vpn.id,
  * });
@@ -35,6 +31,10 @@ import * as utilities from "../utilities";
  * See [Virtual Private Cloud](http://docs.aws.amazon.com/AmazonVPC/latest/UserGuide/VPC_Introduction.html)
  * and [Virtual Private Gateway](http://docs.aws.amazon.com/AmazonVPC/latest/UserGuide/VPC_VPN.html) user
  * guides for more information.
+ *
+ * ## Import
+ *
+ * This resource does not support importing.
  */
 export class VpnGatewayAttachment extends pulumi.CustomResource {
     /**
@@ -89,10 +89,10 @@ export class VpnGatewayAttachment extends pulumi.CustomResource {
             inputs["vpnGatewayId"] = state ? state.vpnGatewayId : undefined;
         } else {
             const args = argsOrState as VpnGatewayAttachmentArgs | undefined;
-            if (!args || args.vpcId === undefined) {
+            if ((!args || args.vpcId === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'vpcId'");
             }
-            if (!args || args.vpnGatewayId === undefined) {
+            if ((!args || args.vpnGatewayId === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'vpnGatewayId'");
             }
             inputs["vpcId"] = args ? args.vpcId : undefined;

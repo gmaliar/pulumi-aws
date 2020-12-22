@@ -24,6 +24,7 @@ namespace Pulumi.Aws.Ec2
     ///     {
     ///         var ubuntu = Output.Create(Aws.GetAmi.InvokeAsync(new Aws.GetAmiArgs
     ///         {
+    ///             MostRecent = true,
     ///             Filters = 
     ///             {
     ///                 new Aws.Inputs.GetAmiFilterArgs
@@ -43,7 +44,6 @@ namespace Pulumi.Aws.Ec2
     ///                     },
     ///                 },
     ///             },
-    ///             MostRecent = true,
     ///             Owners = 
     ///             {
     ///                 "099720109477",
@@ -78,6 +78,7 @@ namespace Pulumi.Aws.Ec2
     ///     {
     ///         var ubuntu = Output.Create(Aws.GetAmi.InvokeAsync(new Aws.GetAmiArgs
     ///         {
+    ///             MostRecent = true,
     ///             Filters = 
     ///             {
     ///                 new Aws.Inputs.GetAmiFilterArgs
@@ -97,7 +98,6 @@ namespace Pulumi.Aws.Ec2
     ///                     },
     ///                 },
     ///             },
-    ///             MostRecent = true,
     ///             Owners = 
     ///             {
     ///                 "099720109477",
@@ -105,15 +105,15 @@ namespace Pulumi.Aws.Ec2
     ///         }));
     ///         var asConf = new Aws.Ec2.LaunchConfiguration("asConf", new Aws.Ec2.LaunchConfigurationArgs
     ///         {
+    ///             NamePrefix = "lc-example-",
     ///             ImageId = ubuntu.Apply(ubuntu =&gt; ubuntu.Id),
     ///             InstanceType = "t2.micro",
-    ///             NamePrefix = "lc-example-",
     ///         });
     ///         var bar = new Aws.AutoScaling.Group("bar", new Aws.AutoScaling.GroupArgs
     ///         {
     ///             LaunchConfiguration = asConf.Name,
-    ///             MaxSize = 2,
     ///             MinSize = 1,
+    ///             MaxSize = 2,
     ///         });
     ///     }
     /// 
@@ -143,6 +143,7 @@ namespace Pulumi.Aws.Ec2
     ///     {
     ///         var ubuntu = Output.Create(Aws.GetAmi.InvokeAsync(new Aws.GetAmiArgs
     ///         {
+    ///             MostRecent = true,
     ///             Filters = 
     ///             {
     ///                 new Aws.Inputs.GetAmiFilterArgs
@@ -162,7 +163,6 @@ namespace Pulumi.Aws.Ec2
     ///                     },
     ///                 },
     ///             },
-    ///             MostRecent = true,
     ///             Owners = 
     ///             {
     ///                 "099720109477",
@@ -218,6 +218,7 @@ namespace Pulumi.Aws.Ec2
     /// * `delete_on_termination` - (Optional) Whether the volume should be destroyed
     ///   on instance termination (Default: `true`).
     /// * `encrypted` - (Optional) Whether the volume should be encrypted or not. Do not use this option if you are using `snapshot_id` as the encrypted flag will be determined by the snapshot. (Default: `false`).
+    /// * `no_device` - (Optional) Whether the device in the block device mapping of the AMI is suppressed.
     /// 
     /// Modifying any `ebs_block_device` currently requires resource replacement.
     /// 
@@ -238,6 +239,14 @@ namespace Pulumi.Aws.Ec2
     /// cannot currently be detected by this provider. After updating to block device
     /// configuration, resource recreation can be manually triggered by using the
     /// [`up` command with the --replace argument](https://www.pulumi.com/docs/reference/cli/pulumi_up/).
+    /// 
+    /// ## Import
+    /// 
+    /// Launch configurations can be imported using the `name`, e.g.
+    /// 
+    /// ```sh
+    ///  $ pulumi import aws:ec2/launchConfiguration:LaunchConfiguration as_conf lg-123456
+    /// ```
     /// </summary>
     public partial class LaunchConfiguration : Pulumi.CustomResource
     {

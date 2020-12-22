@@ -14,44 +14,52 @@ import * as utilities from "../utilities";
  * import * as aws from "@pulumi/aws";
  *
  * const main = new aws.cloudwatch.Dashboard("main", {
- *     dashboardBody: ` {
- *    "widgets": [
- *        {
- *           "type":"metric",
- *           "x":0,
- *           "y":0,
- *           "width":12,
- *           "height":6,
- *           "properties":{
- *              "metrics":[
- *                 [
- *                    "AWS/EC2",
- *                    "CPUUtilization",
- *                    "InstanceId",
- *                    "i-012345"
- *                 ]
- *              ],
- *              "period":300,
- *              "stat":"Average",
- *              "region":"us-east-1",
- *              "title":"EC2 Instance CPU"
- *           }
- *        },
- *        {
- *           "type":"text",
- *           "x":0,
- *           "y":7,
- *           "width":3,
- *           "height":3,
- *           "properties":{
- *              "markdown":"Hello world"
- *           }
- *        }
- *    ]
- *  }
- *  `,
+ *     dashboardBody: `{
+ *   "widgets": [
+ *     {
+ *       "type": "metric",
+ *       "x": 0,
+ *       "y": 0,
+ *       "width": 12,
+ *       "height": 6,
+ *       "properties": {
+ *         "metrics": [
+ *           [
+ *             "AWS/EC2",
+ *             "CPUUtilization",
+ *             "InstanceId",
+ *             "i-012345"
+ *           ]
+ *         ],
+ *         "period": 300,
+ *         "stat": "Average",
+ *         "region": "us-east-1",
+ *         "title": "EC2 Instance CPU"
+ *       }
+ *     },
+ *     {
+ *       "type": "text",
+ *       "x": 0,
+ *       "y": 7,
+ *       "width": 3,
+ *       "height": 3,
+ *       "properties": {
+ *         "markdown": "Hello world"
+ *       }
+ *     }
+ *   ]
+ * }
+ * `,
  *     dashboardName: "my-dashboard",
  * });
+ * ```
+ *
+ * ## Import
+ *
+ * CloudWatch dashboards can be imported using the `dashboard_name`, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:cloudwatch/dashboard:Dashboard sample <dashboard_name>
  * ```
  */
 export class Dashboard extends pulumi.CustomResource {
@@ -112,10 +120,10 @@ export class Dashboard extends pulumi.CustomResource {
             inputs["dashboardName"] = state ? state.dashboardName : undefined;
         } else {
             const args = argsOrState as DashboardArgs | undefined;
-            if (!args || args.dashboardBody === undefined) {
+            if ((!args || args.dashboardBody === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'dashboardBody'");
             }
-            if (!args || args.dashboardName === undefined) {
+            if ((!args || args.dashboardName === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'dashboardName'");
             }
             inputs["dashboardBody"] = args ? args.dashboardBody : undefined;

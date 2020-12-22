@@ -15,16 +15,19 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const testSnapshotCopyGrant = new aws.redshift.SnapshotCopyGrant("test", {
- *     snapshotCopyGrantName: "my-grant",
- * });
- * const testCluster = new aws.redshift.Cluster("test", {
- *     // ... other configuration ...
- *     snapshotCopy: {
- *         destinationRegion: "us-east-2",
- *         grantName: testSnapshotCopyGrant.snapshotCopyGrantName,
- *     },
- * });
+ * const testSnapshotCopyGrant = new aws.redshift.SnapshotCopyGrant("testSnapshotCopyGrant", {snapshotCopyGrantName: "my-grant"});
+ * const testCluster = new aws.redshift.Cluster("testCluster", {snapshotCopy: {
+ *     destinationRegion: "us-east-2",
+ *     grantName: testSnapshotCopyGrant.snapshotCopyGrantName,
+ * }});
+ * ```
+ *
+ * ## Import
+ *
+ * Redshift Snapshot Copy Grants support import by name, e.g. console
+ *
+ * ```sh
+ *  $ pulumi import aws:redshift/snapshotCopyGrant:SnapshotCopyGrant test my-grant
  * ```
  */
 export class SnapshotCopyGrant extends pulumi.CustomResource {
@@ -90,7 +93,7 @@ export class SnapshotCopyGrant extends pulumi.CustomResource {
             inputs["tags"] = state ? state.tags : undefined;
         } else {
             const args = argsOrState as SnapshotCopyGrantArgs | undefined;
-            if (!args || args.snapshotCopyGrantName === undefined) {
+            if ((!args || args.snapshotCopyGrantName === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'snapshotCopyGrantName'");
             }
             inputs["kmsKeyId"] = args ? args.kmsKeyId : undefined;

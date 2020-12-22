@@ -2,8 +2,7 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 /**
@@ -35,6 +34,14 @@ import * as utilities from "../utilities";
  *     },
  *     username: "test",
  * });
+ * ```
+ *
+ * ## Import
+ *
+ * Endpoints can be imported using the `endpoint_id`, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:dms/endpoint:Endpoint test test-dms-endpoint-tf
  * ```
  */
 export class Endpoint extends pulumi.CustomResource {
@@ -180,13 +187,13 @@ export class Endpoint extends pulumi.CustomResource {
             inputs["username"] = state ? state.username : undefined;
         } else {
             const args = argsOrState as EndpointArgs | undefined;
-            if (!args || args.endpointId === undefined) {
+            if ((!args || args.endpointId === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'endpointId'");
             }
-            if (!args || args.endpointType === undefined) {
+            if ((!args || args.endpointType === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'endpointType'");
             }
-            if (!args || args.engineName === undefined) {
+            if ((!args || args.engineName === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'engineName'");
             }
             inputs["certificateArn"] = args ? args.certificateArn : undefined;

@@ -4,6 +4,7 @@
 package efs
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -18,14 +19,14 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/efs"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/efs"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
 // func main() {
 // 	pulumi.Run(func(ctx *pulumi.Context) error {
 // 		_, err := efs.NewAccessPoint(ctx, "test", &efs.AccessPointArgs{
-// 			FileSystemId: pulumi.String(aws_efs_file_system.Foo.Id),
+// 			FileSystemId: pulumi.Any(aws_efs_file_system.Foo.Id),
 // 		})
 // 		if err != nil {
 // 			return err
@@ -33,6 +34,14 @@ import (
 // 		return nil
 // 	})
 // }
+// ```
+//
+// ## Import
+//
+// The EFS access points can be imported using the `id`, e.g.
+//
+// ```sh
+//  $ pulumi import aws:efs/accessPoint:AccessPoint test fsap-52a643fb
 // ```
 type AccessPoint struct {
 	pulumi.CustomResourceState
@@ -55,11 +64,12 @@ type AccessPoint struct {
 // NewAccessPoint registers a new resource with the given unique name, arguments, and options.
 func NewAccessPoint(ctx *pulumi.Context,
 	name string, args *AccessPointArgs, opts ...pulumi.ResourceOption) (*AccessPoint, error) {
-	if args == nil || args.FileSystemId == nil {
-		return nil, errors.New("missing required argument 'FileSystemId'")
-	}
 	if args == nil {
-		args = &AccessPointArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.FileSystemId == nil {
+		return nil, errors.New("invalid value for required argument 'FileSystemId'")
 	}
 	var resource AccessPoint
 	err := ctx.RegisterResource("aws:efs/accessPoint:AccessPoint", name, args, &resource, opts...)
@@ -143,4 +153,43 @@ type AccessPointArgs struct {
 
 func (AccessPointArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*accessPointArgs)(nil)).Elem()
+}
+
+type AccessPointInput interface {
+	pulumi.Input
+
+	ToAccessPointOutput() AccessPointOutput
+	ToAccessPointOutputWithContext(ctx context.Context) AccessPointOutput
+}
+
+func (AccessPoint) ElementType() reflect.Type {
+	return reflect.TypeOf((*AccessPoint)(nil)).Elem()
+}
+
+func (i AccessPoint) ToAccessPointOutput() AccessPointOutput {
+	return i.ToAccessPointOutputWithContext(context.Background())
+}
+
+func (i AccessPoint) ToAccessPointOutputWithContext(ctx context.Context) AccessPointOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(AccessPointOutput)
+}
+
+type AccessPointOutput struct {
+	*pulumi.OutputState
+}
+
+func (AccessPointOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*AccessPointOutput)(nil)).Elem()
+}
+
+func (o AccessPointOutput) ToAccessPointOutput() AccessPointOutput {
+	return o
+}
+
+func (o AccessPointOutput) ToAccessPointOutputWithContext(ctx context.Context) AccessPointOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(AccessPointOutput{})
 }

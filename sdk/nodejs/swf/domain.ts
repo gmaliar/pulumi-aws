@@ -20,6 +20,14 @@ import * as utilities from "../utilities";
  *     workflowExecutionRetentionPeriodInDays: "30",
  * });
  * ```
+ *
+ * ## Import
+ *
+ * SWF Domains can be imported using the `name`, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:swf/domain:Domain foo test-domain
+ * ```
  */
 export class Domain extends pulumi.CustomResource {
     /**
@@ -94,7 +102,7 @@ export class Domain extends pulumi.CustomResource {
             inputs["workflowExecutionRetentionPeriodInDays"] = state ? state.workflowExecutionRetentionPeriodInDays : undefined;
         } else {
             const args = argsOrState as DomainArgs | undefined;
-            if (!args || args.workflowExecutionRetentionPeriodInDays === undefined) {
+            if ((!args || args.workflowExecutionRetentionPeriodInDays === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'workflowExecutionRetentionPeriodInDays'");
             }
             inputs["description"] = args ? args.description : undefined;

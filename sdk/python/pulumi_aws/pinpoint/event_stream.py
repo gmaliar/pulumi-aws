@@ -5,24 +5,22 @@
 import warnings
 import pulumi
 import pulumi.runtime
-from typing import Union
-from .. import utilities, tables
+from typing import Any, Mapping, Optional, Sequence, Union
+from .. import _utilities, _tables
+
+__all__ = ['EventStream']
 
 
 class EventStream(pulumi.CustomResource):
-    application_id: pulumi.Output[str]
-    """
-    The application ID.
-    """
-    destination_stream_arn: pulumi.Output[str]
-    """
-    The Amazon Resource Name (ARN) of the Amazon Kinesis stream or Firehose delivery stream to which you want to publish events.
-    """
-    role_arn: pulumi.Output[str]
-    """
-    The IAM role that authorizes Amazon Pinpoint to publish events to the stream in your account.
-    """
-    def __init__(__self__, resource_name, opts=None, application_id=None, destination_stream_arn=None, role_arn=None, __props__=None, __name__=None, __opts__=None):
+    def __init__(__self__,
+                 resource_name: str,
+                 opts: Optional[pulumi.ResourceOptions] = None,
+                 application_id: Optional[pulumi.Input[str]] = None,
+                 destination_stream_arn: Optional[pulumi.Input[str]] = None,
+                 role_arn: Optional[pulumi.Input[str]] = None,
+                 __props__=None,
+                 __name__=None,
+                 __opts__=None):
         """
         Provides a Pinpoint Event Stream resource.
 
@@ -47,13 +45,13 @@ class EventStream(pulumi.CustomResource):
             }
           ]
         }
-
         \"\"\")
         stream = aws.pinpoint.EventStream("stream",
             application_id=app.application_id,
             destination_stream_arn=test_stream.arn,
             role_arn=test_role.arn)
         test_role_policy = aws.iam.RolePolicy("testRolePolicy",
+            role=test_role.id,
             policy=\"\"\"{
           "Version": "2012-10-17",
           "Statement": {
@@ -67,9 +65,15 @@ class EventStream(pulumi.CustomResource):
             ]
           }
         }
+        \"\"\")
+        ```
 
-        \"\"\",
-            role=test_role.id)
+        ## Import
+
+        Pinpoint Event Stream can be imported using the `application-id`, e.g.
+
+        ```sh
+         $ pulumi import aws:pinpoint/eventStream:EventStream stream application-id
         ```
 
         :param str resource_name: The name of the resource.
@@ -89,19 +93,19 @@ class EventStream(pulumi.CustomResource):
         if not isinstance(opts, pulumi.ResourceOptions):
             raise TypeError('Expected resource options to be a ResourceOptions instance')
         if opts.version is None:
-            opts.version = utilities.get_version()
+            opts.version = _utilities.get_version()
         if opts.id is None:
             if __props__ is not None:
                 raise TypeError('__props__ is only valid when passed in combination with a valid opts.id to get an existing resource')
             __props__ = dict()
 
-            if application_id is None:
+            if application_id is None and not opts.urn:
                 raise TypeError("Missing required property 'application_id'")
             __props__['application_id'] = application_id
-            if destination_stream_arn is None:
+            if destination_stream_arn is None and not opts.urn:
                 raise TypeError("Missing required property 'destination_stream_arn'")
             __props__['destination_stream_arn'] = destination_stream_arn
-            if role_arn is None:
+            if role_arn is None and not opts.urn:
                 raise TypeError("Missing required property 'role_arn'")
             __props__['role_arn'] = role_arn
         super(EventStream, __self__).__init__(
@@ -111,13 +115,18 @@ class EventStream(pulumi.CustomResource):
             opts)
 
     @staticmethod
-    def get(resource_name, id, opts=None, application_id=None, destination_stream_arn=None, role_arn=None):
+    def get(resource_name: str,
+            id: pulumi.Input[str],
+            opts: Optional[pulumi.ResourceOptions] = None,
+            application_id: Optional[pulumi.Input[str]] = None,
+            destination_stream_arn: Optional[pulumi.Input[str]] = None,
+            role_arn: Optional[pulumi.Input[str]] = None) -> 'EventStream':
         """
         Get an existing EventStream resource's state with the given name, id, and optional extra
         properties used to qualify the lookup.
 
         :param str resource_name: The unique name of the resulting resource.
-        :param str id: The unique provider ID of the resource to lookup.
+        :param pulumi.Input[str] id: The unique provider ID of the resource to lookup.
         :param pulumi.ResourceOptions opts: Options for the resource.
         :param pulumi.Input[str] application_id: The application ID.
         :param pulumi.Input[str] destination_stream_arn: The Amazon Resource Name (ARN) of the Amazon Kinesis stream or Firehose delivery stream to which you want to publish events.
@@ -132,8 +141,33 @@ class EventStream(pulumi.CustomResource):
         __props__["role_arn"] = role_arn
         return EventStream(resource_name, opts=opts, __props__=__props__)
 
+    @property
+    @pulumi.getter(name="applicationId")
+    def application_id(self) -> pulumi.Output[str]:
+        """
+        The application ID.
+        """
+        return pulumi.get(self, "application_id")
+
+    @property
+    @pulumi.getter(name="destinationStreamArn")
+    def destination_stream_arn(self) -> pulumi.Output[str]:
+        """
+        The Amazon Resource Name (ARN) of the Amazon Kinesis stream or Firehose delivery stream to which you want to publish events.
+        """
+        return pulumi.get(self, "destination_stream_arn")
+
+    @property
+    @pulumi.getter(name="roleArn")
+    def role_arn(self) -> pulumi.Output[str]:
+        """
+        The IAM role that authorizes Amazon Pinpoint to publish events to the stream in your account.
+        """
+        return pulumi.get(self, "role_arn")
+
     def translate_output_property(self, prop):
-        return tables._CAMEL_TO_SNAKE_CASE_TABLE.get(prop) or prop
+        return _tables.CAMEL_TO_SNAKE_CASE_TABLE.get(prop) or prop
 
     def translate_input_property(self, prop):
-        return tables._SNAKE_TO_CAMEL_CASE_TABLE.get(prop) or prop
+        return _tables.SNAKE_TO_CAMEL_CASE_TABLE.get(prop) or prop
+

@@ -24,17 +24,25 @@ namespace Pulumi.Aws.Batch
     ///     {
     ///         var testQueue = new Aws.Batch.JobQueue("testQueue", new Aws.Batch.JobQueueArgs
     ///         {
+    ///             State = "ENABLED",
+    ///             Priority = 1,
     ///             ComputeEnvironments = 
     ///             {
     ///                 aws_batch_compute_environment.Test_environment_1.Arn,
     ///                 aws_batch_compute_environment.Test_environment_2.Arn,
     ///             },
-    ///             Priority = 1,
-    ///             State = "ENABLED",
     ///         });
     ///     }
     /// 
     /// }
+    /// ```
+    /// 
+    /// ## Import
+    /// 
+    /// Batch Job Queue can be imported using the `arn`, e.g.
+    /// 
+    /// ```sh
+    ///  $ pulumi import aws:batch/jobQueue:JobQueue test_queue arn:aws:batch:us-east-1:123456789012:job-queue/sample
     /// ```
     /// </summary>
     public partial class JobQueue : Pulumi.CustomResource
@@ -72,6 +80,12 @@ namespace Pulumi.Aws.Batch
         /// </summary>
         [Output("state")]
         public Output<string> State { get; private set; } = null!;
+
+        /// <summary>
+        /// Key-value map of resource tags
+        /// </summary>
+        [Output("tags")]
+        public Output<ImmutableDictionary<string, string>?> Tags { get; private set; } = null!;
 
 
         /// <summary>
@@ -153,6 +167,18 @@ namespace Pulumi.Aws.Batch
         [Input("state", required: true)]
         public Input<string> State { get; set; } = null!;
 
+        [Input("tags")]
+        private InputMap<string>? _tags;
+
+        /// <summary>
+        /// Key-value map of resource tags
+        /// </summary>
+        public InputMap<string> Tags
+        {
+            get => _tags ?? (_tags = new InputMap<string>());
+            set => _tags = value;
+        }
+
         public JobQueueArgs()
         {
         }
@@ -199,6 +225,18 @@ namespace Pulumi.Aws.Batch
         /// </summary>
         [Input("state")]
         public Input<string>? State { get; set; }
+
+        [Input("tags")]
+        private InputMap<string>? _tags;
+
+        /// <summary>
+        /// Key-value map of resource tags
+        /// </summary>
+        public InputMap<string> Tags
+        {
+            get => _tags ?? (_tags = new InputMap<string>());
+            set => _tags = value;
+        }
 
         public JobQueueState()
         {

@@ -2,8 +2,7 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 /**
@@ -15,19 +14,25 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const example = new aws.athena.Workgroup("example", {
- *     configuration: {
- *         enforceWorkgroupConfiguration: true,
- *         publishCloudwatchMetricsEnabled: true,
- *         resultConfiguration: {
- *             encryptionConfiguration: {
- *                 encryptionOption: "SSE_KMS",
- *                 kmsKeyArn: aws_kms_key_example.arn,
- *             },
- *             outputLocation: "s3://{aws_s3_bucket.example.bucket}/output/",
+ * const example = new aws.athena.Workgroup("example", {configuration: {
+ *     enforceWorkgroupConfiguration: true,
+ *     publishCloudwatchMetricsEnabled: true,
+ *     resultConfiguration: {
+ *         outputLocation: `s3://${aws_s3_bucket.example.bucket}/output/`,
+ *         encryptionConfiguration: {
+ *             encryptionOption: "SSE_KMS",
+ *             kmsKeyArn: aws_kms_key.example.arn,
  *         },
  *     },
- * });
+ * }});
+ * ```
+ *
+ * ## Import
+ *
+ * Athena Workgroups can be imported using their name, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:athena/workgroup:Workgroup example example
  * ```
  */
 export class Workgroup extends pulumi.CustomResource {

@@ -4,6 +4,7 @@
 package wafregional
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -20,10 +21,10 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws"
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/alb"
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/ec2"
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/wafregional"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/alb"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/ec2"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/wafregional"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -54,10 +55,10 @@ import (
 // 			return err
 // 		}
 // 		fooWebAcl, err := wafregional.NewWebAcl(ctx, "fooWebAcl", &wafregional.WebAclArgs{
+// 			MetricName: pulumi.String("foo"),
 // 			DefaultAction: &wafregional.WebAclDefaultActionArgs{
 // 				Type: pulumi.String("ALLOW"),
 // 			},
-// 			MetricName: pulumi.String("foo"),
 // 			Rules: wafregional.WebAclRuleArray{
 // 				&wafregional.WebAclRuleArgs{
 // 					Action: &wafregional.WebAclRuleActionArgs{
@@ -82,17 +83,17 @@ import (
 // 			return err
 // 		}
 // 		fooSubnet, err := ec2.NewSubnet(ctx, "fooSubnet", &ec2.SubnetArgs{
-// 			AvailabilityZone: pulumi.String(available.Names[0]),
-// 			CidrBlock:        pulumi.String("10.1.1.0/24"),
 // 			VpcId:            fooVpc.ID(),
+// 			CidrBlock:        pulumi.String("10.1.1.0/24"),
+// 			AvailabilityZone: pulumi.String(available.Names[0]),
 // 		})
 // 		if err != nil {
 // 			return err
 // 		}
 // 		bar, err := ec2.NewSubnet(ctx, "bar", &ec2.SubnetArgs{
-// 			AvailabilityZone: pulumi.String(available.Names[1]),
-// 			CidrBlock:        pulumi.String("10.1.2.0/24"),
 // 			VpcId:            fooVpc.ID(),
+// 			CidrBlock:        pulumi.String("10.1.2.0/24"),
+// 			AvailabilityZone: pulumi.String(available.Names[1]),
 // 		})
 // 		if err != nil {
 // 			return err
@@ -125,8 +126,8 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/apigateway"
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/wafregional"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/apigateway"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/wafregional"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -157,10 +158,10 @@ import (
 // 			return err
 // 		}
 // 		fooWebAcl, err := wafregional.NewWebAcl(ctx, "fooWebAcl", &wafregional.WebAclArgs{
+// 			MetricName: pulumi.String("foo"),
 // 			DefaultAction: &wafregional.WebAclDefaultActionArgs{
 // 				Type: pulumi.String("ALLOW"),
 // 			},
-// 			MetricName: pulumi.String("foo"),
 // 			Rules: wafregional.WebAclRuleArray{
 // 				&wafregional.WebAclRuleArgs{
 // 					Action: &wafregional.WebAclRuleActionArgs{
@@ -215,10 +216,10 @@ import (
 // 		if err != nil {
 // 			return err
 // 		}
-// 		_, err = apigateway.NewIntegrationResponse(ctx, "testIntegrationResponse", &apigateway.IntegrationResponseArgs{
-// 			HttpMethod: testIntegration.HttpMethod,
-// 			ResourceId: testResource.ID(),
+// 		testIntegrationResponse, err := apigateway.NewIntegrationResponse(ctx, "testIntegrationResponse", &apigateway.IntegrationResponseArgs{
 // 			RestApi:    testRestApi.ID(),
+// 			ResourceId: testResource.ID(),
+// 			HttpMethod: testIntegration.HttpMethod,
 // 			StatusCode: testMethodResponse.StatusCode,
 // 		})
 // 		if err != nil {
@@ -227,7 +228,7 @@ import (
 // 		testDeployment, err := apigateway.NewDeployment(ctx, "testDeployment", &apigateway.DeploymentArgs{
 // 			RestApi: testRestApi.ID(),
 // 		}, pulumi.DependsOn([]pulumi.Resource{
-// 			"aws_api_gateway_integration_response.test",
+// 			testIntegrationResponse,
 // 		}))
 // 		if err != nil {
 // 			return err
@@ -251,6 +252,14 @@ import (
 // 	})
 // }
 // ```
+//
+// ## Import
+//
+// WAF Regional Web ACL Association can be imported using their `web_acl_id:resource_arn`, e.g.
+//
+// ```sh
+//  $ pulumi import aws:wafregional/webAclAssociation:WebAclAssociation foo web_acl_id:resource_arn
+// ```
 type WebAclAssociation struct {
 	pulumi.CustomResourceState
 
@@ -263,14 +272,15 @@ type WebAclAssociation struct {
 // NewWebAclAssociation registers a new resource with the given unique name, arguments, and options.
 func NewWebAclAssociation(ctx *pulumi.Context,
 	name string, args *WebAclAssociationArgs, opts ...pulumi.ResourceOption) (*WebAclAssociation, error) {
-	if args == nil || args.ResourceArn == nil {
-		return nil, errors.New("missing required argument 'ResourceArn'")
-	}
-	if args == nil || args.WebAclId == nil {
-		return nil, errors.New("missing required argument 'WebAclId'")
-	}
 	if args == nil {
-		args = &WebAclAssociationArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.ResourceArn == nil {
+		return nil, errors.New("invalid value for required argument 'ResourceArn'")
+	}
+	if args.WebAclId == nil {
+		return nil, errors.New("invalid value for required argument 'WebAclId'")
 	}
 	var resource WebAclAssociation
 	err := ctx.RegisterResource("aws:wafregional/webAclAssociation:WebAclAssociation", name, args, &resource, opts...)
@@ -328,4 +338,43 @@ type WebAclAssociationArgs struct {
 
 func (WebAclAssociationArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*webAclAssociationArgs)(nil)).Elem()
+}
+
+type WebAclAssociationInput interface {
+	pulumi.Input
+
+	ToWebAclAssociationOutput() WebAclAssociationOutput
+	ToWebAclAssociationOutputWithContext(ctx context.Context) WebAclAssociationOutput
+}
+
+func (WebAclAssociation) ElementType() reflect.Type {
+	return reflect.TypeOf((*WebAclAssociation)(nil)).Elem()
+}
+
+func (i WebAclAssociation) ToWebAclAssociationOutput() WebAclAssociationOutput {
+	return i.ToWebAclAssociationOutputWithContext(context.Background())
+}
+
+func (i WebAclAssociation) ToWebAclAssociationOutputWithContext(ctx context.Context) WebAclAssociationOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(WebAclAssociationOutput)
+}
+
+type WebAclAssociationOutput struct {
+	*pulumi.OutputState
+}
+
+func (WebAclAssociationOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*WebAclAssociationOutput)(nil)).Elem()
+}
+
+func (o WebAclAssociationOutput) ToWebAclAssociationOutput() WebAclAssociationOutput {
+	return o
+}
+
+func (o WebAclAssociationOutput) ToWebAclAssociationOutputWithContext(ctx context.Context) WebAclAssociationOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(WebAclAssociationOutput{})
 }

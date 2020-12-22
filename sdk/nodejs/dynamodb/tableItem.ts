@@ -16,16 +16,17 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const exampleTable = new aws.dynamodb.Table("example", {
+ * const exampleTable = new aws.dynamodb.Table("exampleTable", {
+ *     readCapacity: 10,
+ *     writeCapacity: 10,
+ *     hashKey: "exampleHashKey",
  *     attributes: [{
  *         name: "exampleHashKey",
  *         type: "S",
  *     }],
- *     hashKey: "exampleHashKey",
- *     readCapacity: 10,
- *     writeCapacity: 10,
  * });
- * const exampleTableItem = new aws.dynamodb.TableItem("example", {
+ * const exampleTableItem = new aws.dynamodb.TableItem("exampleTableItem", {
+ *     tableName: exampleTable.name,
  *     hashKey: exampleTable.hashKey,
  *     item: `{
  *   "exampleHashKey": {"S": "something"},
@@ -35,9 +36,12 @@ import * as utilities from "../utilities";
  *   "four": {"N": "44444"}
  * }
  * `,
- *     tableName: exampleTable.name,
  * });
  * ```
+ *
+ * ## Import
+ *
+ * DynamoDB table items cannot be imported.
  */
 export class TableItem extends pulumi.CustomResource {
     /**
@@ -103,13 +107,13 @@ export class TableItem extends pulumi.CustomResource {
             inputs["tableName"] = state ? state.tableName : undefined;
         } else {
             const args = argsOrState as TableItemArgs | undefined;
-            if (!args || args.hashKey === undefined) {
+            if ((!args || args.hashKey === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'hashKey'");
             }
-            if (!args || args.item === undefined) {
+            if ((!args || args.item === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'item'");
             }
-            if (!args || args.tableName === undefined) {
+            if ((!args || args.tableName === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'tableName'");
             }
             inputs["hashKey"] = args ? args.hashKey : undefined;

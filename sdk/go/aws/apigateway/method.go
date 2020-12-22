@@ -4,6 +4,7 @@
 package apigateway
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -18,7 +19,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/apigateway"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/apigateway"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -31,18 +32,18 @@ import (
 // 			return err
 // 		}
 // 		myDemoResource, err := apigateway.NewResource(ctx, "myDemoResource", &apigateway.ResourceArgs{
+// 			RestApi:  myDemoAPI.ID(),
 // 			ParentId: myDemoAPI.RootResourceId,
 // 			PathPart: pulumi.String("mydemoresource"),
-// 			RestApi:  myDemoAPI.ID(),
 // 		})
 // 		if err != nil {
 // 			return err
 // 		}
 // 		_, err = apigateway.NewMethod(ctx, "myDemoMethod", &apigateway.MethodArgs{
-// 			Authorization: pulumi.String("NONE"),
-// 			HttpMethod:    pulumi.String("GET"),
-// 			ResourceId:    myDemoResource.ID(),
 // 			RestApi:       myDemoAPI.ID(),
+// 			ResourceId:    myDemoResource.ID(),
+// 			HttpMethod:    pulumi.String("GET"),
+// 			Authorization: pulumi.String("NONE"),
 // 		})
 // 		if err != nil {
 // 			return err
@@ -57,13 +58,16 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/apigateway"
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/cognito"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/apigateway"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/cognito"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
+// 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi/config"
 // )
 //
 // func main() {
 // 	pulumi.Run(func(ctx *pulumi.Context) error {
+// 		cfg := config.New(ctx, "")
+// 		cognitoUserPoolName := cfg.RequireObject("cognitoUserPoolName")
 // 		thisUserPools, err := cognito.GetUserPools(ctx, &cognito.GetUserPoolsArgs{
 // 			Name: cognitoUserPoolName,
 // 		}, nil)
@@ -75,30 +79,30 @@ import (
 // 			return err
 // 		}
 // 		thisResource, err := apigateway.NewResource(ctx, "thisResource", &apigateway.ResourceArgs{
+// 			RestApi:  thisRestApi.ID(),
 // 			ParentId: thisRestApi.RootResourceId,
 // 			PathPart: pulumi.String("{proxy+}"),
-// 			RestApi:  thisRestApi.ID(),
 // 		})
 // 		if err != nil {
 // 			return err
 // 		}
 // 		thisAuthorizer, err := apigateway.NewAuthorizer(ctx, "thisAuthorizer", &apigateway.AuthorizerArgs{
-// 			ProviderArns: toPulumiStringArray(thisUserPools.Arns),
-// 			RestApi:      thisRestApi.ID(),
 // 			Type:         pulumi.String("COGNITO_USER_POOLS"),
+// 			RestApi:      thisRestApi.ID(),
+// 			ProviderArns: toPulumiStringArray(thisUserPools.Arns),
 // 		})
 // 		if err != nil {
 // 			return err
 // 		}
 // 		_, err = apigateway.NewMethod(ctx, "any", &apigateway.MethodArgs{
+// 			RestApi:       thisRestApi.ID(),
+// 			ResourceId:    thisResource.ID(),
+// 			HttpMethod:    pulumi.String("ANY"),
 // 			Authorization: pulumi.String("COGNITO_USER_POOLS"),
 // 			AuthorizerId:  thisAuthorizer.ID(),
-// 			HttpMethod:    pulumi.String("ANY"),
 // 			RequestParameters: pulumi.BoolMap{
 // 				"method.request.path.proxy": pulumi.Bool(true),
 // 			},
-// 			ResourceId: thisResource.ID(),
-// 			RestApi:    thisRestApi.ID(),
 // 		})
 // 		if err != nil {
 // 			return err
@@ -113,6 +117,14 @@ import (
 // 	}
 // 	return pulumiArr
 // }
+// ```
+//
+// ## Import
+//
+// `aws_api_gateway_method` can be imported using `REST-API-ID/RESOURCE-ID/HTTP-METHOD`, e.g.
+//
+// ```sh
+//  $ pulumi import aws:apigateway/method:Method example 12345abcde/67890fghij/GET
 // ```
 type Method struct {
 	pulumi.CustomResourceState
@@ -145,20 +157,21 @@ type Method struct {
 // NewMethod registers a new resource with the given unique name, arguments, and options.
 func NewMethod(ctx *pulumi.Context,
 	name string, args *MethodArgs, opts ...pulumi.ResourceOption) (*Method, error) {
-	if args == nil || args.Authorization == nil {
-		return nil, errors.New("missing required argument 'Authorization'")
-	}
-	if args == nil || args.HttpMethod == nil {
-		return nil, errors.New("missing required argument 'HttpMethod'")
-	}
-	if args == nil || args.ResourceId == nil {
-		return nil, errors.New("missing required argument 'ResourceId'")
-	}
-	if args == nil || args.RestApi == nil {
-		return nil, errors.New("missing required argument 'RestApi'")
-	}
 	if args == nil {
-		args = &MethodArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.Authorization == nil {
+		return nil, errors.New("invalid value for required argument 'Authorization'")
+	}
+	if args.HttpMethod == nil {
+		return nil, errors.New("invalid value for required argument 'HttpMethod'")
+	}
+	if args.ResourceId == nil {
+		return nil, errors.New("invalid value for required argument 'ResourceId'")
+	}
+	if args.RestApi == nil {
+		return nil, errors.New("invalid value for required argument 'RestApi'")
 	}
 	var resource Method
 	err := ctx.RegisterResource("aws:apigateway/method:Method", name, args, &resource, opts...)
@@ -292,4 +305,43 @@ type MethodArgs struct {
 
 func (MethodArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*methodArgs)(nil)).Elem()
+}
+
+type MethodInput interface {
+	pulumi.Input
+
+	ToMethodOutput() MethodOutput
+	ToMethodOutputWithContext(ctx context.Context) MethodOutput
+}
+
+func (Method) ElementType() reflect.Type {
+	return reflect.TypeOf((*Method)(nil)).Elem()
+}
+
+func (i Method) ToMethodOutput() MethodOutput {
+	return i.ToMethodOutputWithContext(context.Background())
+}
+
+func (i Method) ToMethodOutputWithContext(ctx context.Context) MethodOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(MethodOutput)
+}
+
+type MethodOutput struct {
+	*pulumi.OutputState
+}
+
+func (MethodOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*MethodOutput)(nil)).Elem()
+}
+
+func (o MethodOutput) ToMethodOutput() MethodOutput {
+	return o
+}
+
+func (o MethodOutput) ToMethodOutputWithContext(ctx context.Context) MethodOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(MethodOutput{})
 }

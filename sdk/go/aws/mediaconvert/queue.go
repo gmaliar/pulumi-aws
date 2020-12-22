@@ -4,6 +4,7 @@
 package mediaconvert
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
@@ -17,7 +18,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/mediaconvert"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/mediaconvert"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -30,6 +31,14 @@ import (
 // 		return nil
 // 	})
 // }
+// ```
+//
+// ## Import
+//
+// Media Convert Queue can be imported via the queue name, e.g.
+//
+// ```sh
+//  $ pulumi import aws:mediaconvert/queue:Queue test tf-test-queue
 // ```
 type Queue struct {
 	pulumi.CustomResourceState
@@ -56,6 +65,7 @@ func NewQueue(ctx *pulumi.Context,
 	if args == nil {
 		args = &QueueArgs{}
 	}
+
 	var resource Queue
 	err := ctx.RegisterResource("aws:mediaconvert/queue:Queue", name, args, &resource, opts...)
 	if err != nil {
@@ -148,4 +158,43 @@ type QueueArgs struct {
 
 func (QueueArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*queueArgs)(nil)).Elem()
+}
+
+type QueueInput interface {
+	pulumi.Input
+
+	ToQueueOutput() QueueOutput
+	ToQueueOutputWithContext(ctx context.Context) QueueOutput
+}
+
+func (Queue) ElementType() reflect.Type {
+	return reflect.TypeOf((*Queue)(nil)).Elem()
+}
+
+func (i Queue) ToQueueOutput() QueueOutput {
+	return i.ToQueueOutputWithContext(context.Background())
+}
+
+func (i Queue) ToQueueOutputWithContext(ctx context.Context) QueueOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(QueueOutput)
+}
+
+type QueueOutput struct {
+	*pulumi.OutputState
+}
+
+func (QueueOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*QueueOutput)(nil)).Elem()
+}
+
+func (o QueueOutput) ToQueueOutput() QueueOutput {
+	return o
+}
+
+func (o QueueOutput) ToQueueOutputWithContext(ctx context.Context) QueueOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(QueueOutput{})
 }

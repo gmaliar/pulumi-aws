@@ -4,6 +4,7 @@
 package sns
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -20,8 +21,8 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/iam"
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/sns"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/iam"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/sns"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -44,6 +45,14 @@ import (
 // 	})
 // }
 // ```
+//
+// ## Import
+//
+// SNS Topic Policy can be imported using the topic ARN, e.g.
+//
+// ```sh
+//  $ pulumi import aws:sns/topicPolicy:TopicPolicy user_updates arn:aws:sns:us-west-2:0123456789012:my-topic
+// ```
 type TopicPolicy struct {
 	pulumi.CustomResourceState
 
@@ -56,14 +65,15 @@ type TopicPolicy struct {
 // NewTopicPolicy registers a new resource with the given unique name, arguments, and options.
 func NewTopicPolicy(ctx *pulumi.Context,
 	name string, args *TopicPolicyArgs, opts ...pulumi.ResourceOption) (*TopicPolicy, error) {
-	if args == nil || args.Arn == nil {
-		return nil, errors.New("missing required argument 'Arn'")
-	}
-	if args == nil || args.Policy == nil {
-		return nil, errors.New("missing required argument 'Policy'")
-	}
 	if args == nil {
-		args = &TopicPolicyArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.Arn == nil {
+		return nil, errors.New("invalid value for required argument 'Arn'")
+	}
+	if args.Policy == nil {
+		return nil, errors.New("invalid value for required argument 'Policy'")
 	}
 	var resource TopicPolicy
 	err := ctx.RegisterResource("aws:sns/topicPolicy:TopicPolicy", name, args, &resource, opts...)
@@ -121,4 +131,43 @@ type TopicPolicyArgs struct {
 
 func (TopicPolicyArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*topicPolicyArgs)(nil)).Elem()
+}
+
+type TopicPolicyInput interface {
+	pulumi.Input
+
+	ToTopicPolicyOutput() TopicPolicyOutput
+	ToTopicPolicyOutputWithContext(ctx context.Context) TopicPolicyOutput
+}
+
+func (TopicPolicy) ElementType() reflect.Type {
+	return reflect.TypeOf((*TopicPolicy)(nil)).Elem()
+}
+
+func (i TopicPolicy) ToTopicPolicyOutput() TopicPolicyOutput {
+	return i.ToTopicPolicyOutputWithContext(context.Background())
+}
+
+func (i TopicPolicy) ToTopicPolicyOutputWithContext(ctx context.Context) TopicPolicyOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(TopicPolicyOutput)
+}
+
+type TopicPolicyOutput struct {
+	*pulumi.OutputState
+}
+
+func (TopicPolicyOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*TopicPolicyOutput)(nil)).Elem()
+}
+
+func (o TopicPolicyOutput) ToTopicPolicyOutput() TopicPolicyOutput {
+	return o
+}
+
+func (o TopicPolicyOutput) ToTopicPolicyOutputWithContext(ctx context.Context) TopicPolicyOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(TopicPolicyOutput{})
 }

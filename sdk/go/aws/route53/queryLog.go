@@ -4,6 +4,7 @@
 package route53
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -24,10 +25,10 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/cloudwatch"
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/iam"
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/providers"
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/route53"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/cloudwatch"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/iam"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/providers"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/route53"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -41,7 +42,7 @@ import (
 // 		}
 // 		awsRoute53ExampleCom, err := cloudwatch.NewLogGroup(ctx, "awsRoute53ExampleCom", &cloudwatch.LogGroupArgs{
 // 			RetentionInDays: pulumi.Int(30),
-// 		}, pulumi.Provider("aws.us-east-1"))
+// 		}, pulumi.Provider(aws.Us-east-1))
 // 		if err != nil {
 // 			return err
 // 		}
@@ -52,6 +53,9 @@ import (
 // 						"logs:CreateLogStream",
 // 						"logs:PutLogEvents",
 // 					},
+// 					Resources: []string{
+// 						"arn:aws:logs:*:*:log-group:/aws/route53/*",
+// 					},
 // 					Principals: []iam.GetPolicyDocumentStatementPrincipal{
 // 						iam.GetPolicyDocumentStatementPrincipal{
 // 							Identifiers: []string{
@@ -59,9 +63,6 @@ import (
 // 							},
 // 							Type: "Service",
 // 						},
-// 					},
-// 					Resources: []string{
-// 						"arn:aws:logs:*:*:log-group:/aws/route53/*",
 // 					},
 // 				},
 // 			},
@@ -72,7 +73,7 @@ import (
 // 		_, err = cloudwatch.NewLogResourcePolicy(ctx, "route53_query_logging_policyLogResourcePolicy", &cloudwatch.LogResourcePolicyArgs{
 // 			PolicyDocument: pulumi.String(route53_query_logging_policyPolicyDocument.Json),
 // 			PolicyName:     pulumi.String("route53-query-logging-policy"),
-// 		}, pulumi.Provider("aws.us-east-1"))
+// 		}, pulumi.Provider(aws.Us-east-1))
 // 		if err != nil {
 // 			return err
 // 		}
@@ -84,7 +85,7 @@ import (
 // 			CloudwatchLogGroupArn: awsRoute53ExampleCom.Arn,
 // 			ZoneId:                exampleComZone.ZoneId,
 // 		}, pulumi.DependsOn([]pulumi.Resource{
-// 			"aws_cloudwatch_log_resource_policy.route53-query-logging-policy",
+// 			route53_query_logging_policyLogResourcePolicy,
 // 		}))
 // 		if err != nil {
 // 			return err
@@ -92,6 +93,14 @@ import (
 // 		return nil
 // 	})
 // }
+// ```
+//
+// ## Import
+//
+// Route53 query logging configurations can be imported using their ID, e.g.
+//
+// ```sh
+//  $ pulumi import aws:route53/queryLog:QueryLog example_com xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
 // ```
 type QueryLog struct {
 	pulumi.CustomResourceState
@@ -105,14 +114,15 @@ type QueryLog struct {
 // NewQueryLog registers a new resource with the given unique name, arguments, and options.
 func NewQueryLog(ctx *pulumi.Context,
 	name string, args *QueryLogArgs, opts ...pulumi.ResourceOption) (*QueryLog, error) {
-	if args == nil || args.CloudwatchLogGroupArn == nil {
-		return nil, errors.New("missing required argument 'CloudwatchLogGroupArn'")
-	}
-	if args == nil || args.ZoneId == nil {
-		return nil, errors.New("missing required argument 'ZoneId'")
-	}
 	if args == nil {
-		args = &QueryLogArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.CloudwatchLogGroupArn == nil {
+		return nil, errors.New("invalid value for required argument 'CloudwatchLogGroupArn'")
+	}
+	if args.ZoneId == nil {
+		return nil, errors.New("invalid value for required argument 'ZoneId'")
 	}
 	var resource QueryLog
 	err := ctx.RegisterResource("aws:route53/queryLog:QueryLog", name, args, &resource, opts...)
@@ -170,4 +180,43 @@ type QueryLogArgs struct {
 
 func (QueryLogArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*queryLogArgs)(nil)).Elem()
+}
+
+type QueryLogInput interface {
+	pulumi.Input
+
+	ToQueryLogOutput() QueryLogOutput
+	ToQueryLogOutputWithContext(ctx context.Context) QueryLogOutput
+}
+
+func (QueryLog) ElementType() reflect.Type {
+	return reflect.TypeOf((*QueryLog)(nil)).Elem()
+}
+
+func (i QueryLog) ToQueryLogOutput() QueryLogOutput {
+	return i.ToQueryLogOutputWithContext(context.Background())
+}
+
+func (i QueryLog) ToQueryLogOutputWithContext(ctx context.Context) QueryLogOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(QueryLogOutput)
+}
+
+type QueryLogOutput struct {
+	*pulumi.OutputState
+}
+
+func (QueryLogOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*QueryLogOutput)(nil)).Elem()
+}
+
+func (o QueryLogOutput) ToQueryLogOutput() QueryLogOutput {
+	return o
+}
+
+func (o QueryLogOutput) ToQueryLogOutputWithContext(ctx context.Context) QueryLogOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(QueryLogOutput{})
 }

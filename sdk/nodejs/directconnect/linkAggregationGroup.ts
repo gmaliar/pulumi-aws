@@ -21,6 +21,14 @@ import * as utilities from "../utilities";
  *     location: "EqDC2",
  * });
  * ```
+ *
+ * ## Import
+ *
+ * Direct Connect LAGs can be imported using the `lag id`, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:directconnect/linkAggregationGroup:LinkAggregationGroup test_lag dxlag-fgnsp5rq
+ * ```
  */
 export class LinkAggregationGroup extends pulumi.CustomResource {
     /**
@@ -103,10 +111,10 @@ export class LinkAggregationGroup extends pulumi.CustomResource {
             inputs["tags"] = state ? state.tags : undefined;
         } else {
             const args = argsOrState as LinkAggregationGroupArgs | undefined;
-            if (!args || args.connectionsBandwidth === undefined) {
+            if ((!args || args.connectionsBandwidth === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'connectionsBandwidth'");
             }
-            if (!args || args.location === undefined) {
+            if ((!args || args.location === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'location'");
             }
             inputs["connectionsBandwidth"] = args ? args.connectionsBandwidth : undefined;

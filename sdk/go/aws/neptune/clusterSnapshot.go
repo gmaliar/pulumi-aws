@@ -4,6 +4,7 @@
 package neptune
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -18,14 +19,14 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/neptune"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/neptune"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
 // func main() {
 // 	pulumi.Run(func(ctx *pulumi.Context) error {
 // 		_, err := neptune.NewClusterSnapshot(ctx, "example", &neptune.ClusterSnapshotArgs{
-// 			DbClusterIdentifier:         pulumi.String(aws_neptune_cluster.Example.Id),
+// 			DbClusterIdentifier:         pulumi.Any(aws_neptune_cluster.Example.Id),
 // 			DbClusterSnapshotIdentifier: pulumi.String("resourcetestsnapshot1234"),
 // 		})
 // 		if err != nil {
@@ -34,6 +35,14 @@ import (
 // 		return nil
 // 	})
 // }
+// ```
+//
+// ## Import
+//
+// `aws_neptune_cluster_snapshot` can be imported by using the cluster snapshot identifier, e.g.
+//
+// ```sh
+//  $ pulumi import aws:neptune/clusterSnapshot:ClusterSnapshot example my-cluster-snapshot
 // ```
 type ClusterSnapshot struct {
 	pulumi.CustomResourceState
@@ -71,14 +80,15 @@ type ClusterSnapshot struct {
 // NewClusterSnapshot registers a new resource with the given unique name, arguments, and options.
 func NewClusterSnapshot(ctx *pulumi.Context,
 	name string, args *ClusterSnapshotArgs, opts ...pulumi.ResourceOption) (*ClusterSnapshot, error) {
-	if args == nil || args.DbClusterIdentifier == nil {
-		return nil, errors.New("missing required argument 'DbClusterIdentifier'")
-	}
-	if args == nil || args.DbClusterSnapshotIdentifier == nil {
-		return nil, errors.New("missing required argument 'DbClusterSnapshotIdentifier'")
-	}
 	if args == nil {
-		args = &ClusterSnapshotArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.DbClusterIdentifier == nil {
+		return nil, errors.New("invalid value for required argument 'DbClusterIdentifier'")
+	}
+	if args.DbClusterSnapshotIdentifier == nil {
+		return nil, errors.New("invalid value for required argument 'DbClusterSnapshotIdentifier'")
 	}
 	var resource ClusterSnapshot
 	err := ctx.RegisterResource("aws:neptune/clusterSnapshot:ClusterSnapshot", name, args, &resource, opts...)
@@ -184,4 +194,43 @@ type ClusterSnapshotArgs struct {
 
 func (ClusterSnapshotArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*clusterSnapshotArgs)(nil)).Elem()
+}
+
+type ClusterSnapshotInput interface {
+	pulumi.Input
+
+	ToClusterSnapshotOutput() ClusterSnapshotOutput
+	ToClusterSnapshotOutputWithContext(ctx context.Context) ClusterSnapshotOutput
+}
+
+func (ClusterSnapshot) ElementType() reflect.Type {
+	return reflect.TypeOf((*ClusterSnapshot)(nil)).Elem()
+}
+
+func (i ClusterSnapshot) ToClusterSnapshotOutput() ClusterSnapshotOutput {
+	return i.ToClusterSnapshotOutputWithContext(context.Background())
+}
+
+func (i ClusterSnapshot) ToClusterSnapshotOutputWithContext(ctx context.Context) ClusterSnapshotOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(ClusterSnapshotOutput)
+}
+
+type ClusterSnapshotOutput struct {
+	*pulumi.OutputState
+}
+
+func (ClusterSnapshotOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*ClusterSnapshotOutput)(nil)).Elem()
+}
+
+func (o ClusterSnapshotOutput) ToClusterSnapshotOutput() ClusterSnapshotOutput {
+	return o
+}
+
+func (o ClusterSnapshotOutput) ToClusterSnapshotOutputWithContext(ctx context.Context) ClusterSnapshotOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(ClusterSnapshotOutput{})
 }

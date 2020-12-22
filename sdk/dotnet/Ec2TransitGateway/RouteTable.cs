@@ -30,9 +30,23 @@ namespace Pulumi.Aws.Ec2TransitGateway
     /// 
     /// }
     /// ```
+    /// 
+    /// ## Import
+    /// 
+    /// `aws_ec2_transit_gateway_route_table` can be imported by using the EC2 Transit Gateway Route Table identifier, e.g.
+    /// 
+    /// ```sh
+    ///  $ pulumi import aws:ec2transitgateway/routeTable:RouteTable example tgw-rtb-12345678
+    /// ```
     /// </summary>
     public partial class RouteTable : Pulumi.CustomResource
     {
+        /// <summary>
+        /// EC2 Transit Gateway Route Table Amazon Resource Name (ARN).
+        /// </summary>
+        [Output("arn")]
+        public Output<string> Arn { get; private set; } = null!;
+
         /// <summary>
         /// Boolean whether this is the default association route table for the EC2 Transit Gateway.
         /// </summary>
@@ -128,6 +142,12 @@ namespace Pulumi.Aws.Ec2TransitGateway
 
     public sealed class RouteTableState : Pulumi.ResourceArgs
     {
+        /// <summary>
+        /// EC2 Transit Gateway Route Table Amazon Resource Name (ARN).
+        /// </summary>
+        [Input("arn")]
+        public Input<string>? Arn { get; set; }
+
         /// <summary>
         /// Boolean whether this is the default association route table for the EC2 Transit Gateway.
         /// </summary>

@@ -4,6 +4,7 @@
 package ec2clientvpn
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -19,7 +20,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/ec2clientvpn"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/ec2clientvpn"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -27,12 +28,12 @@ import (
 // 	pulumi.Run(func(ctx *pulumi.Context) error {
 // 		exampleEndpoint, err := ec2clientvpn.NewEndpoint(ctx, "exampleEndpoint", &ec2clientvpn.EndpointArgs{
 // 			Description:          pulumi.String("Example Client VPN endpoint"),
-// 			ServerCertificateArn: pulumi.String(aws_acm_certificate.Example.Arn),
+// 			ServerCertificateArn: pulumi.Any(aws_acm_certificate.Example.Arn),
 // 			ClientCidrBlock:      pulumi.String("10.0.0.0/16"),
 // 			AuthenticationOptions: ec2clientvpn.EndpointAuthenticationOptionArray{
 // 				&ec2clientvpn.EndpointAuthenticationOptionArgs{
 // 					Type:                    pulumi.String("certificate-authentication"),
-// 					RootCertificateChainArn: pulumi.String(aws_acm_certificate.Example.Arn),
+// 					RootCertificateChainArn: pulumi.Any(aws_acm_certificate.Example.Arn),
 // 				},
 // 			},
 // 			ConnectionLogOptions: &ec2clientvpn.EndpointConnectionLogOptionsArgs{
@@ -44,7 +45,7 @@ import (
 // 		}
 // 		exampleNetworkAssociation, err := ec2clientvpn.NewNetworkAssociation(ctx, "exampleNetworkAssociation", &ec2clientvpn.NetworkAssociationArgs{
 // 			ClientVpnEndpointId: exampleEndpoint.ID(),
-// 			SubnetId:            pulumi.String(aws_subnet.Example.Id),
+// 			SubnetId:            pulumi.Any(aws_subnet.Example.Id),
 // 		})
 // 		if err != nil {
 // 			return err
@@ -61,13 +62,14 @@ import (
 // 	})
 // }
 // ```
-// ## Attribute Reference
 //
-// In addition to all arguments above, the following attributes are exported:
+// ## Import
 //
-// * `id` - The ID of the Client VPN endpoint.
-// * `origin` - Indicates how the Client VPN route was added. Will be `add-route` for routes created by this resource.
-// * `type` - The type of the route.
+// AWS Client VPN routes can be imported using the endpoint ID, target subnet ID, and destination CIDR block. All values are separated by a `,`.
+//
+// ```sh
+//  $ pulumi import aws:ec2clientvpn/route:Route example cvpn-endpoint-1234567890abcdef,subnet-9876543210fedcba,10.1.0.0/24
+// ```
 type Route struct {
 	pulumi.CustomResourceState
 
@@ -77,26 +79,29 @@ type Route struct {
 	Description pulumi.StringPtrOutput `pulumi:"description"`
 	// The IPv4 address range, in CIDR notation, of the route destination.
 	DestinationCidrBlock pulumi.StringOutput `pulumi:"destinationCidrBlock"`
-	Origin               pulumi.StringOutput `pulumi:"origin"`
+	// Indicates how the Client VPN route was added. Will be `add-route` for routes created by this resource.
+	Origin pulumi.StringOutput `pulumi:"origin"`
 	// The ID of the Subnet to route the traffic through. It must already be attached to the Client VPN.
 	TargetVpcSubnetId pulumi.StringOutput `pulumi:"targetVpcSubnetId"`
-	Type              pulumi.StringOutput `pulumi:"type"`
+	// The type of the route.
+	Type pulumi.StringOutput `pulumi:"type"`
 }
 
 // NewRoute registers a new resource with the given unique name, arguments, and options.
 func NewRoute(ctx *pulumi.Context,
 	name string, args *RouteArgs, opts ...pulumi.ResourceOption) (*Route, error) {
-	if args == nil || args.ClientVpnEndpointId == nil {
-		return nil, errors.New("missing required argument 'ClientVpnEndpointId'")
-	}
-	if args == nil || args.DestinationCidrBlock == nil {
-		return nil, errors.New("missing required argument 'DestinationCidrBlock'")
-	}
-	if args == nil || args.TargetVpcSubnetId == nil {
-		return nil, errors.New("missing required argument 'TargetVpcSubnetId'")
-	}
 	if args == nil {
-		args = &RouteArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.ClientVpnEndpointId == nil {
+		return nil, errors.New("invalid value for required argument 'ClientVpnEndpointId'")
+	}
+	if args.DestinationCidrBlock == nil {
+		return nil, errors.New("invalid value for required argument 'DestinationCidrBlock'")
+	}
+	if args.TargetVpcSubnetId == nil {
+		return nil, errors.New("invalid value for required argument 'TargetVpcSubnetId'")
 	}
 	var resource Route
 	err := ctx.RegisterResource("aws:ec2clientvpn/route:Route", name, args, &resource, opts...)
@@ -126,10 +131,12 @@ type routeState struct {
 	Description *string `pulumi:"description"`
 	// The IPv4 address range, in CIDR notation, of the route destination.
 	DestinationCidrBlock *string `pulumi:"destinationCidrBlock"`
-	Origin               *string `pulumi:"origin"`
+	// Indicates how the Client VPN route was added. Will be `add-route` for routes created by this resource.
+	Origin *string `pulumi:"origin"`
 	// The ID of the Subnet to route the traffic through. It must already be attached to the Client VPN.
 	TargetVpcSubnetId *string `pulumi:"targetVpcSubnetId"`
-	Type              *string `pulumi:"type"`
+	// The type of the route.
+	Type *string `pulumi:"type"`
 }
 
 type RouteState struct {
@@ -139,10 +146,12 @@ type RouteState struct {
 	Description pulumi.StringPtrInput
 	// The IPv4 address range, in CIDR notation, of the route destination.
 	DestinationCidrBlock pulumi.StringPtrInput
-	Origin               pulumi.StringPtrInput
+	// Indicates how the Client VPN route was added. Will be `add-route` for routes created by this resource.
+	Origin pulumi.StringPtrInput
 	// The ID of the Subnet to route the traffic through. It must already be attached to the Client VPN.
 	TargetVpcSubnetId pulumi.StringPtrInput
-	Type              pulumi.StringPtrInput
+	// The type of the route.
+	Type pulumi.StringPtrInput
 }
 
 func (RouteState) ElementType() reflect.Type {
@@ -174,4 +183,43 @@ type RouteArgs struct {
 
 func (RouteArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*routeArgs)(nil)).Elem()
+}
+
+type RouteInput interface {
+	pulumi.Input
+
+	ToRouteOutput() RouteOutput
+	ToRouteOutputWithContext(ctx context.Context) RouteOutput
+}
+
+func (Route) ElementType() reflect.Type {
+	return reflect.TypeOf((*Route)(nil)).Elem()
+}
+
+func (i Route) ToRouteOutput() RouteOutput {
+	return i.ToRouteOutputWithContext(context.Background())
+}
+
+func (i Route) ToRouteOutputWithContext(ctx context.Context) RouteOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(RouteOutput)
+}
+
+type RouteOutput struct {
+	*pulumi.OutputState
+}
+
+func (RouteOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*RouteOutput)(nil)).Elem()
+}
+
+func (o RouteOutput) ToRouteOutput() RouteOutput {
+	return o
+}
+
+func (o RouteOutput) ToRouteOutputWithContext(ctx context.Context) RouteOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(RouteOutput{})
 }

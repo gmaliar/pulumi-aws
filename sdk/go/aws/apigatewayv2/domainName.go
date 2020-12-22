@@ -4,6 +4,7 @@
 package apigatewayv2
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -23,7 +24,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/apigatewayv2"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/apigatewayv2"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -32,7 +33,7 @@ import (
 // 		_, err := apigatewayv2.NewDomainName(ctx, "example", &apigatewayv2.DomainNameArgs{
 // 			DomainName: pulumi.String("ws-api.example.com"),
 // 			DomainNameConfiguration: &apigatewayv2.DomainNameDomainNameConfigurationArgs{
-// 				CertificateArn: pulumi.String(aws_acm_certificate.Example.Arn),
+// 				CertificateArn: pulumi.Any(aws_acm_certificate.Example.Arn),
 // 				EndpointType:   pulumi.String("REGIONAL"),
 // 				SecurityPolicy: pulumi.String("TLS_1_2"),
 // 			},
@@ -44,6 +45,14 @@ import (
 // 	})
 // }
 // ```
+//
+// ## Import
+//
+// `aws_apigatewayv2_domain_name` can be imported by using the domain name, e.g.
+//
+// ```sh
+//  $ pulumi import aws:apigatewayv2/domainName:DomainName example ws-api.example.com
+// ```
 type DomainName struct {
 	pulumi.CustomResourceState
 
@@ -51,10 +60,12 @@ type DomainName struct {
 	ApiMappingSelectionExpression pulumi.StringOutput `pulumi:"apiMappingSelectionExpression"`
 	// The ARN of the domain name.
 	Arn pulumi.StringOutput `pulumi:"arn"`
-	// The domain name.
+	// The domain name. Must be between 1 and 512 characters in length.
 	DomainName pulumi.StringOutput `pulumi:"domainName"`
 	// The domain name configuration.
 	DomainNameConfiguration DomainNameDomainNameConfigurationOutput `pulumi:"domainNameConfiguration"`
+	// The mutual TLS authentication configuration for the domain name.
+	MutualTlsAuthentication DomainNameMutualTlsAuthenticationPtrOutput `pulumi:"mutualTlsAuthentication"`
 	// A map of tags to assign to the domain name.
 	Tags pulumi.StringMapOutput `pulumi:"tags"`
 }
@@ -62,14 +73,15 @@ type DomainName struct {
 // NewDomainName registers a new resource with the given unique name, arguments, and options.
 func NewDomainName(ctx *pulumi.Context,
 	name string, args *DomainNameArgs, opts ...pulumi.ResourceOption) (*DomainName, error) {
-	if args == nil || args.DomainName == nil {
-		return nil, errors.New("missing required argument 'DomainName'")
-	}
-	if args == nil || args.DomainNameConfiguration == nil {
-		return nil, errors.New("missing required argument 'DomainNameConfiguration'")
-	}
 	if args == nil {
-		args = &DomainNameArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.DomainName == nil {
+		return nil, errors.New("invalid value for required argument 'DomainName'")
+	}
+	if args.DomainNameConfiguration == nil {
+		return nil, errors.New("invalid value for required argument 'DomainNameConfiguration'")
 	}
 	var resource DomainName
 	err := ctx.RegisterResource("aws:apigatewayv2/domainName:DomainName", name, args, &resource, opts...)
@@ -97,10 +109,12 @@ type domainNameState struct {
 	ApiMappingSelectionExpression *string `pulumi:"apiMappingSelectionExpression"`
 	// The ARN of the domain name.
 	Arn *string `pulumi:"arn"`
-	// The domain name.
+	// The domain name. Must be between 1 and 512 characters in length.
 	DomainName *string `pulumi:"domainName"`
 	// The domain name configuration.
 	DomainNameConfiguration *DomainNameDomainNameConfiguration `pulumi:"domainNameConfiguration"`
+	// The mutual TLS authentication configuration for the domain name.
+	MutualTlsAuthentication *DomainNameMutualTlsAuthentication `pulumi:"mutualTlsAuthentication"`
 	// A map of tags to assign to the domain name.
 	Tags map[string]string `pulumi:"tags"`
 }
@@ -110,10 +124,12 @@ type DomainNameState struct {
 	ApiMappingSelectionExpression pulumi.StringPtrInput
 	// The ARN of the domain name.
 	Arn pulumi.StringPtrInput
-	// The domain name.
+	// The domain name. Must be between 1 and 512 characters in length.
 	DomainName pulumi.StringPtrInput
 	// The domain name configuration.
 	DomainNameConfiguration DomainNameDomainNameConfigurationPtrInput
+	// The mutual TLS authentication configuration for the domain name.
+	MutualTlsAuthentication DomainNameMutualTlsAuthenticationPtrInput
 	// A map of tags to assign to the domain name.
 	Tags pulumi.StringMapInput
 }
@@ -123,24 +139,67 @@ func (DomainNameState) ElementType() reflect.Type {
 }
 
 type domainNameArgs struct {
-	// The domain name.
+	// The domain name. Must be between 1 and 512 characters in length.
 	DomainName string `pulumi:"domainName"`
 	// The domain name configuration.
 	DomainNameConfiguration DomainNameDomainNameConfiguration `pulumi:"domainNameConfiguration"`
+	// The mutual TLS authentication configuration for the domain name.
+	MutualTlsAuthentication *DomainNameMutualTlsAuthentication `pulumi:"mutualTlsAuthentication"`
 	// A map of tags to assign to the domain name.
 	Tags map[string]string `pulumi:"tags"`
 }
 
 // The set of arguments for constructing a DomainName resource.
 type DomainNameArgs struct {
-	// The domain name.
+	// The domain name. Must be between 1 and 512 characters in length.
 	DomainName pulumi.StringInput
 	// The domain name configuration.
 	DomainNameConfiguration DomainNameDomainNameConfigurationInput
+	// The mutual TLS authentication configuration for the domain name.
+	MutualTlsAuthentication DomainNameMutualTlsAuthenticationPtrInput
 	// A map of tags to assign to the domain name.
 	Tags pulumi.StringMapInput
 }
 
 func (DomainNameArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*domainNameArgs)(nil)).Elem()
+}
+
+type DomainNameInput interface {
+	pulumi.Input
+
+	ToDomainNameOutput() DomainNameOutput
+	ToDomainNameOutputWithContext(ctx context.Context) DomainNameOutput
+}
+
+func (DomainName) ElementType() reflect.Type {
+	return reflect.TypeOf((*DomainName)(nil)).Elem()
+}
+
+func (i DomainName) ToDomainNameOutput() DomainNameOutput {
+	return i.ToDomainNameOutputWithContext(context.Background())
+}
+
+func (i DomainName) ToDomainNameOutputWithContext(ctx context.Context) DomainNameOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(DomainNameOutput)
+}
+
+type DomainNameOutput struct {
+	*pulumi.OutputState
+}
+
+func (DomainNameOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*DomainNameOutput)(nil)).Elem()
+}
+
+func (o DomainNameOutput) ToDomainNameOutput() DomainNameOutput {
+	return o
+}
+
+func (o DomainNameOutput) ToDomainNameOutputWithContext(ctx context.Context) DomainNameOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(DomainNameOutput{})
 }

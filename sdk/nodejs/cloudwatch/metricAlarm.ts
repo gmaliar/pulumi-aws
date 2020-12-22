@@ -2,8 +2,7 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 import {Topic} from "../sns";
@@ -35,25 +34,25 @@ import {Topic} from "../sns";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const batPolicy = new aws.autoscaling.Policy("bat", {
- *     adjustmentType: "ChangeInCapacity",
- *     autoscalingGroupName: aws_autoscaling_group_bar.name,
- *     cooldown: 300,
+ * const batPolicy = new aws.autoscaling.Policy("batPolicy", {
  *     scalingAdjustment: 4,
+ *     adjustmentType: "ChangeInCapacity",
+ *     cooldown: 300,
+ *     autoscalingGroupName: aws_autoscaling_group.bar.name,
  * });
- * const batMetricAlarm = new aws.cloudwatch.MetricAlarm("bat", {
- *     alarmActions: [batPolicy.arn],
- *     alarmDescription: "This metric monitors ec2 cpu utilization",
+ * const batMetricAlarm = new aws.cloudwatch.MetricAlarm("batMetricAlarm", {
  *     comparisonOperator: "GreaterThanOrEqualToThreshold",
- *     dimensions: {
- *         AutoScalingGroupName: aws_autoscaling_group_bar.name,
- *     },
- *     evaluationPeriods: 2,
+ *     evaluationPeriods: "2",
  *     metricName: "CPUUtilization",
  *     namespace: "AWS/EC2",
- *     period: 120,
+ *     period: "120",
  *     statistic: "Average",
- *     threshold: 80,
+ *     threshold: "80",
+ *     dimensions: {
+ *         AutoScalingGroupName: aws_autoscaling_group.bar.name,
+ *     },
+ *     alarmDescription: "This metric monitors ec2 cpu utilization",
+ *     alarmActions: [batPolicy.arn],
  * });
  * ```
  *
@@ -147,7 +146,7 @@ import {Topic} from "../sns";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const xxxNlbHealthyhosts = new aws.cloudwatch.MetricAlarm("xxxNlbHealthyhosts", {
+ * const nlbHealthyhosts = new aws.cloudwatch.MetricAlarm("nlbHealthyhosts", {
  *     comparisonOperator: "LessThanThreshold",
  *     evaluationPeriods: "1",
  *     metricName: "HealthyHostCount",
@@ -155,7 +154,7 @@ import {Topic} from "../sns";
  *     period: "60",
  *     statistic: "Average",
  *     threshold: _var.logstash_servers_count,
- *     alarmDescription: "Number of XXXX nodes healthy in Target Group",
+ *     alarmDescription: "Number of healthy nodes in Target Group",
  *     actionsEnabled: "true",
  *     alarmActions: [aws_sns_topic.sns.arn],
  *     okActions: [aws_sns_topic.sns.arn],
@@ -168,6 +167,14 @@ import {Topic} from "../sns";
  *
  * > **NOTE:**  You cannot create a metric alarm consisting of both `statistic` and `extendedStatistic` parameters.
  * You must choose one or the other
+ *
+ * ## Import
+ *
+ * Cloud Metric Alarms can be imported using the `alarm_name`, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:cloudwatch/metricAlarm:MetricAlarm test alarm-12345
+ * ```
  */
 export class MetricAlarm extends pulumi.CustomResource {
     /**
@@ -335,10 +342,10 @@ export class MetricAlarm extends pulumi.CustomResource {
             inputs["unit"] = state ? state.unit : undefined;
         } else {
             const args = argsOrState as MetricAlarmArgs | undefined;
-            if (!args || args.comparisonOperator === undefined) {
+            if ((!args || args.comparisonOperator === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'comparisonOperator'");
             }
-            if (!args || args.evaluationPeriods === undefined) {
+            if ((!args || args.evaluationPeriods === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'evaluationPeriods'");
             }
             inputs["actionsEnabled"] = args ? args.actionsEnabled : undefined;

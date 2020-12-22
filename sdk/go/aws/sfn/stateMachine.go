@@ -4,6 +4,7 @@
 package sfn
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -20,15 +21,15 @@ import (
 // import (
 // 	"fmt"
 //
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/sfn"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/sfn"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
 // func main() {
 // 	pulumi.Run(func(ctx *pulumi.Context) error {
 // 		_, err := sfn.NewStateMachine(ctx, "sfnStateMachine", &sfn.StateMachineArgs{
-// 			Definition: pulumi.String(fmt.Sprintf("%v%v%v%v%v%v%v%v%v%v%v%v%v%v", "{\n", "  \"Comment\": \"A Hello World example of the Amazon States Language using an AWS Lambda Function\",\n", "  \"StartAt\": \"HelloWorld\",\n", "  \"States\": {\n", "    \"HelloWorld\": {\n", "      \"Type\": \"Task\",\n", "      \"Resource\": \"", aws_lambda_function.Lambda.Arn, "\",\n", "      \"End\": true\n", "    }\n", "  }\n", "}\n", "\n")),
-// 			RoleArn:    pulumi.String(aws_iam_role.Iam_for_sfn.Arn),
+// 			RoleArn:    pulumi.Any(aws_iam_role.Iam_for_sfn.Arn),
+// 			Definition: pulumi.String(fmt.Sprintf("%v%v%v%v%v%v%v%v%v%v%v%v%v", "{\n", "  \"Comment\": \"A Hello World example of the Amazon States Language using an AWS Lambda Function\",\n", "  \"StartAt\": \"HelloWorld\",\n", "  \"States\": {\n", "    \"HelloWorld\": {\n", "      \"Type\": \"Task\",\n", "      \"Resource\": \"", aws_lambda_function.Lambda.Arn, "\",\n", "      \"End\": true\n", "    }\n", "  }\n", "}\n")),
 // 		})
 // 		if err != nil {
 // 			return err
@@ -36,6 +37,14 @@ import (
 // 		return nil
 // 	})
 // }
+// ```
+//
+// ## Import
+//
+// State Machines can be imported using the `arn`, e.g.
+//
+// ```sh
+//  $ pulumi import aws:sfn/stateMachine:StateMachine foo arn:aws:states:eu-west-1:123456789098:stateMachine:bar
 // ```
 type StateMachine struct {
 	pulumi.CustomResourceState
@@ -59,14 +68,15 @@ type StateMachine struct {
 // NewStateMachine registers a new resource with the given unique name, arguments, and options.
 func NewStateMachine(ctx *pulumi.Context,
 	name string, args *StateMachineArgs, opts ...pulumi.ResourceOption) (*StateMachine, error) {
-	if args == nil || args.Definition == nil {
-		return nil, errors.New("missing required argument 'Definition'")
-	}
-	if args == nil || args.RoleArn == nil {
-		return nil, errors.New("missing required argument 'RoleArn'")
-	}
 	if args == nil {
-		args = &StateMachineArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.Definition == nil {
+		return nil, errors.New("invalid value for required argument 'Definition'")
+	}
+	if args.RoleArn == nil {
+		return nil, errors.New("invalid value for required argument 'RoleArn'")
 	}
 	var resource StateMachine
 	err := ctx.RegisterResource("aws:sfn/stateMachine:StateMachine", name, args, &resource, opts...)
@@ -152,4 +162,43 @@ type StateMachineArgs struct {
 
 func (StateMachineArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*stateMachineArgs)(nil)).Elem()
+}
+
+type StateMachineInput interface {
+	pulumi.Input
+
+	ToStateMachineOutput() StateMachineOutput
+	ToStateMachineOutputWithContext(ctx context.Context) StateMachineOutput
+}
+
+func (StateMachine) ElementType() reflect.Type {
+	return reflect.TypeOf((*StateMachine)(nil)).Elem()
+}
+
+func (i StateMachine) ToStateMachineOutput() StateMachineOutput {
+	return i.ToStateMachineOutputWithContext(context.Background())
+}
+
+func (i StateMachine) ToStateMachineOutputWithContext(ctx context.Context) StateMachineOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(StateMachineOutput)
+}
+
+type StateMachineOutput struct {
+	*pulumi.OutputState
+}
+
+func (StateMachineOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*StateMachineOutput)(nil)).Elem()
+}
+
+func (o StateMachineOutput) ToStateMachineOutput() StateMachineOutput {
+	return o
+}
+
+func (o StateMachineOutput) ToStateMachineOutputWithContext(ctx context.Context) StateMachineOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(StateMachineOutput{})
 }

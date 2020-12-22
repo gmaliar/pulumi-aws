@@ -41,9 +41,9 @@ namespace Pulumi.Aws.Elb
     ///         });
     ///         var foo = new Aws.Elb.LoadBalancerCookieStickinessPolicy("foo", new Aws.Elb.LoadBalancerCookieStickinessPolicyArgs
     ///         {
-    ///             CookieExpirationPeriod = 600,
-    ///             LbPort = 80,
     ///             LoadBalancer = lb.Id,
+    ///             LbPort = 80,
+    ///             CookieExpirationPeriod = 600,
     ///         });
     ///     }
     /// 
@@ -105,7 +105,7 @@ namespace Pulumi.Aws.Elb
                 Version = Utilities.Version,
                 Aliases =
                 {
-                    new Alias { Type = "aws:elasticloadbalancing/loadBalancerCookieStickinessPolicy:LoadBalancerCookieStickinessPolicy"},
+                    new Pulumi.Alias { Type = "aws:elasticloadbalancing/loadBalancerCookieStickinessPolicy:LoadBalancerCookieStickinessPolicy"},
                 },
             };
             var merged = CustomResourceOptions.Merge(defaultOptions, options);

@@ -4,6 +4,7 @@
 package ec2
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -11,6 +12,14 @@ import (
 )
 
 // Provides an Elastic network interface (ENI) resource.
+//
+// ## Import
+//
+// Network Interfaces can be imported using the `id`, e.g.
+//
+// ```sh
+//  $ pulumi import aws:ec2/networkInterface:NetworkInterface test eni-e5aa89a3
+// ```
 type NetworkInterface struct {
 	pulumi.CustomResourceState
 
@@ -18,6 +27,10 @@ type NetworkInterface struct {
 	Attachments NetworkInterfaceAttachmentTypeArrayOutput `pulumi:"attachments"`
 	// A description for the network interface.
 	Description pulumi.StringPtrOutput `pulumi:"description"`
+	// The number of IPv6 addresses to assign to a network interface. You can't use this option if specifying specific `ipv6Addresses`. If your subnet has the AssignIpv6AddressOnCreation attribute set to `true`, you can specify `0` to override this setting.
+	Ipv6AddressCount pulumi.IntOutput `pulumi:"ipv6AddressCount"`
+	// One or more specific IPv6 addresses from the IPv6 CIDR block range of your subnet. You can't use this option if you're specifying `ipv6AddressCount`.
+	Ipv6Addresses pulumi.StringArrayOutput `pulumi:"ipv6Addresses"`
 	// The MAC address of the network interface.
 	MacAddress pulumi.StringOutput `pulumi:"macAddress"`
 	OutpostArn pulumi.StringOutput `pulumi:"outpostArn"`
@@ -41,11 +54,12 @@ type NetworkInterface struct {
 // NewNetworkInterface registers a new resource with the given unique name, arguments, and options.
 func NewNetworkInterface(ctx *pulumi.Context,
 	name string, args *NetworkInterfaceArgs, opts ...pulumi.ResourceOption) (*NetworkInterface, error) {
-	if args == nil || args.SubnetId == nil {
-		return nil, errors.New("missing required argument 'SubnetId'")
-	}
 	if args == nil {
-		args = &NetworkInterfaceArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.SubnetId == nil {
+		return nil, errors.New("invalid value for required argument 'SubnetId'")
 	}
 	var resource NetworkInterface
 	err := ctx.RegisterResource("aws:ec2/networkInterface:NetworkInterface", name, args, &resource, opts...)
@@ -73,6 +87,10 @@ type networkInterfaceState struct {
 	Attachments []NetworkInterfaceAttachmentType `pulumi:"attachments"`
 	// A description for the network interface.
 	Description *string `pulumi:"description"`
+	// The number of IPv6 addresses to assign to a network interface. You can't use this option if specifying specific `ipv6Addresses`. If your subnet has the AssignIpv6AddressOnCreation attribute set to `true`, you can specify `0` to override this setting.
+	Ipv6AddressCount *int `pulumi:"ipv6AddressCount"`
+	// One or more specific IPv6 addresses from the IPv6 CIDR block range of your subnet. You can't use this option if you're specifying `ipv6AddressCount`.
+	Ipv6Addresses []string `pulumi:"ipv6Addresses"`
 	// The MAC address of the network interface.
 	MacAddress *string `pulumi:"macAddress"`
 	OutpostArn *string `pulumi:"outpostArn"`
@@ -98,6 +116,10 @@ type NetworkInterfaceState struct {
 	Attachments NetworkInterfaceAttachmentTypeArrayInput
 	// A description for the network interface.
 	Description pulumi.StringPtrInput
+	// The number of IPv6 addresses to assign to a network interface. You can't use this option if specifying specific `ipv6Addresses`. If your subnet has the AssignIpv6AddressOnCreation attribute set to `true`, you can specify `0` to override this setting.
+	Ipv6AddressCount pulumi.IntPtrInput
+	// One or more specific IPv6 addresses from the IPv6 CIDR block range of your subnet. You can't use this option if you're specifying `ipv6AddressCount`.
+	Ipv6Addresses pulumi.StringArrayInput
 	// The MAC address of the network interface.
 	MacAddress pulumi.StringPtrInput
 	OutpostArn pulumi.StringPtrInput
@@ -127,7 +149,11 @@ type networkInterfaceArgs struct {
 	Attachments []NetworkInterfaceAttachmentType `pulumi:"attachments"`
 	// A description for the network interface.
 	Description *string `pulumi:"description"`
-	PrivateIp   *string `pulumi:"privateIp"`
+	// The number of IPv6 addresses to assign to a network interface. You can't use this option if specifying specific `ipv6Addresses`. If your subnet has the AssignIpv6AddressOnCreation attribute set to `true`, you can specify `0` to override this setting.
+	Ipv6AddressCount *int `pulumi:"ipv6AddressCount"`
+	// One or more specific IPv6 addresses from the IPv6 CIDR block range of your subnet. You can't use this option if you're specifying `ipv6AddressCount`.
+	Ipv6Addresses []string `pulumi:"ipv6Addresses"`
+	PrivateIp     *string  `pulumi:"privateIp"`
 	// List of private IPs to assign to the ENI.
 	PrivateIps []string `pulumi:"privateIps"`
 	// Number of secondary private IPs to assign to the ENI. The total number of private IPs will be 1 + private_ips_count, as a primary private IP will be assiged to an ENI by default.
@@ -148,7 +174,11 @@ type NetworkInterfaceArgs struct {
 	Attachments NetworkInterfaceAttachmentTypeArrayInput
 	// A description for the network interface.
 	Description pulumi.StringPtrInput
-	PrivateIp   pulumi.StringPtrInput
+	// The number of IPv6 addresses to assign to a network interface. You can't use this option if specifying specific `ipv6Addresses`. If your subnet has the AssignIpv6AddressOnCreation attribute set to `true`, you can specify `0` to override this setting.
+	Ipv6AddressCount pulumi.IntPtrInput
+	// One or more specific IPv6 addresses from the IPv6 CIDR block range of your subnet. You can't use this option if you're specifying `ipv6AddressCount`.
+	Ipv6Addresses pulumi.StringArrayInput
+	PrivateIp     pulumi.StringPtrInput
 	// List of private IPs to assign to the ENI.
 	PrivateIps pulumi.StringArrayInput
 	// Number of secondary private IPs to assign to the ENI. The total number of private IPs will be 1 + private_ips_count, as a primary private IP will be assiged to an ENI by default.
@@ -165,4 +195,43 @@ type NetworkInterfaceArgs struct {
 
 func (NetworkInterfaceArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*networkInterfaceArgs)(nil)).Elem()
+}
+
+type NetworkInterfaceInput interface {
+	pulumi.Input
+
+	ToNetworkInterfaceOutput() NetworkInterfaceOutput
+	ToNetworkInterfaceOutputWithContext(ctx context.Context) NetworkInterfaceOutput
+}
+
+func (NetworkInterface) ElementType() reflect.Type {
+	return reflect.TypeOf((*NetworkInterface)(nil)).Elem()
+}
+
+func (i NetworkInterface) ToNetworkInterfaceOutput() NetworkInterfaceOutput {
+	return i.ToNetworkInterfaceOutputWithContext(context.Background())
+}
+
+func (i NetworkInterface) ToNetworkInterfaceOutputWithContext(ctx context.Context) NetworkInterfaceOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(NetworkInterfaceOutput)
+}
+
+type NetworkInterfaceOutput struct {
+	*pulumi.OutputState
+}
+
+func (NetworkInterfaceOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*NetworkInterfaceOutput)(nil)).Elem()
+}
+
+func (o NetworkInterfaceOutput) ToNetworkInterfaceOutput() NetworkInterfaceOutput {
+	return o
+}
+
+func (o NetworkInterfaceOutput) ToNetworkInterfaceOutputWithContext(ctx context.Context) NetworkInterfaceOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(NetworkInterfaceOutput{})
 }

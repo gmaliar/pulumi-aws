@@ -2,8 +2,7 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 /**
@@ -15,16 +14,16 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const selectedRestApi = pulumi.output(aws.apigateway.getRestApi({
- *     name: var_api_gateway_name,
- * }, { async: true }));
- * const selectedUserPools = pulumi.output(aws.cognito.getUserPools({
- *     name: var_cognito_user_pool_name,
- * }, { async: true }));
+ * const selectedRestApi = aws.apigateway.getRestApi({
+ *     name: _var.api_gateway_name,
+ * });
+ * const selectedUserPools = aws.cognito.getUserPools({
+ *     name: _var.cognito_user_pool_name,
+ * });
  * const cognito = new aws.apigateway.Authorizer("cognito", {
- *     providerArns: selectedUserPools.arns,
- *     restApi: selectedRestApi.id,
  *     type: "COGNITO_USER_POOLS",
+ *     restApi: selectedRestApi.then(selectedRestApi => selectedRestApi.id),
+ *     providerArns: selectedUserPools.then(selectedUserPools => selectedUserPools.arns),
  * });
  * ```
  */

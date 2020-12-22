@@ -4,6 +4,7 @@
 package iam
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
@@ -21,7 +22,7 @@ import (
 // import (
 // 	"fmt"
 //
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/iam"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/iam"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -43,8 +44,8 @@ import (
 // 			return err
 // 		}
 // 		_, err = iam.NewUserPolicy(ctx, "lbRo", &iam.UserPolicyArgs{
-// 			Policy: pulumi.String(fmt.Sprintf("%v%v%v%v%v%v%v%v%v%v%v%v%v", "{\n", "  \"Version\": \"2012-10-17\",\n", "  \"Statement\": [\n", "    {\n", "      \"Action\": [\n", "        \"ec2:Describe*\"\n", "      ],\n", "      \"Effect\": \"Allow\",\n", "      \"Resource\": \"*\"\n", "    }\n", "  ]\n", "}\n", "\n")),
 // 			User:   lbUser.Name,
+// 			Policy: pulumi.String(fmt.Sprintf("%v%v%v%v%v%v%v%v%v%v%v%v", "{\n", "  \"Version\": \"2012-10-17\",\n", "  \"Statement\": [\n", "    {\n", "      \"Action\": [\n", "        \"ec2:Describe*\"\n", "      ],\n", "      \"Effect\": \"Allow\",\n", "      \"Resource\": \"*\"\n", "    }\n", "  ]\n", "}\n")),
 // 		})
 // 		if err != nil {
 // 			return err
@@ -52,6 +53,14 @@ import (
 // 		return nil
 // 	})
 // }
+// ```
+//
+// ## Import
+//
+// IAM Users can be imported using the `name`, e.g.
+//
+// ```sh
+//  $ pulumi import aws:iam/user:User lb loadbalancer
 // ```
 type User struct {
 	pulumi.CustomResourceState
@@ -80,6 +89,7 @@ func NewUser(ctx *pulumi.Context,
 	if args == nil {
 		args = &UserArgs{}
 	}
+
 	var resource User
 	err := ctx.RegisterResource("aws:iam/user:User", name, args, &resource, opts...)
 	if err != nil {
@@ -176,4 +186,43 @@ type UserArgs struct {
 
 func (UserArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*userArgs)(nil)).Elem()
+}
+
+type UserInput interface {
+	pulumi.Input
+
+	ToUserOutput() UserOutput
+	ToUserOutputWithContext(ctx context.Context) UserOutput
+}
+
+func (User) ElementType() reflect.Type {
+	return reflect.TypeOf((*User)(nil)).Elem()
+}
+
+func (i User) ToUserOutput() UserOutput {
+	return i.ToUserOutputWithContext(context.Background())
+}
+
+func (i User) ToUserOutputWithContext(ctx context.Context) UserOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(UserOutput)
+}
+
+type UserOutput struct {
+	*pulumi.OutputState
+}
+
+func (UserOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*UserOutput)(nil)).Elem()
+}
+
+func (o UserOutput) ToUserOutput() UserOutput {
+	return o
+}
+
+func (o UserOutput) ToUserOutputWithContext(ctx context.Context) UserOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(UserOutput{})
 }

@@ -23,8 +23,8 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws"
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/ec2"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/ec2"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -61,7 +61,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -94,7 +94,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -130,21 +130,12 @@ func GetAvailabilityZones(ctx *pulumi.Context, args *GetAvailabilityZonesArgs, o
 type GetAvailabilityZonesArgs struct {
 	// Set to `true` to include all Availability Zones and Local Zones regardless of your opt in status.
 	AllAvailabilityZones *bool `pulumi:"allAvailabilityZones"`
-	// List of Availability Zone names to exclude. Use `excludeNames` instead.
-	//
-	// Deprecated: use `exclude_names` instead
-	BlacklistedNames []string `pulumi:"blacklistedNames"`
-	// List of Availability Zone IDs to exclude. Use `excludeZoneIds` instead.
-	//
-	// Deprecated: use `exclude_zone_ids` instead
-	BlacklistedZoneIds []string `pulumi:"blacklistedZoneIds"`
 	// List of Availability Zone names to exclude.
 	ExcludeNames []string `pulumi:"excludeNames"`
 	// List of Availability Zone IDs to exclude.
 	ExcludeZoneIds []string `pulumi:"excludeZoneIds"`
 	// Configuration block(s) for filtering. Detailed below.
-	Filters    []GetAvailabilityZonesFilter `pulumi:"filters"`
-	GroupNames []string                     `pulumi:"groupNames"`
+	Filters []GetAvailabilityZonesFilter `pulumi:"filters"`
 	// Allows to filter list of Availability Zones based on their
 	// current state. Can be either `"available"`, `"information"`, `"impaired"` or
 	// `"unavailable"`. By default the list includes a complete set of Availability Zones
@@ -154,15 +145,11 @@ type GetAvailabilityZonesArgs struct {
 
 // A collection of values returned by getAvailabilityZones.
 type GetAvailabilityZonesResult struct {
-	AllAvailabilityZones *bool `pulumi:"allAvailabilityZones"`
-	// Deprecated: use `exclude_names` instead
-	BlacklistedNames []string `pulumi:"blacklistedNames"`
-	// Deprecated: use `exclude_zone_ids` instead
-	BlacklistedZoneIds []string                     `pulumi:"blacklistedZoneIds"`
-	ExcludeNames       []string                     `pulumi:"excludeNames"`
-	ExcludeZoneIds     []string                     `pulumi:"excludeZoneIds"`
-	Filters            []GetAvailabilityZonesFilter `pulumi:"filters"`
-	GroupNames         []string                     `pulumi:"groupNames"`
+	AllAvailabilityZones *bool                        `pulumi:"allAvailabilityZones"`
+	ExcludeNames         []string                     `pulumi:"excludeNames"`
+	ExcludeZoneIds       []string                     `pulumi:"excludeZoneIds"`
+	Filters              []GetAvailabilityZonesFilter `pulumi:"filters"`
+	GroupNames           []string                     `pulumi:"groupNames"`
 	// The provider-assigned unique ID for this managed resource.
 	Id string `pulumi:"id"`
 	// A list of the Availability Zone names available to the account.

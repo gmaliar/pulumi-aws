@@ -33,6 +33,14 @@ namespace Pulumi.Aws.ApiGatewayV2
     /// 
     /// }
     /// ```
+    /// 
+    /// ## Import
+    /// 
+    /// `aws_apigatewayv2_route` can be imported by using the API identifier and route identifier, e.g.
+    /// 
+    /// ```sh
+    ///  $ pulumi import aws:apigatewayv2/route:Route example aabbccddee/1122334
+    /// ```
     /// </summary>
     public partial class Route : Pulumi.CustomResource
     {
@@ -76,7 +84,7 @@ namespace Pulumi.Aws.ApiGatewayV2
         public Output<string?> ModelSelectionExpression { get; private set; } = null!;
 
         /// <summary>
-        /// The operation name for the route.
+        /// The operation name for the route. Must be between 1 and 64 characters in length.
         /// </summary>
         [Output("operationName")]
         public Output<string?> OperationName { get; private set; } = null!;
@@ -88,7 +96,7 @@ namespace Pulumi.Aws.ApiGatewayV2
         public Output<ImmutableDictionary<string, string>?> RequestModels { get; private set; } = null!;
 
         /// <summary>
-        /// The route key for the route.
+        /// The route key for the route. For HTTP APIs, the route key can be either `$default`, or a combination of an HTTP method and resource path, for example, `GET /pets`.
         /// </summary>
         [Output("routeKey")]
         public Output<string> RouteKey { get; private set; } = null!;
@@ -100,7 +108,7 @@ namespace Pulumi.Aws.ApiGatewayV2
         public Output<string?> RouteResponseSelectionExpression { get; private set; } = null!;
 
         /// <summary>
-        /// The target for the route.
+        /// The target for the route. Must be between 1 and 128 characters in length.
         /// </summary>
         [Output("target")]
         public Output<string?> Target { get; private set; } = null!;
@@ -197,7 +205,7 @@ namespace Pulumi.Aws.ApiGatewayV2
         public Input<string>? ModelSelectionExpression { get; set; }
 
         /// <summary>
-        /// The operation name for the route.
+        /// The operation name for the route. Must be between 1 and 64 characters in length.
         /// </summary>
         [Input("operationName")]
         public Input<string>? OperationName { get; set; }
@@ -215,7 +223,7 @@ namespace Pulumi.Aws.ApiGatewayV2
         }
 
         /// <summary>
-        /// The route key for the route.
+        /// The route key for the route. For HTTP APIs, the route key can be either `$default`, or a combination of an HTTP method and resource path, for example, `GET /pets`.
         /// </summary>
         [Input("routeKey", required: true)]
         public Input<string> RouteKey { get; set; } = null!;
@@ -227,7 +235,7 @@ namespace Pulumi.Aws.ApiGatewayV2
         public Input<string>? RouteResponseSelectionExpression { get; set; }
 
         /// <summary>
-        /// The target for the route.
+        /// The target for the route. Must be between 1 and 128 characters in length.
         /// </summary>
         [Input("target")]
         public Input<string>? Target { get; set; }
@@ -285,7 +293,7 @@ namespace Pulumi.Aws.ApiGatewayV2
         public Input<string>? ModelSelectionExpression { get; set; }
 
         /// <summary>
-        /// The operation name for the route.
+        /// The operation name for the route. Must be between 1 and 64 characters in length.
         /// </summary>
         [Input("operationName")]
         public Input<string>? OperationName { get; set; }
@@ -303,7 +311,7 @@ namespace Pulumi.Aws.ApiGatewayV2
         }
 
         /// <summary>
-        /// The route key for the route.
+        /// The route key for the route. For HTTP APIs, the route key can be either `$default`, or a combination of an HTTP method and resource path, for example, `GET /pets`.
         /// </summary>
         [Input("routeKey")]
         public Input<string>? RouteKey { get; set; }
@@ -315,7 +323,7 @@ namespace Pulumi.Aws.ApiGatewayV2
         public Input<string>? RouteResponseSelectionExpression { get; set; }
 
         /// <summary>
-        /// The target for the route.
+        /// The target for the route. Must be between 1 and 128 characters in length.
         /// </summary>
         [Input("target")]
         public Input<string>? Target { get; set; }

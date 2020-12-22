@@ -55,8 +55,8 @@ namespace Pulumi.Aws.Cognito
     ///             {
     ///                 new Aws.Cognito.Inputs.ResourceServerScopeArgs
     ///                 {
-    ///                     ScopeDescription = "a Sample Scope Description",
     ///                     ScopeName = "sample-scope",
+    ///                     ScopeDescription = "a Sample Scope Description",
     ///                 },
     ///             },
     ///             UserPoolId = pool.Id,
@@ -64,6 +64,14 @@ namespace Pulumi.Aws.Cognito
     ///     }
     /// 
     /// }
+    /// ```
+    /// 
+    /// ## Import
+    /// 
+    /// `aws_cognito_resource_server` can be imported using their User Pool ID and Identifier, e.g.
+    /// 
+    /// ```sh
+    ///  $ pulumi import aws:cognito/resourceServer:ResourceServer example xxx_yyyyy|https://example.com
     /// ```
     /// </summary>
     public partial class ResourceServer : Pulumi.CustomResource

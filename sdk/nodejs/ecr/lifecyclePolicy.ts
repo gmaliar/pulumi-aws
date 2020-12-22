@@ -22,6 +22,7 @@ import {LifecyclePolicyDocument} from "./index";
  *
  * const foo = new aws.ecr.Repository("foo", {});
  * const foopolicy = new aws.ecr.LifecyclePolicy("foopolicy", {
+ *     repository: foo.name,
  *     policy: `{
  *     "rules": [
  *         {
@@ -40,7 +41,6 @@ import {LifecyclePolicyDocument} from "./index";
  *     ]
  * }
  * `,
- *     repository: foo.name,
  * });
  * ```
  * ### Policy on tagged image
@@ -51,6 +51,7 @@ import {LifecyclePolicyDocument} from "./index";
  *
  * const foo = new aws.ecr.Repository("foo", {});
  * const foopolicy = new aws.ecr.LifecyclePolicy("foopolicy", {
+ *     repository: foo.name,
  *     policy: `{
  *     "rules": [
  *         {
@@ -69,8 +70,15 @@ import {LifecyclePolicyDocument} from "./index";
  *     ]
  * }
  * `,
- *     repository: foo.name,
  * });
+ * ```
+ *
+ * ## Import
+ *
+ * ECR Lifecycle Policy can be imported using the name of the repository, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:ecr/lifecyclePolicy:LifecyclePolicy example tf-example
  * ```
  */
 export class LifecyclePolicy extends pulumi.CustomResource {
@@ -131,10 +139,10 @@ export class LifecyclePolicy extends pulumi.CustomResource {
             inputs["repository"] = state ? state.repository : undefined;
         } else {
             const args = argsOrState as LifecyclePolicyArgs | undefined;
-            if (!args || args.policy === undefined) {
+            if ((!args || args.policy === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'policy'");
             }
-            if (!args || args.repository === undefined) {
+            if ((!args || args.repository === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'repository'");
             }
             inputs["policy"] = args ? args.policy : undefined;

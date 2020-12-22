@@ -4,6 +4,7 @@
 package route53
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -19,7 +20,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/route53"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/route53"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -49,7 +50,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/route53"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/route53"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -77,15 +78,14 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/cloudwatch"
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/route53"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/cloudwatch"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/route53"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
 // func main() {
 // 	pulumi.Run(func(ctx *pulumi.Context) error {
 // 		foobar, err := cloudwatch.NewMetricAlarm(ctx, "foobar", &cloudwatch.MetricAlarmArgs{
-// 			AlarmDescription:   pulumi.String("This metric monitors ec2 cpu utilization"),
 // 			ComparisonOperator: pulumi.String("GreaterThanOrEqualToThreshold"),
 // 			EvaluationPeriods:  pulumi.Int(2),
 // 			MetricName:         pulumi.String("CPUUtilization"),
@@ -93,15 +93,16 @@ import (
 // 			Period:             pulumi.Int(120),
 // 			Statistic:          pulumi.String("Average"),
 // 			Threshold:          pulumi.Float64(80),
+// 			AlarmDescription:   pulumi.String("This metric monitors ec2 cpu utilization"),
 // 		})
 // 		if err != nil {
 // 			return err
 // 		}
 // 		_, err = route53.NewHealthCheck(ctx, "foo", &route53.HealthCheckArgs{
+// 			Type:                         pulumi.String("CLOUDWATCH_METRIC"),
 // 			CloudwatchAlarmName:          foobar.Name,
 // 			CloudwatchAlarmRegion:        pulumi.String("us-west-2"),
 // 			InsufficientDataHealthStatus: pulumi.String("Healthy"),
-// 			Type:                         pulumi.String("CLOUDWATCH_METRIC"),
 // 		})
 // 		if err != nil {
 // 			return err
@@ -109,6 +110,14 @@ import (
 // 		return nil
 // 	})
 // }
+// ```
+//
+// ## Import
+//
+// Route53 Health Checks can be imported using the `health check id`, e.g.
+//
+// ```sh
+//  $ pulumi import aws:route53/healthCheck:HealthCheck http_check abcdef11-2222-3333-4444-555555fedcba
 // ```
 type HealthCheck struct {
 	pulumi.CustomResourceState
@@ -121,6 +130,11 @@ type HealthCheck struct {
 	CloudwatchAlarmName pulumi.StringPtrOutput `pulumi:"cloudwatchAlarmName"`
 	// The CloudWatchRegion that the CloudWatch alarm was created in.
 	CloudwatchAlarmRegion pulumi.StringPtrOutput `pulumi:"cloudwatchAlarmRegion"`
+	// A boolean value that stops Route 53 from performing health checks. When set to true, Route 53 will do the following depending on the type of health check:
+	// * For health checks that check the health of endpoints, Route5 53 stops submitting requests to your application, server, or other resource.
+	// * For calculated health checks, Route 53 stops aggregating the status of the referenced health checks.
+	// * For health checks that monitor CloudWatch alarms, Route 53 stops monitoring the corresponding CloudWatch metrics.
+	Disabled pulumi.BoolPtrOutput `pulumi:"disabled"`
 	// A boolean value that indicates whether Route53 should send the `fqdn` to the endpoint when performing the health check. This defaults to AWS' defaults: when the `type` is "HTTPS" `enableSni` defaults to `true`, when `type` is anything else `enableSni` defaults to `false`.
 	EnableSni pulumi.BoolOutput `pulumi:"enableSni"`
 	// The number of consecutive health checks that an endpoint must pass or fail.
@@ -157,11 +171,12 @@ type HealthCheck struct {
 // NewHealthCheck registers a new resource with the given unique name, arguments, and options.
 func NewHealthCheck(ctx *pulumi.Context,
 	name string, args *HealthCheckArgs, opts ...pulumi.ResourceOption) (*HealthCheck, error) {
-	if args == nil || args.Type == nil {
-		return nil, errors.New("missing required argument 'Type'")
-	}
 	if args == nil {
-		args = &HealthCheckArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.Type == nil {
+		return nil, errors.New("invalid value for required argument 'Type'")
 	}
 	var resource HealthCheck
 	err := ctx.RegisterResource("aws:route53/healthCheck:HealthCheck", name, args, &resource, opts...)
@@ -193,6 +208,11 @@ type healthCheckState struct {
 	CloudwatchAlarmName *string `pulumi:"cloudwatchAlarmName"`
 	// The CloudWatchRegion that the CloudWatch alarm was created in.
 	CloudwatchAlarmRegion *string `pulumi:"cloudwatchAlarmRegion"`
+	// A boolean value that stops Route 53 from performing health checks. When set to true, Route 53 will do the following depending on the type of health check:
+	// * For health checks that check the health of endpoints, Route5 53 stops submitting requests to your application, server, or other resource.
+	// * For calculated health checks, Route 53 stops aggregating the status of the referenced health checks.
+	// * For health checks that monitor CloudWatch alarms, Route 53 stops monitoring the corresponding CloudWatch metrics.
+	Disabled *bool `pulumi:"disabled"`
 	// A boolean value that indicates whether Route53 should send the `fqdn` to the endpoint when performing the health check. This defaults to AWS' defaults: when the `type` is "HTTPS" `enableSni` defaults to `true`, when `type` is anything else `enableSni` defaults to `false`.
 	EnableSni *bool `pulumi:"enableSni"`
 	// The number of consecutive health checks that an endpoint must pass or fail.
@@ -235,6 +255,11 @@ type HealthCheckState struct {
 	CloudwatchAlarmName pulumi.StringPtrInput
 	// The CloudWatchRegion that the CloudWatch alarm was created in.
 	CloudwatchAlarmRegion pulumi.StringPtrInput
+	// A boolean value that stops Route 53 from performing health checks. When set to true, Route 53 will do the following depending on the type of health check:
+	// * For health checks that check the health of endpoints, Route5 53 stops submitting requests to your application, server, or other resource.
+	// * For calculated health checks, Route 53 stops aggregating the status of the referenced health checks.
+	// * For health checks that monitor CloudWatch alarms, Route 53 stops monitoring the corresponding CloudWatch metrics.
+	Disabled pulumi.BoolPtrInput
 	// A boolean value that indicates whether Route53 should send the `fqdn` to the endpoint when performing the health check. This defaults to AWS' defaults: when the `type` is "HTTPS" `enableSni` defaults to `true`, when `type` is anything else `enableSni` defaults to `false`.
 	EnableSni pulumi.BoolPtrInput
 	// The number of consecutive health checks that an endpoint must pass or fail.
@@ -281,6 +306,11 @@ type healthCheckArgs struct {
 	CloudwatchAlarmName *string `pulumi:"cloudwatchAlarmName"`
 	// The CloudWatchRegion that the CloudWatch alarm was created in.
 	CloudwatchAlarmRegion *string `pulumi:"cloudwatchAlarmRegion"`
+	// A boolean value that stops Route 53 from performing health checks. When set to true, Route 53 will do the following depending on the type of health check:
+	// * For health checks that check the health of endpoints, Route5 53 stops submitting requests to your application, server, or other resource.
+	// * For calculated health checks, Route 53 stops aggregating the status of the referenced health checks.
+	// * For health checks that monitor CloudWatch alarms, Route 53 stops monitoring the corresponding CloudWatch metrics.
+	Disabled *bool `pulumi:"disabled"`
 	// A boolean value that indicates whether Route53 should send the `fqdn` to the endpoint when performing the health check. This defaults to AWS' defaults: when the `type` is "HTTPS" `enableSni` defaults to `true`, when `type` is anything else `enableSni` defaults to `false`.
 	EnableSni *bool `pulumi:"enableSni"`
 	// The number of consecutive health checks that an endpoint must pass or fail.
@@ -324,6 +354,11 @@ type HealthCheckArgs struct {
 	CloudwatchAlarmName pulumi.StringPtrInput
 	// The CloudWatchRegion that the CloudWatch alarm was created in.
 	CloudwatchAlarmRegion pulumi.StringPtrInput
+	// A boolean value that stops Route 53 from performing health checks. When set to true, Route 53 will do the following depending on the type of health check:
+	// * For health checks that check the health of endpoints, Route5 53 stops submitting requests to your application, server, or other resource.
+	// * For calculated health checks, Route 53 stops aggregating the status of the referenced health checks.
+	// * For health checks that monitor CloudWatch alarms, Route 53 stops monitoring the corresponding CloudWatch metrics.
+	Disabled pulumi.BoolPtrInput
 	// A boolean value that indicates whether Route53 should send the `fqdn` to the endpoint when performing the health check. This defaults to AWS' defaults: when the `type` is "HTTPS" `enableSni` defaults to `true`, when `type` is anything else `enableSni` defaults to `false`.
 	EnableSni pulumi.BoolPtrInput
 	// The number of consecutive health checks that an endpoint must pass or fail.
@@ -359,4 +394,43 @@ type HealthCheckArgs struct {
 
 func (HealthCheckArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*healthCheckArgs)(nil)).Elem()
+}
+
+type HealthCheckInput interface {
+	pulumi.Input
+
+	ToHealthCheckOutput() HealthCheckOutput
+	ToHealthCheckOutputWithContext(ctx context.Context) HealthCheckOutput
+}
+
+func (HealthCheck) ElementType() reflect.Type {
+	return reflect.TypeOf((*HealthCheck)(nil)).Elem()
+}
+
+func (i HealthCheck) ToHealthCheckOutput() HealthCheckOutput {
+	return i.ToHealthCheckOutputWithContext(context.Background())
+}
+
+func (i HealthCheck) ToHealthCheckOutputWithContext(ctx context.Context) HealthCheckOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(HealthCheckOutput)
+}
+
+type HealthCheckOutput struct {
+	*pulumi.OutputState
+}
+
+func (HealthCheckOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*HealthCheckOutput)(nil)).Elem()
+}
+
+func (o HealthCheckOutput) ToHealthCheckOutput() HealthCheckOutput {
+	return o
+}
+
+func (o HealthCheckOutput) ToHealthCheckOutputWithContext(ctx context.Context) HealthCheckOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(HealthCheckOutput{})
 }

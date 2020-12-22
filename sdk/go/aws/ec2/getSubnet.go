@@ -23,12 +23,15 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/ec2"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/ec2"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
+// 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi/config"
 // )
 //
 // func main() {
 // 	pulumi.Run(func(ctx *pulumi.Context) error {
+// 		cfg := config.New(ctx, "")
+// 		subnetId := cfg.RequireObject("subnetId")
 // 		opt0 := subnetId
 // 		selected, err := ec2.LookupSubnet(ctx, &ec2.LookupSubnetArgs{
 // 			Id: &opt0,
@@ -37,17 +40,17 @@ import (
 // 			return err
 // 		}
 // 		_, err = ec2.NewSecurityGroup(ctx, "subnet", &ec2.SecurityGroupArgs{
+// 			VpcId: pulumi.String(selected.VpcId),
 // 			Ingress: ec2.SecurityGroupIngressArray{
 // 				&ec2.SecurityGroupIngressArgs{
 // 					CidrBlocks: pulumi.StringArray{
 // 						pulumi.String(selected.CidrBlock),
 // 					},
 // 					FromPort: pulumi.Int(80),
-// 					Protocol: pulumi.String("tcp"),
 // 					ToPort:   pulumi.Int(80),
+// 					Protocol: pulumi.String("tcp"),
 // 				},
 // 			},
-// 			VpcId: pulumi.String(selected.VpcId),
 // 		})
 // 		if err != nil {
 // 			return err

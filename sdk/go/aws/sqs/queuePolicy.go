@@ -4,6 +4,7 @@
 package sqs
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -21,7 +22,7 @@ import (
 // import (
 // 	"fmt"
 //
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/sqs"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/sqs"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -32,10 +33,10 @@ import (
 // 			return err
 // 		}
 // 		_, err = sqs.NewQueuePolicy(ctx, "test", &sqs.QueuePolicyArgs{
-// 			Policy: queue.Arn.ApplyT(func(arn string) (string, error) {
-// 				return fmt.Sprintf("%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v", "{\n", "  \"Version\": \"2012-10-17\",\n", "  \"Id\": \"sqspolicy\",\n", "  \"Statement\": [\n", "    {\n", "      \"Sid\": \"First\",\n", "      \"Effect\": \"Allow\",\n", "      \"Principal\": \"*\",\n", "      \"Action\": \"sqs:SendMessage\",\n", "      \"Resource\": \"", arn, "\",\n", "      \"Condition\": {\n", "        \"ArnEquals\": {\n", "          \"aws:SourceArn\": \"", aws_sns_topic.Example.Arn, "\"\n", "        }\n", "      }\n", "    }\n", "  ]\n", "}\n", "\n"), nil
-// 			}).(pulumi.StringOutput),
 // 			QueueUrl: queue.ID(),
+// 			Policy: queue.Arn.ApplyT(func(arn string) (string, error) {
+// 				return fmt.Sprintf("%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v", "{\n", "  \"Version\": \"2012-10-17\",\n", "  \"Id\": \"sqspolicy\",\n", "  \"Statement\": [\n", "    {\n", "      \"Sid\": \"First\",\n", "      \"Effect\": \"Allow\",\n", "      \"Principal\": \"*\",\n", "      \"Action\": \"sqs:SendMessage\",\n", "      \"Resource\": \"", arn, "\",\n", "      \"Condition\": {\n", "        \"ArnEquals\": {\n", "          \"aws:SourceArn\": \"", aws_sns_topic.Example.Arn, "\"\n", "        }\n", "      }\n", "    }\n", "  ]\n", "}\n"), nil
+// 			}).(pulumi.StringOutput),
 // 		})
 // 		if err != nil {
 // 			return err
@@ -43,6 +44,14 @@ import (
 // 		return nil
 // 	})
 // }
+// ```
+//
+// ## Import
+//
+// SQS Queue Policies can be imported using the queue URL, e.g.
+//
+// ```sh
+//  $ pulumi import aws:sqs/queuePolicy:QueuePolicy test https://queue.amazonaws.com/0123456789012/myqueue
 // ```
 type QueuePolicy struct {
 	pulumi.CustomResourceState
@@ -56,14 +65,15 @@ type QueuePolicy struct {
 // NewQueuePolicy registers a new resource with the given unique name, arguments, and options.
 func NewQueuePolicy(ctx *pulumi.Context,
 	name string, args *QueuePolicyArgs, opts ...pulumi.ResourceOption) (*QueuePolicy, error) {
-	if args == nil || args.Policy == nil {
-		return nil, errors.New("missing required argument 'Policy'")
-	}
-	if args == nil || args.QueueUrl == nil {
-		return nil, errors.New("missing required argument 'QueueUrl'")
-	}
 	if args == nil {
-		args = &QueuePolicyArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.Policy == nil {
+		return nil, errors.New("invalid value for required argument 'Policy'")
+	}
+	if args.QueueUrl == nil {
+		return nil, errors.New("invalid value for required argument 'QueueUrl'")
 	}
 	var resource QueuePolicy
 	err := ctx.RegisterResource("aws:sqs/queuePolicy:QueuePolicy", name, args, &resource, opts...)
@@ -121,4 +131,43 @@ type QueuePolicyArgs struct {
 
 func (QueuePolicyArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*queuePolicyArgs)(nil)).Elem()
+}
+
+type QueuePolicyInput interface {
+	pulumi.Input
+
+	ToQueuePolicyOutput() QueuePolicyOutput
+	ToQueuePolicyOutputWithContext(ctx context.Context) QueuePolicyOutput
+}
+
+func (QueuePolicy) ElementType() reflect.Type {
+	return reflect.TypeOf((*QueuePolicy)(nil)).Elem()
+}
+
+func (i QueuePolicy) ToQueuePolicyOutput() QueuePolicyOutput {
+	return i.ToQueuePolicyOutputWithContext(context.Background())
+}
+
+func (i QueuePolicy) ToQueuePolicyOutputWithContext(ctx context.Context) QueuePolicyOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(QueuePolicyOutput)
+}
+
+type QueuePolicyOutput struct {
+	*pulumi.OutputState
+}
+
+func (QueuePolicyOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*QueuePolicyOutput)(nil)).Elem()
+}
+
+func (o QueuePolicyOutput) ToQueuePolicyOutput() QueuePolicyOutput {
+	return o
+}
+
+func (o QueuePolicyOutput) ToQueuePolicyOutputWithContext(ctx context.Context) QueuePolicyOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(QueuePolicyOutput{})
 }

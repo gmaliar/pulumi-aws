@@ -4,6 +4,7 @@
 package apigateway
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -18,14 +19,14 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/apigateway"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/apigateway"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
 // func main() {
 // 	pulumi.Run(func(ctx *pulumi.Context) error {
 // 		_, err := apigateway.NewRequestValidator(ctx, "example", &apigateway.RequestValidatorArgs{
-// 			RestApi:                   pulumi.String(aws_api_gateway_rest_api.Example.Id),
+// 			RestApi:                   pulumi.Any(aws_api_gateway_rest_api.Example.Id),
 // 			ValidateRequestBody:       pulumi.Bool(true),
 // 			ValidateRequestParameters: pulumi.Bool(true),
 // 		})
@@ -35,6 +36,14 @@ import (
 // 		return nil
 // 	})
 // }
+// ```
+//
+// ## Import
+//
+// `aws_api_gateway_request_validator` can be imported using `REST-API-ID/REQUEST-VALIDATOR-ID`, e.g.
+//
+// ```sh
+//  $ pulumi import aws:apigateway/requestValidator:RequestValidator example 12345abcde/67890fghij
 // ```
 type RequestValidator struct {
 	pulumi.CustomResourceState
@@ -52,11 +61,12 @@ type RequestValidator struct {
 // NewRequestValidator registers a new resource with the given unique name, arguments, and options.
 func NewRequestValidator(ctx *pulumi.Context,
 	name string, args *RequestValidatorArgs, opts ...pulumi.ResourceOption) (*RequestValidator, error) {
-	if args == nil || args.RestApi == nil {
-		return nil, errors.New("missing required argument 'RestApi'")
-	}
 	if args == nil {
-		args = &RequestValidatorArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.RestApi == nil {
+		return nil, errors.New("invalid value for required argument 'RestApi'")
 	}
 	var resource RequestValidator
 	err := ctx.RegisterResource("aws:apigateway/requestValidator:RequestValidator", name, args, &resource, opts...)
@@ -130,4 +140,43 @@ type RequestValidatorArgs struct {
 
 func (RequestValidatorArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*requestValidatorArgs)(nil)).Elem()
+}
+
+type RequestValidatorInput interface {
+	pulumi.Input
+
+	ToRequestValidatorOutput() RequestValidatorOutput
+	ToRequestValidatorOutputWithContext(ctx context.Context) RequestValidatorOutput
+}
+
+func (RequestValidator) ElementType() reflect.Type {
+	return reflect.TypeOf((*RequestValidator)(nil)).Elem()
+}
+
+func (i RequestValidator) ToRequestValidatorOutput() RequestValidatorOutput {
+	return i.ToRequestValidatorOutputWithContext(context.Background())
+}
+
+func (i RequestValidator) ToRequestValidatorOutputWithContext(ctx context.Context) RequestValidatorOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(RequestValidatorOutput)
+}
+
+type RequestValidatorOutput struct {
+	*pulumi.OutputState
+}
+
+func (RequestValidatorOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*RequestValidatorOutput)(nil)).Elem()
+}
+
+func (o RequestValidatorOutput) ToRequestValidatorOutput() RequestValidatorOutput {
+	return o
+}
+
+func (o RequestValidatorOutput) ToRequestValidatorOutputWithContext(ctx context.Context) RequestValidatorOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(RequestValidatorOutput{})
 }

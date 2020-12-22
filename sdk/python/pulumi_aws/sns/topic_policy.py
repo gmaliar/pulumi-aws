@@ -5,20 +5,21 @@
 import warnings
 import pulumi
 import pulumi.runtime
-from typing import Union
-from .. import utilities, tables
+from typing import Any, Mapping, Optional, Sequence, Union
+from .. import _utilities, _tables
+
+__all__ = ['TopicPolicy']
 
 
 class TopicPolicy(pulumi.CustomResource):
-    arn: pulumi.Output[str]
-    """
-    The ARN of the SNS topic
-    """
-    policy: pulumi.Output[str]
-    """
-    The fully-formed AWS policy as JSON.
-    """
-    def __init__(__self__, resource_name, opts=None, arn=None, policy=None, __props__=None, __name__=None, __opts__=None):
+    def __init__(__self__,
+                 resource_name: str,
+                 opts: Optional[pulumi.ResourceOptions] = None,
+                 arn: Optional[pulumi.Input[str]] = None,
+                 policy: Optional[pulumi.Input[str]] = None,
+                 __props__=None,
+                 __name__=None,
+                 __opts__=None):
         """
         Provides an SNS topic policy resource
 
@@ -32,8 +33,8 @@ class TopicPolicy(pulumi.CustomResource):
 
         test = aws.sns.Topic("test")
         sns_topic_policy = test.arn.apply(lambda arn: aws.iam.get_policy_document(policy_id="__default_policy_ID",
-            statements=[{
-                "actions": [
+            statements=[aws.iam.GetPolicyDocumentStatementArgs(
+                actions=[
                     "SNS:Subscribe",
                     "SNS:SetTopicAttributes",
                     "SNS:RemovePermission",
@@ -44,22 +45,30 @@ class TopicPolicy(pulumi.CustomResource):
                     "SNS:DeleteTopic",
                     "SNS:AddPermission",
                 ],
-                "conditions": [{
-                    "test": "StringEquals",
-                    "values": [var["account-id"]],
-                    "variable": "AWS:SourceOwner",
-                }],
-                "effect": "Allow",
-                "principals": [{
-                    "identifiers": ["*"],
-                    "type": "AWS",
-                }],
-                "resources": [arn],
-                "sid": "__default_statement_ID",
-            }]))
+                conditions=[aws.iam.GetPolicyDocumentStatementConditionArgs(
+                    test="StringEquals",
+                    variable="AWS:SourceOwner",
+                    values=[var["account-id"]],
+                )],
+                effect="Allow",
+                principals=[aws.iam.GetPolicyDocumentStatementPrincipalArgs(
+                    type="AWS",
+                    identifiers=["*"],
+                )],
+                resources=[arn],
+                sid="__default_statement_ID",
+            )]))
         default = aws.sns.TopicPolicy("default",
             arn=test.arn,
             policy=sns_topic_policy.json)
+        ```
+
+        ## Import
+
+        SNS Topic Policy can be imported using the topic ARN, e.g.
+
+        ```sh
+         $ pulumi import aws:sns/topicPolicy:TopicPolicy user_updates arn:aws:sns:us-west-2:0123456789012:my-topic
         ```
 
         :param str resource_name: The name of the resource.
@@ -78,16 +87,16 @@ class TopicPolicy(pulumi.CustomResource):
         if not isinstance(opts, pulumi.ResourceOptions):
             raise TypeError('Expected resource options to be a ResourceOptions instance')
         if opts.version is None:
-            opts.version = utilities.get_version()
+            opts.version = _utilities.get_version()
         if opts.id is None:
             if __props__ is not None:
                 raise TypeError('__props__ is only valid when passed in combination with a valid opts.id to get an existing resource')
             __props__ = dict()
 
-            if arn is None:
+            if arn is None and not opts.urn:
                 raise TypeError("Missing required property 'arn'")
             __props__['arn'] = arn
-            if policy is None:
+            if policy is None and not opts.urn:
                 raise TypeError("Missing required property 'policy'")
             __props__['policy'] = policy
         super(TopicPolicy, __self__).__init__(
@@ -97,13 +106,17 @@ class TopicPolicy(pulumi.CustomResource):
             opts)
 
     @staticmethod
-    def get(resource_name, id, opts=None, arn=None, policy=None):
+    def get(resource_name: str,
+            id: pulumi.Input[str],
+            opts: Optional[pulumi.ResourceOptions] = None,
+            arn: Optional[pulumi.Input[str]] = None,
+            policy: Optional[pulumi.Input[str]] = None) -> 'TopicPolicy':
         """
         Get an existing TopicPolicy resource's state with the given name, id, and optional extra
         properties used to qualify the lookup.
 
         :param str resource_name: The unique name of the resulting resource.
-        :param str id: The unique provider ID of the resource to lookup.
+        :param pulumi.Input[str] id: The unique provider ID of the resource to lookup.
         :param pulumi.ResourceOptions opts: Options for the resource.
         :param pulumi.Input[str] arn: The ARN of the SNS topic
         :param pulumi.Input[str] policy: The fully-formed AWS policy as JSON.
@@ -116,8 +129,25 @@ class TopicPolicy(pulumi.CustomResource):
         __props__["policy"] = policy
         return TopicPolicy(resource_name, opts=opts, __props__=__props__)
 
+    @property
+    @pulumi.getter
+    def arn(self) -> pulumi.Output[str]:
+        """
+        The ARN of the SNS topic
+        """
+        return pulumi.get(self, "arn")
+
+    @property
+    @pulumi.getter
+    def policy(self) -> pulumi.Output[str]:
+        """
+        The fully-formed AWS policy as JSON.
+        """
+        return pulumi.get(self, "policy")
+
     def translate_output_property(self, prop):
-        return tables._CAMEL_TO_SNAKE_CASE_TABLE.get(prop) or prop
+        return _tables.CAMEL_TO_SNAKE_CASE_TABLE.get(prop) or prop
 
     def translate_input_property(self, prop):
-        return tables._SNAKE_TO_CAMEL_CASE_TABLE.get(prop) or prop
+        return _tables.SNAKE_TO_CAMEL_CASE_TABLE.get(prop) or prop
+

@@ -4,6 +4,7 @@
 package ecs
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
@@ -17,7 +18,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/ecs"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/ecs"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -30,6 +31,14 @@ import (
 // 		return nil
 // 	})
 // }
+// ```
+//
+// ## Import
+//
+// ECS clusters can be imported using the `name`, e.g.
+//
+// ```sh
+//  $ pulumi import aws:ecs/cluster:Cluster stateless stateless-app
 // ```
 type Cluster struct {
 	pulumi.CustomResourceState
@@ -54,6 +63,7 @@ func NewCluster(ctx *pulumi.Context,
 	if args == nil {
 		args = &ClusterArgs{}
 	}
+
 	var resource Cluster
 	err := ctx.RegisterResource("aws:ecs/cluster:Cluster", name, args, &resource, opts...)
 	if err != nil {
@@ -138,4 +148,43 @@ type ClusterArgs struct {
 
 func (ClusterArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*clusterArgs)(nil)).Elem()
+}
+
+type ClusterInput interface {
+	pulumi.Input
+
+	ToClusterOutput() ClusterOutput
+	ToClusterOutputWithContext(ctx context.Context) ClusterOutput
+}
+
+func (Cluster) ElementType() reflect.Type {
+	return reflect.TypeOf((*Cluster)(nil)).Elem()
+}
+
+func (i Cluster) ToClusterOutput() ClusterOutput {
+	return i.ToClusterOutputWithContext(context.Background())
+}
+
+func (i Cluster) ToClusterOutputWithContext(ctx context.Context) ClusterOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(ClusterOutput)
+}
+
+type ClusterOutput struct {
+	*pulumi.OutputState
+}
+
+func (ClusterOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*ClusterOutput)(nil)).Elem()
+}
+
+func (o ClusterOutput) ToClusterOutput() ClusterOutput {
+	return o
+}
+
+func (o ClusterOutput) ToClusterOutputWithContext(ctx context.Context) ClusterOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(ClusterOutput{})
 }

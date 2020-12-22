@@ -4,6 +4,7 @@
 package redshift
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -16,7 +17,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/redshift"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/redshift"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -24,20 +25,20 @@ import (
 // 	pulumi.Run(func(ctx *pulumi.Context) error {
 // 		defaultCluster, err := redshift.NewCluster(ctx, "defaultCluster", &redshift.ClusterArgs{
 // 			ClusterIdentifier: pulumi.String("tf-redshift-cluster"),
-// 			ClusterType:       pulumi.String("single-node"),
 // 			DatabaseName:      pulumi.String("mydb"),
-// 			MasterPassword:    pulumi.String("Mustbe8characters"),
 // 			MasterUsername:    pulumi.String("foo"),
+// 			MasterPassword:    pulumi.String("Mustbe8characters"),
 // 			NodeType:          pulumi.String("dc1.large"),
+// 			ClusterType:       pulumi.String("single-node"),
 // 		})
 // 		if err != nil {
 // 			return err
 // 		}
 // 		defaultSnapshotSchedule, err := redshift.NewSnapshotSchedule(ctx, "defaultSnapshotSchedule", &redshift.SnapshotScheduleArgs{
+// 			Identifier: pulumi.String("tf-redshift-snapshot-schedule"),
 // 			Definitions: pulumi.StringArray{
 // 				pulumi.String("rate(12 hours)"),
 // 			},
-// 			Identifier: pulumi.String("tf-redshift-snapshot-schedule"),
 // 		})
 // 		if err != nil {
 // 			return err
@@ -53,6 +54,14 @@ import (
 // 	})
 // }
 // ```
+//
+// ## Import
+//
+// Redshift Snapshot Schedule Association can be imported using the `<cluster-identifier>/<schedule-identifier>`, e.g.
+//
+// ```sh
+//  $ pulumi import aws:redshift/snapshotScheduleAssociation:SnapshotScheduleAssociation default tf-redshift-cluster/tf-redshift-snapshot-schedule
+// ```
 type SnapshotScheduleAssociation struct {
 	pulumi.CustomResourceState
 
@@ -65,14 +74,15 @@ type SnapshotScheduleAssociation struct {
 // NewSnapshotScheduleAssociation registers a new resource with the given unique name, arguments, and options.
 func NewSnapshotScheduleAssociation(ctx *pulumi.Context,
 	name string, args *SnapshotScheduleAssociationArgs, opts ...pulumi.ResourceOption) (*SnapshotScheduleAssociation, error) {
-	if args == nil || args.ClusterIdentifier == nil {
-		return nil, errors.New("missing required argument 'ClusterIdentifier'")
-	}
-	if args == nil || args.ScheduleIdentifier == nil {
-		return nil, errors.New("missing required argument 'ScheduleIdentifier'")
-	}
 	if args == nil {
-		args = &SnapshotScheduleAssociationArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.ClusterIdentifier == nil {
+		return nil, errors.New("invalid value for required argument 'ClusterIdentifier'")
+	}
+	if args.ScheduleIdentifier == nil {
+		return nil, errors.New("invalid value for required argument 'ScheduleIdentifier'")
 	}
 	var resource SnapshotScheduleAssociation
 	err := ctx.RegisterResource("aws:redshift/snapshotScheduleAssociation:SnapshotScheduleAssociation", name, args, &resource, opts...)
@@ -130,4 +140,43 @@ type SnapshotScheduleAssociationArgs struct {
 
 func (SnapshotScheduleAssociationArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*snapshotScheduleAssociationArgs)(nil)).Elem()
+}
+
+type SnapshotScheduleAssociationInput interface {
+	pulumi.Input
+
+	ToSnapshotScheduleAssociationOutput() SnapshotScheduleAssociationOutput
+	ToSnapshotScheduleAssociationOutputWithContext(ctx context.Context) SnapshotScheduleAssociationOutput
+}
+
+func (SnapshotScheduleAssociation) ElementType() reflect.Type {
+	return reflect.TypeOf((*SnapshotScheduleAssociation)(nil)).Elem()
+}
+
+func (i SnapshotScheduleAssociation) ToSnapshotScheduleAssociationOutput() SnapshotScheduleAssociationOutput {
+	return i.ToSnapshotScheduleAssociationOutputWithContext(context.Background())
+}
+
+func (i SnapshotScheduleAssociation) ToSnapshotScheduleAssociationOutputWithContext(ctx context.Context) SnapshotScheduleAssociationOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(SnapshotScheduleAssociationOutput)
+}
+
+type SnapshotScheduleAssociationOutput struct {
+	*pulumi.OutputState
+}
+
+func (SnapshotScheduleAssociationOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*SnapshotScheduleAssociationOutput)(nil)).Elem()
+}
+
+func (o SnapshotScheduleAssociationOutput) ToSnapshotScheduleAssociationOutput() SnapshotScheduleAssociationOutput {
+	return o
+}
+
+func (o SnapshotScheduleAssociationOutput) ToSnapshotScheduleAssociationOutputWithContext(ctx context.Context) SnapshotScheduleAssociationOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(SnapshotScheduleAssociationOutput{})
 }

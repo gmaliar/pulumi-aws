@@ -2,12 +2,13 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 /**
- * Provides a directory registration in AWS WorkSpaces Service
+ * Provides a WorkSpaces directory in AWS WorkSpaces Service.
+ *
+ * > **NOTE:** AWS WorkSpaces service requires [`workspaces_DefaultRole`](https://docs.aws.amazon.com/workspaces/latest/adminguide/workspaces-access-control.html#create-default-role) IAM role to operate normally.
  *
  * ## Example Usage
  *
@@ -15,37 +16,106 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const mainVpc = new aws.ec2.Vpc("main", {
- *     cidrBlock: "10.0.0.0/16",
+ * const workspaces = aws.iam.getPolicyDocument({
+ *     statements: [{
+ *         actions: ["sts:AssumeRole"],
+ *         principals: [{
+ *             type: "Service",
+ *             identifiers: ["workspaces.amazonaws.com"],
+ *         }],
+ *     }],
  * });
- * const private_a = new aws.ec2.Subnet("private-a", {
+ * const workspacesDefault = new aws.iam.Role("workspacesDefault", {assumeRolePolicy: workspaces.then(workspaces => workspaces.json)});
+ * const workspacesDefaultServiceAccess = new aws.iam.RolePolicyAttachment("workspacesDefaultServiceAccess", {
+ *     role: workspacesDefault.name,
+ *     policyArn: "arn:aws:iam::aws:policy/AmazonWorkSpacesServiceAccess",
+ * });
+ * const workspacesDefaultSelfServiceAccess = new aws.iam.RolePolicyAttachment("workspacesDefaultSelfServiceAccess", {
+ *     role: workspacesDefault.name,
+ *     policyArn: "arn:aws:iam::aws:policy/AmazonWorkSpacesSelfServiceAccess",
+ * });
+ * const exampleVpc = new aws.ec2.Vpc("exampleVpc", {cidrBlock: "10.0.0.0/16"});
+ * const exampleC = new aws.ec2.Subnet("exampleC", {
+ *     vpcId: exampleVpc.id,
+ *     availabilityZone: "us-east-1c",
+ *     cidrBlock: "10.0.2.0/24",
+ * });
+ * const exampleD = new aws.ec2.Subnet("exampleD", {
+ *     vpcId: exampleVpc.id,
+ *     availabilityZone: "us-east-1d",
+ *     cidrBlock: "10.0.3.0/24",
+ * });
+ * const exampleDirectory = new aws.workspaces.Directory("exampleDirectory", {
+ *     directoryId: exampleDirectoryservice / directoryDirectory.id,
+ *     subnetIds: [
+ *         exampleC.id,
+ *         exampleD.id,
+ *     ],
+ *     tags: {
+ *         Example: true,
+ *     },
+ *     selfServicePermissions: {
+ *         changeComputeType: true,
+ *         increaseVolumeSize: true,
+ *         rebuildWorkspace: true,
+ *         restartWorkspace: true,
+ *         switchRunningMode: true,
+ *     },
+ *     workspaceCreationProperties: {
+ *         customSecurityGroupId: aws_security_group.example.id,
+ *         defaultOu: "OU=AWS,DC=Workgroup,DC=Example,DC=com",
+ *         enableInternetAccess: true,
+ *         enableMaintenanceMode: true,
+ *         userEnabledAsLocalAdministrator: true,
+ *     },
+ * }, {
+ *     dependsOn: [
+ *         workspacesDefaultServiceAccess,
+ *         workspacesDefaultSelfServiceAccess,
+ *     ],
+ * });
+ * const exampleA = new aws.ec2.Subnet("exampleA", {
+ *     vpcId: exampleVpc.id,
  *     availabilityZone: "us-east-1a",
  *     cidrBlock: "10.0.0.0/24",
- *     vpcId: mainVpc.id,
  * });
- * const private_b = new aws.ec2.Subnet("private-b", {
+ * const exampleB = new aws.ec2.Subnet("exampleB", {
+ *     vpcId: exampleVpc.id,
  *     availabilityZone: "us-east-1b",
  *     cidrBlock: "10.0.1.0/24",
- *     vpcId: mainVpc.id,
  * });
- * const mainDirectory = new aws.directoryservice.Directory("main", {
+ * const exampleDirectoryservice_directoryDirectory = new aws.directoryservice.Directory("exampleDirectoryservice/directoryDirectory", {
+ *     name: "corp.example.com",
  *     password: "#S1ncerely",
  *     size: "Small",
  *     vpcSettings: {
+ *         vpcId: exampleVpc.id,
  *         subnetIds: [
- *             private_a.id,
- *             private_b.id,
+ *             exampleA.id,
+ *             exampleB.id,
  *         ],
- *         vpcId: mainVpc.id,
  *     },
  * });
- * const mainWorkspacesDirectory = new aws.workspaces.Directory("main", {
- *     directoryId: mainDirectory.id,
- *     selfServicePermissions: {
- *         increaseVolumeSize: true,
- *         rebuildWorkspace: true,
- *     },
+ * ```
+ * ### IP Groups
+ *
+ * ```typescript
+ * import * as pulumi from "@pulumi/pulumi";
+ * import * as aws from "@pulumi/aws";
+ *
+ * const exampleIpGroup = new aws.workspaces.IpGroup("exampleIpGroup", {});
+ * const exampleDirectory = new aws.workspaces.Directory("exampleDirectory", {
+ *     directoryId: aws_directory_service_directory.example.id,
+ *     ipGroupIds: [exampleIpGroup.id],
  * });
+ * ```
+ *
+ * ## Import
+ *
+ * Workspaces directory can be imported using the directory ID, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:workspaces/directory:Directory main d-4444444444
  * ```
  */
 export class Directory extends pulumi.CustomResource {
@@ -107,13 +177,13 @@ export class Directory extends pulumi.CustomResource {
     /**
      * The identifiers of the IP access control groups associated with the directory.
      */
-    public /*out*/ readonly ipGroupIds!: pulumi.Output<string[]>;
+    public readonly ipGroupIds!: pulumi.Output<string[]>;
     /**
      * The registration code for the directory. This is the code that users enter in their Amazon WorkSpaces client application to connect to the directory.
      */
     public /*out*/ readonly registrationCode!: pulumi.Output<string>;
     /**
-     * The permissions to enable or disable self-service capabilities.
+     * Permissions to enable or disable self-service capabilities. Defined below.
      */
     public readonly selfServicePermissions!: pulumi.Output<outputs.workspaces.DirectorySelfServicePermissions>;
     /**
@@ -124,6 +194,10 @@ export class Directory extends pulumi.CustomResource {
      * A map of tags assigned to the WorkSpaces directory.
      */
     public readonly tags!: pulumi.Output<{[key: string]: string} | undefined>;
+    /**
+     * Default properties that are used for creating WorkSpaces. Defined below.
+     */
+    public readonly workspaceCreationProperties!: pulumi.Output<outputs.workspaces.DirectoryWorkspaceCreationProperties>;
     /**
      * The identifier of the security group that is assigned to new WorkSpaces.
      */
@@ -153,23 +227,25 @@ export class Directory extends pulumi.CustomResource {
             inputs["selfServicePermissions"] = state ? state.selfServicePermissions : undefined;
             inputs["subnetIds"] = state ? state.subnetIds : undefined;
             inputs["tags"] = state ? state.tags : undefined;
+            inputs["workspaceCreationProperties"] = state ? state.workspaceCreationProperties : undefined;
             inputs["workspaceSecurityGroupId"] = state ? state.workspaceSecurityGroupId : undefined;
         } else {
             const args = argsOrState as DirectoryArgs | undefined;
-            if (!args || args.directoryId === undefined) {
+            if ((!args || args.directoryId === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'directoryId'");
             }
             inputs["directoryId"] = args ? args.directoryId : undefined;
+            inputs["ipGroupIds"] = args ? args.ipGroupIds : undefined;
             inputs["selfServicePermissions"] = args ? args.selfServicePermissions : undefined;
             inputs["subnetIds"] = args ? args.subnetIds : undefined;
             inputs["tags"] = args ? args.tags : undefined;
+            inputs["workspaceCreationProperties"] = args ? args.workspaceCreationProperties : undefined;
             inputs["alias"] = undefined /*out*/;
             inputs["customerUserName"] = undefined /*out*/;
             inputs["directoryName"] = undefined /*out*/;
             inputs["directoryType"] = undefined /*out*/;
             inputs["dnsIpAddresses"] = undefined /*out*/;
             inputs["iamRoleId"] = undefined /*out*/;
-            inputs["ipGroupIds"] = undefined /*out*/;
             inputs["registrationCode"] = undefined /*out*/;
             inputs["workspaceSecurityGroupId"] = undefined /*out*/;
         }
@@ -225,7 +301,7 @@ export interface DirectoryState {
      */
     readonly registrationCode?: pulumi.Input<string>;
     /**
-     * The permissions to enable or disable self-service capabilities.
+     * Permissions to enable or disable self-service capabilities. Defined below.
      */
     readonly selfServicePermissions?: pulumi.Input<inputs.workspaces.DirectorySelfServicePermissions>;
     /**
@@ -236,6 +312,10 @@ export interface DirectoryState {
      * A map of tags assigned to the WorkSpaces directory.
      */
     readonly tags?: pulumi.Input<{[key: string]: pulumi.Input<string>}>;
+    /**
+     * Default properties that are used for creating WorkSpaces. Defined below.
+     */
+    readonly workspaceCreationProperties?: pulumi.Input<inputs.workspaces.DirectoryWorkspaceCreationProperties>;
     /**
      * The identifier of the security group that is assigned to new WorkSpaces.
      */
@@ -251,7 +331,11 @@ export interface DirectoryArgs {
      */
     readonly directoryId: pulumi.Input<string>;
     /**
-     * The permissions to enable or disable self-service capabilities.
+     * The identifiers of the IP access control groups associated with the directory.
+     */
+    readonly ipGroupIds?: pulumi.Input<pulumi.Input<string>[]>;
+    /**
+     * Permissions to enable or disable self-service capabilities. Defined below.
      */
     readonly selfServicePermissions?: pulumi.Input<inputs.workspaces.DirectorySelfServicePermissions>;
     /**
@@ -262,4 +346,8 @@ export interface DirectoryArgs {
      * A map of tags assigned to the WorkSpaces directory.
      */
     readonly tags?: pulumi.Input<{[key: string]: pulumi.Input<string>}>;
+    /**
+     * Default properties that are used for creating WorkSpaces. Defined below.
+     */
+    readonly workspaceCreationProperties?: pulumi.Input<inputs.workspaces.DirectoryWorkspaceCreationProperties>;
 }

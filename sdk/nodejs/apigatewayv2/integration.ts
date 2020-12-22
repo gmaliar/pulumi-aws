@@ -2,6 +2,7 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 /**
@@ -16,7 +17,7 @@ import * as utilities from "../utilities";
  * import * as aws from "@pulumi/aws";
  *
  * const example = new aws.apigatewayv2.Integration("example", {
- *     apiId: aws_apigatewayv2_api_example.id,
+ *     apiId: aws_apigatewayv2_api.example.id,
  *     integrationType: "MOCK",
  * });
  * ```
@@ -26,22 +27,48 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const exampleFunction = new aws.lambda.Function("example", {
+ * const exampleFunction = new aws.lambda.Function("exampleFunction", {
  *     code: new pulumi.asset.FileArchive("example.zip"),
+ *     role: aws_iam_role.example.arn,
  *     handler: "index.handler",
- *     role: aws_iam_role_example.arn,
- *     runtime: "nodejs10.x",
+ *     runtime: "nodejs12.x",
  * });
- * const exampleIntegration = new aws.apigatewayv2.Integration("example", {
- *     apiId: aws_apigatewayv2_api_example.id,
+ * const exampleIntegration = new aws.apigatewayv2.Integration("exampleIntegration", {
+ *     apiId: aws_apigatewayv2_api.example.id,
+ *     integrationType: "AWS",
  *     connectionType: "INTERNET",
  *     contentHandlingStrategy: "CONVERT_TO_TEXT",
  *     description: "Lambda example",
  *     integrationMethod: "POST",
- *     integrationType: "AWS",
  *     integrationUri: exampleFunction.invokeArn,
  *     passthroughBehavior: "WHEN_NO_MATCH",
  * });
+ * ```
+ * ### AWS Service Integration
+ *
+ * ```typescript
+ * import * as pulumi from "@pulumi/pulumi";
+ * import * as aws from "@pulumi/aws";
+ *
+ * const example = new aws.apigatewayv2.Integration("example", {
+ *     apiId: aws_apigatewayv2_api.example.id,
+ *     credentialsArn: aws_iam_role.example.arn,
+ *     description: "SQS example",
+ *     integrationType: "AWS_PROXY",
+ *     integrationSubtype: "SQS-SendMessage",
+ *     requestParameters: {
+ *         QueueUrl: `$request.header.queueUrl`,
+ *         MessageBody: `$request.body.message`,
+ *     },
+ * });
+ * ```
+ *
+ * ## Import
+ *
+ * `aws_apigatewayv2_integration` can be imported by using the API identifier and integration identifier, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:apigatewayv2/integration:Integration example aabbccddee/1122334
  * ```
  */
 export class Integration extends pulumi.CustomResource {
@@ -77,7 +104,7 @@ export class Integration extends pulumi.CustomResource {
      */
     public readonly apiId!: pulumi.Output<string>;
     /**
-     * The ID of the VPC link for a private integration. Supported only for HTTP APIs.
+     * The ID of the VPC link for a private integration. Supported only for HTTP APIs. Must be between 1 and 1024 characters in length.
      */
     public readonly connectionId!: pulumi.Output<string | undefined>;
     /**
@@ -105,6 +132,10 @@ export class Integration extends pulumi.CustomResource {
      */
     public /*out*/ readonly integrationResponseSelectionExpression!: pulumi.Output<string>;
     /**
+     * Specifies the AWS service action to invoke. Supported only for HTTP APIs when `integrationType` is `AWS_PROXY`. See the [AWS service integration reference](https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api-develop-integrations-aws-services-reference.html) documentation for supported values. Must be between 1 and 128 characters in length.
+     */
+    public readonly integrationSubtype!: pulumi.Output<string | undefined>;
+    /**
      * The integration type of an integration.
      * Valid values: `AWS`, `AWS_PROXY`, `HTTP`, `HTTP_PROXY`, `MOCK`.
      */
@@ -124,6 +155,11 @@ export class Integration extends pulumi.CustomResource {
      */
     public readonly payloadFormatVersion!: pulumi.Output<string | undefined>;
     /**
+     * A key-value map specifying request parameters that are passed from the method request to the backend.
+     * Supported only for WebSocket APIs.
+     */
+    public readonly requestParameters!: pulumi.Output<{[key: string]: string} | undefined>;
+    /**
      * A map of Velocity templates that are applied on the request payload based on the value of the Content-Type header sent by the client. Supported only for WebSocket APIs.
      */
     public readonly requestTemplates!: pulumi.Output<{[key: string]: string} | undefined>;
@@ -131,10 +167,11 @@ export class Integration extends pulumi.CustomResource {
      * The [template selection expression](https://docs.aws.amazon.com/apigateway/latest/developerguide/apigateway-websocket-api-selection-expressions.html#apigateway-websocket-api-template-selection-expressions) for the integration.
      */
     public readonly templateSelectionExpression!: pulumi.Output<string | undefined>;
+    public readonly timeoutMilliseconds!: pulumi.Output<number>;
     /**
-     * Custom timeout between 50 and 29,000 milliseconds. The default value is 29,000 milliseconds or 29 seconds.
+     * The TLS configuration for a private integration. Supported only for HTTP APIs.
      */
-    public readonly timeoutMilliseconds!: pulumi.Output<number | undefined>;
+    public readonly tlsConfig!: pulumi.Output<outputs.apigatewayv2.IntegrationTlsConfig | undefined>;
 
     /**
      * Create a Integration resource with the given unique name, arguments, and options.
@@ -156,19 +193,22 @@ export class Integration extends pulumi.CustomResource {
             inputs["description"] = state ? state.description : undefined;
             inputs["integrationMethod"] = state ? state.integrationMethod : undefined;
             inputs["integrationResponseSelectionExpression"] = state ? state.integrationResponseSelectionExpression : undefined;
+            inputs["integrationSubtype"] = state ? state.integrationSubtype : undefined;
             inputs["integrationType"] = state ? state.integrationType : undefined;
             inputs["integrationUri"] = state ? state.integrationUri : undefined;
             inputs["passthroughBehavior"] = state ? state.passthroughBehavior : undefined;
             inputs["payloadFormatVersion"] = state ? state.payloadFormatVersion : undefined;
+            inputs["requestParameters"] = state ? state.requestParameters : undefined;
             inputs["requestTemplates"] = state ? state.requestTemplates : undefined;
             inputs["templateSelectionExpression"] = state ? state.templateSelectionExpression : undefined;
             inputs["timeoutMilliseconds"] = state ? state.timeoutMilliseconds : undefined;
+            inputs["tlsConfig"] = state ? state.tlsConfig : undefined;
         } else {
             const args = argsOrState as IntegrationArgs | undefined;
-            if (!args || args.apiId === undefined) {
+            if ((!args || args.apiId === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'apiId'");
             }
-            if (!args || args.integrationType === undefined) {
+            if ((!args || args.integrationType === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'integrationType'");
             }
             inputs["apiId"] = args ? args.apiId : undefined;
@@ -178,13 +218,16 @@ export class Integration extends pulumi.CustomResource {
             inputs["credentialsArn"] = args ? args.credentialsArn : undefined;
             inputs["description"] = args ? args.description : undefined;
             inputs["integrationMethod"] = args ? args.integrationMethod : undefined;
+            inputs["integrationSubtype"] = args ? args.integrationSubtype : undefined;
             inputs["integrationType"] = args ? args.integrationType : undefined;
             inputs["integrationUri"] = args ? args.integrationUri : undefined;
             inputs["passthroughBehavior"] = args ? args.passthroughBehavior : undefined;
             inputs["payloadFormatVersion"] = args ? args.payloadFormatVersion : undefined;
+            inputs["requestParameters"] = args ? args.requestParameters : undefined;
             inputs["requestTemplates"] = args ? args.requestTemplates : undefined;
             inputs["templateSelectionExpression"] = args ? args.templateSelectionExpression : undefined;
             inputs["timeoutMilliseconds"] = args ? args.timeoutMilliseconds : undefined;
+            inputs["tlsConfig"] = args ? args.tlsConfig : undefined;
             inputs["integrationResponseSelectionExpression"] = undefined /*out*/;
         }
         if (!opts) {
@@ -207,7 +250,7 @@ export interface IntegrationState {
      */
     readonly apiId?: pulumi.Input<string>;
     /**
-     * The ID of the VPC link for a private integration. Supported only for HTTP APIs.
+     * The ID of the VPC link for a private integration. Supported only for HTTP APIs. Must be between 1 and 1024 characters in length.
      */
     readonly connectionId?: pulumi.Input<string>;
     /**
@@ -235,6 +278,10 @@ export interface IntegrationState {
      */
     readonly integrationResponseSelectionExpression?: pulumi.Input<string>;
     /**
+     * Specifies the AWS service action to invoke. Supported only for HTTP APIs when `integrationType` is `AWS_PROXY`. See the [AWS service integration reference](https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api-develop-integrations-aws-services-reference.html) documentation for supported values. Must be between 1 and 128 characters in length.
+     */
+    readonly integrationSubtype?: pulumi.Input<string>;
+    /**
      * The integration type of an integration.
      * Valid values: `AWS`, `AWS_PROXY`, `HTTP`, `HTTP_PROXY`, `MOCK`.
      */
@@ -254,6 +301,11 @@ export interface IntegrationState {
      */
     readonly payloadFormatVersion?: pulumi.Input<string>;
     /**
+     * A key-value map specifying request parameters that are passed from the method request to the backend.
+     * Supported only for WebSocket APIs.
+     */
+    readonly requestParameters?: pulumi.Input<{[key: string]: pulumi.Input<string>}>;
+    /**
      * A map of Velocity templates that are applied on the request payload based on the value of the Content-Type header sent by the client. Supported only for WebSocket APIs.
      */
     readonly requestTemplates?: pulumi.Input<{[key: string]: pulumi.Input<string>}>;
@@ -261,10 +313,11 @@ export interface IntegrationState {
      * The [template selection expression](https://docs.aws.amazon.com/apigateway/latest/developerguide/apigateway-websocket-api-selection-expressions.html#apigateway-websocket-api-template-selection-expressions) for the integration.
      */
     readonly templateSelectionExpression?: pulumi.Input<string>;
-    /**
-     * Custom timeout between 50 and 29,000 milliseconds. The default value is 29,000 milliseconds or 29 seconds.
-     */
     readonly timeoutMilliseconds?: pulumi.Input<number>;
+    /**
+     * The TLS configuration for a private integration. Supported only for HTTP APIs.
+     */
+    readonly tlsConfig?: pulumi.Input<inputs.apigatewayv2.IntegrationTlsConfig>;
 }
 
 /**
@@ -276,7 +329,7 @@ export interface IntegrationArgs {
      */
     readonly apiId: pulumi.Input<string>;
     /**
-     * The ID of the VPC link for a private integration. Supported only for HTTP APIs.
+     * The ID of the VPC link for a private integration. Supported only for HTTP APIs. Must be between 1 and 1024 characters in length.
      */
     readonly connectionId?: pulumi.Input<string>;
     /**
@@ -300,6 +353,10 @@ export interface IntegrationArgs {
      */
     readonly integrationMethod?: pulumi.Input<string>;
     /**
+     * Specifies the AWS service action to invoke. Supported only for HTTP APIs when `integrationType` is `AWS_PROXY`. See the [AWS service integration reference](https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api-develop-integrations-aws-services-reference.html) documentation for supported values. Must be between 1 and 128 characters in length.
+     */
+    readonly integrationSubtype?: pulumi.Input<string>;
+    /**
      * The integration type of an integration.
      * Valid values: `AWS`, `AWS_PROXY`, `HTTP`, `HTTP_PROXY`, `MOCK`.
      */
@@ -319,6 +376,11 @@ export interface IntegrationArgs {
      */
     readonly payloadFormatVersion?: pulumi.Input<string>;
     /**
+     * A key-value map specifying request parameters that are passed from the method request to the backend.
+     * Supported only for WebSocket APIs.
+     */
+    readonly requestParameters?: pulumi.Input<{[key: string]: pulumi.Input<string>}>;
+    /**
      * A map of Velocity templates that are applied on the request payload based on the value of the Content-Type header sent by the client. Supported only for WebSocket APIs.
      */
     readonly requestTemplates?: pulumi.Input<{[key: string]: pulumi.Input<string>}>;
@@ -326,8 +388,9 @@ export interface IntegrationArgs {
      * The [template selection expression](https://docs.aws.amazon.com/apigateway/latest/developerguide/apigateway-websocket-api-selection-expressions.html#apigateway-websocket-api-template-selection-expressions) for the integration.
      */
     readonly templateSelectionExpression?: pulumi.Input<string>;
-    /**
-     * Custom timeout between 50 and 29,000 milliseconds. The default value is 29,000 milliseconds or 29 seconds.
-     */
     readonly timeoutMilliseconds?: pulumi.Input<number>;
+    /**
+     * The TLS configuration for a private integration. Supported only for HTTP APIs.
+     */
+    readonly tlsConfig?: pulumi.Input<inputs.apigatewayv2.IntegrationTlsConfig>;
 }

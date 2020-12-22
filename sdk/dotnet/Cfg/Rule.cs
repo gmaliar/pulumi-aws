@@ -27,20 +27,6 @@ namespace Pulumi.Aws.Cfg
     /// {
     ///     public MyStack()
     ///     {
-    ///         var rule = new Aws.Cfg.Rule("rule", new Aws.Cfg.RuleArgs
-    ///         {
-    ///             Source = new Aws.Cfg.Inputs.RuleSourceArgs
-    ///             {
-    ///                 Owner = "AWS",
-    ///                 SourceIdentifier = "S3_BUCKET_VERSIONING_ENABLED",
-    ///             },
-    ///         }, new CustomResourceOptions
-    ///         {
-    ///             DependsOn = 
-    ///             {
-    ///                 "aws_config_configuration_recorder.foo",
-    ///             },
-    ///         });
     ///         var role = new Aws.Iam.Role("role", new Aws.Iam.RoleArgs
     ///         {
     ///             AssumeRolePolicy = @"{
@@ -56,15 +42,29 @@ namespace Pulumi.Aws.Cfg
     ///     }
     ///   ]
     /// }
-    /// 
     /// ",
     ///         });
     ///         var foo = new Aws.Cfg.Recorder("foo", new Aws.Cfg.RecorderArgs
     ///         {
     ///             RoleArn = role.Arn,
     ///         });
+    ///         var rule = new Aws.Cfg.Rule("rule", new Aws.Cfg.RuleArgs
+    ///         {
+    ///             Source = new Aws.Cfg.Inputs.RuleSourceArgs
+    ///             {
+    ///                 Owner = "AWS",
+    ///                 SourceIdentifier = "S3_BUCKET_VERSIONING_ENABLED",
+    ///             },
+    ///         }, new CustomResourceOptions
+    ///         {
+    ///             DependsOn = 
+    ///             {
+    ///                 foo,
+    ///             },
+    ///         });
     ///         var rolePolicy = new Aws.Iam.RolePolicy("rolePolicy", new Aws.Iam.RolePolicyArgs
     ///         {
+    ///             Role = role.Id,
     ///             Policy = @"{
     ///   ""Version"": ""2012-10-17"",
     ///   ""Statement"": [
@@ -76,9 +76,7 @@ namespace Pulumi.Aws.Cfg
     ///   	}
     ///   ]
     /// }
-    /// 
     /// ",
-    ///             Role = role.Id,
     ///         });
     ///     }
     /// 
@@ -99,15 +97,18 @@ namespace Pulumi.Aws.Cfg
     ///         var exampleRecorder = new Aws.Cfg.Recorder("exampleRecorder", new Aws.Cfg.RecorderArgs
     ///         {
     ///         });
+    ///         // ... other configuration ...
     ///         var exampleFunction = new Aws.Lambda.Function("exampleFunction", new Aws.Lambda.FunctionArgs
     ///         {
     ///         });
+    ///         // ... other configuration ...
     ///         var examplePermission = new Aws.Lambda.Permission("examplePermission", new Aws.Lambda.PermissionArgs
     ///         {
     ///             Action = "lambda:InvokeFunction",
     ///             Function = exampleFunction.Arn,
     ///             Principal = "config.amazonaws.com",
     ///         });
+    ///         // ... other configuration ...
     ///         var exampleRule = new Aws.Cfg.Rule("exampleRule", new Aws.Cfg.RuleArgs
     ///         {
     ///             Source = new Aws.Cfg.Inputs.RuleSourceArgs
@@ -119,13 +120,21 @@ namespace Pulumi.Aws.Cfg
     ///         {
     ///             DependsOn = 
     ///             {
-    ///                 "aws_config_configuration_recorder.example",
-    ///                 "aws_lambda_permission.example",
+    ///                 exampleRecorder,
+    ///                 examplePermission,
     ///             },
     ///         });
     ///     }
     /// 
     /// }
+    /// ```
+    /// 
+    /// ## Import
+    /// 
+    /// Config Rule can be imported using the name, e.g.
+    /// 
+    /// ```sh
+    ///  $ pulumi import aws:cfg/rule:Rule foo example
     /// ```
     /// </summary>
     public partial class Rule : Pulumi.CustomResource
@@ -149,8 +158,7 @@ namespace Pulumi.Aws.Cfg
         public Output<string?> InputParameters { get; private set; } = null!;
 
         /// <summary>
-        /// The frequency that you want AWS Config to run evaluations for a rule that
-        /// is triggered periodically. If specified, requires `message_type` to be `ScheduledNotification`.
+        /// The frequency that you want AWS Config to run evaluations for a rule that is triggered periodically. If specified, requires `message_type` to be `ScheduledNotification`.
         /// </summary>
         [Output("maximumExecutionFrequency")]
         public Output<string?> MaximumExecutionFrequency { get; private set; } = null!;
@@ -174,8 +182,7 @@ namespace Pulumi.Aws.Cfg
         public Output<Outputs.RuleScope?> Scope { get; private set; } = null!;
 
         /// <summary>
-        /// Source specifies the rule owner, the rule identifier, and the notifications that cause
-        /// the function to evaluate your AWS resources as documented below.
+        /// Source specifies the rule owner, the rule identifier, and the notifications that cause the function to evaluate your AWS resources as documented below.
         /// </summary>
         [Output("source")]
         public Output<Outputs.RuleSource> Source { get; private set; } = null!;
@@ -245,8 +252,7 @@ namespace Pulumi.Aws.Cfg
         public Input<string>? InputParameters { get; set; }
 
         /// <summary>
-        /// The frequency that you want AWS Config to run evaluations for a rule that
-        /// is triggered periodically. If specified, requires `message_type` to be `ScheduledNotification`.
+        /// The frequency that you want AWS Config to run evaluations for a rule that is triggered periodically. If specified, requires `message_type` to be `ScheduledNotification`.
         /// </summary>
         [Input("maximumExecutionFrequency")]
         public Input<string>? MaximumExecutionFrequency { get; set; }
@@ -264,8 +270,7 @@ namespace Pulumi.Aws.Cfg
         public Input<Inputs.RuleScopeArgs>? Scope { get; set; }
 
         /// <summary>
-        /// Source specifies the rule owner, the rule identifier, and the notifications that cause
-        /// the function to evaluate your AWS resources as documented below.
+        /// Source specifies the rule owner, the rule identifier, and the notifications that cause the function to evaluate your AWS resources as documented below.
         /// </summary>
         [Input("source", required: true)]
         public Input<Inputs.RuleSourceArgs> Source { get; set; } = null!;
@@ -308,8 +313,7 @@ namespace Pulumi.Aws.Cfg
         public Input<string>? InputParameters { get; set; }
 
         /// <summary>
-        /// The frequency that you want AWS Config to run evaluations for a rule that
-        /// is triggered periodically. If specified, requires `message_type` to be `ScheduledNotification`.
+        /// The frequency that you want AWS Config to run evaluations for a rule that is triggered periodically. If specified, requires `message_type` to be `ScheduledNotification`.
         /// </summary>
         [Input("maximumExecutionFrequency")]
         public Input<string>? MaximumExecutionFrequency { get; set; }
@@ -333,8 +337,7 @@ namespace Pulumi.Aws.Cfg
         public Input<Inputs.RuleScopeGetArgs>? Scope { get; set; }
 
         /// <summary>
-        /// Source specifies the rule owner, the rule identifier, and the notifications that cause
-        /// the function to evaluate your AWS resources as documented below.
+        /// Source specifies the rule owner, the rule identifier, and the notifications that cause the function to evaluate your AWS resources as documented below.
         /// </summary>
         [Input("source")]
         public Input<Inputs.RuleSourceGetArgs>? Source { get; set; }

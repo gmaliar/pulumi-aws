@@ -14,13 +14,21 @@ import * as utilities from "../utilities";
  * import * as aws from "@pulumi/aws";
  *
  * const example = new aws.directoryservice.ConditionalForwader("example", {
- *     directoryId: aws_directory_service_directory_ad.id,
+ *     directoryId: aws_directory_service_directory.ad.id,
+ *     remoteDomainName: "example.com",
  *     dnsIps: [
  *         "8.8.8.8",
  *         "8.8.4.4",
  *     ],
- *     remoteDomainName: "example.com",
  * });
+ * ```
+ *
+ * ## Import
+ *
+ * Conditional forwarders can be imported using the directory id and remote_domain_name, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:directoryservice/conditionalForwader:ConditionalForwader example d-1234567890:example.com
  * ```
  */
 export class ConditionalForwader extends pulumi.CustomResource {
@@ -81,13 +89,13 @@ export class ConditionalForwader extends pulumi.CustomResource {
             inputs["remoteDomainName"] = state ? state.remoteDomainName : undefined;
         } else {
             const args = argsOrState as ConditionalForwaderArgs | undefined;
-            if (!args || args.directoryId === undefined) {
+            if ((!args || args.directoryId === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'directoryId'");
             }
-            if (!args || args.dnsIps === undefined) {
+            if ((!args || args.dnsIps === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'dnsIps'");
             }
-            if (!args || args.remoteDomainName === undefined) {
+            if ((!args || args.remoteDomainName === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'remoteDomainName'");
             }
             inputs["directoryId"] = args ? args.directoryId : undefined;

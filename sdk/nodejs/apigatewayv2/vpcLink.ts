@@ -24,6 +24,14 @@ import * as utilities from "../utilities";
  *     },
  * });
  * ```
+ *
+ * ## Import
+ *
+ * `aws_apigatewayv2_vpc_link` can be imported by using the VPC Link identifier, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:apigatewayv2/vpcLink:VpcLink example aabbccddee
+ * ```
  */
 export class VpcLink extends pulumi.CustomResource {
     /**
@@ -58,7 +66,7 @@ export class VpcLink extends pulumi.CustomResource {
      */
     public /*out*/ readonly arn!: pulumi.Output<string>;
     /**
-     * The name of the VPC Link.
+     * The name of the VPC Link. Must be between 1 and 128 characters in length.
      */
     public readonly name!: pulumi.Output<string>;
     /**
@@ -93,10 +101,10 @@ export class VpcLink extends pulumi.CustomResource {
             inputs["tags"] = state ? state.tags : undefined;
         } else {
             const args = argsOrState as VpcLinkArgs | undefined;
-            if (!args || args.securityGroupIds === undefined) {
+            if ((!args || args.securityGroupIds === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'securityGroupIds'");
             }
-            if (!args || args.subnetIds === undefined) {
+            if ((!args || args.subnetIds === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'subnetIds'");
             }
             inputs["name"] = args ? args.name : undefined;
@@ -125,7 +133,7 @@ export interface VpcLinkState {
      */
     readonly arn?: pulumi.Input<string>;
     /**
-     * The name of the VPC Link.
+     * The name of the VPC Link. Must be between 1 and 128 characters in length.
      */
     readonly name?: pulumi.Input<string>;
     /**
@@ -147,7 +155,7 @@ export interface VpcLinkState {
  */
 export interface VpcLinkArgs {
     /**
-     * The name of the VPC Link.
+     * The name of the VPC Link. Must be between 1 and 128 characters in length.
      */
     readonly name?: pulumi.Input<string>;
     /**

@@ -16,7 +16,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/apigateway"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/apigateway"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -29,8 +29,8 @@ import (
 // 			return err
 // 		}
 // 		_, err = apigateway.LookupResource(ctx, &apigateway.LookupResourceArgs{
-// 			Path:      "/endpoint/path",
 // 			RestApiId: myRestApi.Id,
+// 			Path:      "/endpoint/path",
 // 		}, nil)
 // 		if err != nil {
 // 			return err

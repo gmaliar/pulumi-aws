@@ -3099,10 +3099,6 @@ func (o ListenerRuleActionRedirectPtrOutput) StatusCode() pulumi.StringPtrOutput
 }
 
 type ListenerRuleCondition struct {
-	// The type of condition. Valid values are `host-header` or `path-pattern`. Must also set `values`.
-	//
-	// Deprecated: use 'host_header' or 'path_pattern' attribute instead
-	Field *string `pulumi:"field"`
 	// Contains a single `values` item which is a list of host header patterns to match. The maximum size of each pattern is 128 characters. Comparison is case insensitive. Wildcard characters supported: * (matches 0 or more characters) and ? (matches exactly 1 character). Only one pattern needs to match for the condition to be satisfied.
 	HostHeader *ListenerRuleConditionHostHeader `pulumi:"hostHeader"`
 	// HTTP headers to match. HTTP Header block fields documented below.
@@ -3115,10 +3111,6 @@ type ListenerRuleCondition struct {
 	QueryStrings []ListenerRuleConditionQueryString `pulumi:"queryStrings"`
 	// Contains a single `values` item which is a list of source IP CIDR notations to match. You can use both IPv4 and IPv6 addresses. Wildcards are not supported. Condition is satisfied if the source IP address of the request matches one of the CIDR blocks. Condition is not satisfied by the addresses in the `X-Forwarded-For` header, use `httpHeader` condition instead.
 	SourceIp *ListenerRuleConditionSourceIp `pulumi:"sourceIp"`
-	// List of exactly one pattern to match. Required when `field` is set.
-	//
-	// Deprecated: use 'host_header' or 'path_pattern' attribute instead
-	Values *string `pulumi:"values"`
 }
 
 // ListenerRuleConditionInput is an input type that accepts ListenerRuleConditionArgs and ListenerRuleConditionOutput values.
@@ -3133,10 +3125,6 @@ type ListenerRuleConditionInput interface {
 }
 
 type ListenerRuleConditionArgs struct {
-	// The type of condition. Valid values are `host-header` or `path-pattern`. Must also set `values`.
-	//
-	// Deprecated: use 'host_header' or 'path_pattern' attribute instead
-	Field pulumi.StringPtrInput `pulumi:"field"`
 	// Contains a single `values` item which is a list of host header patterns to match. The maximum size of each pattern is 128 characters. Comparison is case insensitive. Wildcard characters supported: * (matches 0 or more characters) and ? (matches exactly 1 character). Only one pattern needs to match for the condition to be satisfied.
 	HostHeader ListenerRuleConditionHostHeaderPtrInput `pulumi:"hostHeader"`
 	// HTTP headers to match. HTTP Header block fields documented below.
@@ -3149,10 +3137,6 @@ type ListenerRuleConditionArgs struct {
 	QueryStrings ListenerRuleConditionQueryStringArrayInput `pulumi:"queryStrings"`
 	// Contains a single `values` item which is a list of source IP CIDR notations to match. You can use both IPv4 and IPv6 addresses. Wildcards are not supported. Condition is satisfied if the source IP address of the request matches one of the CIDR blocks. Condition is not satisfied by the addresses in the `X-Forwarded-For` header, use `httpHeader` condition instead.
 	SourceIp ListenerRuleConditionSourceIpPtrInput `pulumi:"sourceIp"`
-	// List of exactly one pattern to match. Required when `field` is set.
-	//
-	// Deprecated: use 'host_header' or 'path_pattern' attribute instead
-	Values pulumi.StringPtrInput `pulumi:"values"`
 }
 
 func (ListenerRuleConditionArgs) ElementType() reflect.Type {
@@ -3206,13 +3190,6 @@ func (o ListenerRuleConditionOutput) ToListenerRuleConditionOutputWithContext(ct
 	return o
 }
 
-// The type of condition. Valid values are `host-header` or `path-pattern`. Must also set `values`.
-//
-// Deprecated: use 'host_header' or 'path_pattern' attribute instead
-func (o ListenerRuleConditionOutput) Field() pulumi.StringPtrOutput {
-	return o.ApplyT(func(v ListenerRuleCondition) *string { return v.Field }).(pulumi.StringPtrOutput)
-}
-
 // Contains a single `values` item which is a list of host header patterns to match. The maximum size of each pattern is 128 characters. Comparison is case insensitive. Wildcard characters supported: * (matches 0 or more characters) and ? (matches exactly 1 character). Only one pattern needs to match for the condition to be satisfied.
 func (o ListenerRuleConditionOutput) HostHeader() ListenerRuleConditionHostHeaderPtrOutput {
 	return o.ApplyT(func(v ListenerRuleCondition) *ListenerRuleConditionHostHeader { return v.HostHeader }).(ListenerRuleConditionHostHeaderPtrOutput)
@@ -3243,13 +3220,6 @@ func (o ListenerRuleConditionOutput) SourceIp() ListenerRuleConditionSourceIpPtr
 	return o.ApplyT(func(v ListenerRuleCondition) *ListenerRuleConditionSourceIp { return v.SourceIp }).(ListenerRuleConditionSourceIpPtrOutput)
 }
 
-// List of exactly one pattern to match. Required when `field` is set.
-//
-// Deprecated: use 'host_header' or 'path_pattern' attribute instead
-func (o ListenerRuleConditionOutput) Values() pulumi.StringPtrOutput {
-	return o.ApplyT(func(v ListenerRuleCondition) *string { return v.Values }).(pulumi.StringPtrOutput)
-}
-
 type ListenerRuleConditionArrayOutput struct{ *pulumi.OutputState }
 
 func (ListenerRuleConditionArrayOutput) ElementType() reflect.Type {
@@ -3271,7 +3241,7 @@ func (o ListenerRuleConditionArrayOutput) Index(i pulumi.IntInput) ListenerRuleC
 }
 
 type ListenerRuleConditionHostHeader struct {
-	// List of exactly one pattern to match. Required when `field` is set.
+	// List of header value patterns to match. Maximum size of each pattern is 128 characters. Comparison is case insensitive. Wildcard characters supported: * (matches 0 or more characters) and ? (matches exactly 1 character). If the same header appears multiple times in the request they will be searched in order until a match is found. Only one pattern needs to match for the condition to be satisfied. To require that all of the strings are a match, create one condition block per string.
 	Values []string `pulumi:"values"`
 }
 
@@ -3287,7 +3257,7 @@ type ListenerRuleConditionHostHeaderInput interface {
 }
 
 type ListenerRuleConditionHostHeaderArgs struct {
-	// List of exactly one pattern to match. Required when `field` is set.
+	// List of header value patterns to match. Maximum size of each pattern is 128 characters. Comparison is case insensitive. Wildcard characters supported: * (matches 0 or more characters) and ? (matches exactly 1 character). If the same header appears multiple times in the request they will be searched in order until a match is found. Only one pattern needs to match for the condition to be satisfied. To require that all of the strings are a match, create one condition block per string.
 	Values pulumi.StringArrayInput `pulumi:"values"`
 }
 
@@ -3368,7 +3338,7 @@ func (o ListenerRuleConditionHostHeaderOutput) ToListenerRuleConditionHostHeader
 	}).(ListenerRuleConditionHostHeaderPtrOutput)
 }
 
-// List of exactly one pattern to match. Required when `field` is set.
+// List of header value patterns to match. Maximum size of each pattern is 128 characters. Comparison is case insensitive. Wildcard characters supported: * (matches 0 or more characters) and ? (matches exactly 1 character). If the same header appears multiple times in the request they will be searched in order until a match is found. Only one pattern needs to match for the condition to be satisfied. To require that all of the strings are a match, create one condition block per string.
 func (o ListenerRuleConditionHostHeaderOutput) Values() pulumi.StringArrayOutput {
 	return o.ApplyT(func(v ListenerRuleConditionHostHeader) []string { return v.Values }).(pulumi.StringArrayOutput)
 }
@@ -3391,7 +3361,7 @@ func (o ListenerRuleConditionHostHeaderPtrOutput) Elem() ListenerRuleConditionHo
 	return o.ApplyT(func(v *ListenerRuleConditionHostHeader) ListenerRuleConditionHostHeader { return *v }).(ListenerRuleConditionHostHeaderOutput)
 }
 
-// List of exactly one pattern to match. Required when `field` is set.
+// List of header value patterns to match. Maximum size of each pattern is 128 characters. Comparison is case insensitive. Wildcard characters supported: * (matches 0 or more characters) and ? (matches exactly 1 character). If the same header appears multiple times in the request they will be searched in order until a match is found. Only one pattern needs to match for the condition to be satisfied. To require that all of the strings are a match, create one condition block per string.
 func (o ListenerRuleConditionHostHeaderPtrOutput) Values() pulumi.StringArrayOutput {
 	return o.ApplyT(func(v *ListenerRuleConditionHostHeader) []string {
 		if v == nil {
@@ -3552,7 +3522,7 @@ func (o ListenerRuleConditionHttpHeaderPtrOutput) Values() pulumi.StringArrayOut
 }
 
 type ListenerRuleConditionHttpRequestMethod struct {
-	// List of exactly one pattern to match. Required when `field` is set.
+	// List of header value patterns to match. Maximum size of each pattern is 128 characters. Comparison is case insensitive. Wildcard characters supported: * (matches 0 or more characters) and ? (matches exactly 1 character). If the same header appears multiple times in the request they will be searched in order until a match is found. Only one pattern needs to match for the condition to be satisfied. To require that all of the strings are a match, create one condition block per string.
 	Values []string `pulumi:"values"`
 }
 
@@ -3568,7 +3538,7 @@ type ListenerRuleConditionHttpRequestMethodInput interface {
 }
 
 type ListenerRuleConditionHttpRequestMethodArgs struct {
-	// List of exactly one pattern to match. Required when `field` is set.
+	// List of header value patterns to match. Maximum size of each pattern is 128 characters. Comparison is case insensitive. Wildcard characters supported: * (matches 0 or more characters) and ? (matches exactly 1 character). If the same header appears multiple times in the request they will be searched in order until a match is found. Only one pattern needs to match for the condition to be satisfied. To require that all of the strings are a match, create one condition block per string.
 	Values pulumi.StringArrayInput `pulumi:"values"`
 }
 
@@ -3649,7 +3619,7 @@ func (o ListenerRuleConditionHttpRequestMethodOutput) ToListenerRuleConditionHtt
 	}).(ListenerRuleConditionHttpRequestMethodPtrOutput)
 }
 
-// List of exactly one pattern to match. Required when `field` is set.
+// List of header value patterns to match. Maximum size of each pattern is 128 characters. Comparison is case insensitive. Wildcard characters supported: * (matches 0 or more characters) and ? (matches exactly 1 character). If the same header appears multiple times in the request they will be searched in order until a match is found. Only one pattern needs to match for the condition to be satisfied. To require that all of the strings are a match, create one condition block per string.
 func (o ListenerRuleConditionHttpRequestMethodOutput) Values() pulumi.StringArrayOutput {
 	return o.ApplyT(func(v ListenerRuleConditionHttpRequestMethod) []string { return v.Values }).(pulumi.StringArrayOutput)
 }
@@ -3672,7 +3642,7 @@ func (o ListenerRuleConditionHttpRequestMethodPtrOutput) Elem() ListenerRuleCond
 	return o.ApplyT(func(v *ListenerRuleConditionHttpRequestMethod) ListenerRuleConditionHttpRequestMethod { return *v }).(ListenerRuleConditionHttpRequestMethodOutput)
 }
 
-// List of exactly one pattern to match. Required when `field` is set.
+// List of header value patterns to match. Maximum size of each pattern is 128 characters. Comparison is case insensitive. Wildcard characters supported: * (matches 0 or more characters) and ? (matches exactly 1 character). If the same header appears multiple times in the request they will be searched in order until a match is found. Only one pattern needs to match for the condition to be satisfied. To require that all of the strings are a match, create one condition block per string.
 func (o ListenerRuleConditionHttpRequestMethodPtrOutput) Values() pulumi.StringArrayOutput {
 	return o.ApplyT(func(v *ListenerRuleConditionHttpRequestMethod) []string {
 		if v == nil {
@@ -3683,7 +3653,7 @@ func (o ListenerRuleConditionHttpRequestMethodPtrOutput) Values() pulumi.StringA
 }
 
 type ListenerRuleConditionPathPattern struct {
-	// List of exactly one pattern to match. Required when `field` is set.
+	// List of header value patterns to match. Maximum size of each pattern is 128 characters. Comparison is case insensitive. Wildcard characters supported: * (matches 0 or more characters) and ? (matches exactly 1 character). If the same header appears multiple times in the request they will be searched in order until a match is found. Only one pattern needs to match for the condition to be satisfied. To require that all of the strings are a match, create one condition block per string.
 	Values []string `pulumi:"values"`
 }
 
@@ -3699,7 +3669,7 @@ type ListenerRuleConditionPathPatternInput interface {
 }
 
 type ListenerRuleConditionPathPatternArgs struct {
-	// List of exactly one pattern to match. Required when `field` is set.
+	// List of header value patterns to match. Maximum size of each pattern is 128 characters. Comparison is case insensitive. Wildcard characters supported: * (matches 0 or more characters) and ? (matches exactly 1 character). If the same header appears multiple times in the request they will be searched in order until a match is found. Only one pattern needs to match for the condition to be satisfied. To require that all of the strings are a match, create one condition block per string.
 	Values pulumi.StringArrayInput `pulumi:"values"`
 }
 
@@ -3780,7 +3750,7 @@ func (o ListenerRuleConditionPathPatternOutput) ToListenerRuleConditionPathPatte
 	}).(ListenerRuleConditionPathPatternPtrOutput)
 }
 
-// List of exactly one pattern to match. Required when `field` is set.
+// List of header value patterns to match. Maximum size of each pattern is 128 characters. Comparison is case insensitive. Wildcard characters supported: * (matches 0 or more characters) and ? (matches exactly 1 character). If the same header appears multiple times in the request they will be searched in order until a match is found. Only one pattern needs to match for the condition to be satisfied. To require that all of the strings are a match, create one condition block per string.
 func (o ListenerRuleConditionPathPatternOutput) Values() pulumi.StringArrayOutput {
 	return o.ApplyT(func(v ListenerRuleConditionPathPattern) []string { return v.Values }).(pulumi.StringArrayOutput)
 }
@@ -3803,7 +3773,7 @@ func (o ListenerRuleConditionPathPatternPtrOutput) Elem() ListenerRuleConditionP
 	return o.ApplyT(func(v *ListenerRuleConditionPathPattern) ListenerRuleConditionPathPattern { return *v }).(ListenerRuleConditionPathPatternOutput)
 }
 
-// List of exactly one pattern to match. Required when `field` is set.
+// List of header value patterns to match. Maximum size of each pattern is 128 characters. Comparison is case insensitive. Wildcard characters supported: * (matches 0 or more characters) and ? (matches exactly 1 character). If the same header appears multiple times in the request they will be searched in order until a match is found. Only one pattern needs to match for the condition to be satisfied. To require that all of the strings are a match, create one condition block per string.
 func (o ListenerRuleConditionPathPatternPtrOutput) Values() pulumi.StringArrayOutput {
 	return o.ApplyT(func(v *ListenerRuleConditionPathPattern) []string {
 		if v == nil {
@@ -3920,7 +3890,7 @@ func (o ListenerRuleConditionQueryStringArrayOutput) Index(i pulumi.IntInput) Li
 }
 
 type ListenerRuleConditionSourceIp struct {
-	// List of exactly one pattern to match. Required when `field` is set.
+	// List of header value patterns to match. Maximum size of each pattern is 128 characters. Comparison is case insensitive. Wildcard characters supported: * (matches 0 or more characters) and ? (matches exactly 1 character). If the same header appears multiple times in the request they will be searched in order until a match is found. Only one pattern needs to match for the condition to be satisfied. To require that all of the strings are a match, create one condition block per string.
 	Values []string `pulumi:"values"`
 }
 
@@ -3936,7 +3906,7 @@ type ListenerRuleConditionSourceIpInput interface {
 }
 
 type ListenerRuleConditionSourceIpArgs struct {
-	// List of exactly one pattern to match. Required when `field` is set.
+	// List of header value patterns to match. Maximum size of each pattern is 128 characters. Comparison is case insensitive. Wildcard characters supported: * (matches 0 or more characters) and ? (matches exactly 1 character). If the same header appears multiple times in the request they will be searched in order until a match is found. Only one pattern needs to match for the condition to be satisfied. To require that all of the strings are a match, create one condition block per string.
 	Values pulumi.StringArrayInput `pulumi:"values"`
 }
 
@@ -4017,7 +3987,7 @@ func (o ListenerRuleConditionSourceIpOutput) ToListenerRuleConditionSourceIpPtrO
 	}).(ListenerRuleConditionSourceIpPtrOutput)
 }
 
-// List of exactly one pattern to match. Required when `field` is set.
+// List of header value patterns to match. Maximum size of each pattern is 128 characters. Comparison is case insensitive. Wildcard characters supported: * (matches 0 or more characters) and ? (matches exactly 1 character). If the same header appears multiple times in the request they will be searched in order until a match is found. Only one pattern needs to match for the condition to be satisfied. To require that all of the strings are a match, create one condition block per string.
 func (o ListenerRuleConditionSourceIpOutput) Values() pulumi.StringArrayOutput {
 	return o.ApplyT(func(v ListenerRuleConditionSourceIp) []string { return v.Values }).(pulumi.StringArrayOutput)
 }
@@ -4040,7 +4010,7 @@ func (o ListenerRuleConditionSourceIpPtrOutput) Elem() ListenerRuleConditionSour
 	return o.ApplyT(func(v *ListenerRuleConditionSourceIp) ListenerRuleConditionSourceIp { return *v }).(ListenerRuleConditionSourceIpOutput)
 }
 
-// List of exactly one pattern to match. Required when `field` is set.
+// List of header value patterns to match. Maximum size of each pattern is 128 characters. Comparison is case insensitive. Wildcard characters supported: * (matches 0 or more characters) and ? (matches exactly 1 character). If the same header appears multiple times in the request they will be searched in order until a match is found. Only one pattern needs to match for the condition to be satisfied. To require that all of the strings are a match, create one condition block per string.
 func (o ListenerRuleConditionSourceIpPtrOutput) Values() pulumi.StringArrayOutput {
 	return o.ApplyT(func(v *ListenerRuleConditionSourceIp) []string {
 		if v == nil {
@@ -4222,6 +4192,9 @@ func (o LoadBalancerAccessLogsPtrOutput) Prefix() pulumi.StringPtrOutput {
 type LoadBalancerSubnetMapping struct {
 	// The allocation ID of the Elastic IP address.
 	AllocationId *string `pulumi:"allocationId"`
+	OutpostId    *string `pulumi:"outpostId"`
+	// A private ipv4 address within the subnet to assign to the internal-facing load balancer.
+	PrivateIpv4Address *string `pulumi:"privateIpv4Address"`
 	// The id of the subnet of which to attach to the load balancer. You can specify only one subnet per Availability Zone.
 	SubnetId string `pulumi:"subnetId"`
 }
@@ -4240,6 +4213,9 @@ type LoadBalancerSubnetMappingInput interface {
 type LoadBalancerSubnetMappingArgs struct {
 	// The allocation ID of the Elastic IP address.
 	AllocationId pulumi.StringPtrInput `pulumi:"allocationId"`
+	OutpostId    pulumi.StringPtrInput `pulumi:"outpostId"`
+	// A private ipv4 address within the subnet to assign to the internal-facing load balancer.
+	PrivateIpv4Address pulumi.StringPtrInput `pulumi:"privateIpv4Address"`
 	// The id of the subnet of which to attach to the load balancer. You can specify only one subnet per Availability Zone.
 	SubnetId pulumi.StringInput `pulumi:"subnetId"`
 }
@@ -4300,6 +4276,15 @@ func (o LoadBalancerSubnetMappingOutput) AllocationId() pulumi.StringPtrOutput {
 	return o.ApplyT(func(v LoadBalancerSubnetMapping) *string { return v.AllocationId }).(pulumi.StringPtrOutput)
 }
 
+func (o LoadBalancerSubnetMappingOutput) OutpostId() pulumi.StringPtrOutput {
+	return o.ApplyT(func(v LoadBalancerSubnetMapping) *string { return v.OutpostId }).(pulumi.StringPtrOutput)
+}
+
+// A private ipv4 address within the subnet to assign to the internal-facing load balancer.
+func (o LoadBalancerSubnetMappingOutput) PrivateIpv4Address() pulumi.StringPtrOutput {
+	return o.ApplyT(func(v LoadBalancerSubnetMapping) *string { return v.PrivateIpv4Address }).(pulumi.StringPtrOutput)
+}
+
 // The id of the subnet of which to attach to the load balancer. You can specify only one subnet per Availability Zone.
 func (o LoadBalancerSubnetMappingOutput) SubnetId() pulumi.StringOutput {
 	return o.ApplyT(func(v LoadBalancerSubnetMapping) string { return v.SubnetId }).(pulumi.StringOutput)
@@ -4334,11 +4319,11 @@ type TargetGroupHealthCheck struct {
 	Interval *int `pulumi:"interval"`
 	// The HTTP codes to use when checking for a successful response from a target. You can specify multiple values (for example, "200,202") or a range of values (for example, "200-299"). Applies to Application Load Balancers only (HTTP/HTTPS), not Network Load Balancers (TCP).
 	Matcher *string `pulumi:"matcher"`
-	// The destination for the health check request. Applies to Application Load Balancers only (HTTP/HTTPS), not Network Load Balancers (TCP).
+	// The destination for the health check request. Applies to only HTTP/HTTPS.
 	Path *string `pulumi:"path"`
 	// The port on which targets receive traffic, unless overridden when registering a specific target. Required when `targetType` is `instance` or `ip`. Does not apply when `targetType` is `lambda`.
 	Port *string `pulumi:"port"`
-	// The protocol to use for routing traffic to the targets. Should be one of "TCP", "TLS", "UDP", "TCP_UDP", "HTTP" or "HTTPS". Required when `targetType` is `instance` or `ip`. Does not apply when `targetType` is `lambda`.
+	// The protocol to use for routing traffic to the targets. Should be one of `GENEVE`, `HTTP`, `HTTPS`, `TCP`, `TCP_UDP`, `TLS`, or `UDP`. Required when `targetType` is `instance` or `ip`. Does not apply when `targetType` is `lambda`.
 	Protocol *string `pulumi:"protocol"`
 	// The amount of time, in seconds, during which no response means a failed health check. For Application Load Balancers, the range is 2 to 120 seconds, and the default is 5 seconds for the `instance` target type and 30 seconds for the `lambda` target type. For Network Load Balancers, you cannot set a custom value, and the default is 10 seconds for TCP and HTTPS health checks and 6 seconds for HTTP health checks.
 	Timeout *int `pulumi:"timeout"`
@@ -4366,11 +4351,11 @@ type TargetGroupHealthCheckArgs struct {
 	Interval pulumi.IntPtrInput `pulumi:"interval"`
 	// The HTTP codes to use when checking for a successful response from a target. You can specify multiple values (for example, "200,202") or a range of values (for example, "200-299"). Applies to Application Load Balancers only (HTTP/HTTPS), not Network Load Balancers (TCP).
 	Matcher pulumi.StringPtrInput `pulumi:"matcher"`
-	// The destination for the health check request. Applies to Application Load Balancers only (HTTP/HTTPS), not Network Load Balancers (TCP).
+	// The destination for the health check request. Applies to only HTTP/HTTPS.
 	Path pulumi.StringPtrInput `pulumi:"path"`
 	// The port on which targets receive traffic, unless overridden when registering a specific target. Required when `targetType` is `instance` or `ip`. Does not apply when `targetType` is `lambda`.
 	Port pulumi.StringPtrInput `pulumi:"port"`
-	// The protocol to use for routing traffic to the targets. Should be one of "TCP", "TLS", "UDP", "TCP_UDP", "HTTP" or "HTTPS". Required when `targetType` is `instance` or `ip`. Does not apply when `targetType` is `lambda`.
+	// The protocol to use for routing traffic to the targets. Should be one of `GENEVE`, `HTTP`, `HTTPS`, `TCP`, `TCP_UDP`, `TLS`, or `UDP`. Required when `targetType` is `instance` or `ip`. Does not apply when `targetType` is `lambda`.
 	Protocol pulumi.StringPtrInput `pulumi:"protocol"`
 	// The amount of time, in seconds, during which no response means a failed health check. For Application Load Balancers, the range is 2 to 120 seconds, and the default is 5 seconds for the `instance` target type and 30 seconds for the `lambda` target type. For Network Load Balancers, you cannot set a custom value, and the default is 10 seconds for TCP and HTTPS health checks and 6 seconds for HTTP health checks.
 	Timeout pulumi.IntPtrInput `pulumi:"timeout"`
@@ -4475,7 +4460,7 @@ func (o TargetGroupHealthCheckOutput) Matcher() pulumi.StringPtrOutput {
 	return o.ApplyT(func(v TargetGroupHealthCheck) *string { return v.Matcher }).(pulumi.StringPtrOutput)
 }
 
-// The destination for the health check request. Applies to Application Load Balancers only (HTTP/HTTPS), not Network Load Balancers (TCP).
+// The destination for the health check request. Applies to only HTTP/HTTPS.
 func (o TargetGroupHealthCheckOutput) Path() pulumi.StringPtrOutput {
 	return o.ApplyT(func(v TargetGroupHealthCheck) *string { return v.Path }).(pulumi.StringPtrOutput)
 }
@@ -4485,7 +4470,7 @@ func (o TargetGroupHealthCheckOutput) Port() pulumi.StringPtrOutput {
 	return o.ApplyT(func(v TargetGroupHealthCheck) *string { return v.Port }).(pulumi.StringPtrOutput)
 }
 
-// The protocol to use for routing traffic to the targets. Should be one of "TCP", "TLS", "UDP", "TCP_UDP", "HTTP" or "HTTPS". Required when `targetType` is `instance` or `ip`. Does not apply when `targetType` is `lambda`.
+// The protocol to use for routing traffic to the targets. Should be one of `GENEVE`, `HTTP`, `HTTPS`, `TCP`, `TCP_UDP`, `TLS`, or `UDP`. Required when `targetType` is `instance` or `ip`. Does not apply when `targetType` is `lambda`.
 func (o TargetGroupHealthCheckOutput) Protocol() pulumi.StringPtrOutput {
 	return o.ApplyT(func(v TargetGroupHealthCheck) *string { return v.Protocol }).(pulumi.StringPtrOutput)
 }
@@ -4558,7 +4543,7 @@ func (o TargetGroupHealthCheckPtrOutput) Matcher() pulumi.StringPtrOutput {
 	}).(pulumi.StringPtrOutput)
 }
 
-// The destination for the health check request. Applies to Application Load Balancers only (HTTP/HTTPS), not Network Load Balancers (TCP).
+// The destination for the health check request. Applies to only HTTP/HTTPS.
 func (o TargetGroupHealthCheckPtrOutput) Path() pulumi.StringPtrOutput {
 	return o.ApplyT(func(v *TargetGroupHealthCheck) *string {
 		if v == nil {
@@ -4578,7 +4563,7 @@ func (o TargetGroupHealthCheckPtrOutput) Port() pulumi.StringPtrOutput {
 	}).(pulumi.StringPtrOutput)
 }
 
-// The protocol to use for routing traffic to the targets. Should be one of "TCP", "TLS", "UDP", "TCP_UDP", "HTTP" or "HTTPS". Required when `targetType` is `instance` or `ip`. Does not apply when `targetType` is `lambda`.
+// The protocol to use for routing traffic to the targets. Should be one of `GENEVE`, `HTTP`, `HTTPS`, `TCP`, `TCP_UDP`, `TLS`, or `UDP`. Required when `targetType` is `instance` or `ip`. Does not apply when `targetType` is `lambda`.
 func (o TargetGroupHealthCheckPtrOutput) Protocol() pulumi.StringPtrOutput {
 	return o.ApplyT(func(v *TargetGroupHealthCheck) *string {
 		if v == nil {
@@ -4609,11 +4594,11 @@ func (o TargetGroupHealthCheckPtrOutput) UnhealthyThreshold() pulumi.IntPtrOutpu
 }
 
 type TargetGroupStickiness struct {
-	// The time period, in seconds, during which requests from a client should be routed to the same target. After this time period expires, the load balancer-generated cookie is considered stale. The range is 1 second to 1 week (604800 seconds). The default value is 1 day (86400 seconds).
+	// Only used when the type is `lbCookie`. The time period, in seconds, during which requests from a client should be routed to the same target. After this time period expires, the load balancer-generated cookie is considered stale. The range is 1 second to 1 week (604800 seconds). The default value is 1 day (86400 seconds).
 	CookieDuration *int `pulumi:"cookieDuration"`
 	// Indicates whether  health checks are enabled. Defaults to true.
 	Enabled *bool `pulumi:"enabled"`
-	// The type of sticky sessions. The only current possible value is `lbCookie`.
+	// The type of sticky sessions. The only current possible values are `lbCookie` for ALBs and `sourceIp` for NLBs.
 	Type string `pulumi:"type"`
 }
 
@@ -4629,11 +4614,11 @@ type TargetGroupStickinessInput interface {
 }
 
 type TargetGroupStickinessArgs struct {
-	// The time period, in seconds, during which requests from a client should be routed to the same target. After this time period expires, the load balancer-generated cookie is considered stale. The range is 1 second to 1 week (604800 seconds). The default value is 1 day (86400 seconds).
+	// Only used when the type is `lbCookie`. The time period, in seconds, during which requests from a client should be routed to the same target. After this time period expires, the load balancer-generated cookie is considered stale. The range is 1 second to 1 week (604800 seconds). The default value is 1 day (86400 seconds).
 	CookieDuration pulumi.IntPtrInput `pulumi:"cookieDuration"`
 	// Indicates whether  health checks are enabled. Defaults to true.
 	Enabled pulumi.BoolPtrInput `pulumi:"enabled"`
-	// The type of sticky sessions. The only current possible value is `lbCookie`.
+	// The type of sticky sessions. The only current possible values are `lbCookie` for ALBs and `sourceIp` for NLBs.
 	Type pulumi.StringInput `pulumi:"type"`
 }
 
@@ -4714,7 +4699,7 @@ func (o TargetGroupStickinessOutput) ToTargetGroupStickinessPtrOutputWithContext
 	}).(TargetGroupStickinessPtrOutput)
 }
 
-// The time period, in seconds, during which requests from a client should be routed to the same target. After this time period expires, the load balancer-generated cookie is considered stale. The range is 1 second to 1 week (604800 seconds). The default value is 1 day (86400 seconds).
+// Only used when the type is `lbCookie`. The time period, in seconds, during which requests from a client should be routed to the same target. After this time period expires, the load balancer-generated cookie is considered stale. The range is 1 second to 1 week (604800 seconds). The default value is 1 day (86400 seconds).
 func (o TargetGroupStickinessOutput) CookieDuration() pulumi.IntPtrOutput {
 	return o.ApplyT(func(v TargetGroupStickiness) *int { return v.CookieDuration }).(pulumi.IntPtrOutput)
 }
@@ -4724,7 +4709,7 @@ func (o TargetGroupStickinessOutput) Enabled() pulumi.BoolPtrOutput {
 	return o.ApplyT(func(v TargetGroupStickiness) *bool { return v.Enabled }).(pulumi.BoolPtrOutput)
 }
 
-// The type of sticky sessions. The only current possible value is `lbCookie`.
+// The type of sticky sessions. The only current possible values are `lbCookie` for ALBs and `sourceIp` for NLBs.
 func (o TargetGroupStickinessOutput) Type() pulumi.StringOutput {
 	return o.ApplyT(func(v TargetGroupStickiness) string { return v.Type }).(pulumi.StringOutput)
 }
@@ -4747,7 +4732,7 @@ func (o TargetGroupStickinessPtrOutput) Elem() TargetGroupStickinessOutput {
 	return o.ApplyT(func(v *TargetGroupStickiness) TargetGroupStickiness { return *v }).(TargetGroupStickinessOutput)
 }
 
-// The time period, in seconds, during which requests from a client should be routed to the same target. After this time period expires, the load balancer-generated cookie is considered stale. The range is 1 second to 1 week (604800 seconds). The default value is 1 day (86400 seconds).
+// Only used when the type is `lbCookie`. The time period, in seconds, during which requests from a client should be routed to the same target. After this time period expires, the load balancer-generated cookie is considered stale. The range is 1 second to 1 week (604800 seconds). The default value is 1 day (86400 seconds).
 func (o TargetGroupStickinessPtrOutput) CookieDuration() pulumi.IntPtrOutput {
 	return o.ApplyT(func(v *TargetGroupStickiness) *int {
 		if v == nil {
@@ -4767,7 +4752,7 @@ func (o TargetGroupStickinessPtrOutput) Enabled() pulumi.BoolPtrOutput {
 	}).(pulumi.BoolPtrOutput)
 }
 
-// The type of sticky sessions. The only current possible value is `lbCookie`.
+// The type of sticky sessions. The only current possible values are `lbCookie` for ALBs and `sourceIp` for NLBs.
 func (o TargetGroupStickinessPtrOutput) Type() pulumi.StringPtrOutput {
 	return o.ApplyT(func(v *TargetGroupStickiness) *string {
 		if v == nil {
@@ -5500,8 +5485,10 @@ func (o GetLoadBalancerAccessLogsOutput) Prefix() pulumi.StringOutput {
 }
 
 type GetLoadBalancerSubnetMapping struct {
-	AllocationId *string `pulumi:"allocationId"`
-	SubnetId     string  `pulumi:"subnetId"`
+	AllocationId       string `pulumi:"allocationId"`
+	OutpostId          string `pulumi:"outpostId"`
+	PrivateIpv4Address string `pulumi:"privateIpv4Address"`
+	SubnetId           string `pulumi:"subnetId"`
 }
 
 // GetLoadBalancerSubnetMappingInput is an input type that accepts GetLoadBalancerSubnetMappingArgs and GetLoadBalancerSubnetMappingOutput values.
@@ -5516,8 +5503,10 @@ type GetLoadBalancerSubnetMappingInput interface {
 }
 
 type GetLoadBalancerSubnetMappingArgs struct {
-	AllocationId pulumi.StringPtrInput `pulumi:"allocationId"`
-	SubnetId     pulumi.StringInput    `pulumi:"subnetId"`
+	AllocationId       pulumi.StringInput `pulumi:"allocationId"`
+	OutpostId          pulumi.StringInput `pulumi:"outpostId"`
+	PrivateIpv4Address pulumi.StringInput `pulumi:"privateIpv4Address"`
+	SubnetId           pulumi.StringInput `pulumi:"subnetId"`
 }
 
 func (GetLoadBalancerSubnetMappingArgs) ElementType() reflect.Type {
@@ -5571,8 +5560,16 @@ func (o GetLoadBalancerSubnetMappingOutput) ToGetLoadBalancerSubnetMappingOutput
 	return o
 }
 
-func (o GetLoadBalancerSubnetMappingOutput) AllocationId() pulumi.StringPtrOutput {
-	return o.ApplyT(func(v GetLoadBalancerSubnetMapping) *string { return v.AllocationId }).(pulumi.StringPtrOutput)
+func (o GetLoadBalancerSubnetMappingOutput) AllocationId() pulumi.StringOutput {
+	return o.ApplyT(func(v GetLoadBalancerSubnetMapping) string { return v.AllocationId }).(pulumi.StringOutput)
+}
+
+func (o GetLoadBalancerSubnetMappingOutput) OutpostId() pulumi.StringOutput {
+	return o.ApplyT(func(v GetLoadBalancerSubnetMapping) string { return v.OutpostId }).(pulumi.StringOutput)
+}
+
+func (o GetLoadBalancerSubnetMappingOutput) PrivateIpv4Address() pulumi.StringOutput {
+	return o.ApplyT(func(v GetLoadBalancerSubnetMapping) string { return v.PrivateIpv4Address }).(pulumi.StringOutput)
 }
 
 func (o GetLoadBalancerSubnetMappingOutput) SubnetId() pulumi.StringOutput {

@@ -4,6 +4,7 @@
 package ec2
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -18,8 +19,8 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/ec2"
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/elb"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/ec2"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/elb"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -48,11 +49,11 @@ import (
 // 			return err
 // 		}
 // 		_, err = ec2.NewProxyProtocolPolicy(ctx, "smtp", &ec2.ProxyProtocolPolicyArgs{
+// 			LoadBalancer: lb.Name,
 // 			InstancePorts: pulumi.StringArray{
 // 				pulumi.String("25"),
 // 				pulumi.String("587"),
 // 			},
-// 			LoadBalancer: lb.Name,
 // 		})
 // 		if err != nil {
 // 			return err
@@ -75,14 +76,15 @@ type ProxyProtocolPolicy struct {
 // NewProxyProtocolPolicy registers a new resource with the given unique name, arguments, and options.
 func NewProxyProtocolPolicy(ctx *pulumi.Context,
 	name string, args *ProxyProtocolPolicyArgs, opts ...pulumi.ResourceOption) (*ProxyProtocolPolicy, error) {
-	if args == nil || args.InstancePorts == nil {
-		return nil, errors.New("missing required argument 'InstancePorts'")
-	}
-	if args == nil || args.LoadBalancer == nil {
-		return nil, errors.New("missing required argument 'LoadBalancer'")
-	}
 	if args == nil {
-		args = &ProxyProtocolPolicyArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.InstancePorts == nil {
+		return nil, errors.New("invalid value for required argument 'InstancePorts'")
+	}
+	if args.LoadBalancer == nil {
+		return nil, errors.New("invalid value for required argument 'LoadBalancer'")
 	}
 	var resource ProxyProtocolPolicy
 	err := ctx.RegisterResource("aws:ec2/proxyProtocolPolicy:ProxyProtocolPolicy", name, args, &resource, opts...)
@@ -148,4 +150,43 @@ type ProxyProtocolPolicyArgs struct {
 
 func (ProxyProtocolPolicyArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*proxyProtocolPolicyArgs)(nil)).Elem()
+}
+
+type ProxyProtocolPolicyInput interface {
+	pulumi.Input
+
+	ToProxyProtocolPolicyOutput() ProxyProtocolPolicyOutput
+	ToProxyProtocolPolicyOutputWithContext(ctx context.Context) ProxyProtocolPolicyOutput
+}
+
+func (ProxyProtocolPolicy) ElementType() reflect.Type {
+	return reflect.TypeOf((*ProxyProtocolPolicy)(nil)).Elem()
+}
+
+func (i ProxyProtocolPolicy) ToProxyProtocolPolicyOutput() ProxyProtocolPolicyOutput {
+	return i.ToProxyProtocolPolicyOutputWithContext(context.Background())
+}
+
+func (i ProxyProtocolPolicy) ToProxyProtocolPolicyOutputWithContext(ctx context.Context) ProxyProtocolPolicyOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(ProxyProtocolPolicyOutput)
+}
+
+type ProxyProtocolPolicyOutput struct {
+	*pulumi.OutputState
+}
+
+func (ProxyProtocolPolicyOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*ProxyProtocolPolicyOutput)(nil)).Elem()
+}
+
+func (o ProxyProtocolPolicyOutput) ToProxyProtocolPolicyOutput() ProxyProtocolPolicyOutput {
+	return o
+}
+
+func (o ProxyProtocolPolicyOutput) ToProxyProtocolPolicyOutputWithContext(ctx context.Context) ProxyProtocolPolicyOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(ProxyProtocolPolicyOutput{})
 }

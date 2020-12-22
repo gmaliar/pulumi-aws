@@ -17,12 +17,10 @@ import * as utilities from "../utilities";
  *     availabilityZone: "us-west-2a",
  *     size: 40,
  * });
- * const exampleSnapshot = new aws.ebs.Snapshot("example_snapshot", {
- *     volumeId: example.id,
- * });
- * const examplePerm = new aws.ec2.SnapshotCreateVolumePermission("example_perm", {
- *     accountId: "12345678",
+ * const exampleSnapshot = new aws.ebs.Snapshot("exampleSnapshot", {volumeId: example.id});
+ * const examplePerm = new aws.ec2.SnapshotCreateVolumePermission("examplePerm", {
  *     snapshotId: exampleSnapshot.id,
+ *     accountId: "12345678",
  * });
  * ```
  */
@@ -79,10 +77,10 @@ export class SnapshotCreateVolumePermission extends pulumi.CustomResource {
             inputs["snapshotId"] = state ? state.snapshotId : undefined;
         } else {
             const args = argsOrState as SnapshotCreateVolumePermissionArgs | undefined;
-            if (!args || args.accountId === undefined) {
+            if ((!args || args.accountId === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'accountId'");
             }
-            if (!args || args.snapshotId === undefined) {
+            if ((!args || args.snapshotId === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'snapshotId'");
             }
             inputs["accountId"] = args ? args.accountId : undefined;

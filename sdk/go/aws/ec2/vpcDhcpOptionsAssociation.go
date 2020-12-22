@@ -4,6 +4,7 @@
 package ec2
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -18,15 +19,15 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/ec2"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/ec2"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
 // func main() {
 // 	pulumi.Run(func(ctx *pulumi.Context) error {
 // 		_, err := ec2.NewVpcDhcpOptionsAssociation(ctx, "dnsResolver", &ec2.VpcDhcpOptionsAssociationArgs{
-// 			DhcpOptionsId: pulumi.String(aws_vpc_dhcp_options.Foo.Id),
-// 			VpcId:         pulumi.String(aws_vpc.Foo.Id),
+// 			VpcId:         pulumi.Any(aws_vpc.Foo.Id),
+// 			DhcpOptionsId: pulumi.Any(aws_vpc_dhcp_options.Foo.Id),
 // 		})
 // 		if err != nil {
 // 			return err
@@ -39,6 +40,14 @@ import (
 //
 // * You can only associate one DHCP Options Set to a given VPC ID.
 // * Removing the DHCP Options Association automatically sets AWS's `default` DHCP Options Set to the VPC.
+//
+// ## Import
+//
+// DHCP associations can be imported by providing the VPC ID associated with the options
+//
+// ```sh
+//  $ pulumi import aws:ec2/vpcDhcpOptionsAssociation:VpcDhcpOptionsAssociation imported vpc-0f001273ec18911b1
+// ```
 type VpcDhcpOptionsAssociation struct {
 	pulumi.CustomResourceState
 
@@ -51,14 +60,15 @@ type VpcDhcpOptionsAssociation struct {
 // NewVpcDhcpOptionsAssociation registers a new resource with the given unique name, arguments, and options.
 func NewVpcDhcpOptionsAssociation(ctx *pulumi.Context,
 	name string, args *VpcDhcpOptionsAssociationArgs, opts ...pulumi.ResourceOption) (*VpcDhcpOptionsAssociation, error) {
-	if args == nil || args.DhcpOptionsId == nil {
-		return nil, errors.New("missing required argument 'DhcpOptionsId'")
-	}
-	if args == nil || args.VpcId == nil {
-		return nil, errors.New("missing required argument 'VpcId'")
-	}
 	if args == nil {
-		args = &VpcDhcpOptionsAssociationArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.DhcpOptionsId == nil {
+		return nil, errors.New("invalid value for required argument 'DhcpOptionsId'")
+	}
+	if args.VpcId == nil {
+		return nil, errors.New("invalid value for required argument 'VpcId'")
 	}
 	var resource VpcDhcpOptionsAssociation
 	err := ctx.RegisterResource("aws:ec2/vpcDhcpOptionsAssociation:VpcDhcpOptionsAssociation", name, args, &resource, opts...)
@@ -116,4 +126,43 @@ type VpcDhcpOptionsAssociationArgs struct {
 
 func (VpcDhcpOptionsAssociationArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*vpcDhcpOptionsAssociationArgs)(nil)).Elem()
+}
+
+type VpcDhcpOptionsAssociationInput interface {
+	pulumi.Input
+
+	ToVpcDhcpOptionsAssociationOutput() VpcDhcpOptionsAssociationOutput
+	ToVpcDhcpOptionsAssociationOutputWithContext(ctx context.Context) VpcDhcpOptionsAssociationOutput
+}
+
+func (VpcDhcpOptionsAssociation) ElementType() reflect.Type {
+	return reflect.TypeOf((*VpcDhcpOptionsAssociation)(nil)).Elem()
+}
+
+func (i VpcDhcpOptionsAssociation) ToVpcDhcpOptionsAssociationOutput() VpcDhcpOptionsAssociationOutput {
+	return i.ToVpcDhcpOptionsAssociationOutputWithContext(context.Background())
+}
+
+func (i VpcDhcpOptionsAssociation) ToVpcDhcpOptionsAssociationOutputWithContext(ctx context.Context) VpcDhcpOptionsAssociationOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(VpcDhcpOptionsAssociationOutput)
+}
+
+type VpcDhcpOptionsAssociationOutput struct {
+	*pulumi.OutputState
+}
+
+func (VpcDhcpOptionsAssociationOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*VpcDhcpOptionsAssociationOutput)(nil)).Elem()
+}
+
+func (o VpcDhcpOptionsAssociationOutput) ToVpcDhcpOptionsAssociationOutput() VpcDhcpOptionsAssociationOutput {
+	return o
+}
+
+func (o VpcDhcpOptionsAssociationOutput) ToVpcDhcpOptionsAssociationOutputWithContext(ctx context.Context) VpcDhcpOptionsAssociationOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(VpcDhcpOptionsAssociationOutput{})
 }

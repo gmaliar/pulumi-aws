@@ -4,6 +4,7 @@
 package elastictranscoder
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -20,7 +21,7 @@ import (
 // import (
 // 	"fmt"
 //
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/elastictranscoder"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/elastictranscoder"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -89,6 +90,14 @@ import (
 // 	})
 // }
 // ```
+//
+// ## Import
+//
+// Elastic Transcoder presets can be imported using the `id`, e.g.
+//
+// ```sh
+//  $ pulumi import aws:elastictranscoder/preset:Preset basic_preset 1407981661351-cttk8b
+// ```
 type Preset struct {
 	pulumi.CustomResourceState
 
@@ -117,11 +126,12 @@ type Preset struct {
 // NewPreset registers a new resource with the given unique name, arguments, and options.
 func NewPreset(ctx *pulumi.Context,
 	name string, args *PresetArgs, opts ...pulumi.ResourceOption) (*Preset, error) {
-	if args == nil || args.Container == nil {
-		return nil, errors.New("missing required argument 'Container'")
-	}
 	if args == nil {
-		args = &PresetArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.Container == nil {
+		return nil, errors.New("invalid value for required argument 'Container'")
 	}
 	var resource Preset
 	err := ctx.RegisterResource("aws:elastictranscoder/preset:Preset", name, args, &resource, opts...)
@@ -241,4 +251,43 @@ type PresetArgs struct {
 
 func (PresetArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*presetArgs)(nil)).Elem()
+}
+
+type PresetInput interface {
+	pulumi.Input
+
+	ToPresetOutput() PresetOutput
+	ToPresetOutputWithContext(ctx context.Context) PresetOutput
+}
+
+func (Preset) ElementType() reflect.Type {
+	return reflect.TypeOf((*Preset)(nil)).Elem()
+}
+
+func (i Preset) ToPresetOutput() PresetOutput {
+	return i.ToPresetOutputWithContext(context.Background())
+}
+
+func (i Preset) ToPresetOutputWithContext(ctx context.Context) PresetOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(PresetOutput)
+}
+
+type PresetOutput struct {
+	*pulumi.OutputState
+}
+
+func (PresetOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*PresetOutput)(nil)).Elem()
+}
+
+func (o PresetOutput) ToPresetOutput() PresetOutput {
+	return o
+}
+
+func (o PresetOutput) ToPresetOutputWithContext(ctx context.Context) PresetOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(PresetOutput{})
 }

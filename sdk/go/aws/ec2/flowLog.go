@@ -4,6 +4,7 @@
 package ec2
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -22,9 +23,9 @@ import (
 // import (
 // 	"fmt"
 //
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/cloudwatch"
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/ec2"
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/iam"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/cloudwatch"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/ec2"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/iam"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -35,7 +36,7 @@ import (
 // 			return err
 // 		}
 // 		exampleRole, err := iam.NewRole(ctx, "exampleRole", &iam.RoleArgs{
-// 			AssumeRolePolicy: pulumi.String(fmt.Sprintf("%v%v%v%v%v%v%v%v%v%v%v%v%v%v", "{\n", "  \"Version\": \"2012-10-17\",\n", "  \"Statement\": [\n", "    {\n", "      \"Sid\": \"\",\n", "      \"Effect\": \"Allow\",\n", "      \"Principal\": {\n", "        \"Service\": \"vpc-flow-logs.amazonaws.com\"\n", "      },\n", "      \"Action\": \"sts:AssumeRole\"\n", "    }\n", "  ]\n", "}\n", "\n")),
+// 			AssumeRolePolicy: pulumi.String(fmt.Sprintf("%v%v%v%v%v%v%v%v%v%v%v%v%v", "{\n", "  \"Version\": \"2012-10-17\",\n", "  \"Statement\": [\n", "    {\n", "      \"Sid\": \"\",\n", "      \"Effect\": \"Allow\",\n", "      \"Principal\": {\n", "        \"Service\": \"vpc-flow-logs.amazonaws.com\"\n", "      },\n", "      \"Action\": \"sts:AssumeRole\"\n", "    }\n", "  ]\n", "}\n")),
 // 		})
 // 		if err != nil {
 // 			return err
@@ -44,14 +45,14 @@ import (
 // 			IamRoleArn:     exampleRole.Arn,
 // 			LogDestination: exampleLogGroup.Arn,
 // 			TrafficType:    pulumi.String("ALL"),
-// 			VpcId:          pulumi.String(aws_vpc.Example.Id),
+// 			VpcId:          pulumi.Any(aws_vpc.Example.Id),
 // 		})
 // 		if err != nil {
 // 			return err
 // 		}
 // 		_, err = iam.NewRolePolicy(ctx, "exampleRolePolicy", &iam.RolePolicyArgs{
-// 			Policy: pulumi.String(fmt.Sprintf("%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v", "{\n", "  \"Version\": \"2012-10-17\",\n", "  \"Statement\": [\n", "    {\n", "      \"Action\": [\n", "        \"logs:CreateLogGroup\",\n", "        \"logs:CreateLogStream\",\n", "        \"logs:PutLogEvents\",\n", "        \"logs:DescribeLogGroups\",\n", "        \"logs:DescribeLogStreams\"\n", "      ],\n", "      \"Effect\": \"Allow\",\n", "      \"Resource\": \"*\"\n", "    }\n", "  ]\n", "}\n", "\n")),
 // 			Role:   exampleRole.ID(),
+// 			Policy: pulumi.String(fmt.Sprintf("%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v", "{\n", "  \"Version\": \"2012-10-17\",\n", "  \"Statement\": [\n", "    {\n", "      \"Action\": [\n", "        \"logs:CreateLogGroup\",\n", "        \"logs:CreateLogStream\",\n", "        \"logs:PutLogEvents\",\n", "        \"logs:DescribeLogGroups\",\n", "        \"logs:DescribeLogStreams\"\n", "      ],\n", "      \"Effect\": \"Allow\",\n", "      \"Resource\": \"*\"\n", "    }\n", "  ]\n", "}\n")),
 // 		})
 // 		if err != nil {
 // 			return err
@@ -66,8 +67,8 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/ec2"
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/s3"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/ec2"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/s3"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -81,7 +82,7 @@ import (
 // 			LogDestination:     exampleBucket.Arn,
 // 			LogDestinationType: pulumi.String("s3"),
 // 			TrafficType:        pulumi.String("ALL"),
-// 			VpcId:              pulumi.String(aws_vpc.Example.Id),
+// 			VpcId:              pulumi.Any(aws_vpc.Example.Id),
 // 		})
 // 		if err != nil {
 // 			return err
@@ -89,6 +90,14 @@ import (
 // 		return nil
 // 	})
 // }
+// ```
+//
+// ## Import
+//
+// Flow Logs can be imported using the `id`, e.g.
+//
+// ```sh
+//  $ pulumi import aws:ec2/flowLog:FlowLog test_flow_log fl-1a2b3c4d
 // ```
 type FlowLog struct {
 	pulumi.CustomResourceState
@@ -127,11 +136,12 @@ type FlowLog struct {
 // NewFlowLog registers a new resource with the given unique name, arguments, and options.
 func NewFlowLog(ctx *pulumi.Context,
 	name string, args *FlowLogArgs, opts ...pulumi.ResourceOption) (*FlowLog, error) {
-	if args == nil || args.TrafficType == nil {
-		return nil, errors.New("missing required argument 'TrafficType'")
-	}
 	if args == nil {
-		args = &FlowLogArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.TrafficType == nil {
+		return nil, errors.New("invalid value for required argument 'TrafficType'")
 	}
 	var resource FlowLog
 	err := ctx.RegisterResource("aws:ec2/flowLog:FlowLog", name, args, &resource, opts...)
@@ -285,4 +295,43 @@ type FlowLogArgs struct {
 
 func (FlowLogArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*flowLogArgs)(nil)).Elem()
+}
+
+type FlowLogInput interface {
+	pulumi.Input
+
+	ToFlowLogOutput() FlowLogOutput
+	ToFlowLogOutputWithContext(ctx context.Context) FlowLogOutput
+}
+
+func (FlowLog) ElementType() reflect.Type {
+	return reflect.TypeOf((*FlowLog)(nil)).Elem()
+}
+
+func (i FlowLog) ToFlowLogOutput() FlowLogOutput {
+	return i.ToFlowLogOutputWithContext(context.Background())
+}
+
+func (i FlowLog) ToFlowLogOutputWithContext(ctx context.Context) FlowLogOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(FlowLogOutput)
+}
+
+type FlowLogOutput struct {
+	*pulumi.OutputState
+}
+
+func (FlowLogOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*FlowLogOutput)(nil)).Elem()
+}
+
+func (o FlowLogOutput) ToFlowLogOutput() FlowLogOutput {
+	return o
+}
+
+func (o FlowLogOutput) ToFlowLogOutputWithContext(ctx context.Context) FlowLogOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(FlowLogOutput{})
 }

@@ -4,6 +4,7 @@
 package rds
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -21,7 +22,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/rds"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/rds"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -48,6 +49,14 @@ import (
 // 	})
 // }
 // ```
+//
+// ## Import
+//
+// RDS Cluster Parameter Groups can be imported using the `name`, e.g.
+//
+// ```sh
+//  $ pulumi import aws:rds/clusterParameterGroup:ClusterParameterGroup cluster_pg production-pg-1
+// ```
 type ClusterParameterGroup struct {
 	pulumi.CustomResourceState
 
@@ -70,11 +79,12 @@ type ClusterParameterGroup struct {
 // NewClusterParameterGroup registers a new resource with the given unique name, arguments, and options.
 func NewClusterParameterGroup(ctx *pulumi.Context,
 	name string, args *ClusterParameterGroupArgs, opts ...pulumi.ResourceOption) (*ClusterParameterGroup, error) {
-	if args == nil || args.Family == nil {
-		return nil, errors.New("missing required argument 'Family'")
-	}
 	if args == nil {
-		args = &ClusterParameterGroupArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.Family == nil {
+		return nil, errors.New("invalid value for required argument 'Family'")
 	}
 	if args.Description == nil {
 		args.Description = pulumi.StringPtr("Managed by Pulumi")
@@ -171,4 +181,43 @@ type ClusterParameterGroupArgs struct {
 
 func (ClusterParameterGroupArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*clusterParameterGroupArgs)(nil)).Elem()
+}
+
+type ClusterParameterGroupInput interface {
+	pulumi.Input
+
+	ToClusterParameterGroupOutput() ClusterParameterGroupOutput
+	ToClusterParameterGroupOutputWithContext(ctx context.Context) ClusterParameterGroupOutput
+}
+
+func (ClusterParameterGroup) ElementType() reflect.Type {
+	return reflect.TypeOf((*ClusterParameterGroup)(nil)).Elem()
+}
+
+func (i ClusterParameterGroup) ToClusterParameterGroupOutput() ClusterParameterGroupOutput {
+	return i.ToClusterParameterGroupOutputWithContext(context.Background())
+}
+
+func (i ClusterParameterGroup) ToClusterParameterGroupOutputWithContext(ctx context.Context) ClusterParameterGroupOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(ClusterParameterGroupOutput)
+}
+
+type ClusterParameterGroupOutput struct {
+	*pulumi.OutputState
+}
+
+func (ClusterParameterGroupOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*ClusterParameterGroupOutput)(nil)).Elem()
+}
+
+func (o ClusterParameterGroupOutput) ToClusterParameterGroupOutput() ClusterParameterGroupOutput {
+	return o
+}
+
+func (o ClusterParameterGroupOutput) ToClusterParameterGroupOutputWithContext(ctx context.Context) ClusterParameterGroupOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(ClusterParameterGroupOutput{})
 }

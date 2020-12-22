@@ -24,7 +24,6 @@ namespace Pulumi.Aws.Ssm
     ///     {
     ///         var hogeBucket = new Aws.S3.Bucket("hogeBucket", new Aws.S3.BucketArgs
     ///         {
-    ///             Region = "us-east-1",
     ///         });
     ///         var hogeBucketPolicy = new Aws.S3.BucketPolicy("hogeBucketPolicy", new Aws.S3.BucketPolicyArgs
     ///         {
@@ -57,7 +56,6 @@ namespace Pulumi.Aws.Ssm
     ///         }
     ///     ]
     /// }
-    /// 
     /// ",
     ///         });
     ///         var foo = new Aws.Ssm.ResourceDataSync("foo", new Aws.Ssm.ResourceDataSyncArgs
@@ -71,6 +69,14 @@ namespace Pulumi.Aws.Ssm
     ///     }
     /// 
     /// }
+    /// ```
+    /// 
+    /// ## Import
+    /// 
+    /// SSM resource data sync can be imported using the `name`, e.g.
+    /// 
+    /// ```sh
+    ///  $ pulumi import aws:ssm/resourceDataSync:ResourceDataSync example example-name
     /// ```
     /// </summary>
     public partial class ResourceDataSync : Pulumi.CustomResource

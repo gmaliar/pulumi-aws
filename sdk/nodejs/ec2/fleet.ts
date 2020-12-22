@@ -2,8 +2,7 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 /**
@@ -18,8 +17,8 @@ import * as utilities from "../utilities";
  * const example = new aws.ec2.Fleet("example", {
  *     launchTemplateConfig: {
  *         launchTemplateSpecification: {
- *             launchTemplateId: aws_launch_template_example.id,
- *             version: aws_launch_template_example.latestVersion,
+ *             launchTemplateId: aws_launch_template.example.id,
+ *             version: aws_launch_template.example.latest_version,
  *         },
  *     },
  *     targetCapacitySpecification: {
@@ -27,6 +26,14 @@ import * as utilities from "../utilities";
  *         totalTargetCapacity: 5,
  *     },
  * });
+ * ```
+ *
+ * ## Import
+ *
+ * `aws_ec2_fleet` can be imported by using the Fleet identifier, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:ec2/fleet:Fleet example fleet-b9b55d27-c5fc-41ac-a6f3-48fcc91f080c
  * ```
  */
 export class Fleet extends pulumi.CustomResource {
@@ -122,10 +129,10 @@ export class Fleet extends pulumi.CustomResource {
             inputs["type"] = state ? state.type : undefined;
         } else {
             const args = argsOrState as FleetArgs | undefined;
-            if (!args || args.launchTemplateConfig === undefined) {
+            if ((!args || args.launchTemplateConfig === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'launchTemplateConfig'");
             }
-            if (!args || args.targetCapacitySpecification === undefined) {
+            if ((!args || args.targetCapacitySpecification === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'targetCapacitySpecification'");
             }
             inputs["excessCapacityTerminationPolicy"] = args ? args.excessCapacityTerminationPolicy : undefined;

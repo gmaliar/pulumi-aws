@@ -2,8 +2,7 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 /**
@@ -15,12 +14,10 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const ipset = new aws.waf.IpSet("ipset", {
- *     ipSetDescriptors: [{
- *         type: "IPV4",
- *         value: "192.0.7.0/24",
- *     }],
- * });
+ * const ipset = new aws.waf.IpSet("ipset", {ipSetDescriptors: [{
+ *     type: "IPV4",
+ *     value: "192.0.7.0/24",
+ * }]});
  * const wafrule = new aws.waf.Rule("wafrule", {
  *     metricName: "tfWAFRule",
  *     predicates: [{
@@ -28,12 +25,14 @@ import * as utilities from "../utilities";
  *         negated: false,
  *         type: "IPMatch",
  *     }],
- * }, { dependsOn: [ipset] });
- * const wafAcl = new aws.waf.WebAcl("waf_acl", {
+ * }, {
+ *     dependsOn: [ipset],
+ * });
+ * const wafAcl = new aws.waf.WebAcl("wafAcl", {
+ *     metricName: "tfWebACL",
  *     defaultAction: {
  *         type: "ALLOW",
  *     },
- *     metricName: "tfWebACL",
  *     rules: [{
  *         action: {
  *             type: "BLOCK",
@@ -42,7 +41,12 @@ import * as utilities from "../utilities";
  *         ruleId: wafrule.id,
  *         type: "REGULAR",
  *     }],
- * }, { dependsOn: [ipset, wafrule] });
+ * }, {
+ *     dependsOn: [
+ *         ipset,
+ *         wafrule,
+ *     ],
+ * });
  * ```
  * ### Logging
  *
@@ -52,23 +56,28 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const example = new aws.waf.WebAcl("example", {
- *     // ... other configuration ...
- *     loggingConfiguration: {
- *         logDestination: aws_kinesis_firehose_delivery_stream_example.arn,
- *         redactedFields: {
- *             fieldToMatches: [
- *                 {
- *                     type: "URI",
- *                 },
- *                 {
- *                     data: "referer",
- *                     type: "HEADER",
- *                 },
- *             ],
- *         },
+ * const example = new aws.waf.WebAcl("example", {loggingConfiguration: {
+ *     logDestination: aws_kinesis_firehose_delivery_stream.example.arn,
+ *     redactedFields: {
+ *         fieldToMatches: [
+ *             {
+ *                 type: "URI",
+ *             },
+ *             {
+ *                 data: "referer",
+ *                 type: "HEADER",
+ *             },
+ *         ],
  *     },
- * });
+ * }});
+ * ```
+ *
+ * ## Import
+ *
+ * WAF Web ACL can be imported using the `id`, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:waf/webAcl:WebAcl main 0c8e583e-18f3-4c13-9e2a-67c4805d2f94
  * ```
  */
 export class WebAcl extends pulumi.CustomResource {
@@ -149,10 +158,10 @@ export class WebAcl extends pulumi.CustomResource {
             inputs["tags"] = state ? state.tags : undefined;
         } else {
             const args = argsOrState as WebAclArgs | undefined;
-            if (!args || args.defaultAction === undefined) {
+            if ((!args || args.defaultAction === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'defaultAction'");
             }
-            if (!args || args.metricName === undefined) {
+            if ((!args || args.metricName === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'metricName'");
             }
             inputs["defaultAction"] = args ? args.defaultAction : undefined;

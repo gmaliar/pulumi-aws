@@ -5,36 +5,23 @@
 import warnings
 import pulumi
 import pulumi.runtime
-from typing import Union
-from .. import utilities, tables
+from typing import Any, Mapping, Optional, Sequence, Union
+from .. import _utilities, _tables
+
+__all__ = ['VpcEndpointConnectionNotification']
 
 
 class VpcEndpointConnectionNotification(pulumi.CustomResource):
-    connection_events: pulumi.Output[list]
-    """
-    One or more endpoint [events](https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_CreateVpcEndpointConnectionNotification.html#API_CreateVpcEndpointConnectionNotification_RequestParameters) for which to receive notifications.
-    """
-    connection_notification_arn: pulumi.Output[str]
-    """
-    The ARN of the SNS topic for the notifications.
-    """
-    notification_type: pulumi.Output[str]
-    """
-    The type of notification.
-    """
-    state: pulumi.Output[str]
-    """
-    The state of the notification.
-    """
-    vpc_endpoint_id: pulumi.Output[str]
-    """
-    The ID of the VPC Endpoint to receive notifications for.
-    """
-    vpc_endpoint_service_id: pulumi.Output[str]
-    """
-    The ID of the VPC Endpoint Service to receive notifications for.
-    """
-    def __init__(__self__, resource_name, opts=None, connection_events=None, connection_notification_arn=None, vpc_endpoint_id=None, vpc_endpoint_service_id=None, __props__=None, __name__=None, __opts__=None):
+    def __init__(__self__,
+                 resource_name: str,
+                 opts: Optional[pulumi.ResourceOptions] = None,
+                 connection_events: Optional[pulumi.Input[Sequence[pulumi.Input[str]]]] = None,
+                 connection_notification_arn: Optional[pulumi.Input[str]] = None,
+                 vpc_endpoint_id: Optional[pulumi.Input[str]] = None,
+                 vpc_endpoint_service_id: Optional[pulumi.Input[str]] = None,
+                 __props__=None,
+                 __name__=None,
+                 __opts__=None):
         """
         Provides a VPC Endpoint connection notification resource.
         Connection notifications notify subscribers of VPC Endpoint events.
@@ -56,23 +43,30 @@ class VpcEndpointConnectionNotification(pulumi.CustomResource):
                 "Resource": "arn:aws:sns:*:*:vpce-notification-topic"
             }]
         }
-
         \"\"\")
         foo_vpc_endpoint_service = aws.ec2.VpcEndpointService("fooVpcEndpointService",
             acceptance_required=False,
             network_load_balancer_arns=[aws_lb["test"]["arn"]])
         foo_vpc_endpoint_connection_notification = aws.ec2.VpcEndpointConnectionNotification("fooVpcEndpointConnectionNotification",
+            vpc_endpoint_service_id=foo_vpc_endpoint_service.id,
+            connection_notification_arn=topic.arn,
             connection_events=[
                 "Accept",
                 "Reject",
-            ],
-            connection_notification_arn=topic.arn,
-            vpc_endpoint_service_id=foo_vpc_endpoint_service.id)
+            ])
+        ```
+
+        ## Import
+
+        VPC Endpoint connection notifications can be imported using the `VPC endpoint connection notification id`, e.g.
+
+        ```sh
+         $ pulumi import aws:ec2/vpcEndpointConnectionNotification:VpcEndpointConnectionNotification foo vpce-nfn-09e6ed3b4efba2263
         ```
 
         :param str resource_name: The name of the resource.
         :param pulumi.ResourceOptions opts: Options for the resource.
-        :param pulumi.Input[list] connection_events: One or more endpoint [events](https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_CreateVpcEndpointConnectionNotification.html#API_CreateVpcEndpointConnectionNotification_RequestParameters) for which to receive notifications.
+        :param pulumi.Input[Sequence[pulumi.Input[str]]] connection_events: One or more endpoint [events](https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_CreateVpcEndpointConnectionNotification.html#API_CreateVpcEndpointConnectionNotification_RequestParameters) for which to receive notifications.
         :param pulumi.Input[str] connection_notification_arn: The ARN of the SNS topic for the notifications.
         :param pulumi.Input[str] vpc_endpoint_id: The ID of the VPC Endpoint to receive notifications for.
         :param pulumi.Input[str] vpc_endpoint_service_id: The ID of the VPC Endpoint Service to receive notifications for.
@@ -88,16 +82,16 @@ class VpcEndpointConnectionNotification(pulumi.CustomResource):
         if not isinstance(opts, pulumi.ResourceOptions):
             raise TypeError('Expected resource options to be a ResourceOptions instance')
         if opts.version is None:
-            opts.version = utilities.get_version()
+            opts.version = _utilities.get_version()
         if opts.id is None:
             if __props__ is not None:
                 raise TypeError('__props__ is only valid when passed in combination with a valid opts.id to get an existing resource')
             __props__ = dict()
 
-            if connection_events is None:
+            if connection_events is None and not opts.urn:
                 raise TypeError("Missing required property 'connection_events'")
             __props__['connection_events'] = connection_events
-            if connection_notification_arn is None:
+            if connection_notification_arn is None and not opts.urn:
                 raise TypeError("Missing required property 'connection_notification_arn'")
             __props__['connection_notification_arn'] = connection_notification_arn
             __props__['vpc_endpoint_id'] = vpc_endpoint_id
@@ -111,15 +105,23 @@ class VpcEndpointConnectionNotification(pulumi.CustomResource):
             opts)
 
     @staticmethod
-    def get(resource_name, id, opts=None, connection_events=None, connection_notification_arn=None, notification_type=None, state=None, vpc_endpoint_id=None, vpc_endpoint_service_id=None):
+    def get(resource_name: str,
+            id: pulumi.Input[str],
+            opts: Optional[pulumi.ResourceOptions] = None,
+            connection_events: Optional[pulumi.Input[Sequence[pulumi.Input[str]]]] = None,
+            connection_notification_arn: Optional[pulumi.Input[str]] = None,
+            notification_type: Optional[pulumi.Input[str]] = None,
+            state: Optional[pulumi.Input[str]] = None,
+            vpc_endpoint_id: Optional[pulumi.Input[str]] = None,
+            vpc_endpoint_service_id: Optional[pulumi.Input[str]] = None) -> 'VpcEndpointConnectionNotification':
         """
         Get an existing VpcEndpointConnectionNotification resource's state with the given name, id, and optional extra
         properties used to qualify the lookup.
 
         :param str resource_name: The unique name of the resulting resource.
-        :param str id: The unique provider ID of the resource to lookup.
+        :param pulumi.Input[str] id: The unique provider ID of the resource to lookup.
         :param pulumi.ResourceOptions opts: Options for the resource.
-        :param pulumi.Input[list] connection_events: One or more endpoint [events](https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_CreateVpcEndpointConnectionNotification.html#API_CreateVpcEndpointConnectionNotification_RequestParameters) for which to receive notifications.
+        :param pulumi.Input[Sequence[pulumi.Input[str]]] connection_events: One or more endpoint [events](https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_CreateVpcEndpointConnectionNotification.html#API_CreateVpcEndpointConnectionNotification_RequestParameters) for which to receive notifications.
         :param pulumi.Input[str] connection_notification_arn: The ARN of the SNS topic for the notifications.
         :param pulumi.Input[str] notification_type: The type of notification.
         :param pulumi.Input[str] state: The state of the notification.
@@ -138,8 +140,57 @@ class VpcEndpointConnectionNotification(pulumi.CustomResource):
         __props__["vpc_endpoint_service_id"] = vpc_endpoint_service_id
         return VpcEndpointConnectionNotification(resource_name, opts=opts, __props__=__props__)
 
+    @property
+    @pulumi.getter(name="connectionEvents")
+    def connection_events(self) -> pulumi.Output[Sequence[str]]:
+        """
+        One or more endpoint [events](https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_CreateVpcEndpointConnectionNotification.html#API_CreateVpcEndpointConnectionNotification_RequestParameters) for which to receive notifications.
+        """
+        return pulumi.get(self, "connection_events")
+
+    @property
+    @pulumi.getter(name="connectionNotificationArn")
+    def connection_notification_arn(self) -> pulumi.Output[str]:
+        """
+        The ARN of the SNS topic for the notifications.
+        """
+        return pulumi.get(self, "connection_notification_arn")
+
+    @property
+    @pulumi.getter(name="notificationType")
+    def notification_type(self) -> pulumi.Output[str]:
+        """
+        The type of notification.
+        """
+        return pulumi.get(self, "notification_type")
+
+    @property
+    @pulumi.getter
+    def state(self) -> pulumi.Output[str]:
+        """
+        The state of the notification.
+        """
+        return pulumi.get(self, "state")
+
+    @property
+    @pulumi.getter(name="vpcEndpointId")
+    def vpc_endpoint_id(self) -> pulumi.Output[Optional[str]]:
+        """
+        The ID of the VPC Endpoint to receive notifications for.
+        """
+        return pulumi.get(self, "vpc_endpoint_id")
+
+    @property
+    @pulumi.getter(name="vpcEndpointServiceId")
+    def vpc_endpoint_service_id(self) -> pulumi.Output[Optional[str]]:
+        """
+        The ID of the VPC Endpoint Service to receive notifications for.
+        """
+        return pulumi.get(self, "vpc_endpoint_service_id")
+
     def translate_output_property(self, prop):
-        return tables._CAMEL_TO_SNAKE_CASE_TABLE.get(prop) or prop
+        return _tables.CAMEL_TO_SNAKE_CASE_TABLE.get(prop) or prop
 
     def translate_input_property(self, prop):
-        return tables._SNAKE_TO_CAMEL_CASE_TABLE.get(prop) or prop
+        return _tables.SNAKE_TO_CAMEL_CASE_TABLE.get(prop) or prop
+

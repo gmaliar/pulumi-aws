@@ -34,23 +34,31 @@ namespace Pulumi.Aws.AutoScaling
     ///             {
     ///                 "us-east-1a",
     ///             },
-    ///             ForceDelete = true,
-    ///             HealthCheckGracePeriod = 300,
-    ///             HealthCheckType = "ELB",
-    ///             LaunchConfiguration = aws_launch_configuration.Foo.Name,
     ///             MaxSize = 5,
     ///             MinSize = 2,
+    ///             HealthCheckGracePeriod = 300,
+    ///             HealthCheckType = "ELB",
+    ///             ForceDelete = true,
+    ///             LaunchConfiguration = aws_launch_configuration.Foo.Name,
     ///         });
     ///         var bat = new Aws.AutoScaling.Policy("bat", new Aws.AutoScaling.PolicyArgs
     ///         {
-    ///             AdjustmentType = "ChangeInCapacity",
-    ///             AutoscalingGroupName = bar.Name,
-    ///             Cooldown = 300,
     ///             ScalingAdjustment = 4,
+    ///             AdjustmentType = "ChangeInCapacity",
+    ///             Cooldown = 300,
+    ///             AutoscalingGroupName = bar.Name,
     ///         });
     ///     }
     /// 
     /// }
+    /// ```
+    /// 
+    /// ## Import
+    /// 
+    /// AutoScaling scaling policy can be imported using the role autoscaling_group_name and name separated by `/`.
+    /// 
+    /// ```sh
+    ///  $ pulumi import aws:autoscaling/policy:Policy test-policy asg-name/policy-name
     /// ```
     /// </summary>
     public partial class Policy : Pulumi.CustomResource
@@ -91,6 +99,9 @@ namespace Pulumi.Aws.AutoScaling
         [Output("metricAggregationType")]
         public Output<string> MetricAggregationType { get; private set; } = null!;
 
+        /// <summary>
+        /// Minimum value to scale by when `adjustment_type` is set to `PercentChangeInCapacity`.
+        /// </summary>
         [Output("minAdjustmentMagnitude")]
         public Output<int?> MinAdjustmentMagnitude { get; private set; } = null!;
 
@@ -203,6 +214,9 @@ namespace Pulumi.Aws.AutoScaling
         [Input("metricAggregationType")]
         public Input<string>? MetricAggregationType { get; set; }
 
+        /// <summary>
+        /// Minimum value to scale by when `adjustment_type` is set to `PercentChangeInCapacity`.
+        /// </summary>
         [Input("minAdjustmentMagnitude")]
         public Input<int>? MinAdjustmentMagnitude { get; set; }
 
@@ -288,6 +302,9 @@ namespace Pulumi.Aws.AutoScaling
         [Input("metricAggregationType")]
         public Input<string>? MetricAggregationType { get; set; }
 
+        /// <summary>
+        /// Minimum value to scale by when `adjustment_type` is set to `PercentChangeInCapacity`.
+        /// </summary>
         [Input("minAdjustmentMagnitude")]
         public Input<int>? MinAdjustmentMagnitude { get; set; }
 

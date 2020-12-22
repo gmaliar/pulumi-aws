@@ -16,8 +16,8 @@ import * as utilities from "../utilities";
  *
  * const example = new aws.ec2transitgateway.Route("example", {
  *     destinationCidrBlock: "0.0.0.0/0",
- *     transitGatewayAttachmentId: aws_ec2_transit_gateway_vpc_attachment_example.id,
- *     transitGatewayRouteTableId: aws_ec2_transit_gateway_example.associationDefaultRouteTableId,
+ *     transitGatewayAttachmentId: aws_ec2_transit_gateway_vpc_attachment.example.id,
+ *     transitGatewayRouteTableId: aws_ec2_transit_gateway.example.association_default_route_table_id,
  * });
  * ```
  * ### Blackhole route
@@ -27,10 +27,18 @@ import * as utilities from "../utilities";
  * import * as aws from "@pulumi/aws";
  *
  * const example = new aws.ec2transitgateway.Route("example", {
- *     blackhole: true,
  *     destinationCidrBlock: "0.0.0.0/0",
- *     transitGatewayRouteTableId: aws_ec2_transit_gateway_example.associationDefaultRouteTableId,
+ *     blackhole: true,
+ *     transitGatewayRouteTableId: aws_ec2_transit_gateway.example.association_default_route_table_id,
  * });
+ * ```
+ *
+ * ## Import
+ *
+ * `aws_ec2_transit_gateway_route` can be imported by using the EC2 Transit Gateway Route Table, an underscore, and the destination, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:ec2transitgateway/route:Route example tgw-rtb-12345678_0.0.0.0/0
  * ```
  */
 export class Route extends pulumi.CustomResource {
@@ -66,7 +74,7 @@ export class Route extends pulumi.CustomResource {
      */
     public readonly blackhole!: pulumi.Output<boolean | undefined>;
     /**
-     * IPv4 CIDR range used for destination matches. Routing decisions are based on the most specific match.
+     * IPv4 or IPv6 RFC1924 CIDR used for destination matches. Routing decisions are based on the most specific match.
      */
     public readonly destinationCidrBlock!: pulumi.Output<string>;
     /**
@@ -96,10 +104,10 @@ export class Route extends pulumi.CustomResource {
             inputs["transitGatewayRouteTableId"] = state ? state.transitGatewayRouteTableId : undefined;
         } else {
             const args = argsOrState as RouteArgs | undefined;
-            if (!args || args.destinationCidrBlock === undefined) {
+            if ((!args || args.destinationCidrBlock === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'destinationCidrBlock'");
             }
-            if (!args || args.transitGatewayRouteTableId === undefined) {
+            if ((!args || args.transitGatewayRouteTableId === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'transitGatewayRouteTableId'");
             }
             inputs["blackhole"] = args ? args.blackhole : undefined;
@@ -127,7 +135,7 @@ export interface RouteState {
      */
     readonly blackhole?: pulumi.Input<boolean>;
     /**
-     * IPv4 CIDR range used for destination matches. Routing decisions are based on the most specific match.
+     * IPv4 or IPv6 RFC1924 CIDR used for destination matches. Routing decisions are based on the most specific match.
      */
     readonly destinationCidrBlock?: pulumi.Input<string>;
     /**
@@ -149,7 +157,7 @@ export interface RouteArgs {
      */
     readonly blackhole?: pulumi.Input<boolean>;
     /**
-     * IPv4 CIDR range used for destination matches. Routing decisions are based on the most specific match.
+     * IPv4 or IPv6 RFC1924 CIDR used for destination matches. Routing decisions are based on the most specific match.
      */
     readonly destinationCidrBlock: pulumi.Input<string>;
     /**

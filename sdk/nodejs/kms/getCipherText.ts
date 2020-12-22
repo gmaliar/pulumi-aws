@@ -2,8 +2,7 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 /**
@@ -18,7 +17,7 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const oauthConfig = new aws.kms.Key("oauth_config", {
+ * const oauthConfig = new aws.kms.Key("oauthConfig", {
  *     description: "oauth config",
  *     isEnabled: true,
  * });
@@ -29,7 +28,7 @@ import * as utilities from "../utilities";
  *   "client_secret": "8289575d00000ace55e1815ec13673955721b8a5"
  * }
  * `,
- * }, { async: true }));
+ * }));
  * ```
  */
 export function getCipherText(args: GetCipherTextArgs, opts?: pulumi.InvokeOptions): Promise<GetCipherTextResult> {

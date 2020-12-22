@@ -2,8 +2,7 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 /**
@@ -16,8 +15,7 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const example = new aws.iam.Role("example", {
- *     assumeRolePolicy: `{
+ * const example = new aws.iam.Role("example", {assumeRolePolicy: `{
  *   "Version": "2012-10-17",
  *   "Statement": [
  *     {
@@ -29,14 +27,15 @@ import * as utilities from "../utilities";
  *     }
  *   ]
  * }
- * `,
- * });
+ * `});
  * const example_AmazonEKSClusterPolicy = new aws.iam.RolePolicyAttachment("example-AmazonEKSClusterPolicy", {
  *     policyArn: "arn:aws:iam::aws:policy/AmazonEKSClusterPolicy",
  *     role: example.name,
  * });
- * const example_AmazonEKSServicePolicy = new aws.iam.RolePolicyAttachment("example-AmazonEKSServicePolicy", {
- *     policyArn: "arn:aws:iam::aws:policy/AmazonEKSServicePolicy",
+ * // Optionally, enable Security Groups for Pods
+ * // Reference: https://docs.aws.amazon.com/eks/latest/userguide/security-groups-for-pods.html
+ * const example_AmazonEKSVPCResourceController = new aws.iam.RolePolicyAttachment("example-AmazonEKSVPCResourceController", {
+ *     policyArn: "arn:aws:iam::aws:policy/AmazonEKSVPCResourceController",
  *     role: example.name,
  * });
  * ```
@@ -52,53 +51,24 @@ import * as utilities from "../utilities";
  *
  * const config = new pulumi.Config();
  * const clusterName = config.get("clusterName") || "example";
- *
- * const exampleLogGroup = new aws.cloudwatch.LogGroup("example", {
- *     retentionInDays: 7,
+ * const exampleLogGroup = new aws.cloudwatch.LogGroup("exampleLogGroup", {retentionInDays: 7});
+ * // ... potentially other configuration ...
+ * const exampleCluster = new aws.eks.Cluster("exampleCluster", {enabledClusterLogTypes: [
+ *     "api",
+ *     "audit",
+ * ]}, {
+ *     dependsOn: [exampleLogGroup],
  * });
- * const exampleCluster = new aws.eks.Cluster("example", {
- *     enabledClusterLogTypes: [
- *         "api",
- *         "audit",
- *     ],
- * }, { dependsOn: [exampleLogGroup] });
- * ```
- * ### Enabling IAM Roles for Service Accounts
- *
- * Only available on Kubernetes version 1.13 and 1.14 clusters created or upgraded on or after September 3, 2019. For more information about this feature, see the [EKS User Guide](https://docs.aws.amazon.com/eks/latest/userguide/enable-iam-roles-for-service-accounts.html).
- *
- * ```typescript
- * import * as pulumi from "@pulumi/pulumi";
- * import * as aws from "@pulumi/aws";
- *
- * const exampleCluster = new aws.eks.Cluster("example", {});
- * const exampleOpenIdConnectProvider = new aws.iam.OpenIdConnectProvider("example", {
- *     clientIdLists: ["sts.amazonaws.com"],
- *     thumbprintLists: [],
- *     url: exampleCluster.identities[0].oidcs[0].issuer,
- * });
- * const current = pulumi.output(aws.getCallerIdentity({ async: true }));
- * const exampleAssumeRolePolicy = pulumi.all([exampleOpenIdConnectProvider.url, exampleOpenIdConnectProvider.arn]).apply(([url, arn]) => aws.iam.getPolicyDocument({
- *     statements: [{
- *         actions: ["sts:AssumeRoleWithWebIdentity"],
- *         conditions: [{
- *             test: "StringEquals",
- *             values: ["system:serviceaccount:kube-system:aws-node"],
- *             variable: `${url.replace("https://", "")}:sub`,
- *         }],
- *         effect: "Allow",
- *         principals: [{
- *             identifiers: [arn],
- *             type: "Federated",
- *         }],
- *     }],
- * }, { async: true }));
- * const exampleRole = new aws.iam.Role("example", {
- *     assumeRolePolicy: exampleAssumeRolePolicy.json,
- * });
+ * // ... other configuration ...
  * ```
  *
- * After adding inline IAM Policies (e.g. `aws.iam.RolePolicy` resource) or attaching IAM Policies (e.g. `aws.iam.Policy` resource and `aws.iam.RolePolicyAttachment` resource) with the desired permissions to the IAM Role, annotate the Kubernetes service account (e.g. `kubernetesServiceAccount` resource) and recreate any pods.
+ * ## Import
+ *
+ * EKS Clusters can be imported using the `name`, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:eks/cluster:Cluster my_cluster my_cluster
+ * ```
  */
 export class Cluster extends pulumi.CustomResource {
     /**
@@ -153,6 +123,7 @@ export class Cluster extends pulumi.CustomResource {
      * Nested attribute containing identity provider information for your cluster. Only available on Kubernetes version 1.13 and 1.14 clusters created or upgraded on or after September 3, 2019.
      */
     public /*out*/ readonly identities!: pulumi.Output<outputs.eks.ClusterIdentity[]>;
+    public readonly kubernetesNetworkConfig!: pulumi.Output<outputs.eks.ClusterKubernetesNetworkConfig>;
     /**
      * Name of the cluster.
      */
@@ -201,6 +172,7 @@ export class Cluster extends pulumi.CustomResource {
             inputs["encryptionConfig"] = state ? state.encryptionConfig : undefined;
             inputs["endpoint"] = state ? state.endpoint : undefined;
             inputs["identities"] = state ? state.identities : undefined;
+            inputs["kubernetesNetworkConfig"] = state ? state.kubernetesNetworkConfig : undefined;
             inputs["name"] = state ? state.name : undefined;
             inputs["platformVersion"] = state ? state.platformVersion : undefined;
             inputs["roleArn"] = state ? state.roleArn : undefined;
@@ -210,14 +182,15 @@ export class Cluster extends pulumi.CustomResource {
             inputs["vpcConfig"] = state ? state.vpcConfig : undefined;
         } else {
             const args = argsOrState as ClusterArgs | undefined;
-            if (!args || args.roleArn === undefined) {
+            if ((!args || args.roleArn === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'roleArn'");
             }
-            if (!args || args.vpcConfig === undefined) {
+            if ((!args || args.vpcConfig === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'vpcConfig'");
             }
             inputs["enabledClusterLogTypes"] = args ? args.enabledClusterLogTypes : undefined;
             inputs["encryptionConfig"] = args ? args.encryptionConfig : undefined;
+            inputs["kubernetesNetworkConfig"] = args ? args.kubernetesNetworkConfig : undefined;
             inputs["name"] = args ? args.name : undefined;
             inputs["roleArn"] = args ? args.roleArn : undefined;
             inputs["tags"] = args ? args.tags : undefined;
@@ -271,6 +244,7 @@ export interface ClusterState {
      * Nested attribute containing identity provider information for your cluster. Only available on Kubernetes version 1.13 and 1.14 clusters created or upgraded on or after September 3, 2019.
      */
     readonly identities?: pulumi.Input<pulumi.Input<inputs.eks.ClusterIdentity>[]>;
+    readonly kubernetesNetworkConfig?: pulumi.Input<inputs.eks.ClusterKubernetesNetworkConfig>;
     /**
      * Name of the cluster.
      */
@@ -313,6 +287,7 @@ export interface ClusterArgs {
      * Configuration block with encryption configuration for the cluster. Only available on Kubernetes 1.13 and above clusters created after March 6, 2020. Detailed below.
      */
     readonly encryptionConfig?: pulumi.Input<inputs.eks.ClusterEncryptionConfig>;
+    readonly kubernetesNetworkConfig?: pulumi.Input<inputs.eks.ClusterKubernetesNetworkConfig>;
     /**
      * Name of the cluster.
      */

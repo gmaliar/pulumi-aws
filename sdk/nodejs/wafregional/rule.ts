@@ -2,8 +2,7 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 /**
@@ -15,18 +14,16 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const ipset = new aws.wafregional.IpSet("ipset", {
- *     ipSetDescriptors: [{
- *         type: "IPV4",
- *         value: "192.0.7.0/24",
- *     }],
- * });
+ * const ipset = new aws.wafregional.IpSet("ipset", {ipSetDescriptors: [{
+ *     type: "IPV4",
+ *     value: "192.0.7.0/24",
+ * }]});
  * const wafrule = new aws.wafregional.Rule("wafrule", {
  *     metricName: "tfWAFRule",
  *     predicates: [{
+ *         type: "IPMatch",
  *         dataId: ipset.id,
  *         negated: false,
- *         type: "IPMatch",
  *     }],
  * });
  * ```
@@ -41,6 +38,14 @@ import * as utilities from "../utilities";
  * * `type` - (Required) The type of predicate in a rule. Valid values: `ByteMatch`, `GeoMatch`, `IPMatch`, `RegexMatch`, `SizeConstraint`, `SqlInjectionMatch`, or `XssMatch`
  * * `dataId` - (Required) The unique identifier of a predicate, such as the ID of a `ByteMatchSet` or `IPSet`.
  * * `negated` - (Required) Whether to use the settings or the negated settings that you specified in the objects.
+ *
+ * ## Import
+ *
+ * WAF Regional Rule can be imported using the id, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:wafregional/rule:Rule wafrule a1b2c3d4-d5f6-7777-8888-9999aaaabbbbcccc
+ * ```
  */
 export class Rule extends pulumi.CustomResource {
     /**
@@ -110,7 +115,7 @@ export class Rule extends pulumi.CustomResource {
             inputs["tags"] = state ? state.tags : undefined;
         } else {
             const args = argsOrState as RuleArgs | undefined;
-            if (!args || args.metricName === undefined) {
+            if ((!args || args.metricName === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'metricName'");
             }
             inputs["metricName"] = args ? args.metricName : undefined;

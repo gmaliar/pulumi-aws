@@ -30,6 +30,14 @@ import * as utilities from "../utilities";
  *     version: 1,
  * });
  * ```
+ *
+ * ## Import
+ *
+ * XRay Sampling Rules can be imported using the name, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:xray/samplingRule:SamplingRule example example
+ * ```
  */
 export class SamplingRule extends pulumi.CustomResource {
     /**
@@ -104,6 +112,10 @@ export class SamplingRule extends pulumi.CustomResource {
      */
     public readonly serviceType!: pulumi.Output<string>;
     /**
+     * Key-value mapping of resource tags
+     */
+    public readonly tags!: pulumi.Output<{[key: string]: string} | undefined>;
+    /**
      * Matches the path from a request URL.
      */
     public readonly urlPath!: pulumi.Output<string>;
@@ -135,38 +147,39 @@ export class SamplingRule extends pulumi.CustomResource {
             inputs["ruleName"] = state ? state.ruleName : undefined;
             inputs["serviceName"] = state ? state.serviceName : undefined;
             inputs["serviceType"] = state ? state.serviceType : undefined;
+            inputs["tags"] = state ? state.tags : undefined;
             inputs["urlPath"] = state ? state.urlPath : undefined;
             inputs["version"] = state ? state.version : undefined;
         } else {
             const args = argsOrState as SamplingRuleArgs | undefined;
-            if (!args || args.fixedRate === undefined) {
+            if ((!args || args.fixedRate === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'fixedRate'");
             }
-            if (!args || args.host === undefined) {
+            if ((!args || args.host === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'host'");
             }
-            if (!args || args.httpMethod === undefined) {
+            if ((!args || args.httpMethod === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'httpMethod'");
             }
-            if (!args || args.priority === undefined) {
+            if ((!args || args.priority === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'priority'");
             }
-            if (!args || args.reservoirSize === undefined) {
+            if ((!args || args.reservoirSize === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'reservoirSize'");
             }
-            if (!args || args.resourceArn === undefined) {
+            if ((!args || args.resourceArn === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'resourceArn'");
             }
-            if (!args || args.serviceName === undefined) {
+            if ((!args || args.serviceName === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'serviceName'");
             }
-            if (!args || args.serviceType === undefined) {
+            if ((!args || args.serviceType === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'serviceType'");
             }
-            if (!args || args.urlPath === undefined) {
+            if ((!args || args.urlPath === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'urlPath'");
             }
-            if (!args || args.version === undefined) {
+            if ((!args || args.version === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'version'");
             }
             inputs["attributes"] = args ? args.attributes : undefined;
@@ -179,6 +192,7 @@ export class SamplingRule extends pulumi.CustomResource {
             inputs["ruleName"] = args ? args.ruleName : undefined;
             inputs["serviceName"] = args ? args.serviceName : undefined;
             inputs["serviceType"] = args ? args.serviceType : undefined;
+            inputs["tags"] = args ? args.tags : undefined;
             inputs["urlPath"] = args ? args.urlPath : undefined;
             inputs["version"] = args ? args.version : undefined;
             inputs["arn"] = undefined /*out*/;
@@ -243,6 +257,10 @@ export interface SamplingRuleState {
      */
     readonly serviceType?: pulumi.Input<string>;
     /**
+     * Key-value mapping of resource tags
+     */
+    readonly tags?: pulumi.Input<{[key: string]: pulumi.Input<string>}>;
+    /**
      * Matches the path from a request URL.
      */
     readonly urlPath?: pulumi.Input<string>;
@@ -296,6 +314,10 @@ export interface SamplingRuleArgs {
      * Matches the `origin` that the service uses to identify its type in segments.
      */
     readonly serviceType: pulumi.Input<string>;
+    /**
+     * Key-value mapping of resource tags
+     */
+    readonly tags?: pulumi.Input<{[key: string]: pulumi.Input<string>}>;
     /**
      * Matches the path from a request URL.
      */

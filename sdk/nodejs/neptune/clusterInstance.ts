@@ -18,24 +18,32 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const defaultCluster = new aws.neptune.Cluster("default", {
- *     applyImmediately: true,
- *     backupRetentionPeriod: 5,
+ * const _default = new aws.neptune.Cluster("default", {
  *     clusterIdentifier: "neptune-cluster-demo",
  *     engine: "neptune",
- *     iamDatabaseAuthenticationEnabled: true,
+ *     backupRetentionPeriod: 5,
  *     preferredBackupWindow: "07:00-09:00",
  *     skipFinalSnapshot: true,
+ *     iamDatabaseAuthenticationEnabled: true,
+ *     applyImmediately: true,
  * });
- * const example: aws.neptune.ClusterInstance[] = [];
- * for (let i = 0; i < 2; i++) {
- *     example.push(new aws.neptune.ClusterInstance(`example-${i}`, {
- *         applyImmediately: true,
- *         clusterIdentifier: defaultCluster.id,
+ * const example: aws.neptune.ClusterInstance[];
+ * for (const range = {value: 0}; range.value < 2; range.value++) {
+ *     example.push(new aws.neptune.ClusterInstance(`example-${range.value}`, {
+ *         clusterIdentifier: _default.id,
  *         engine: "neptune",
  *         instanceClass: "db.r4.large",
+ *         applyImmediately: true,
  *     }));
  * }
+ * ```
+ *
+ * ## Import
+ *
+ * `aws_neptune_cluster_instance` can be imported by using the instance identifier, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:neptune/clusterInstance:ClusterInstance example my-instance
  * ```
  */
 export class ClusterInstance extends pulumi.CustomResource {
@@ -108,7 +116,7 @@ export class ClusterInstance extends pulumi.CustomResource {
      */
     public readonly engineVersion!: pulumi.Output<string>;
     /**
-     * The indentifier for the neptune instance, if omitted, this provider will assign a random, unique identifier.
+     * The identifier for the neptune instance, if omitted, this provider will assign a random, unique identifier.
      */
     public readonly identifier!: pulumi.Output<string>;
     /**
@@ -203,10 +211,10 @@ export class ClusterInstance extends pulumi.CustomResource {
             inputs["writer"] = state ? state.writer : undefined;
         } else {
             const args = argsOrState as ClusterInstanceArgs | undefined;
-            if (!args || args.clusterIdentifier === undefined) {
+            if ((!args || args.clusterIdentifier === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'clusterIdentifier'");
             }
-            if (!args || args.instanceClass === undefined) {
+            if ((!args || args.instanceClass === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'instanceClass'");
             }
             inputs["applyImmediately"] = args ? args.applyImmediately : undefined;
@@ -291,7 +299,7 @@ export interface ClusterInstanceState {
      */
     readonly engineVersion?: pulumi.Input<string>;
     /**
-     * The indentifier for the neptune instance, if omitted, this provider will assign a random, unique identifier.
+     * The identifier for the neptune instance, if omitted, this provider will assign a random, unique identifier.
      */
     readonly identifier?: pulumi.Input<string>;
     /**
@@ -379,7 +387,7 @@ export interface ClusterInstanceArgs {
      */
     readonly engineVersion?: pulumi.Input<string>;
     /**
-     * The indentifier for the neptune instance, if omitted, this provider will assign a random, unique identifier.
+     * The identifier for the neptune instance, if omitted, this provider will assign a random, unique identifier.
      */
     readonly identifier?: pulumi.Input<string>;
     /**

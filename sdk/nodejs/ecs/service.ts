@@ -2,8 +2,7 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 /**
@@ -38,7 +37,7 @@ import * as utilities from "../utilities";
  *         expression: "attribute:ecs.availability-zone in [us-west-2a, us-west-2b]",
  *     }],
  * }, {
- *     dependsOn: ["aws_iam_role_policy.foo"],
+ *     dependsOn: [aws_iam_role_policy.foo],
  * });
  * ```
  * ### Ignoring Changes to Desired Count
@@ -49,10 +48,8 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const example = new aws.ecs.Service("example", {
- *     // Example: Create service with 2 instances to start
- *     desiredCount: 2,
- * }, { ignoreChanges: ["desiredCount"] });
+ * // ... other configurations ...
+ * const example = new aws.ecs.Service("example", {desiredCount: 2});
  * ```
  * ### Daemon Scheduling Strategy
  *
@@ -61,9 +58,9 @@ import * as utilities from "../utilities";
  * import * as aws from "@pulumi/aws";
  *
  * const bar = new aws.ecs.Service("bar", {
- *     cluster: aws_ecs_cluster_foo.id,
+ *     cluster: aws_ecs_cluster.foo.id,
+ *     taskDefinition: aws_ecs_task_definition.bar.arn,
  *     schedulingStrategy: "DAEMON",
- *     taskDefinition: aws_ecs_task_definition_bar.arn,
  * });
  * ```
  * ### External Deployment Controller
@@ -73,11 +70,19 @@ import * as utilities from "../utilities";
  * import * as aws from "@pulumi/aws";
  *
  * const example = new aws.ecs.Service("example", {
- *     cluster: aws_ecs_cluster_example.id,
+ *     cluster: aws_ecs_cluster.example.id,
  *     deploymentController: {
  *         type: "EXTERNAL",
  *     },
  * });
+ * ```
+ *
+ * ## Import
+ *
+ * ECS services can be imported using the `name` together with ecs cluster `name`, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:ecs/service:Service imported cluster-name/service-name
  * ```
  */
 export class Service extends pulumi.CustomResource {

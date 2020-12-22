@@ -2,8 +2,7 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "./types/input";
-import * as outputs from "./types/output";
+import { input as inputs, output as outputs, enums } from "./types";
 import * as utilities from "./utilities";
 
 /**
@@ -21,24 +20,22 @@ import * as utilities from "./utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const privateS3VpcEndpoint = new aws.ec2.VpcEndpoint("private_s3", {
+ * const privateS3VpcEndpoint = new aws.ec2.VpcEndpoint("privateS3VpcEndpoint", {
+ *     vpcId: aws_vpc.foo.id,
  *     serviceName: "com.amazonaws.us-west-2.s3",
- *     vpcId: aws_vpc_foo.id,
  * });
  * const privateS3PrefixList = privateS3VpcEndpoint.prefixListId.apply(prefixListId => aws.getPrefixList({
  *     prefixListId: prefixListId,
- * }, { async: true }));
- * const bar = new aws.ec2.NetworkAcl("bar", {
- *     vpcId: aws_vpc_foo.id,
- * });
- * const privateS3NetworkAclRule = new aws.ec2.NetworkAclRule("private_s3", {
- *     cidrBlock: privateS3PrefixList.apply(privateS3PrefixList => privateS3PrefixList.cidrBlocks[0]),
- *     egress: false,
- *     fromPort: 443,
+ * }));
+ * const bar = new aws.ec2.NetworkAcl("bar", {vpcId: aws_vpc.foo.id});
+ * const privateS3NetworkAclRule = new aws.ec2.NetworkAclRule("privateS3NetworkAclRule", {
  *     networkAclId: bar.id,
+ *     ruleNumber: 200,
+ *     egress: false,
  *     protocol: "tcp",
  *     ruleAction: "allow",
- *     ruleNumber: 200,
+ *     cidrBlock: privateS3PrefixList.cidrBlocks[0],
+ *     fromPort: 443,
  *     toPort: 443,
  * });
  * ```

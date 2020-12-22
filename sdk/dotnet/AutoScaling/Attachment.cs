@@ -10,14 +10,15 @@ using Pulumi.Serialization;
 namespace Pulumi.Aws.AutoScaling
 {
     /// <summary>
-    /// Provides an AutoScaling Attachment resource.
+    /// Provides an Auto Scaling Attachment resource.
     /// 
-    /// &gt; **NOTE on AutoScaling Groups and ASG Attachments:** This provider currently provides
-    /// both a standalone ASG Attachment resource (describing an ASG attached to
-    /// an ELB), and an AutoScaling Group resource with
-    /// `load_balancers` defined in-line. At this time you cannot use an ASG with in-line
-    /// load balancers in conjunction with an ASG Attachment resource. Doing so will cause a
-    /// conflict and will overwrite attachments.
+    /// &gt; **NOTE on Auto Scaling Groups and ASG Attachments:** This provider currently provides
+    /// both a standalone `aws.autoscaling.Attachment` resource
+    /// (describing an ASG attached to an ELB or ALB), and an `aws.autoscaling.Group`
+    /// with `load_balancers` and `target_group_arns` defined in-line. These two methods are not
+    /// mutually-exclusive. If `aws.autoscaling.Attachment` resources are used, either alone or with inline
+    /// `load_balancers` or `target_group_arns`, the `aws.autoscaling.Group` resource must be configured
+    /// to [ignore changes](https://www.pulumi.com/docs/intro/concepts/programming-model/#ignorechanges) to the `load_balancers` and `target_group_arns` arguments.
     /// 
     /// ## Example Usage
     /// 
@@ -51,8 +52,31 @@ namespace Pulumi.Aws.AutoScaling
     ///         // Create a new ALB Target Group attachment
     ///         var asgAttachmentBar = new Aws.AutoScaling.Attachment("asgAttachmentBar", new Aws.AutoScaling.AttachmentArgs
     ///         {
-    ///             AlbTargetGroupArn = aws_alb_target_group.Test.Arn,
     ///             AutoscalingGroupName = aws_autoscaling_group.Asg.Id,
+    ///             AlbTargetGroupArn = aws_alb_target_group.Test.Arn,
+    ///         });
+    ///     }
+    /// 
+    /// }
+    /// ```
+    /// ## With An AutoScaling Group Resource
+    /// 
+    /// ```csharp
+    /// using Pulumi;
+    /// using Aws = Pulumi.Aws;
+    /// 
+    /// class MyStack : Stack
+    /// {
+    ///     public MyStack()
+    ///     {
+    ///         // ... other configuration ...
+    ///         var asg = new Aws.AutoScaling.Group("asg", new Aws.AutoScaling.GroupArgs
+    ///         {
+    ///         });
+    ///         var asgAttachmentBar = new Aws.AutoScaling.Attachment("asgAttachmentBar", new Aws.AutoScaling.AttachmentArgs
+    ///         {
+    ///             AutoscalingGroupName = asg.Id,
+    ///             Elb = aws_elb.Test.Id,
     ///         });
     ///     }
     /// 

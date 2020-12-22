@@ -17,19 +17,32 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const examplePermission = new aws.lambda.Permission("example", {
+ * const examplePermission = new aws.lambda.Permission("examplePermission", {
  *     action: "lambda:InvokeFunction",
- *     function: aws_lambda_function_example.arn,
+ *     "function": aws_lambda_function.example.arn,
  *     principal: "config.amazonaws.com",
  * });
- * const exampleOrganization = new aws.organizations.Organization("example", {
+ * const exampleOrganization = new aws.organizations.Organization("exampleOrganization", {
  *     awsServiceAccessPrincipals: ["config-multiaccountsetup.amazonaws.com"],
  *     featureSet: "ALL",
  * });
- * const exampleOrganizationCustomRule = new aws.cfg.OrganizationCustomRule("example", {
- *     lambdaFunctionArn: aws_lambda_function_example.arn,
+ * const exampleOrganizationCustomRule = new aws.cfg.OrganizationCustomRule("exampleOrganizationCustomRule", {
+ *     lambdaFunctionArn: aws_lambda_function.example.arn,
  *     triggerTypes: ["ConfigurationItemChangeNotification"],
- * }, { dependsOn: [examplePermission, exampleOrganization] });
+ * }, {
+ *     dependsOn: [
+ *         examplePermission,
+ *         exampleOrganization,
+ *     ],
+ * });
+ * ```
+ *
+ * ## Import
+ *
+ * Config Organization Custom Rules can be imported using the name, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:cfg/organizationCustomRule:OrganizationCustomRule example example
  * ```
  */
 export class OrganizationCustomRule extends pulumi.CustomResource {
@@ -135,10 +148,10 @@ export class OrganizationCustomRule extends pulumi.CustomResource {
             inputs["triggerTypes"] = state ? state.triggerTypes : undefined;
         } else {
             const args = argsOrState as OrganizationCustomRuleArgs | undefined;
-            if (!args || args.lambdaFunctionArn === undefined) {
+            if ((!args || args.lambdaFunctionArn === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'lambdaFunctionArn'");
             }
-            if (!args || args.triggerTypes === undefined) {
+            if ((!args || args.triggerTypes === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'triggerTypes'");
             }
             inputs["description"] = args ? args.description : undefined;

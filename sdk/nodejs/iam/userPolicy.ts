@@ -15,10 +15,9 @@ import {PolicyDocument} from "./index";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const lbUser = new aws.iam.User("lb", {
- *     path: "/system/",
- * });
- * const lbRo = new aws.iam.UserPolicy("lb_ro", {
+ * const lbUser = new aws.iam.User("lbUser", {path: "/system/"});
+ * const lbRo = new aws.iam.UserPolicy("lbRo", {
+ *     user: lbUser.name,
  *     policy: `{
  *   "Version": "2012-10-17",
  *   "Statement": [
@@ -32,11 +31,16 @@ import {PolicyDocument} from "./index";
  *   ]
  * }
  * `,
- *     user: lbUser.name,
  * });
- * const lbAccessKey = new aws.iam.AccessKey("lb", {
- *     user: lbUser.name,
- * });
+ * const lbAccessKey = new aws.iam.AccessKey("lbAccessKey", {user: lbUser.name});
+ * ```
+ *
+ * ## Import
+ *
+ * IAM User Policies can be imported using the `user_name:user_policy_name`, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:iam/userPolicy:UserPolicy mypolicy user_of_mypolicy_name:mypolicy_name
  * ```
  */
 export class UserPolicy extends pulumi.CustomResource {
@@ -102,10 +106,10 @@ export class UserPolicy extends pulumi.CustomResource {
             inputs["user"] = state ? state.user : undefined;
         } else {
             const args = argsOrState as UserPolicyArgs | undefined;
-            if (!args || args.policy === undefined) {
+            if ((!args || args.policy === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'policy'");
             }
-            if (!args || args.user === undefined) {
+            if ((!args || args.user === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'user'");
             }
             inputs["name"] = args ? args.name : undefined;

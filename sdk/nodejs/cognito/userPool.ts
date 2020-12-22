@@ -2,8 +2,7 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 /**
@@ -37,6 +36,35 @@ import * as utilities from "../utilities";
  *     },
  * });
  * ```
+ * ### Using Account Recovery Setting
+ *
+ * ```typescript
+ * import * as pulumi from "@pulumi/pulumi";
+ * import * as aws from "@pulumi/aws";
+ *
+ * const test = new aws.cognito.UserPool("test", {
+ *     accountRecoverySetting: {
+ *         recoveryMechanisms: [
+ *             {
+ *                 name: "verified_email",
+ *                 priority: 1,
+ *             },
+ *             {
+ *                 name: "verified_phone_number",
+ *                 priority: 2,
+ *             },
+ *         ],
+ *     },
+ * });
+ * ```
+ *
+ * ## Import
+ *
+ * Cognito User Pools can be imported using the `id`, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:cognito/userPool:UserPool pool <id>
+ * ```
  */
 export class UserPool extends pulumi.CustomResource {
     /**
@@ -66,6 +94,10 @@ export class UserPool extends pulumi.CustomResource {
         return obj['__pulumiType'] === UserPool.__pulumiType;
     }
 
+    /**
+     * The accountRecoverySetting configuration.
+     */
+    public readonly accountRecoverySetting!: pulumi.Output<outputs.cognito.UserPoolAccountRecoverySetting | undefined>;
     /**
      * The configuration for AdminCreateUser requests.
      */
@@ -119,7 +151,7 @@ export class UserPool extends pulumi.CustomResource {
      */
     public readonly mfaConfiguration!: pulumi.Output<string | undefined>;
     /**
-     * The name of the attribute.
+     * Specifies the recovery method for a user. Can be of the following: `verifiedEmail`, `verifiedPhoneNumber`, and `adminOnly`.
      */
     public readonly name!: pulumi.Output<string>;
     /**
@@ -179,6 +211,7 @@ export class UserPool extends pulumi.CustomResource {
         let inputs: pulumi.Inputs = {};
         if (opts && opts.id) {
             const state = argsOrState as UserPoolState | undefined;
+            inputs["accountRecoverySetting"] = state ? state.accountRecoverySetting : undefined;
             inputs["adminCreateUserConfig"] = state ? state.adminCreateUserConfig : undefined;
             inputs["aliasAttributes"] = state ? state.aliasAttributes : undefined;
             inputs["arn"] = state ? state.arn : undefined;
@@ -206,6 +239,7 @@ export class UserPool extends pulumi.CustomResource {
             inputs["verificationMessageTemplate"] = state ? state.verificationMessageTemplate : undefined;
         } else {
             const args = argsOrState as UserPoolArgs | undefined;
+            inputs["accountRecoverySetting"] = args ? args.accountRecoverySetting : undefined;
             inputs["adminCreateUserConfig"] = args ? args.adminCreateUserConfig : undefined;
             inputs["aliasAttributes"] = args ? args.aliasAttributes : undefined;
             inputs["autoVerifiedAttributes"] = args ? args.autoVerifiedAttributes : undefined;
@@ -247,6 +281,10 @@ export class UserPool extends pulumi.CustomResource {
  * Input properties used for looking up and filtering UserPool resources.
  */
 export interface UserPoolState {
+    /**
+     * The accountRecoverySetting configuration.
+     */
+    readonly accountRecoverySetting?: pulumi.Input<inputs.cognito.UserPoolAccountRecoverySetting>;
     /**
      * The configuration for AdminCreateUser requests.
      */
@@ -300,7 +338,7 @@ export interface UserPoolState {
      */
     readonly mfaConfiguration?: pulumi.Input<string>;
     /**
-     * The name of the attribute.
+     * Specifies the recovery method for a user. Can be of the following: `verifiedEmail`, `verifiedPhoneNumber`, and `adminOnly`.
      */
     readonly name?: pulumi.Input<string>;
     /**
@@ -354,6 +392,10 @@ export interface UserPoolState {
  */
 export interface UserPoolArgs {
     /**
+     * The accountRecoverySetting configuration.
+     */
+    readonly accountRecoverySetting?: pulumi.Input<inputs.cognito.UserPoolAccountRecoverySetting>;
+    /**
      * The configuration for AdminCreateUser requests.
      */
     readonly adminCreateUserConfig?: pulumi.Input<inputs.cognito.UserPoolAdminCreateUserConfig>;
@@ -390,7 +432,7 @@ export interface UserPoolArgs {
      */
     readonly mfaConfiguration?: pulumi.Input<string>;
     /**
-     * The name of the attribute.
+     * Specifies the recovery method for a user. Can be of the following: `verifiedEmail`, `verifiedPhoneNumber`, and `adminOnly`.
      */
     readonly name?: pulumi.Input<string>;
     /**

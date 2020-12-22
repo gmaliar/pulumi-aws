@@ -2,8 +2,7 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 /**
@@ -59,8 +58,23 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * // ...
- * const myEndpoint = new aws.ec2.VpcEndpoint("my_endpoint", {});
+ * const myEndpoint = new aws.ec2.VpcEndpoint("myEndpoint", {});
+ * // ... other configuration ...
+ * // ... other configuration ...
+ * const example = new aws.ec2.SecurityGroup("example", {egress: [{
+ *     fromPort: 0,
+ *     toPort: 0,
+ *     protocol: "-1",
+ *     prefixListIds: [myEndpoint.prefixListId],
+ * }]});
+ * ```
+ *
+ * ## Import
+ *
+ * Security Groups can be imported using the `security group id`, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:ec2/securityGroup:SecurityGroup elb_sg sg-903004f8
  * ```
  */
 export class SecurityGroup extends pulumi.CustomResource {

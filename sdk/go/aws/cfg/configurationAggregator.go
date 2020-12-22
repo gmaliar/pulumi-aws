@@ -4,6 +4,7 @@
 package cfg
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
@@ -18,7 +19,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/cfg"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/cfg"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -49,15 +50,22 @@ import (
 // import (
 // 	"fmt"
 //
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/cfg"
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/iam"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/cfg"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/iam"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
 // func main() {
 // 	pulumi.Run(func(ctx *pulumi.Context) error {
 // 		organizationRole, err := iam.NewRole(ctx, "organizationRole", &iam.RoleArgs{
-// 			AssumeRolePolicy: pulumi.String(fmt.Sprintf("%v%v%v%v%v%v%v%v%v%v%v%v%v%v", "{\n", "  \"Version\": \"2012-10-17\",\n", "  \"Statement\": [\n", "    {\n", "      \"Sid\": \"\",\n", "      \"Effect\": \"Allow\",\n", "      \"Principal\": {\n", "        \"Service\": \"config.amazonaws.com\"\n", "      },\n", "      \"Action\": \"sts:AssumeRole\"\n", "    }\n", "  ]\n", "}\n", "\n")),
+// 			AssumeRolePolicy: pulumi.String(fmt.Sprintf("%v%v%v%v%v%v%v%v%v%v%v%v%v", "{\n", "  \"Version\": \"2012-10-17\",\n", "  \"Statement\": [\n", "    {\n", "      \"Sid\": \"\",\n", "      \"Effect\": \"Allow\",\n", "      \"Principal\": {\n", "        \"Service\": \"config.amazonaws.com\"\n", "      },\n", "      \"Action\": \"sts:AssumeRole\"\n", "    }\n", "  ]\n", "}\n")),
+// 		})
+// 		if err != nil {
+// 			return err
+// 		}
+// 		organizationRolePolicyAttachment, err := iam.NewRolePolicyAttachment(ctx, "organizationRolePolicyAttachment", &iam.RolePolicyAttachmentArgs{
+// 			Role:      organizationRole.Name,
+// 			PolicyArn: pulumi.String("arn:aws:iam::aws:policy/service-role/AWSConfigRoleForOrganizations"),
 // 		})
 // 		if err != nil {
 // 			return err
@@ -68,21 +76,22 @@ import (
 // 				RoleArn:    organizationRole.Arn,
 // 			},
 // 		}, pulumi.DependsOn([]pulumi.Resource{
-// 			"aws_iam_role_policy_attachment.organization",
+// 			organizationRolePolicyAttachment,
 // 		}))
-// 		if err != nil {
-// 			return err
-// 		}
-// 		_, err = iam.NewRolePolicyAttachment(ctx, "organizationRolePolicyAttachment", &iam.RolePolicyAttachmentArgs{
-// 			PolicyArn: pulumi.String("arn:aws:iam::aws:policy/service-role/AWSConfigRoleForOrganizations"),
-// 			Role:      organizationRole.Name,
-// 		})
 // 		if err != nil {
 // 			return err
 // 		}
 // 		return nil
 // 	})
 // }
+// ```
+//
+// ## Import
+//
+// Configuration Aggregators can be imported using the name, e.g.
+//
+// ```sh
+//  $ pulumi import aws:cfg/configurationAggregator:ConfigurationAggregator example foo
 // ```
 type ConfigurationAggregator struct {
 	pulumi.CustomResourceState
@@ -105,6 +114,7 @@ func NewConfigurationAggregator(ctx *pulumi.Context,
 	if args == nil {
 		args = &ConfigurationAggregatorArgs{}
 	}
+
 	var resource ConfigurationAggregator
 	err := ctx.RegisterResource("aws:cfg/configurationAggregator:ConfigurationAggregator", name, args, &resource, opts...)
 	if err != nil {
@@ -181,4 +191,43 @@ type ConfigurationAggregatorArgs struct {
 
 func (ConfigurationAggregatorArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*configurationAggregatorArgs)(nil)).Elem()
+}
+
+type ConfigurationAggregatorInput interface {
+	pulumi.Input
+
+	ToConfigurationAggregatorOutput() ConfigurationAggregatorOutput
+	ToConfigurationAggregatorOutputWithContext(ctx context.Context) ConfigurationAggregatorOutput
+}
+
+func (ConfigurationAggregator) ElementType() reflect.Type {
+	return reflect.TypeOf((*ConfigurationAggregator)(nil)).Elem()
+}
+
+func (i ConfigurationAggregator) ToConfigurationAggregatorOutput() ConfigurationAggregatorOutput {
+	return i.ToConfigurationAggregatorOutputWithContext(context.Background())
+}
+
+func (i ConfigurationAggregator) ToConfigurationAggregatorOutputWithContext(ctx context.Context) ConfigurationAggregatorOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(ConfigurationAggregatorOutput)
+}
+
+type ConfigurationAggregatorOutput struct {
+	*pulumi.OutputState
+}
+
+func (ConfigurationAggregatorOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*ConfigurationAggregatorOutput)(nil)).Elem()
+}
+
+func (o ConfigurationAggregatorOutput) ToConfigurationAggregatorOutput() ConfigurationAggregatorOutput {
+	return o
+}
+
+func (o ConfigurationAggregatorOutput) ToConfigurationAggregatorOutputWithContext(ctx context.Context) ConfigurationAggregatorOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(ConfigurationAggregatorOutput{})
 }

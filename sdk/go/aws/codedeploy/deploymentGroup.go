@@ -4,6 +4,7 @@
 package codedeploy
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -22,16 +23,16 @@ import (
 // import (
 // 	"fmt"
 //
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/codedeploy"
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/iam"
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/sns"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/codedeploy"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/iam"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/sns"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
 // func main() {
 // 	pulumi.Run(func(ctx *pulumi.Context) error {
 // 		exampleRole, err := iam.NewRole(ctx, "exampleRole", &iam.RoleArgs{
-// 			AssumeRolePolicy: pulumi.String(fmt.Sprintf("%v%v%v%v%v%v%v%v%v%v%v%v%v%v", "{\n", "  \"Version\": \"2012-10-17\",\n", "  \"Statement\": [\n", "    {\n", "      \"Sid\": \"\",\n", "      \"Effect\": \"Allow\",\n", "      \"Principal\": {\n", "        \"Service\": \"codedeploy.amazonaws.com\"\n", "      },\n", "      \"Action\": \"sts:AssumeRole\"\n", "    }\n", "  ]\n", "}\n", "\n")),
+// 			AssumeRolePolicy: pulumi.String(fmt.Sprintf("%v%v%v%v%v%v%v%v%v%v%v%v%v", "{\n", "  \"Version\": \"2012-10-17\",\n", "  \"Statement\": [\n", "    {\n", "      \"Sid\": \"\",\n", "      \"Effect\": \"Allow\",\n", "      \"Principal\": {\n", "        \"Service\": \"codedeploy.amazonaws.com\"\n", "      },\n", "      \"Action\": \"sts:AssumeRole\"\n", "    }\n", "  ]\n", "}\n")),
 // 		})
 // 		if err != nil {
 // 			return err
@@ -52,20 +53,9 @@ import (
 // 			return err
 // 		}
 // 		_, err = codedeploy.NewDeploymentGroup(ctx, "exampleDeploymentGroup", &codedeploy.DeploymentGroupArgs{
-// 			AlarmConfiguration: &codedeploy.DeploymentGroupAlarmConfigurationArgs{
-// 				Alarms: pulumi.StringArray{
-// 					pulumi.String("my-alarm-name"),
-// 				},
-// 				Enabled: pulumi.Bool(true),
-// 			},
-// 			AppName: exampleApplication.Name,
-// 			AutoRollbackConfiguration: &codedeploy.DeploymentGroupAutoRollbackConfigurationArgs{
-// 				Enabled: pulumi.Bool(true),
-// 				Events: pulumi.StringArray{
-// 					pulumi.String("DEPLOYMENT_FAILURE"),
-// 				},
-// 			},
+// 			AppName:             exampleApplication.Name,
 // 			DeploymentGroupName: pulumi.String("example-group"),
+// 			ServiceRoleArn:      exampleRole.Arn,
 // 			Ec2TagSets: codedeploy.DeploymentGroupEc2TagSetArray{
 // 				&codedeploy.DeploymentGroupEc2TagSetArgs{
 // 					Ec2TagFilters: codedeploy.DeploymentGroupEc2TagSetEc2TagFilterArray{
@@ -82,7 +72,6 @@ import (
 // 					},
 // 				},
 // 			},
-// 			ServiceRoleArn: exampleRole.Arn,
 // 			TriggerConfigurations: codedeploy.DeploymentGroupTriggerConfigurationArray{
 // 				&codedeploy.DeploymentGroupTriggerConfigurationArgs{
 // 					TriggerEvents: pulumi.StringArray{
@@ -91,6 +80,18 @@ import (
 // 					TriggerName:      pulumi.String("example-trigger"),
 // 					TriggerTargetArn: exampleTopic.Arn,
 // 				},
+// 			},
+// 			AutoRollbackConfiguration: &codedeploy.DeploymentGroupAutoRollbackConfigurationArgs{
+// 				Enabled: pulumi.Bool(true),
+// 				Events: pulumi.StringArray{
+// 					pulumi.String("DEPLOYMENT_FAILURE"),
+// 				},
+// 			},
+// 			AlarmConfiguration: &codedeploy.DeploymentGroupAlarmConfigurationArgs{
+// 				Alarms: pulumi.StringArray{
+// 					pulumi.String("my-alarm-name"),
+// 				},
+// 				Enabled: pulumi.Bool(true),
 // 			},
 // 		})
 // 		if err != nil {
@@ -106,7 +107,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/codedeploy"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/codedeploy"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -117,7 +118,20 @@ import (
 // 			return err
 // 		}
 // 		_, err = codedeploy.NewDeploymentGroup(ctx, "exampleDeploymentGroup", &codedeploy.DeploymentGroupArgs{
-// 			AppName: exampleApplication.Name,
+// 			AppName:             exampleApplication.Name,
+// 			DeploymentGroupName: pulumi.String("example-group"),
+// 			ServiceRoleArn:      pulumi.Any(aws_iam_role.Example.Arn),
+// 			DeploymentStyle: &codedeploy.DeploymentGroupDeploymentStyleArgs{
+// 				DeploymentOption: pulumi.String("WITH_TRAFFIC_CONTROL"),
+// 				DeploymentType:   pulumi.String("BLUE_GREEN"),
+// 			},
+// 			LoadBalancerInfo: &codedeploy.DeploymentGroupLoadBalancerInfoArgs{
+// 				ElbInfos: codedeploy.DeploymentGroupLoadBalancerInfoElbInfoArray{
+// 					&codedeploy.DeploymentGroupLoadBalancerInfoElbInfoArgs{
+// 						Name: pulumi.Any(aws_elb.Example.Name),
+// 					},
+// 				},
+// 			},
 // 			BlueGreenDeploymentConfig: &codedeploy.DeploymentGroupBlueGreenDeploymentConfigArgs{
 // 				DeploymentReadyOption: &codedeploy.DeploymentGroupBlueGreenDeploymentConfigDeploymentReadyOptionArgs{
 // 					ActionOnTimeout:   pulumi.String("STOP_DEPLOYMENT"),
@@ -130,19 +144,6 @@ import (
 // 					Action: pulumi.String("KEEP_ALIVE"),
 // 				},
 // 			},
-// 			DeploymentGroupName: pulumi.String("example-group"),
-// 			DeploymentStyle: &codedeploy.DeploymentGroupDeploymentStyleArgs{
-// 				DeploymentOption: pulumi.String("WITH_TRAFFIC_CONTROL"),
-// 				DeploymentType:   pulumi.String("BLUE_GREEN"),
-// 			},
-// 			LoadBalancerInfo: &codedeploy.DeploymentGroupLoadBalancerInfoArgs{
-// 				ElbInfos: codedeploy.DeploymentGroupLoadBalancerInfoElbInfoArray{
-// 					&codedeploy.DeploymentGroupLoadBalancerInfoElbInfoArgs{
-// 						Name: pulumi.String(aws_elb.Example.Name),
-// 					},
-// 				},
-// 			},
-// 			ServiceRoleArn: pulumi.String(aws_iam_role.Example.Arn),
 // 		})
 // 		if err != nil {
 // 			return err
@@ -151,6 +152,16 @@ import (
 // 	})
 // }
 // ```
+//
+// ## Import
+//
+// CodeDeploy Deployment Groups can be imported by their `app_name`, a colon, and `deployment_group_name`, e.g.
+//
+// ```sh
+//  $ pulumi import aws:codedeploy/deploymentGroup:DeploymentGroup example my-application:my-deployment-group
+// ```
+//
+//  [1]http://docs.aws.amazon.com/codedeploy/latest/userguide/monitoring-sns-event-notifications-create-trigger.html
 type DeploymentGroup struct {
 	pulumi.CustomResourceState
 
@@ -189,17 +200,18 @@ type DeploymentGroup struct {
 // NewDeploymentGroup registers a new resource with the given unique name, arguments, and options.
 func NewDeploymentGroup(ctx *pulumi.Context,
 	name string, args *DeploymentGroupArgs, opts ...pulumi.ResourceOption) (*DeploymentGroup, error) {
-	if args == nil || args.AppName == nil {
-		return nil, errors.New("missing required argument 'AppName'")
-	}
-	if args == nil || args.DeploymentGroupName == nil {
-		return nil, errors.New("missing required argument 'DeploymentGroupName'")
-	}
-	if args == nil || args.ServiceRoleArn == nil {
-		return nil, errors.New("missing required argument 'ServiceRoleArn'")
-	}
 	if args == nil {
-		args = &DeploymentGroupArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.AppName == nil {
+		return nil, errors.New("invalid value for required argument 'AppName'")
+	}
+	if args.DeploymentGroupName == nil {
+		return nil, errors.New("invalid value for required argument 'DeploymentGroupName'")
+	}
+	if args.ServiceRoleArn == nil {
+		return nil, errors.New("invalid value for required argument 'ServiceRoleArn'")
 	}
 	var resource DeploymentGroup
 	err := ctx.RegisterResource("aws:codedeploy/deploymentGroup:DeploymentGroup", name, args, &resource, opts...)
@@ -361,4 +373,43 @@ type DeploymentGroupArgs struct {
 
 func (DeploymentGroupArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*deploymentGroupArgs)(nil)).Elem()
+}
+
+type DeploymentGroupInput interface {
+	pulumi.Input
+
+	ToDeploymentGroupOutput() DeploymentGroupOutput
+	ToDeploymentGroupOutputWithContext(ctx context.Context) DeploymentGroupOutput
+}
+
+func (DeploymentGroup) ElementType() reflect.Type {
+	return reflect.TypeOf((*DeploymentGroup)(nil)).Elem()
+}
+
+func (i DeploymentGroup) ToDeploymentGroupOutput() DeploymentGroupOutput {
+	return i.ToDeploymentGroupOutputWithContext(context.Background())
+}
+
+func (i DeploymentGroup) ToDeploymentGroupOutputWithContext(ctx context.Context) DeploymentGroupOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(DeploymentGroupOutput)
+}
+
+type DeploymentGroupOutput struct {
+	*pulumi.OutputState
+}
+
+func (DeploymentGroupOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*DeploymentGroupOutput)(nil)).Elem()
+}
+
+func (o DeploymentGroupOutput) ToDeploymentGroupOutput() DeploymentGroupOutput {
+	return o
+}
+
+func (o DeploymentGroupOutput) ToDeploymentGroupOutputWithContext(ctx context.Context) DeploymentGroupOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(DeploymentGroupOutput{})
 }

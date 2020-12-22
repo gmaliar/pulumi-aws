@@ -4,6 +4,7 @@
 package apigateway
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -20,7 +21,7 @@ import (
 // import (
 // 	"fmt"
 //
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/apigateway"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/apigateway"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -33,38 +34,38 @@ import (
 // 			return err
 // 		}
 // 		myDemoResource, err := apigateway.NewResource(ctx, "myDemoResource", &apigateway.ResourceArgs{
+// 			RestApi:  myDemoAPI.ID(),
 // 			ParentId: myDemoAPI.RootResourceId,
 // 			PathPart: pulumi.String("mydemoresource"),
-// 			RestApi:  myDemoAPI.ID(),
 // 		})
 // 		if err != nil {
 // 			return err
 // 		}
 // 		myDemoMethod, err := apigateway.NewMethod(ctx, "myDemoMethod", &apigateway.MethodArgs{
-// 			Authorization: pulumi.String("NONE"),
-// 			HttpMethod:    pulumi.String("GET"),
-// 			ResourceId:    myDemoResource.ID(),
 // 			RestApi:       myDemoAPI.ID(),
+// 			ResourceId:    myDemoResource.ID(),
+// 			HttpMethod:    pulumi.String("GET"),
+// 			Authorization: pulumi.String("NONE"),
 // 		})
 // 		if err != nil {
 // 			return err
 // 		}
 // 		_, err = apigateway.NewIntegration(ctx, "myDemoIntegration", &apigateway.IntegrationArgs{
+// 			RestApi:    myDemoAPI.ID(),
+// 			ResourceId: myDemoResource.ID(),
+// 			HttpMethod: myDemoMethod.HttpMethod,
+// 			Type:       pulumi.String("MOCK"),
 // 			CacheKeyParameters: pulumi.StringArray{
 // 				pulumi.String("method.request.path.param"),
 // 			},
-// 			CacheNamespace: pulumi.String("foobar"),
-// 			HttpMethod:     myDemoMethod.HttpMethod,
+// 			CacheNamespace:      pulumi.String("foobar"),
+// 			TimeoutMilliseconds: pulumi.Int(29000),
 // 			RequestParameters: pulumi.StringMap{
 // 				"integration.request.header.X-Authorization": pulumi.String("'static'"),
 // 			},
 // 			RequestTemplates: pulumi.StringMap{
-// 				"application/xml": pulumi.String(fmt.Sprintf("%v%v%v%v%v%v%v%v", "{\n", "   \"body\" : ", "$", "input.json('", "$", "')\n", "}\n", "\n")),
+// 				"application/xml": pulumi.String(fmt.Sprintf("%v%v%v%v%v%v%v", "{\n", "   \"body\" : ", "$", "input.json('", "$", "')\n", "}\n")),
 // 			},
-// 			ResourceId:          myDemoResource.ID(),
-// 			RestApi:             myDemoAPI.ID(),
-// 			TimeoutMilliseconds: pulumi.Int(29000),
-// 			Type:                pulumi.String("MOCK"),
 // 		})
 // 		if err != nil {
 // 			return err
@@ -72,6 +73,14 @@ import (
 // 		return nil
 // 	})
 // }
+// ```
+//
+// ## Import
+//
+// `aws_api_gateway_integration` can be imported using `REST-API-ID/RESOURCE-ID/HTTP-METHOD`, e.g.
+//
+// ```sh
+//  $ pulumi import aws:apigateway/integration:Integration example 12345abcde/67890fghij/GET
 // ```
 type Integration struct {
 	pulumi.CustomResourceState
@@ -121,20 +130,21 @@ type Integration struct {
 // NewIntegration registers a new resource with the given unique name, arguments, and options.
 func NewIntegration(ctx *pulumi.Context,
 	name string, args *IntegrationArgs, opts ...pulumi.ResourceOption) (*Integration, error) {
-	if args == nil || args.HttpMethod == nil {
-		return nil, errors.New("missing required argument 'HttpMethod'")
-	}
-	if args == nil || args.ResourceId == nil {
-		return nil, errors.New("missing required argument 'ResourceId'")
-	}
-	if args == nil || args.RestApi == nil {
-		return nil, errors.New("missing required argument 'RestApi'")
-	}
-	if args == nil || args.Type == nil {
-		return nil, errors.New("missing required argument 'Type'")
-	}
 	if args == nil {
-		args = &IntegrationArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.HttpMethod == nil {
+		return nil, errors.New("invalid value for required argument 'HttpMethod'")
+	}
+	if args.ResourceId == nil {
+		return nil, errors.New("invalid value for required argument 'ResourceId'")
+	}
+	if args.RestApi == nil {
+		return nil, errors.New("invalid value for required argument 'RestApi'")
+	}
+	if args.Type == nil {
+		return nil, errors.New("invalid value for required argument 'Type'")
 	}
 	var resource Integration
 	err := ctx.RegisterResource("aws:apigateway/integration:Integration", name, args, &resource, opts...)
@@ -336,4 +346,43 @@ type IntegrationArgs struct {
 
 func (IntegrationArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*integrationArgs)(nil)).Elem()
+}
+
+type IntegrationInput interface {
+	pulumi.Input
+
+	ToIntegrationOutput() IntegrationOutput
+	ToIntegrationOutputWithContext(ctx context.Context) IntegrationOutput
+}
+
+func (Integration) ElementType() reflect.Type {
+	return reflect.TypeOf((*Integration)(nil)).Elem()
+}
+
+func (i Integration) ToIntegrationOutput() IntegrationOutput {
+	return i.ToIntegrationOutputWithContext(context.Background())
+}
+
+func (i Integration) ToIntegrationOutputWithContext(ctx context.Context) IntegrationOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(IntegrationOutput)
+}
+
+type IntegrationOutput struct {
+	*pulumi.OutputState
+}
+
+func (IntegrationOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*IntegrationOutput)(nil)).Elem()
+}
+
+func (o IntegrationOutput) ToIntegrationOutput() IntegrationOutput {
+	return o
+}
+
+func (o IntegrationOutput) ToIntegrationOutputWithContext(ctx context.Context) IntegrationOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(IntegrationOutput{})
 }

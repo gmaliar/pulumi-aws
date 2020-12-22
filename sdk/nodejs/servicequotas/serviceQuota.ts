@@ -19,6 +19,14 @@ import * as utilities from "../utilities";
  *     value: 75,
  * });
  * ```
+ *
+ * ## Import
+ *
+ * ~> *NOTE* This resource does not require explicit import and will assume management of an existing service quota on resource creation. `aws_servicequotas_service_quota` can be imported by using the service code and quota code, separated by a front slash (`/`), e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:servicequotas/serviceQuota:ServiceQuota example vpc/L-F678F1CE
+ * ```
  */
 export class ServiceQuota extends pulumi.CustomResource {
     /**
@@ -107,13 +115,13 @@ export class ServiceQuota extends pulumi.CustomResource {
             inputs["value"] = state ? state.value : undefined;
         } else {
             const args = argsOrState as ServiceQuotaArgs | undefined;
-            if (!args || args.quotaCode === undefined) {
+            if ((!args || args.quotaCode === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'quotaCode'");
             }
-            if (!args || args.serviceCode === undefined) {
+            if ((!args || args.serviceCode === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'serviceCode'");
             }
-            if (!args || args.value === undefined) {
+            if ((!args || args.value === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'value'");
             }
             inputs["quotaCode"] = args ? args.quotaCode : undefined;

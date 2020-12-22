@@ -15,7 +15,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/ec2"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/ec2"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -26,7 +26,6 @@ import (
 // 				ec2.GetInstanceTypeOfferingFilter{
 // 					Name: "instance-type",
 // 					Values: []string{
-// 						"t1.micro",
 // 						"t2.micro",
 // 						"t3.micro",
 // 					},
@@ -35,7 +34,6 @@ import (
 // 			PreferredInstanceTypes: []string{
 // 				"t3.micro",
 // 				"t2.micro",
-// 				"t1.micro",
 // 			},
 // 		}, nil)
 // 		if err != nil {

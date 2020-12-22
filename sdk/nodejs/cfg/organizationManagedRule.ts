@@ -17,13 +17,21 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const exampleOrganization = new aws.organizations.Organization("example", {
+ * const exampleOrganization = new aws.organizations.Organization("exampleOrganization", {
  *     awsServiceAccessPrincipals: ["config-multiaccountsetup.amazonaws.com"],
  *     featureSet: "ALL",
  * });
- * const exampleOrganizationManagedRule = new aws.cfg.OrganizationManagedRule("example", {
- *     ruleIdentifier: "IAM_PASSWORD_POLICY",
- * }, { dependsOn: [exampleOrganization] });
+ * const exampleOrganizationManagedRule = new aws.cfg.OrganizationManagedRule("exampleOrganizationManagedRule", {ruleIdentifier: "IAM_PASSWORD_POLICY"}, {
+ *     dependsOn: [exampleOrganization],
+ * });
+ * ```
+ *
+ * ## Import
+ *
+ * Config Organization Managed Rules can be imported using the name, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:cfg/organizationManagedRule:OrganizationManagedRule example example
  * ```
  */
 export class OrganizationManagedRule extends pulumi.CustomResource {
@@ -124,7 +132,7 @@ export class OrganizationManagedRule extends pulumi.CustomResource {
             inputs["tagValueScope"] = state ? state.tagValueScope : undefined;
         } else {
             const args = argsOrState as OrganizationManagedRuleArgs | undefined;
-            if (!args || args.ruleIdentifier === undefined) {
+            if ((!args || args.ruleIdentifier === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'ruleIdentifier'");
             }
             inputs["description"] = args ? args.description : undefined;

@@ -16,10 +16,18 @@ import * as utilities from "../utilities";
  * import * as aws from "@pulumi/aws";
  *
  * const example = new aws.apigatewayv2.IntegrationResponse("example", {
- *     apiId: aws_apigatewayv2_api_example.id,
- *     integrationId: aws_apigatewayv2_integration_example.id,
+ *     apiId: aws_apigatewayv2_api.example.id,
+ *     integrationId: aws_apigatewayv2_integration.example.id,
  *     integrationResponseKey: "/200/",
  * });
+ * ```
+ *
+ * ## Import
+ *
+ * `aws_apigatewayv2_integration_response` can be imported by using the API identifier, integration identifier and integration response identifier, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:apigatewayv2/integrationResponse:IntegrationResponse example aabbccddee/1122334/998877
  * ```
  */
 export class IntegrationResponse extends pulumi.CustomResource {
@@ -95,13 +103,13 @@ export class IntegrationResponse extends pulumi.CustomResource {
             inputs["templateSelectionExpression"] = state ? state.templateSelectionExpression : undefined;
         } else {
             const args = argsOrState as IntegrationResponseArgs | undefined;
-            if (!args || args.apiId === undefined) {
+            if ((!args || args.apiId === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'apiId'");
             }
-            if (!args || args.integrationId === undefined) {
+            if ((!args || args.integrationId === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'integrationId'");
             }
-            if (!args || args.integrationResponseKey === undefined) {
+            if ((!args || args.integrationResponseKey === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'integrationResponseKey'");
             }
             inputs["apiId"] = args ? args.apiId : undefined;

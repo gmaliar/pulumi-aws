@@ -2,8 +2,7 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 /**
@@ -21,6 +20,7 @@ import * as utilities from "../utilities";
  * import * as aws from "@pulumi/aws";
  *
  * const example = new aws.rds.OptionGroup("example", {
+ *     optionGroupDescription: "Option Group",
  *     engineName: "sqlserver-ee",
  *     majorEngineVersion: "11.00",
  *     options: [
@@ -35,18 +35,25 @@ import * as utilities from "../utilities";
  *             optionName: "SQLSERVER_BACKUP_RESTORE",
  *             optionSettings: [{
  *                 name: "IAM_ROLE_ARN",
- *                 value: aws_iam_role_example.arn,
+ *                 value: aws_iam_role.example.arn,
  *             }],
  *         },
  *         {
  *             optionName: "TDE",
  *         },
  *     ],
- *     optionGroupDescription: "Option Group",
  * });
  * ```
  *
  * > **Note**: Any modifications to the `dbOptionGroup` are set to happen immediately as we default to applying immediately.
+ *
+ * ## Import
+ *
+ * DB Option groups can be imported using the `name`, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:rds/optionGroup:OptionGroup bar mysql-option-group
+ * ```
  */
 export class OptionGroup extends pulumi.CustomResource {
     /**
@@ -131,10 +138,10 @@ export class OptionGroup extends pulumi.CustomResource {
             inputs["tags"] = state ? state.tags : undefined;
         } else {
             const args = argsOrState as OptionGroupArgs | undefined;
-            if (!args || args.engineName === undefined) {
+            if ((!args || args.engineName === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'engineName'");
             }
-            if (!args || args.majorEngineVersion === undefined) {
+            if ((!args || args.majorEngineVersion === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'majorEngineVersion'");
             }
             inputs["engineName"] = args ? args.engineName : undefined;

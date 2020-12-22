@@ -2,8 +2,7 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 /**
@@ -17,8 +16,7 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const role = new aws.iam.Role("r", {
- *     assumeRolePolicy: `{
+ * const role = new aws.iam.Role("role", {assumeRolePolicy: `{
  *   "Version": "2012-10-17",
  *   "Statement": [
  *     {
@@ -31,11 +29,16 @@ import * as utilities from "../utilities";
  *     }
  *   ]
  * }
- * `,
- * });
- * const foo = new aws.cfg.Recorder("foo", {
- *     roleArn: role.arn,
- * });
+ * `});
+ * const foo = new aws.cfg.Recorder("foo", {roleArn: role.arn});
+ * ```
+ *
+ * ## Import
+ *
+ * Configuration Recorder can be imported using the name, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:cfg/recorder:Recorder foo example
  * ```
  */
 export class Recorder extends pulumi.CustomResource {
@@ -75,9 +78,7 @@ export class Recorder extends pulumi.CustomResource {
      */
     public readonly recordingGroup!: pulumi.Output<outputs.cfg.RecorderRecordingGroup>;
     /**
-     * Amazon Resource Name (ARN) of the IAM role.
-     * used to make read or write requests to the delivery channel and to describe the AWS resources associated with the account.
-     * See [AWS Docs](http://docs.aws.amazon.com/config/latest/developerguide/iamrole-permissions.html) for more details.
+     * Amazon Resource Name (ARN) of the IAM role. Used to make read or write requests to the delivery channel and to describe the AWS resources associated with the account. See [AWS Docs](http://docs.aws.amazon.com/config/latest/developerguide/iamrole-permissions.html) for more details.
      */
     public readonly roleArn!: pulumi.Output<string>;
 
@@ -98,7 +99,7 @@ export class Recorder extends pulumi.CustomResource {
             inputs["roleArn"] = state ? state.roleArn : undefined;
         } else {
             const args = argsOrState as RecorderArgs | undefined;
-            if (!args || args.roleArn === undefined) {
+            if ((!args || args.roleArn === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'roleArn'");
             }
             inputs["name"] = args ? args.name : undefined;
@@ -129,9 +130,7 @@ export interface RecorderState {
      */
     readonly recordingGroup?: pulumi.Input<inputs.cfg.RecorderRecordingGroup>;
     /**
-     * Amazon Resource Name (ARN) of the IAM role.
-     * used to make read or write requests to the delivery channel and to describe the AWS resources associated with the account.
-     * See [AWS Docs](http://docs.aws.amazon.com/config/latest/developerguide/iamrole-permissions.html) for more details.
+     * Amazon Resource Name (ARN) of the IAM role. Used to make read or write requests to the delivery channel and to describe the AWS resources associated with the account. See [AWS Docs](http://docs.aws.amazon.com/config/latest/developerguide/iamrole-permissions.html) for more details.
      */
     readonly roleArn?: pulumi.Input<string>;
 }
@@ -149,9 +148,7 @@ export interface RecorderArgs {
      */
     readonly recordingGroup?: pulumi.Input<inputs.cfg.RecorderRecordingGroup>;
     /**
-     * Amazon Resource Name (ARN) of the IAM role.
-     * used to make read or write requests to the delivery channel and to describe the AWS resources associated with the account.
-     * See [AWS Docs](http://docs.aws.amazon.com/config/latest/developerguide/iamrole-permissions.html) for more details.
+     * Amazon Resource Name (ARN) of the IAM role. Used to make read or write requests to the delivery channel and to describe the AWS resources associated with the account. See [AWS Docs](http://docs.aws.amazon.com/config/latest/developerguide/iamrole-permissions.html) for more details.
      */
     readonly roleArn: pulumi.Input<string>;
 }

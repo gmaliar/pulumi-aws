@@ -2,8 +2,7 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 /**
@@ -34,22 +33,30 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const routeTable = new aws.ec2.RouteTable("r", {
+ * const routeTable = new aws.ec2.RouteTable("routeTable", {
+ *     vpcId: aws_vpc["default"].id,
  *     routes: [
  *         {
  *             cidrBlock: "10.0.1.0/24",
- *             gatewayId: aws_internet_gateway_main.id,
+ *             gatewayId: aws_internet_gateway.main.id,
  *         },
  *         {
- *             egressOnlyGatewayId: aws_egress_only_internet_gateway_foo.id,
  *             ipv6CidrBlock: "::/0",
+ *             egressOnlyGatewayId: aws_egress_only_internet_gateway.foo.id,
  *         },
  *     ],
  *     tags: {
  *         Name: "main",
  *     },
- *     vpcId: aws_vpc_default.id,
  * });
+ * ```
+ *
+ * ## Import
+ *
+ * Route Tables can be imported using the route table `id`. For example, to import route table `rtb-4e616f6d69`, use this command
+ *
+ * ```sh
+ *  $ pulumi import aws:ec2/routeTable:RouteTable public_rt rtb-4e616f6d69
  * ```
  */
 export class RouteTable extends pulumi.CustomResource {
@@ -120,7 +127,7 @@ export class RouteTable extends pulumi.CustomResource {
             inputs["vpcId"] = state ? state.vpcId : undefined;
         } else {
             const args = argsOrState as RouteTableArgs | undefined;
-            if (!args || args.vpcId === undefined) {
+            if ((!args || args.vpcId === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'vpcId'");
             }
             inputs["propagatingVgws"] = args ? args.propagatingVgws : undefined;

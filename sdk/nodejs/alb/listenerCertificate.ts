@@ -17,12 +17,15 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const exampleCertificate = new aws.acm.Certificate("example", {});
- * const frontEndLoadBalancer = new aws.lb.LoadBalancer("front_end", {});
- * const frontEndListener = new aws.lb.Listener("front_end", {});
- * const exampleListenerCertificate = new aws.lb.ListenerCertificate("example", {
- *     certificateArn: exampleCertificate.arn,
+ * const exampleCertificate = new aws.acm.Certificate("exampleCertificate", {});
+ * // ...
+ * const frontEndLoadBalancer = new aws.lb.LoadBalancer("frontEndLoadBalancer", {});
+ * // ...
+ * const frontEndListener = new aws.lb.Listener("frontEndListener", {});
+ * // ...
+ * const exampleListenerCertificate = new aws.lb.ListenerCertificate("exampleListenerCertificate", {
  *     listenerArn: frontEndListener.arn,
+ *     certificateArn: exampleCertificate.arn,
  * });
  * ```
  */
@@ -79,10 +82,10 @@ export class ListenerCertificate extends pulumi.CustomResource {
             inputs["listenerArn"] = state ? state.listenerArn : undefined;
         } else {
             const args = argsOrState as ListenerCertificateArgs | undefined;
-            if (!args || args.certificateArn === undefined) {
+            if ((!args || args.certificateArn === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'certificateArn'");
             }
-            if (!args || args.listenerArn === undefined) {
+            if ((!args || args.listenerArn === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'listenerArn'");
             }
             inputs["certificateArn"] = args ? args.certificateArn : undefined;

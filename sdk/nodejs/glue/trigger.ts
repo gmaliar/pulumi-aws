@@ -2,8 +2,7 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 /**
@@ -17,16 +16,16 @@ import * as utilities from "../utilities";
  * import * as aws from "@pulumi/aws";
  *
  * const example = new aws.glue.Trigger("example", {
+ *     type: "CONDITIONAL",
  *     actions: [{
- *         jobName: aws_glue_job_example1.name,
+ *         jobName: aws_glue_job.example1.name,
  *     }],
  *     predicate: {
  *         conditions: [{
- *             jobName: aws_glue_job_example2.name,
+ *             jobName: aws_glue_job.example2.name,
  *             state: "SUCCEEDED",
  *         }],
  *     },
- *     type: "CONDITIONAL",
  * });
  * ```
  * ### On-Demand Trigger
@@ -36,10 +35,10 @@ import * as utilities from "../utilities";
  * import * as aws from "@pulumi/aws";
  *
  * const example = new aws.glue.Trigger("example", {
- *     actions: [{
- *         jobName: aws_glue_job_example.name,
- *     }],
  *     type: "ON_DEMAND",
+ *     actions: [{
+ *         jobName: aws_glue_job.example.name,
+ *     }],
  * });
  * ```
  * ### Scheduled Trigger
@@ -49,11 +48,11 @@ import * as utilities from "../utilities";
  * import * as aws from "@pulumi/aws";
  *
  * const example = new aws.glue.Trigger("example", {
- *     actions: [{
- *         jobName: aws_glue_job_example.name,
- *     }],
  *     schedule: "cron(15 12 * * ? *)",
  *     type: "SCHEDULED",
+ *     actions: [{
+ *         jobName: aws_glue_job.example.name,
+ *     }],
  * });
  * ```
  * ### Conditional Trigger with Crawler Action
@@ -65,16 +64,16 @@ import * as utilities from "../utilities";
  * import * as aws from "@pulumi/aws";
  *
  * const example = new aws.glue.Trigger("example", {
+ *     type: "CONDITIONAL",
  *     actions: [{
- *         crawlerName: aws_glue_crawler_example1.name,
+ *         crawlerName: aws_glue_crawler.example1.name,
  *     }],
  *     predicate: {
  *         conditions: [{
- *             jobName: aws_glue_job_example2.name,
+ *             jobName: aws_glue_job.example2.name,
  *             state: "SUCCEEDED",
  *         }],
  *     },
- *     type: "CONDITIONAL",
  * });
  * ```
  * ### Conditional Trigger with Crawler Condition
@@ -86,17 +85,25 @@ import * as utilities from "../utilities";
  * import * as aws from "@pulumi/aws";
  *
  * const example = new aws.glue.Trigger("example", {
+ *     type: "CONDITIONAL",
  *     actions: [{
- *         jobName: aws_glue_job_example1.name,
+ *         jobName: aws_glue_job.example1.name,
  *     }],
  *     predicate: {
  *         conditions: [{
+ *             crawlerName: aws_glue_crawler.example2.name,
  *             crawlState: "SUCCEEDED",
- *             crawlerName: aws_glue_crawler_example2.name,
  *         }],
  *     },
- *     type: "CONDITIONAL",
  * });
+ * ```
+ *
+ * ## Import
+ *
+ * Glue Triggers can be imported using `name`, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:glue/trigger:Trigger MyTrigger MyTrigger
  * ```
  */
 export class Trigger extends pulumi.CustomResource {
@@ -192,10 +199,10 @@ export class Trigger extends pulumi.CustomResource {
             inputs["workflowName"] = state ? state.workflowName : undefined;
         } else {
             const args = argsOrState as TriggerArgs | undefined;
-            if (!args || args.actions === undefined) {
+            if ((!args || args.actions === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'actions'");
             }
-            if (!args || args.type === undefined) {
+            if ((!args || args.type === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'type'");
             }
             inputs["actions"] = args ? args.actions : undefined;

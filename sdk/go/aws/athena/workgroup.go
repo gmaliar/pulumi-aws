@@ -4,6 +4,7 @@
 package athena
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
@@ -17,7 +18,9 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/athena"
+// 	"fmt"
+//
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/athena"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -28,11 +31,11 @@ import (
 // 				EnforceWorkgroupConfiguration:   pulumi.Bool(true),
 // 				PublishCloudwatchMetricsEnabled: pulumi.Bool(true),
 // 				ResultConfiguration: &athena.WorkgroupConfigurationResultConfigurationArgs{
+// 					OutputLocation: pulumi.String(fmt.Sprintf("%v%v%v", "s3://", aws_s3_bucket.Example.Bucket, "/output/")),
 // 					EncryptionConfiguration: &athena.WorkgroupConfigurationResultConfigurationEncryptionConfigurationArgs{
 // 						EncryptionOption: pulumi.String("SSE_KMS"),
-// 						KmsKeyArn:        pulumi.String(aws_kms_key.Example.Arn),
+// 						KmsKeyArn:        pulumi.Any(aws_kms_key.Example.Arn),
 // 					},
-// 					OutputLocation: pulumi.String("s3://{aws_s3_bucket.example.bucket}/output/"),
 // 				},
 // 			},
 // 		})
@@ -42,6 +45,14 @@ import (
 // 		return nil
 // 	})
 // }
+// ```
+//
+// ## Import
+//
+// Athena Workgroups can be imported using their name, e.g.
+//
+// ```sh
+//  $ pulumi import aws:athena/workgroup:Workgroup example example
 // ```
 type Workgroup struct {
 	pulumi.CustomResourceState
@@ -68,6 +79,7 @@ func NewWorkgroup(ctx *pulumi.Context,
 	if args == nil {
 		args = &WorkgroupArgs{}
 	}
+
 	var resource Workgroup
 	err := ctx.RegisterResource("aws:athena/workgroup:Workgroup", name, args, &resource, opts...)
 	if err != nil {
@@ -160,4 +172,43 @@ type WorkgroupArgs struct {
 
 func (WorkgroupArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*workgroupArgs)(nil)).Elem()
+}
+
+type WorkgroupInput interface {
+	pulumi.Input
+
+	ToWorkgroupOutput() WorkgroupOutput
+	ToWorkgroupOutputWithContext(ctx context.Context) WorkgroupOutput
+}
+
+func (Workgroup) ElementType() reflect.Type {
+	return reflect.TypeOf((*Workgroup)(nil)).Elem()
+}
+
+func (i Workgroup) ToWorkgroupOutput() WorkgroupOutput {
+	return i.ToWorkgroupOutputWithContext(context.Background())
+}
+
+func (i Workgroup) ToWorkgroupOutputWithContext(ctx context.Context) WorkgroupOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(WorkgroupOutput)
+}
+
+type WorkgroupOutput struct {
+	*pulumi.OutputState
+}
+
+func (WorkgroupOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*WorkgroupOutput)(nil)).Elem()
+}
+
+func (o WorkgroupOutput) ToWorkgroupOutput() WorkgroupOutput {
+	return o
+}
+
+func (o WorkgroupOutput) ToWorkgroupOutputWithContext(ctx context.Context) WorkgroupOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(WorkgroupOutput{})
 }

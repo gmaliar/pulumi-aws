@@ -4,6 +4,7 @@
 package directconnect
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -19,10 +20,10 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws"
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/directconnect"
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/ec2"
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/providers"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/directconnect"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/ec2"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/providers"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -36,35 +37,43 @@ import (
 // 		if err != nil {
 // 			return err
 // 		}
+// 		vpnGw, err := ec2.NewVpnGateway(ctx, "vpnGw", nil, pulumi.Provider(aws.Accepter))
+// 		if err != nil {
+// 			return err
+// 		}
 // 		creator, err := directconnect.NewHostedPrivateVirtualInterface(ctx, "creator", &directconnect.HostedPrivateVirtualInterfaceArgs{
-// 			AddressFamily:  pulumi.String("ipv4"),
-// 			BgpAsn:         pulumi.Int(65352),
 // 			ConnectionId:   pulumi.String("dxcon-zzzzzzzz"),
 // 			OwnerAccountId: pulumi.String(accepterCallerIdentity.AccountId),
 // 			Vlan:           pulumi.Int(4094),
+// 			AddressFamily:  pulumi.String("ipv4"),
+// 			BgpAsn:         pulumi.Int(65352),
 // 		}, pulumi.DependsOn([]pulumi.Resource{
-// 			"aws_vpn_gateway.vpn_gw",
+// 			vpnGw,
 // 		}))
 // 		if err != nil {
 // 			return err
 // 		}
-// 		vpnGw, err := ec2.NewVpnGateway(ctx, "vpnGw", nil, pulumi.Provider("aws.accepter"))
-// 		if err != nil {
-// 			return err
-// 		}
 // 		_, err = directconnect.NewHostedPrivateVirtualInterfaceAccepter(ctx, "accepterHostedPrivateVirtualInterfaceAccepter", &directconnect.HostedPrivateVirtualInterfaceAccepterArgs{
+// 			VirtualInterfaceId: creator.ID(),
+// 			VpnGatewayId:       vpnGw.ID(),
 // 			Tags: pulumi.StringMap{
 // 				"Side": pulumi.String("Accepter"),
 // 			},
-// 			VirtualInterfaceId: creator.ID(),
-// 			VpnGatewayId:       vpnGw.ID(),
-// 		}, pulumi.Provider("aws.accepter"))
+// 		}, pulumi.Provider(aws.Accepter))
 // 		if err != nil {
 // 			return err
 // 		}
 // 		return nil
 // 	})
 // }
+// ```
+//
+// ## Import
+//
+// Direct Connect hosted private virtual interfaces can be imported using the `vif id`, e.g.
+//
+// ```sh
+//  $ pulumi import aws:directconnect/hostedPrivateVirtualInterfaceAccepter:HostedPrivateVirtualInterfaceAccepter test dxvif-33cc44dd
 // ```
 type HostedPrivateVirtualInterfaceAccepter struct {
 	pulumi.CustomResourceState
@@ -84,11 +93,12 @@ type HostedPrivateVirtualInterfaceAccepter struct {
 // NewHostedPrivateVirtualInterfaceAccepter registers a new resource with the given unique name, arguments, and options.
 func NewHostedPrivateVirtualInterfaceAccepter(ctx *pulumi.Context,
 	name string, args *HostedPrivateVirtualInterfaceAccepterArgs, opts ...pulumi.ResourceOption) (*HostedPrivateVirtualInterfaceAccepter, error) {
-	if args == nil || args.VirtualInterfaceId == nil {
-		return nil, errors.New("missing required argument 'VirtualInterfaceId'")
-	}
 	if args == nil {
-		args = &HostedPrivateVirtualInterfaceAccepterArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.VirtualInterfaceId == nil {
+		return nil, errors.New("invalid value for required argument 'VirtualInterfaceId'")
 	}
 	var resource HostedPrivateVirtualInterfaceAccepter
 	err := ctx.RegisterResource("aws:directconnect/hostedPrivateVirtualInterfaceAccepter:HostedPrivateVirtualInterfaceAccepter", name, args, &resource, opts...)
@@ -166,4 +176,43 @@ type HostedPrivateVirtualInterfaceAccepterArgs struct {
 
 func (HostedPrivateVirtualInterfaceAccepterArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*hostedPrivateVirtualInterfaceAccepterArgs)(nil)).Elem()
+}
+
+type HostedPrivateVirtualInterfaceAccepterInput interface {
+	pulumi.Input
+
+	ToHostedPrivateVirtualInterfaceAccepterOutput() HostedPrivateVirtualInterfaceAccepterOutput
+	ToHostedPrivateVirtualInterfaceAccepterOutputWithContext(ctx context.Context) HostedPrivateVirtualInterfaceAccepterOutput
+}
+
+func (HostedPrivateVirtualInterfaceAccepter) ElementType() reflect.Type {
+	return reflect.TypeOf((*HostedPrivateVirtualInterfaceAccepter)(nil)).Elem()
+}
+
+func (i HostedPrivateVirtualInterfaceAccepter) ToHostedPrivateVirtualInterfaceAccepterOutput() HostedPrivateVirtualInterfaceAccepterOutput {
+	return i.ToHostedPrivateVirtualInterfaceAccepterOutputWithContext(context.Background())
+}
+
+func (i HostedPrivateVirtualInterfaceAccepter) ToHostedPrivateVirtualInterfaceAccepterOutputWithContext(ctx context.Context) HostedPrivateVirtualInterfaceAccepterOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(HostedPrivateVirtualInterfaceAccepterOutput)
+}
+
+type HostedPrivateVirtualInterfaceAccepterOutput struct {
+	*pulumi.OutputState
+}
+
+func (HostedPrivateVirtualInterfaceAccepterOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*HostedPrivateVirtualInterfaceAccepterOutput)(nil)).Elem()
+}
+
+func (o HostedPrivateVirtualInterfaceAccepterOutput) ToHostedPrivateVirtualInterfaceAccepterOutput() HostedPrivateVirtualInterfaceAccepterOutput {
+	return o
+}
+
+func (o HostedPrivateVirtualInterfaceAccepterOutput) ToHostedPrivateVirtualInterfaceAccepterOutputWithContext(ctx context.Context) HostedPrivateVirtualInterfaceAccepterOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(HostedPrivateVirtualInterfaceAccepterOutput{})
 }

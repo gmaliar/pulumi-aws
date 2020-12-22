@@ -4,6 +4,7 @@
 package cloudwatch
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -19,8 +20,8 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/cloudwatch"
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/iam"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/cloudwatch"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/iam"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -34,6 +35,9 @@ import (
 // 						"logs:PutLogEvents",
 // 						"logs:PutLogEventsBatch",
 // 					},
+// 					Resources: []string{
+// 						"arn:aws:logs:*",
+// 					},
 // 					Principals: []iam.GetPolicyDocumentStatementPrincipal{
 // 						iam.GetPolicyDocumentStatementPrincipal{
 // 							Identifiers: []string{
@@ -41,9 +45,6 @@ import (
 // 							},
 // 							Type: "Service",
 // 						},
-// 					},
-// 					Resources: []string{
-// 						"arn:aws:logs:*",
 // 					},
 // 				},
 // 			},
@@ -68,8 +69,8 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/cloudwatch"
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/iam"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/cloudwatch"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/iam"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -82,6 +83,9 @@ import (
 // 						"logs:CreateLogStream",
 // 						"logs:PutLogEvents",
 // 					},
+// 					Resources: []string{
+// 						"arn:aws:logs:*:*:log-group:/aws/route53/*",
+// 					},
 // 					Principals: []iam.GetPolicyDocumentStatementPrincipal{
 // 						iam.GetPolicyDocumentStatementPrincipal{
 // 							Identifiers: []string{
@@ -89,9 +93,6 @@ import (
 // 							},
 // 							Type: "Service",
 // 						},
-// 					},
-// 					Resources: []string{
-// 						"arn:aws:logs:*:*:log-group:/aws/route53/*",
 // 					},
 // 				},
 // 			},
@@ -110,6 +111,14 @@ import (
 // 	})
 // }
 // ```
+//
+// ## Import
+//
+// CloudWatch log resource policies can be imported using the policy name, e.g.
+//
+// ```sh
+//  $ pulumi import aws:cloudwatch/logResourcePolicy:LogResourcePolicy MyPolicy MyPolicy
+// ```
 type LogResourcePolicy struct {
 	pulumi.CustomResourceState
 
@@ -122,14 +131,15 @@ type LogResourcePolicy struct {
 // NewLogResourcePolicy registers a new resource with the given unique name, arguments, and options.
 func NewLogResourcePolicy(ctx *pulumi.Context,
 	name string, args *LogResourcePolicyArgs, opts ...pulumi.ResourceOption) (*LogResourcePolicy, error) {
-	if args == nil || args.PolicyDocument == nil {
-		return nil, errors.New("missing required argument 'PolicyDocument'")
-	}
-	if args == nil || args.PolicyName == nil {
-		return nil, errors.New("missing required argument 'PolicyName'")
-	}
 	if args == nil {
-		args = &LogResourcePolicyArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.PolicyDocument == nil {
+		return nil, errors.New("invalid value for required argument 'PolicyDocument'")
+	}
+	if args.PolicyName == nil {
+		return nil, errors.New("invalid value for required argument 'PolicyName'")
 	}
 	var resource LogResourcePolicy
 	err := ctx.RegisterResource("aws:cloudwatch/logResourcePolicy:LogResourcePolicy", name, args, &resource, opts...)
@@ -187,4 +197,43 @@ type LogResourcePolicyArgs struct {
 
 func (LogResourcePolicyArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*logResourcePolicyArgs)(nil)).Elem()
+}
+
+type LogResourcePolicyInput interface {
+	pulumi.Input
+
+	ToLogResourcePolicyOutput() LogResourcePolicyOutput
+	ToLogResourcePolicyOutputWithContext(ctx context.Context) LogResourcePolicyOutput
+}
+
+func (LogResourcePolicy) ElementType() reflect.Type {
+	return reflect.TypeOf((*LogResourcePolicy)(nil)).Elem()
+}
+
+func (i LogResourcePolicy) ToLogResourcePolicyOutput() LogResourcePolicyOutput {
+	return i.ToLogResourcePolicyOutputWithContext(context.Background())
+}
+
+func (i LogResourcePolicy) ToLogResourcePolicyOutputWithContext(ctx context.Context) LogResourcePolicyOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(LogResourcePolicyOutput)
+}
+
+type LogResourcePolicyOutput struct {
+	*pulumi.OutputState
+}
+
+func (LogResourcePolicyOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*LogResourcePolicyOutput)(nil)).Elem()
+}
+
+func (o LogResourcePolicyOutput) ToLogResourcePolicyOutput() LogResourcePolicyOutput {
+	return o
+}
+
+func (o LogResourcePolicyOutput) ToLogResourcePolicyOutputWithContext(ctx context.Context) LogResourcePolicyOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(LogResourcePolicyOutput{})
 }

@@ -15,10 +15,22 @@ import * as utilities from "../utilities";
  * import * as aws from "@pulumi/aws";
  *
  * const example = new aws.ec2clientvpn.AuthorizationRule("example", {
+ *     clientVpnEndpointId: aws_ec2_client_vpn_endpoint.example.id,
+ *     targetNetworkCidr: aws_subnet.example.cidr_block,
  *     authorizeAllGroups: true,
- *     clientVpnEndpointId: aws_ec2_client_vpn_endpoint_example.id,
- *     targetNetworkCidr: aws_subnet_example.cidrBlock,
  * });
+ * ```
+ *
+ * ## Import
+ *
+ * AWS Client VPN authorization rules can be imported using the endpoint ID and target network CIDR. If there is a specific group name that is included as well. All values are separated by a `,`.
+ *
+ * ```sh
+ *  $ pulumi import aws:ec2clientvpn/authorizationRule:AuthorizationRule example cvpn-endpoint-0ac3a1abbccddd666,10.1.0.0/24
+ * ```
+ *
+ * ```sh
+ *  $ pulumi import aws:ec2clientvpn/authorizationRule:AuthorizationRule example cvpn-endpoint-0ac3a1abbccddd666,10.1.0.0/24,team-a
  * ```
  */
 export class AuthorizationRule extends pulumi.CustomResource {
@@ -89,10 +101,10 @@ export class AuthorizationRule extends pulumi.CustomResource {
             inputs["targetNetworkCidr"] = state ? state.targetNetworkCidr : undefined;
         } else {
             const args = argsOrState as AuthorizationRuleArgs | undefined;
-            if (!args || args.clientVpnEndpointId === undefined) {
+            if ((!args || args.clientVpnEndpointId === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'clientVpnEndpointId'");
             }
-            if (!args || args.targetNetworkCidr === undefined) {
+            if ((!args || args.targetNetworkCidr === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'targetNetworkCidr'");
             }
             inputs["accessGroupId"] = args ? args.accessGroupId : undefined;

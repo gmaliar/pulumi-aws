@@ -2,8 +2,7 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 /**
@@ -15,24 +14,18 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const my_domain = pulumi.output(aws.iam.getServerCertificate({
- *     latest: true,
+ * const my-domain = aws.iam.getServerCertificate({
  *     namePrefix: "my-domain.org",
- * }, { async: true }));
- * const elb = new aws.elb.LoadBalancer("elb", {
- *     listeners: [{
- *         instancePort: 8000,
- *         instanceProtocol: "https",
- *         lbPort: 443,
- *         lbProtocol: "https",
- *         sslCertificateId: my_domain.arn,
- *     }],
+ *     latest: true,
  * });
+ * const elb = new aws.elb.LoadBalancer("elb", {listeners: [{
+ *     instancePort: 8000,
+ *     instanceProtocol: "https",
+ *     lbPort: 443,
+ *     lbProtocol: "https",
+ *     sslCertificateId: my_domain.then(my_domain => my_domain.arn),
+ * }]});
  * ```
- * ## Import
- *
- * The import function will read in certificate body, certificate chain (if it exists), id, name, path, and arn.
- * It will not retrieve the private key which is not available through the AWS API.
  */
 export function getServerCertificate(args?: GetServerCertificateArgs, opts?: pulumi.InvokeOptions): Promise<GetServerCertificateResult> {
     args = args || {};

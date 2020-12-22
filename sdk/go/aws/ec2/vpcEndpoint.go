@@ -4,6 +4,7 @@
 package ec2
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -26,15 +27,15 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/ec2"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/ec2"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
 // func main() {
 // 	pulumi.Run(func(ctx *pulumi.Context) error {
 // 		_, err := ec2.NewVpcEndpoint(ctx, "s3", &ec2.VpcEndpointArgs{
+// 			VpcId:       pulumi.Any(aws_vpc.Main.Id),
 // 			ServiceName: pulumi.String("com.amazonaws.us-west-2.s3"),
-// 			VpcId:       pulumi.String(aws_vpc.Main.Id),
 // 		})
 // 		if err != nil {
 // 			return err
@@ -49,18 +50,18 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/ec2"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/ec2"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
 // func main() {
 // 	pulumi.Run(func(ctx *pulumi.Context) error {
 // 		_, err := ec2.NewVpcEndpoint(ctx, "s3", &ec2.VpcEndpointArgs{
+// 			VpcId:       pulumi.Any(aws_vpc.Main.Id),
 // 			ServiceName: pulumi.String("com.amazonaws.us-west-2.s3"),
 // 			Tags: pulumi.StringMap{
 // 				"Environment": pulumi.String("test"),
 // 			},
-// 			VpcId: pulumi.String(aws_vpc.Main.Id),
 // 		})
 // 		if err != nil {
 // 			return err
@@ -68,6 +69,14 @@ import (
 // 		return nil
 // 	})
 // }
+// ```
+//
+// ## Import
+//
+// VPC Endpoints can be imported using the `vpc endpoint id`, e.g.
+//
+// ```sh
+//  $ pulumi import aws:ec2/vpcEndpoint:VpcEndpoint endpoint1 vpce-3ecf2a57
 // ```
 type VpcEndpoint struct {
 	pulumi.CustomResourceState
@@ -101,11 +110,11 @@ type VpcEndpoint struct {
 	ServiceName pulumi.StringOutput `pulumi:"serviceName"`
 	// The state of the VPC endpoint.
 	State pulumi.StringOutput `pulumi:"state"`
-	// The ID of one or more subnets in which to create a network interface for the endpoint. Applicable for endpoints of type `Interface`.
+	// The ID of one or more subnets in which to create a network interface for the endpoint. Applicable for endpoints of type `GatewayLoadBalancer` and `Interface`.
 	SubnetIds pulumi.StringArrayOutput `pulumi:"subnetIds"`
 	// A map of tags to assign to the resource.
 	Tags pulumi.StringMapOutput `pulumi:"tags"`
-	// The VPC endpoint type, `Gateway` or `Interface`. Defaults to `Gateway`.
+	// The VPC endpoint type, `Gateway`, `GatewayLoadBalancer`, or `Interface`. Defaults to `Gateway`.
 	VpcEndpointType pulumi.StringPtrOutput `pulumi:"vpcEndpointType"`
 	// The ID of the VPC in which the endpoint will be used.
 	VpcId pulumi.StringOutput `pulumi:"vpcId"`
@@ -114,14 +123,15 @@ type VpcEndpoint struct {
 // NewVpcEndpoint registers a new resource with the given unique name, arguments, and options.
 func NewVpcEndpoint(ctx *pulumi.Context,
 	name string, args *VpcEndpointArgs, opts ...pulumi.ResourceOption) (*VpcEndpoint, error) {
-	if args == nil || args.ServiceName == nil {
-		return nil, errors.New("missing required argument 'ServiceName'")
-	}
-	if args == nil || args.VpcId == nil {
-		return nil, errors.New("missing required argument 'VpcId'")
-	}
 	if args == nil {
-		args = &VpcEndpointArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.ServiceName == nil {
+		return nil, errors.New("invalid value for required argument 'ServiceName'")
+	}
+	if args.VpcId == nil {
+		return nil, errors.New("invalid value for required argument 'VpcId'")
 	}
 	var resource VpcEndpoint
 	err := ctx.RegisterResource("aws:ec2/vpcEndpoint:VpcEndpoint", name, args, &resource, opts...)
@@ -174,11 +184,11 @@ type vpcEndpointState struct {
 	ServiceName *string `pulumi:"serviceName"`
 	// The state of the VPC endpoint.
 	State *string `pulumi:"state"`
-	// The ID of one or more subnets in which to create a network interface for the endpoint. Applicable for endpoints of type `Interface`.
+	// The ID of one or more subnets in which to create a network interface for the endpoint. Applicable for endpoints of type `GatewayLoadBalancer` and `Interface`.
 	SubnetIds []string `pulumi:"subnetIds"`
 	// A map of tags to assign to the resource.
 	Tags map[string]string `pulumi:"tags"`
-	// The VPC endpoint type, `Gateway` or `Interface`. Defaults to `Gateway`.
+	// The VPC endpoint type, `Gateway`, `GatewayLoadBalancer`, or `Interface`. Defaults to `Gateway`.
 	VpcEndpointType *string `pulumi:"vpcEndpointType"`
 	// The ID of the VPC in which the endpoint will be used.
 	VpcId *string `pulumi:"vpcId"`
@@ -214,11 +224,11 @@ type VpcEndpointState struct {
 	ServiceName pulumi.StringPtrInput
 	// The state of the VPC endpoint.
 	State pulumi.StringPtrInput
-	// The ID of one or more subnets in which to create a network interface for the endpoint. Applicable for endpoints of type `Interface`.
+	// The ID of one or more subnets in which to create a network interface for the endpoint. Applicable for endpoints of type `GatewayLoadBalancer` and `Interface`.
 	SubnetIds pulumi.StringArrayInput
 	// A map of tags to assign to the resource.
 	Tags pulumi.StringMapInput
-	// The VPC endpoint type, `Gateway` or `Interface`. Defaults to `Gateway`.
+	// The VPC endpoint type, `Gateway`, `GatewayLoadBalancer`, or `Interface`. Defaults to `Gateway`.
 	VpcEndpointType pulumi.StringPtrInput
 	// The ID of the VPC in which the endpoint will be used.
 	VpcId pulumi.StringPtrInput
@@ -242,11 +252,11 @@ type vpcEndpointArgs struct {
 	SecurityGroupIds []string `pulumi:"securityGroupIds"`
 	// The service name. For AWS services the service name is usually in the form `com.amazonaws.<region>.<service>` (the SageMaker Notebook service is an exception to this rule, the service name is in the form `aws.sagemaker.<region>.notebook`).
 	ServiceName string `pulumi:"serviceName"`
-	// The ID of one or more subnets in which to create a network interface for the endpoint. Applicable for endpoints of type `Interface`.
+	// The ID of one or more subnets in which to create a network interface for the endpoint. Applicable for endpoints of type `GatewayLoadBalancer` and `Interface`.
 	SubnetIds []string `pulumi:"subnetIds"`
 	// A map of tags to assign to the resource.
 	Tags map[string]string `pulumi:"tags"`
-	// The VPC endpoint type, `Gateway` or `Interface`. Defaults to `Gateway`.
+	// The VPC endpoint type, `Gateway`, `GatewayLoadBalancer`, or `Interface`. Defaults to `Gateway`.
 	VpcEndpointType *string `pulumi:"vpcEndpointType"`
 	// The ID of the VPC in which the endpoint will be used.
 	VpcId string `pulumi:"vpcId"`
@@ -267,11 +277,11 @@ type VpcEndpointArgs struct {
 	SecurityGroupIds pulumi.StringArrayInput
 	// The service name. For AWS services the service name is usually in the form `com.amazonaws.<region>.<service>` (the SageMaker Notebook service is an exception to this rule, the service name is in the form `aws.sagemaker.<region>.notebook`).
 	ServiceName pulumi.StringInput
-	// The ID of one or more subnets in which to create a network interface for the endpoint. Applicable for endpoints of type `Interface`.
+	// The ID of one or more subnets in which to create a network interface for the endpoint. Applicable for endpoints of type `GatewayLoadBalancer` and `Interface`.
 	SubnetIds pulumi.StringArrayInput
 	// A map of tags to assign to the resource.
 	Tags pulumi.StringMapInput
-	// The VPC endpoint type, `Gateway` or `Interface`. Defaults to `Gateway`.
+	// The VPC endpoint type, `Gateway`, `GatewayLoadBalancer`, or `Interface`. Defaults to `Gateway`.
 	VpcEndpointType pulumi.StringPtrInput
 	// The ID of the VPC in which the endpoint will be used.
 	VpcId pulumi.StringInput
@@ -279,4 +289,43 @@ type VpcEndpointArgs struct {
 
 func (VpcEndpointArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*vpcEndpointArgs)(nil)).Elem()
+}
+
+type VpcEndpointInput interface {
+	pulumi.Input
+
+	ToVpcEndpointOutput() VpcEndpointOutput
+	ToVpcEndpointOutputWithContext(ctx context.Context) VpcEndpointOutput
+}
+
+func (VpcEndpoint) ElementType() reflect.Type {
+	return reflect.TypeOf((*VpcEndpoint)(nil)).Elem()
+}
+
+func (i VpcEndpoint) ToVpcEndpointOutput() VpcEndpointOutput {
+	return i.ToVpcEndpointOutputWithContext(context.Background())
+}
+
+func (i VpcEndpoint) ToVpcEndpointOutputWithContext(ctx context.Context) VpcEndpointOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(VpcEndpointOutput)
+}
+
+type VpcEndpointOutput struct {
+	*pulumi.OutputState
+}
+
+func (VpcEndpointOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*VpcEndpointOutput)(nil)).Elem()
+}
+
+func (o VpcEndpointOutput) ToVpcEndpointOutput() VpcEndpointOutput {
+	return o
+}
+
+func (o VpcEndpointOutput) ToVpcEndpointOutputWithContext(ctx context.Context) VpcEndpointOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(VpcEndpointOutput{})
 }

@@ -4,6 +4,7 @@
 package backup
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -18,7 +19,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/backup"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/backup"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -28,8 +29,16 @@ import (
 // 			Rules: backup.PlanRuleArray{
 // 				&backup.PlanRuleArgs{
 // 					RuleName:        pulumi.String("tf_example_backup_rule"),
+// 					TargetVaultName: pulumi.Any(aws_backup_vault.Test.Name),
 // 					Schedule:        pulumi.String("cron(0 12 * * ? *)"),
-// 					TargetVaultName: pulumi.String(aws_backup_vault.Test.Name),
+// 				},
+// 			},
+// 			AdvancedBackupSettings: backup.PlanAdvancedBackupSettingArray{
+// 				&backup.PlanAdvancedBackupSettingArgs{
+// 					BackupOptions: pulumi.StringMap{
+// 						"WindowsVSS": pulumi.String("enabled"),
+// 					},
+// 					ResourceType: pulumi.String("EC2"),
 // 				},
 // 			},
 // 		})
@@ -40,9 +49,19 @@ import (
 // 	})
 // }
 // ```
+//
+// ## Import
+//
+// Backup Plan can be imported using the `id`, e.g.
+//
+// ```sh
+//  $ pulumi import aws:backup/plan:Plan test <id>
+// ```
 type Plan struct {
 	pulumi.CustomResourceState
 
+	// An object that specifies backup options for each resource type.
+	AdvancedBackupSettings PlanAdvancedBackupSettingArrayOutput `pulumi:"advancedBackupSettings"`
 	// The ARN of the backup plan.
 	Arn pulumi.StringOutput `pulumi:"arn"`
 	// The display name of a backup plan.
@@ -58,11 +77,12 @@ type Plan struct {
 // NewPlan registers a new resource with the given unique name, arguments, and options.
 func NewPlan(ctx *pulumi.Context,
 	name string, args *PlanArgs, opts ...pulumi.ResourceOption) (*Plan, error) {
-	if args == nil || args.Rules == nil {
-		return nil, errors.New("missing required argument 'Rules'")
-	}
 	if args == nil {
-		args = &PlanArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.Rules == nil {
+		return nil, errors.New("invalid value for required argument 'Rules'")
 	}
 	var resource Plan
 	err := ctx.RegisterResource("aws:backup/plan:Plan", name, args, &resource, opts...)
@@ -86,6 +106,8 @@ func GetPlan(ctx *pulumi.Context,
 
 // Input properties used for looking up and filtering Plan resources.
 type planState struct {
+	// An object that specifies backup options for each resource type.
+	AdvancedBackupSettings []PlanAdvancedBackupSetting `pulumi:"advancedBackupSettings"`
 	// The ARN of the backup plan.
 	Arn *string `pulumi:"arn"`
 	// The display name of a backup plan.
@@ -99,6 +121,8 @@ type planState struct {
 }
 
 type PlanState struct {
+	// An object that specifies backup options for each resource type.
+	AdvancedBackupSettings PlanAdvancedBackupSettingArrayInput
 	// The ARN of the backup plan.
 	Arn pulumi.StringPtrInput
 	// The display name of a backup plan.
@@ -116,6 +140,8 @@ func (PlanState) ElementType() reflect.Type {
 }
 
 type planArgs struct {
+	// An object that specifies backup options for each resource type.
+	AdvancedBackupSettings []PlanAdvancedBackupSetting `pulumi:"advancedBackupSettings"`
 	// The display name of a backup plan.
 	Name *string `pulumi:"name"`
 	// A rule object that specifies a scheduled task that is used to back up a selection of resources.
@@ -126,6 +152,8 @@ type planArgs struct {
 
 // The set of arguments for constructing a Plan resource.
 type PlanArgs struct {
+	// An object that specifies backup options for each resource type.
+	AdvancedBackupSettings PlanAdvancedBackupSettingArrayInput
 	// The display name of a backup plan.
 	Name pulumi.StringPtrInput
 	// A rule object that specifies a scheduled task that is used to back up a selection of resources.
@@ -136,4 +164,43 @@ type PlanArgs struct {
 
 func (PlanArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*planArgs)(nil)).Elem()
+}
+
+type PlanInput interface {
+	pulumi.Input
+
+	ToPlanOutput() PlanOutput
+	ToPlanOutputWithContext(ctx context.Context) PlanOutput
+}
+
+func (Plan) ElementType() reflect.Type {
+	return reflect.TypeOf((*Plan)(nil)).Elem()
+}
+
+func (i Plan) ToPlanOutput() PlanOutput {
+	return i.ToPlanOutputWithContext(context.Background())
+}
+
+func (i Plan) ToPlanOutputWithContext(ctx context.Context) PlanOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(PlanOutput)
+}
+
+type PlanOutput struct {
+	*pulumi.OutputState
+}
+
+func (PlanOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*PlanOutput)(nil)).Elem()
+}
+
+func (o PlanOutput) ToPlanOutput() PlanOutput {
+	return o
+}
+
+func (o PlanOutput) ToPlanOutputWithContext(ctx context.Context) PlanOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(PlanOutput{})
 }

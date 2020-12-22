@@ -4,6 +4,7 @@
 package ec2
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -24,38 +25,9 @@ import (
 //
 // > **NOTE:** Referencing Security Groups across VPC peering has certain restrictions. More information is available in the [VPC Peering User Guide](https://docs.aws.amazon.com/vpc/latest/peering/vpc-peering-security-groups.html).
 //
-// ## Example Usage
-//
-// Basic usage
-//
-// ```go
-// package main
-//
-// import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/ec2"
-// 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
-// )
-//
-// func main() {
-// 	pulumi.Run(func(ctx *pulumi.Context) error {
-// 		_, err := ec2.NewSecurityGroupRule(ctx, "example", &ec2.SecurityGroupRuleArgs{
-// 			Type:            pulumi.String("ingress"),
-// 			FromPort:        pulumi.Int(0),
-// 			ToPort:          pulumi.Int(65535),
-// 			Protocol:        pulumi.String("tcp"),
-// 			CidrBlocks:      aws_vpc.Example.Cidr_block,
-// 			SecurityGroupId: pulumi.String("sg-123456"),
-// 		})
-// 		if err != nil {
-// 			return err
-// 		}
-// 		return nil
-// 	})
-// }
-// ```
 // ## Usage with prefix list IDs
 //
-// Prefix list IDs are manged by AWS internally. Prefix list IDs
+// Prefix list IDs are managed by AWS internally. Prefix list IDs
 // are associated with a prefix list name, or service name, that is linked to a specific region.
 // Prefix list IDs are exported on VPC Endpoints, so you can use this format:
 //
@@ -63,7 +35,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/ec2"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/ec2"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -74,14 +46,14 @@ import (
 // 			return err
 // 		}
 // 		_, err = ec2.NewSecurityGroupRule(ctx, "allowAll", &ec2.SecurityGroupRuleArgs{
-// 			FromPort: pulumi.Int(0),
+// 			Type:     pulumi.String("egress"),
+// 			ToPort:   pulumi.Int(0),
+// 			Protocol: pulumi.String("-1"),
 // 			PrefixListIds: pulumi.StringArray{
 // 				myEndpoint.PrefixListId,
 // 			},
-// 			Protocol:        pulumi.String("-1"),
+// 			FromPort:        pulumi.Int(0),
 // 			SecurityGroupId: pulumi.String("sg-123456"),
-// 			ToPort:          pulumi.Int(0),
-// 			Type:            pulumi.String("egress"),
 // 		})
 // 		if err != nil {
 // 			return err
@@ -89,6 +61,44 @@ import (
 // 		return nil
 // 	})
 // }
+// ```
+//
+// ## Import
+//
+// ### Examples Import an ingress rule in security group `sg-6e616f6d69` for TCP port 8000 with an IPv4 destination CIDR of `10.0.3.0/24`console
+//
+// ```sh
+//  $ pulumi import aws:ec2/securityGroupRule:SecurityGroupRule ingress sg-6e616f6d69_ingress_tcp_8000_8000_10.0.3.0/24
+// ```
+//
+//  Import a rule with various IPv4 and IPv6 source CIDR blocksconsole
+//
+// ```sh
+//  $ pulumi import aws:ec2/securityGroupRule:SecurityGroupRule ingress sg-4973616163_ingress_tcp_100_121_10.1.0.0/16_2001:db8::/48_10.2.0.0/16_2002:db8::/48
+// ```
+//
+//  Import a rule, applicable to all ports, with a protocol other than TCP/UDP/ICMP/ALL, e.g., Multicast Transport Protocol (MTP), using the IANA protocol number, e.g., 92. console
+//
+// ```sh
+//  $ pulumi import aws:ec2/securityGroupRule:SecurityGroupRule ingress sg-6777656e646f6c796e_ingress_92_0_65536_10.0.3.0/24_10.0.4.0/24
+// ```
+//
+//  Import an egress rule with a prefix list ID destinationconsole
+//
+// ```sh
+//  $ pulumi import aws:ec2/securityGroupRule:SecurityGroupRule egress sg-62726f6479_egress_tcp_8000_8000_pl-6469726b
+// ```
+//
+//  Import a rule applicable to all protocols and ports with a security group sourceconsole
+//
+// ```sh
+//  $ pulumi import aws:ec2/securityGroupRule:SecurityGroupRule ingress_rule sg-7472697374616e_ingress_all_0_65536_sg-6176657279
+// ```
+//
+//  Import a rule that has itself and an IPv6 CIDR block as sourcesconsole
+//
+// ```sh
+//  $ pulumi import aws:ec2/securityGroupRule:SecurityGroupRule rule_name sg-656c65616e6f72_ingress_tcp_80_80_self_2001:db8::/48
 // ```
 type SecurityGroupRule struct {
 	pulumi.CustomResourceState
@@ -124,23 +134,24 @@ type SecurityGroupRule struct {
 // NewSecurityGroupRule registers a new resource with the given unique name, arguments, and options.
 func NewSecurityGroupRule(ctx *pulumi.Context,
 	name string, args *SecurityGroupRuleArgs, opts ...pulumi.ResourceOption) (*SecurityGroupRule, error) {
-	if args == nil || args.FromPort == nil {
-		return nil, errors.New("missing required argument 'FromPort'")
-	}
-	if args == nil || args.Protocol == nil {
-		return nil, errors.New("missing required argument 'Protocol'")
-	}
-	if args == nil || args.SecurityGroupId == nil {
-		return nil, errors.New("missing required argument 'SecurityGroupId'")
-	}
-	if args == nil || args.ToPort == nil {
-		return nil, errors.New("missing required argument 'ToPort'")
-	}
-	if args == nil || args.Type == nil {
-		return nil, errors.New("missing required argument 'Type'")
-	}
 	if args == nil {
-		args = &SecurityGroupRuleArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.FromPort == nil {
+		return nil, errors.New("invalid value for required argument 'FromPort'")
+	}
+	if args.Protocol == nil {
+		return nil, errors.New("invalid value for required argument 'Protocol'")
+	}
+	if args.SecurityGroupId == nil {
+		return nil, errors.New("invalid value for required argument 'SecurityGroupId'")
+	}
+	if args.ToPort == nil {
+		return nil, errors.New("invalid value for required argument 'ToPort'")
+	}
+	if args.Type == nil {
+		return nil, errors.New("invalid value for required argument 'Type'")
 	}
 	var resource SecurityGroupRule
 	err := ctx.RegisterResource("aws:ec2/securityGroupRule:SecurityGroupRule", name, args, &resource, opts...)
@@ -286,4 +297,43 @@ type SecurityGroupRuleArgs struct {
 
 func (SecurityGroupRuleArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*securityGroupRuleArgs)(nil)).Elem()
+}
+
+type SecurityGroupRuleInput interface {
+	pulumi.Input
+
+	ToSecurityGroupRuleOutput() SecurityGroupRuleOutput
+	ToSecurityGroupRuleOutputWithContext(ctx context.Context) SecurityGroupRuleOutput
+}
+
+func (SecurityGroupRule) ElementType() reflect.Type {
+	return reflect.TypeOf((*SecurityGroupRule)(nil)).Elem()
+}
+
+func (i SecurityGroupRule) ToSecurityGroupRuleOutput() SecurityGroupRuleOutput {
+	return i.ToSecurityGroupRuleOutputWithContext(context.Background())
+}
+
+func (i SecurityGroupRule) ToSecurityGroupRuleOutputWithContext(ctx context.Context) SecurityGroupRuleOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(SecurityGroupRuleOutput)
+}
+
+type SecurityGroupRuleOutput struct {
+	*pulumi.OutputState
+}
+
+func (SecurityGroupRuleOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*SecurityGroupRuleOutput)(nil)).Elem()
+}
+
+func (o SecurityGroupRuleOutput) ToSecurityGroupRuleOutput() SecurityGroupRuleOutput {
+	return o
+}
+
+func (o SecurityGroupRuleOutput) ToSecurityGroupRuleOutputWithContext(ctx context.Context) SecurityGroupRuleOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(SecurityGroupRuleOutput{})
 }

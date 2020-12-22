@@ -17,9 +17,17 @@ import * as utilities from "../utilities";
  *
  * const app = new aws.pinpoint.App("app", {});
  * const gcm = new aws.pinpoint.GcmChannel("gcm", {
- *     apiKey: "api_key",
  *     applicationId: app.applicationId,
+ *     apiKey: "api_key",
  * });
+ * ```
+ *
+ * ## Import
+ *
+ * Pinpoint GCM Channel can be imported using the `application-id`, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:pinpoint/gcmChannel:GcmChannel gcm application-id
  * ```
  */
 export class GcmChannel extends pulumi.CustomResource {
@@ -80,10 +88,10 @@ export class GcmChannel extends pulumi.CustomResource {
             inputs["enabled"] = state ? state.enabled : undefined;
         } else {
             const args = argsOrState as GcmChannelArgs | undefined;
-            if (!args || args.apiKey === undefined) {
+            if ((!args || args.apiKey === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'apiKey'");
             }
-            if (!args || args.applicationId === undefined) {
+            if ((!args || args.applicationId === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'applicationId'");
             }
             inputs["apiKey"] = args ? args.apiKey : undefined;

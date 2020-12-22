@@ -4,6 +4,7 @@
 package mediastore
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -20,8 +21,8 @@ import (
 // import (
 // 	"fmt"
 //
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws"
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/mediastore"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/mediastore"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -42,7 +43,7 @@ import (
 // 		_, err = mediastore.NewContainerPolicy(ctx, "exampleContainerPolicy", &mediastore.ContainerPolicyArgs{
 // 			ContainerName: exampleContainer.Name,
 // 			Policy: exampleContainer.Name.ApplyT(func(name string) (string, error) {
-// 				return fmt.Sprintf("%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v", "{\n", "	\"Version\": \"2012-10-17\",\n", "	\"Statement\": [{\n", "		\"Sid\": \"MediaStoreFullAccess\",\n", "		\"Action\": [ \"mediastore:*\" ],\n", "		\"Principal\": {\"AWS\" : \"arn:aws:iam::", currentCallerIdentity.AccountId, ":root\"},\n", "		\"Effect\": \"Allow\",\n", "		\"Resource\": \"arn:aws:mediastore:", currentRegion.Name, ":", currentCallerIdentity.AccountId, ":container/", name, "/*\",\n", "		\"Condition\": {\n", "			\"Bool\": { \"aws:SecureTransport\": \"true\" }\n", "		}\n", "	}]\n", "}\n", "\n"), nil
+// 				return fmt.Sprintf("%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v", "{\n", "	\"Version\": \"2012-10-17\",\n", "	\"Statement\": [{\n", "		\"Sid\": \"MediaStoreFullAccess\",\n", "		\"Action\": [ \"mediastore:*\" ],\n", "		\"Principal\": {\"AWS\" : \"arn:aws:iam::", currentCallerIdentity.AccountId, ":root\"},\n", "		\"Effect\": \"Allow\",\n", "		\"Resource\": \"arn:aws:mediastore:", currentRegion.Name, ":", currentCallerIdentity.AccountId, ":container/", name, "/*\",\n", "		\"Condition\": {\n", "			\"Bool\": { \"aws:SecureTransport\": \"true\" }\n", "		}\n", "	}]\n", "}\n"), nil
 // 			}).(pulumi.StringOutput),
 // 		})
 // 		if err != nil {
@@ -51,6 +52,14 @@ import (
 // 		return nil
 // 	})
 // }
+// ```
+//
+// ## Import
+//
+// MediaStore Container Policy can be imported using the MediaStore Container Name, e.g.
+//
+// ```sh
+//  $ pulumi import aws:mediastore/containerPolicy:ContainerPolicy example example
 // ```
 type ContainerPolicy struct {
 	pulumi.CustomResourceState
@@ -64,14 +73,15 @@ type ContainerPolicy struct {
 // NewContainerPolicy registers a new resource with the given unique name, arguments, and options.
 func NewContainerPolicy(ctx *pulumi.Context,
 	name string, args *ContainerPolicyArgs, opts ...pulumi.ResourceOption) (*ContainerPolicy, error) {
-	if args == nil || args.ContainerName == nil {
-		return nil, errors.New("missing required argument 'ContainerName'")
-	}
-	if args == nil || args.Policy == nil {
-		return nil, errors.New("missing required argument 'Policy'")
-	}
 	if args == nil {
-		args = &ContainerPolicyArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.ContainerName == nil {
+		return nil, errors.New("invalid value for required argument 'ContainerName'")
+	}
+	if args.Policy == nil {
+		return nil, errors.New("invalid value for required argument 'Policy'")
 	}
 	var resource ContainerPolicy
 	err := ctx.RegisterResource("aws:mediastore/containerPolicy:ContainerPolicy", name, args, &resource, opts...)
@@ -129,4 +139,43 @@ type ContainerPolicyArgs struct {
 
 func (ContainerPolicyArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*containerPolicyArgs)(nil)).Elem()
+}
+
+type ContainerPolicyInput interface {
+	pulumi.Input
+
+	ToContainerPolicyOutput() ContainerPolicyOutput
+	ToContainerPolicyOutputWithContext(ctx context.Context) ContainerPolicyOutput
+}
+
+func (ContainerPolicy) ElementType() reflect.Type {
+	return reflect.TypeOf((*ContainerPolicy)(nil)).Elem()
+}
+
+func (i ContainerPolicy) ToContainerPolicyOutput() ContainerPolicyOutput {
+	return i.ToContainerPolicyOutputWithContext(context.Background())
+}
+
+func (i ContainerPolicy) ToContainerPolicyOutputWithContext(ctx context.Context) ContainerPolicyOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(ContainerPolicyOutput)
+}
+
+type ContainerPolicyOutput struct {
+	*pulumi.OutputState
+}
+
+func (ContainerPolicyOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*ContainerPolicyOutput)(nil)).Elem()
+}
+
+func (o ContainerPolicyOutput) ToContainerPolicyOutput() ContainerPolicyOutput {
+	return o
+}
+
+func (o ContainerPolicyOutput) ToContainerPolicyOutputWithContext(ctx context.Context) ContainerPolicyOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(ContainerPolicyOutput{})
 }

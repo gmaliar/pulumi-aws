@@ -32,6 +32,7 @@ namespace Pulumi.Aws.Ecr
     ///         });
     ///         var foopolicy = new Aws.Ecr.LifecyclePolicy("foopolicy", new Aws.Ecr.LifecyclePolicyArgs
     ///         {
+    ///             Repository = foo.Name,
     ///             Policy = @"{
     ///     ""rules"": [
     ///         {
@@ -49,9 +50,7 @@ namespace Pulumi.Aws.Ecr
     ///         }
     ///     ]
     /// }
-    /// 
     /// ",
-    ///             Repository = foo.Name,
     ///         });
     ///     }
     /// 
@@ -72,6 +71,7 @@ namespace Pulumi.Aws.Ecr
     ///         });
     ///         var foopolicy = new Aws.Ecr.LifecyclePolicy("foopolicy", new Aws.Ecr.LifecyclePolicyArgs
     ///         {
+    ///             Repository = foo.Name,
     ///             Policy = @"{
     ///     ""rules"": [
     ///         {
@@ -89,13 +89,19 @@ namespace Pulumi.Aws.Ecr
     ///         }
     ///     ]
     /// }
-    /// 
     /// ",
-    ///             Repository = foo.Name,
     ///         });
     ///     }
     /// 
     /// }
+    /// ```
+    /// 
+    /// ## Import
+    /// 
+    /// ECR Lifecycle Policy can be imported using the name of the repository, e.g.
+    /// 
+    /// ```sh
+    ///  $ pulumi import aws:ecr/lifecyclePolicy:LifecyclePolicy example tf-example
     /// ```
     /// </summary>
     public partial class LifecyclePolicy : Pulumi.CustomResource

@@ -7,8 +7,6 @@ import * as utilities from "../utilities";
 /**
  * Manages an Amazon Managed Streaming for Kafka configuration. More information can be found on the [MSK Developer Guide](https://docs.aws.amazon.com/msk/latest/developerguide/msk-configuration.html).
  *
- * > **NOTE:** The API does not support deleting MSK configurations. Removing this resource will only remove the this provider state for it.
- *
  * ## Example Usage
  *
  * ```typescript
@@ -21,6 +19,14 @@ import * as utilities from "../utilities";
  * delete.topic.enable = true
  * `,
  * });
+ * ```
+ *
+ * ## Import
+ *
+ * MSK configurations can be imported using the configuration ARN, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:msk/configuration:Configuration example arn:aws:kafka:us-west-2:123456789012:configuration/example/279c0212-d057-4dba-9aa9-1c4e5a25bfc7-3
  * ```
  */
 export class Configuration extends pulumi.CustomResource {
@@ -96,10 +102,10 @@ export class Configuration extends pulumi.CustomResource {
             inputs["serverProperties"] = state ? state.serverProperties : undefined;
         } else {
             const args = argsOrState as ConfigurationArgs | undefined;
-            if (!args || args.kafkaVersions === undefined) {
+            if ((!args || args.kafkaVersions === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'kafkaVersions'");
             }
-            if (!args || args.serverProperties === undefined) {
+            if ((!args || args.serverProperties === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'serverProperties'");
             }
             inputs["description"] = args ? args.description : undefined;

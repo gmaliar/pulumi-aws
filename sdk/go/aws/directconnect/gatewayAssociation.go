@@ -4,6 +4,7 @@
 package directconnect
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -23,8 +24,8 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/directconnect"
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/ec2"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/directconnect"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/ec2"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -49,8 +50,8 @@ import (
 // 			return err
 // 		}
 // 		_, err = directconnect.NewGatewayAssociation(ctx, "exampleGatewayAssociation", &directconnect.GatewayAssociationArgs{
-// 			AssociatedGatewayId: exampleVpnGateway.ID(),
 // 			DxGatewayId:         exampleGateway.ID(),
+// 			AssociatedGatewayId: exampleVpnGateway.ID(),
 // 		})
 // 		if err != nil {
 // 			return err
@@ -65,8 +66,8 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/directconnect"
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/ec2transitgateway"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/directconnect"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/ec2transitgateway"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -83,12 +84,12 @@ import (
 // 			return err
 // 		}
 // 		_, err = directconnect.NewGatewayAssociation(ctx, "exampleGatewayAssociation", &directconnect.GatewayAssociationArgs{
+// 			DxGatewayId:         exampleGateway.ID(),
+// 			AssociatedGatewayId: exampleTransitGateway.ID(),
 // 			AllowedPrefixes: pulumi.StringArray{
 // 				pulumi.String("10.255.255.0/30"),
 // 				pulumi.String("10.255.255.8/30"),
 // 			},
-// 			AssociatedGatewayId: exampleTransitGateway.ID(),
-// 			DxGatewayId:         exampleGateway.ID(),
 // 		})
 // 		if err != nil {
 // 			return err
@@ -103,8 +104,8 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/directconnect"
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/ec2"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/directconnect"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/ec2"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -129,12 +130,12 @@ import (
 // 			return err
 // 		}
 // 		_, err = directconnect.NewGatewayAssociation(ctx, "exampleGatewayAssociation", &directconnect.GatewayAssociationArgs{
+// 			DxGatewayId:         exampleGateway.ID(),
+// 			AssociatedGatewayId: exampleVpnGateway.ID(),
 // 			AllowedPrefixes: pulumi.StringArray{
 // 				pulumi.String("210.52.109.0/24"),
 // 				pulumi.String("175.45.176.0/22"),
 // 			},
-// 			AssociatedGatewayId: exampleVpnGateway.ID(),
-// 			DxGatewayId:         exampleGateway.ID(),
 // 		})
 // 		if err != nil {
 // 			return err
@@ -144,7 +145,13 @@ import (
 // }
 // ```
 //
-// A full example of how to create a VPN Gateway in one AWS account, create a Direct Connect Gateway in a second AWS account, and associate the VPN Gateway with the Direct Connect Gateway via the `directconnect.GatewayAssociationProposal` and `directconnect.GatewayAssociation` resources can be found in [the `./examples/dx-gateway-cross-account-vgw-association` directory within the Github Repository](https://github.com/providers/provider-aws/tree/master/examples/dx-gateway-cross-account-vgw-association).
+// ## Import
+//
+// Direct Connect gateway associations can be imported using `dx_gateway_id` together with `associated_gateway_id`, e.g.
+//
+// ```sh
+//  $ pulumi import aws:directconnect/gatewayAssociation:GatewayAssociation example dxgw-12345678/vgw-98765432
+// ```
 type GatewayAssociation struct {
 	pulumi.CustomResourceState
 
@@ -167,21 +174,17 @@ type GatewayAssociation struct {
 	// The ID of the Direct Connect gateway association proposal.
 	// Used for cross-account Direct Connect gateway associations.
 	ProposalId pulumi.StringPtrOutput `pulumi:"proposalId"`
-	// *Deprecated:* Use `associatedGatewayId` instead. The ID of the VGW with which to associate the gateway.
-	// Used for single account Direct Connect gateway associations.
-	//
-	// Deprecated: use 'associated_gateway_id' argument instead
-	VpnGatewayId pulumi.StringPtrOutput `pulumi:"vpnGatewayId"`
 }
 
 // NewGatewayAssociation registers a new resource with the given unique name, arguments, and options.
 func NewGatewayAssociation(ctx *pulumi.Context,
 	name string, args *GatewayAssociationArgs, opts ...pulumi.ResourceOption) (*GatewayAssociation, error) {
-	if args == nil || args.DxGatewayId == nil {
-		return nil, errors.New("missing required argument 'DxGatewayId'")
-	}
 	if args == nil {
-		args = &GatewayAssociationArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.DxGatewayId == nil {
+		return nil, errors.New("invalid value for required argument 'DxGatewayId'")
 	}
 	var resource GatewayAssociation
 	err := ctx.RegisterResource("aws:directconnect/gatewayAssociation:GatewayAssociation", name, args, &resource, opts...)
@@ -224,11 +227,6 @@ type gatewayAssociationState struct {
 	// The ID of the Direct Connect gateway association proposal.
 	// Used for cross-account Direct Connect gateway associations.
 	ProposalId *string `pulumi:"proposalId"`
-	// *Deprecated:* Use `associatedGatewayId` instead. The ID of the VGW with which to associate the gateway.
-	// Used for single account Direct Connect gateway associations.
-	//
-	// Deprecated: use 'associated_gateway_id' argument instead
-	VpnGatewayId *string `pulumi:"vpnGatewayId"`
 }
 
 type GatewayAssociationState struct {
@@ -251,11 +249,6 @@ type GatewayAssociationState struct {
 	// The ID of the Direct Connect gateway association proposal.
 	// Used for cross-account Direct Connect gateway associations.
 	ProposalId pulumi.StringPtrInput
-	// *Deprecated:* Use `associatedGatewayId` instead. The ID of the VGW with which to associate the gateway.
-	// Used for single account Direct Connect gateway associations.
-	//
-	// Deprecated: use 'associated_gateway_id' argument instead
-	VpnGatewayId pulumi.StringPtrInput
 }
 
 func (GatewayAssociationState) ElementType() reflect.Type {
@@ -276,11 +269,6 @@ type gatewayAssociationArgs struct {
 	// The ID of the Direct Connect gateway association proposal.
 	// Used for cross-account Direct Connect gateway associations.
 	ProposalId *string `pulumi:"proposalId"`
-	// *Deprecated:* Use `associatedGatewayId` instead. The ID of the VGW with which to associate the gateway.
-	// Used for single account Direct Connect gateway associations.
-	//
-	// Deprecated: use 'associated_gateway_id' argument instead
-	VpnGatewayId *string `pulumi:"vpnGatewayId"`
 }
 
 // The set of arguments for constructing a GatewayAssociation resource.
@@ -298,13 +286,47 @@ type GatewayAssociationArgs struct {
 	// The ID of the Direct Connect gateway association proposal.
 	// Used for cross-account Direct Connect gateway associations.
 	ProposalId pulumi.StringPtrInput
-	// *Deprecated:* Use `associatedGatewayId` instead. The ID of the VGW with which to associate the gateway.
-	// Used for single account Direct Connect gateway associations.
-	//
-	// Deprecated: use 'associated_gateway_id' argument instead
-	VpnGatewayId pulumi.StringPtrInput
 }
 
 func (GatewayAssociationArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*gatewayAssociationArgs)(nil)).Elem()
+}
+
+type GatewayAssociationInput interface {
+	pulumi.Input
+
+	ToGatewayAssociationOutput() GatewayAssociationOutput
+	ToGatewayAssociationOutputWithContext(ctx context.Context) GatewayAssociationOutput
+}
+
+func (GatewayAssociation) ElementType() reflect.Type {
+	return reflect.TypeOf((*GatewayAssociation)(nil)).Elem()
+}
+
+func (i GatewayAssociation) ToGatewayAssociationOutput() GatewayAssociationOutput {
+	return i.ToGatewayAssociationOutputWithContext(context.Background())
+}
+
+func (i GatewayAssociation) ToGatewayAssociationOutputWithContext(ctx context.Context) GatewayAssociationOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(GatewayAssociationOutput)
+}
+
+type GatewayAssociationOutput struct {
+	*pulumi.OutputState
+}
+
+func (GatewayAssociationOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*GatewayAssociationOutput)(nil)).Elem()
+}
+
+func (o GatewayAssociationOutput) ToGatewayAssociationOutput() GatewayAssociationOutput {
+	return o
+}
+
+func (o GatewayAssociationOutput) ToGatewayAssociationOutputWithContext(ctx context.Context) GatewayAssociationOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(GatewayAssociationOutput{})
 }

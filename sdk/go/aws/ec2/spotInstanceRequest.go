@@ -4,6 +4,7 @@
 package ec2
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -39,7 +40,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/ec2"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/ec2"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -151,6 +152,8 @@ type SpotInstanceRequest struct {
 	// Customize details about the root block
 	// device of the instance. See Block Devices below for details.
 	RootBlockDevice SpotInstanceRequestRootBlockDeviceOutput `pulumi:"rootBlockDevice"`
+	// A list of secondary private IPv4 addresses to assign to the instance's primary network interface (eth0) in a VPC. Can only be assigned to the primary network interface (eth0) attached at instance creation, not a pre-existing network interface i.e. referenced in a `networkInterface` block. Refer to the [Elastic network interfaces documentation](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using-eni.html#AvailableIpPerENI) to see the maximum number of private IP addresses allowed per instance type.
+	SecondaryPrivateIps pulumi.StringArrayOutput `pulumi:"secondaryPrivateIps"`
 	// A list of security group names (EC2-Classic) or IDs (default VPC) to associate with.
 	SecurityGroups pulumi.StringArrayOutput `pulumi:"securityGroups"`
 	// Controls if traffic is routed to the instance when
@@ -199,14 +202,15 @@ type SpotInstanceRequest struct {
 // NewSpotInstanceRequest registers a new resource with the given unique name, arguments, and options.
 func NewSpotInstanceRequest(ctx *pulumi.Context,
 	name string, args *SpotInstanceRequestArgs, opts ...pulumi.ResourceOption) (*SpotInstanceRequest, error) {
-	if args == nil || args.Ami == nil {
-		return nil, errors.New("missing required argument 'Ami'")
-	}
-	if args == nil || args.InstanceType == nil {
-		return nil, errors.New("missing required argument 'InstanceType'")
-	}
 	if args == nil {
-		args = &SpotInstanceRequestArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.Ami == nil {
+		return nil, errors.New("invalid value for required argument 'Ami'")
+	}
+	if args.InstanceType == nil {
+		return nil, errors.New("invalid value for required argument 'InstanceType'")
 	}
 	var resource SpotInstanceRequest
 	err := ctx.RegisterResource("aws:ec2/spotInstanceRequest:SpotInstanceRequest", name, args, &resource, opts...)
@@ -318,6 +322,8 @@ type spotInstanceRequestState struct {
 	// Customize details about the root block
 	// device of the instance. See Block Devices below for details.
 	RootBlockDevice *SpotInstanceRequestRootBlockDevice `pulumi:"rootBlockDevice"`
+	// A list of secondary private IPv4 addresses to assign to the instance's primary network interface (eth0) in a VPC. Can only be assigned to the primary network interface (eth0) attached at instance creation, not a pre-existing network interface i.e. referenced in a `networkInterface` block. Refer to the [Elastic network interfaces documentation](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using-eni.html#AvailableIpPerENI) to see the maximum number of private IP addresses allowed per instance type.
+	SecondaryPrivateIps []string `pulumi:"secondaryPrivateIps"`
 	// A list of security group names (EC2-Classic) or IDs (default VPC) to associate with.
 	SecurityGroups []string `pulumi:"securityGroups"`
 	// Controls if traffic is routed to the instance when
@@ -452,6 +458,8 @@ type SpotInstanceRequestState struct {
 	// Customize details about the root block
 	// device of the instance. See Block Devices below for details.
 	RootBlockDevice SpotInstanceRequestRootBlockDevicePtrInput
+	// A list of secondary private IPv4 addresses to assign to the instance's primary network interface (eth0) in a VPC. Can only be assigned to the primary network interface (eth0) attached at instance creation, not a pre-existing network interface i.e. referenced in a `networkInterface` block. Refer to the [Elastic network interfaces documentation](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using-eni.html#AvailableIpPerENI) to see the maximum number of private IP addresses allowed per instance type.
+	SecondaryPrivateIps pulumi.StringArrayInput
 	// A list of security group names (EC2-Classic) or IDs (default VPC) to associate with.
 	SecurityGroups pulumi.StringArrayInput
 	// Controls if traffic is routed to the instance when
@@ -576,6 +584,8 @@ type spotInstanceRequestArgs struct {
 	// Customize details about the root block
 	// device of the instance. See Block Devices below for details.
 	RootBlockDevice *SpotInstanceRequestRootBlockDevice `pulumi:"rootBlockDevice"`
+	// A list of secondary private IPv4 addresses to assign to the instance's primary network interface (eth0) in a VPC. Can only be assigned to the primary network interface (eth0) attached at instance creation, not a pre-existing network interface i.e. referenced in a `networkInterface` block. Refer to the [Elastic network interfaces documentation](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using-eni.html#AvailableIpPerENI) to see the maximum number of private IP addresses allowed per instance type.
+	SecondaryPrivateIps []string `pulumi:"secondaryPrivateIps"`
 	// A list of security group names (EC2-Classic) or IDs (default VPC) to associate with.
 	SecurityGroups []string `pulumi:"securityGroups"`
 	// Controls if traffic is routed to the instance when
@@ -686,6 +696,8 @@ type SpotInstanceRequestArgs struct {
 	// Customize details about the root block
 	// device of the instance. See Block Devices below for details.
 	RootBlockDevice SpotInstanceRequestRootBlockDevicePtrInput
+	// A list of secondary private IPv4 addresses to assign to the instance's primary network interface (eth0) in a VPC. Can only be assigned to the primary network interface (eth0) attached at instance creation, not a pre-existing network interface i.e. referenced in a `networkInterface` block. Refer to the [Elastic network interfaces documentation](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using-eni.html#AvailableIpPerENI) to see the maximum number of private IP addresses allowed per instance type.
+	SecondaryPrivateIps pulumi.StringArrayInput
 	// A list of security group names (EC2-Classic) or IDs (default VPC) to associate with.
 	SecurityGroups pulumi.StringArrayInput
 	// Controls if traffic is routed to the instance when
@@ -722,4 +734,43 @@ type SpotInstanceRequestArgs struct {
 
 func (SpotInstanceRequestArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*spotInstanceRequestArgs)(nil)).Elem()
+}
+
+type SpotInstanceRequestInput interface {
+	pulumi.Input
+
+	ToSpotInstanceRequestOutput() SpotInstanceRequestOutput
+	ToSpotInstanceRequestOutputWithContext(ctx context.Context) SpotInstanceRequestOutput
+}
+
+func (SpotInstanceRequest) ElementType() reflect.Type {
+	return reflect.TypeOf((*SpotInstanceRequest)(nil)).Elem()
+}
+
+func (i SpotInstanceRequest) ToSpotInstanceRequestOutput() SpotInstanceRequestOutput {
+	return i.ToSpotInstanceRequestOutputWithContext(context.Background())
+}
+
+func (i SpotInstanceRequest) ToSpotInstanceRequestOutputWithContext(ctx context.Context) SpotInstanceRequestOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(SpotInstanceRequestOutput)
+}
+
+type SpotInstanceRequestOutput struct {
+	*pulumi.OutputState
+}
+
+func (SpotInstanceRequestOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*SpotInstanceRequestOutput)(nil)).Elem()
+}
+
+func (o SpotInstanceRequestOutput) ToSpotInstanceRequestOutput() SpotInstanceRequestOutput {
+	return o
+}
+
+func (o SpotInstanceRequestOutput) ToSpotInstanceRequestOutputWithContext(ctx context.Context) SpotInstanceRequestOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(SpotInstanceRequestOutput{})
 }

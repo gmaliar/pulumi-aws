@@ -4,6 +4,7 @@
 package servicequotas
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -18,7 +19,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/servicequotas"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/servicequotas"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -35,6 +36,14 @@ import (
 // 		return nil
 // 	})
 // }
+// ```
+//
+// ## Import
+//
+// ~> *NOTE* This resource does not require explicit import and will assume management of an existing service quota on resource creation. `aws_servicequotas_service_quota` can be imported by using the service code and quota code, separated by a front slash (`/`), e.g.
+//
+// ```sh
+//  $ pulumi import aws:servicequotas/serviceQuota:ServiceQuota example vpc/L-F678F1CE
 // ```
 type ServiceQuota struct {
 	pulumi.CustomResourceState
@@ -62,17 +71,18 @@ type ServiceQuota struct {
 // NewServiceQuota registers a new resource with the given unique name, arguments, and options.
 func NewServiceQuota(ctx *pulumi.Context,
 	name string, args *ServiceQuotaArgs, opts ...pulumi.ResourceOption) (*ServiceQuota, error) {
-	if args == nil || args.QuotaCode == nil {
-		return nil, errors.New("missing required argument 'QuotaCode'")
-	}
-	if args == nil || args.ServiceCode == nil {
-		return nil, errors.New("missing required argument 'ServiceCode'")
-	}
-	if args == nil || args.Value == nil {
-		return nil, errors.New("missing required argument 'Value'")
-	}
 	if args == nil {
-		args = &ServiceQuotaArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.QuotaCode == nil {
+		return nil, errors.New("invalid value for required argument 'QuotaCode'")
+	}
+	if args.ServiceCode == nil {
+		return nil, errors.New("invalid value for required argument 'ServiceCode'")
+	}
+	if args.Value == nil {
+		return nil, errors.New("invalid value for required argument 'Value'")
 	}
 	var resource ServiceQuota
 	err := ctx.RegisterResource("aws:servicequotas/serviceQuota:ServiceQuota", name, args, &resource, opts...)
@@ -162,4 +172,43 @@ type ServiceQuotaArgs struct {
 
 func (ServiceQuotaArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*serviceQuotaArgs)(nil)).Elem()
+}
+
+type ServiceQuotaInput interface {
+	pulumi.Input
+
+	ToServiceQuotaOutput() ServiceQuotaOutput
+	ToServiceQuotaOutputWithContext(ctx context.Context) ServiceQuotaOutput
+}
+
+func (ServiceQuota) ElementType() reflect.Type {
+	return reflect.TypeOf((*ServiceQuota)(nil)).Elem()
+}
+
+func (i ServiceQuota) ToServiceQuotaOutput() ServiceQuotaOutput {
+	return i.ToServiceQuotaOutputWithContext(context.Background())
+}
+
+func (i ServiceQuota) ToServiceQuotaOutputWithContext(ctx context.Context) ServiceQuotaOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(ServiceQuotaOutput)
+}
+
+type ServiceQuotaOutput struct {
+	*pulumi.OutputState
+}
+
+func (ServiceQuotaOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*ServiceQuotaOutput)(nil)).Elem()
+}
+
+func (o ServiceQuotaOutput) ToServiceQuotaOutput() ServiceQuotaOutput {
+	return o
+}
+
+func (o ServiceQuotaOutput) ToServiceQuotaOutputWithContext(ctx context.Context) ServiceQuotaOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(ServiceQuotaOutput{})
 }

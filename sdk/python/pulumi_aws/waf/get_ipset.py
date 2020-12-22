@@ -5,9 +5,16 @@
 import warnings
 import pulumi
 import pulumi.runtime
-from typing import Union
-from .. import utilities, tables
+from typing import Any, Mapping, Optional, Sequence, Union
+from .. import _utilities, _tables
 
+__all__ = [
+    'GetIpsetResult',
+    'AwaitableGetIpsetResult',
+    'get_ipset',
+]
+
+@pulumi.output_type
 class GetIpsetResult:
     """
     A collection of values returned by getIpset.
@@ -15,13 +22,25 @@ class GetIpsetResult:
     def __init__(__self__, id=None, name=None):
         if id and not isinstance(id, str):
             raise TypeError("Expected argument 'id' to be a str")
-        __self__.id = id
+        pulumi.set(__self__, "id", id)
+        if name and not isinstance(name, str):
+            raise TypeError("Expected argument 'name' to be a str")
+        pulumi.set(__self__, "name", name)
+
+    @property
+    @pulumi.getter
+    def id(self) -> str:
         """
         The provider-assigned unique ID for this managed resource.
         """
-        if name and not isinstance(name, str):
-            raise TypeError("Expected argument 'name' to be a str")
-        __self__.name = name
+        return pulumi.get(self, "id")
+
+    @property
+    @pulumi.getter
+    def name(self) -> str:
+        return pulumi.get(self, "name")
+
+
 class AwaitableGetIpsetResult(GetIpsetResult):
     # pylint: disable=using-constant-test
     def __await__(self):
@@ -31,7 +50,9 @@ class AwaitableGetIpsetResult(GetIpsetResult):
             id=self.id,
             name=self.name)
 
-def get_ipset(name=None,opts=None):
+
+def get_ipset(name: Optional[str] = None,
+              opts: Optional[pulumi.InvokeOptions] = None) -> AwaitableGetIpsetResult:
     """
     `waf.IpSet` Retrieves a WAF IP Set Resource Id.
 
@@ -48,15 +69,13 @@ def get_ipset(name=None,opts=None):
     :param str name: The name of the WAF IP set.
     """
     __args__ = dict()
-
-
     __args__['name'] = name
     if opts is None:
         opts = pulumi.InvokeOptions()
     if opts.version is None:
-        opts.version = utilities.get_version()
-    __ret__ = pulumi.runtime.invoke('aws:waf/getIpset:getIpset', __args__, opts=opts).value
+        opts.version = _utilities.get_version()
+    __ret__ = pulumi.runtime.invoke('aws:waf/getIpset:getIpset', __args__, opts=opts, typ=GetIpsetResult).value
 
     return AwaitableGetIpsetResult(
-        id=__ret__.get('id'),
-        name=__ret__.get('name'))
+        id=__ret__.id,
+        name=__ret__.name)

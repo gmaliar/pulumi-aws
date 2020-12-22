@@ -5,20 +5,21 @@
 import warnings
 import pulumi
 import pulumi.runtime
-from typing import Union
-from .. import utilities, tables
+from typing import Any, Mapping, Optional, Sequence, Union
+from .. import _utilities, _tables
+
+__all__ = ['QueryLog']
 
 
 class QueryLog(pulumi.CustomResource):
-    cloudwatch_log_group_arn: pulumi.Output[str]
-    """
-    CloudWatch log group ARN to send query logs.
-    """
-    zone_id: pulumi.Output[str]
-    """
-    Route53 hosted zone ID to enable query logs.
-    """
-    def __init__(__self__, resource_name, opts=None, cloudwatch_log_group_arn=None, zone_id=None, __props__=None, __name__=None, __opts__=None):
+    def __init__(__self__,
+                 resource_name: str,
+                 opts: Optional[pulumi.ResourceOptions] = None,
+                 cloudwatch_log_group_arn: Optional[pulumi.Input[str]] = None,
+                 zone_id: Optional[pulumi.Input[str]] = None,
+                 __props__=None,
+                 __name__=None,
+                 __opts__=None):
         """
         Provides a Route53 query logging configuration resource.
 
@@ -35,29 +36,41 @@ class QueryLog(pulumi.CustomResource):
         import pulumi_aws as aws
         import pulumi_pulumi as pulumi
 
+        # Example CloudWatch log group in us-east-1
         us_east_1 = pulumi.providers.Aws("us-east-1", region="us-east-1")
         aws_route53_example_com = aws.cloudwatch.LogGroup("awsRoute53ExampleCom", retention_in_days=30,
-        opts=ResourceOptions(provider="aws.us-east-1"))
-        route53_query_logging_policy_policy_document = aws.iam.get_policy_document(statements=[{
-            "actions": [
+        opts=pulumi.ResourceOptions(provider=aws["us-east-1"]))
+        # Example CloudWatch log resource policy to allow Route53 to write logs
+        # to any log group under /aws/route53/*
+        route53_query_logging_policy_policy_document = aws.iam.get_policy_document(statements=[aws.iam.GetPolicyDocumentStatementArgs(
+            actions=[
                 "logs:CreateLogStream",
                 "logs:PutLogEvents",
             ],
-            "principals": [{
-                "identifiers": ["route53.amazonaws.com"],
-                "type": "Service",
-            }],
-            "resources": ["arn:aws:logs:*:*:log-group:/aws/route53/*"],
-        }])
+            resources=["arn:aws:logs:*:*:log-group:/aws/route53/*"],
+            principals=[aws.iam.GetPolicyDocumentStatementPrincipalArgs(
+                identifiers=["route53.amazonaws.com"],
+                type="Service",
+            )],
+        )])
         route53_query_logging_policy_log_resource_policy = aws.cloudwatch.LogResourcePolicy("route53-query-logging-policyLogResourcePolicy",
             policy_document=route53_query_logging_policy_policy_document.json,
             policy_name="route53-query-logging-policy",
-            opts=ResourceOptions(provider="aws.us-east-1"))
+            opts=pulumi.ResourceOptions(provider=aws["us-east-1"]))
+        # Example Route53 zone with query logging
         example_com_zone = aws.route53.Zone("exampleComZone")
         example_com_query_log = aws.route53.QueryLog("exampleComQueryLog",
             cloudwatch_log_group_arn=aws_route53_example_com.arn,
             zone_id=example_com_zone.zone_id,
-            opts=ResourceOptions(depends_on=["aws_cloudwatch_log_resource_policy.route53-query-logging-policy"]))
+            opts=pulumi.ResourceOptions(depends_on=[route53_query_logging_policy_log_resource_policy]))
+        ```
+
+        ## Import
+
+        Route53 query logging configurations can be imported using their ID, e.g.
+
+        ```sh
+         $ pulumi import aws:route53/queryLog:QueryLog example_com xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
         ```
 
         :param str resource_name: The name of the resource.
@@ -76,16 +89,16 @@ class QueryLog(pulumi.CustomResource):
         if not isinstance(opts, pulumi.ResourceOptions):
             raise TypeError('Expected resource options to be a ResourceOptions instance')
         if opts.version is None:
-            opts.version = utilities.get_version()
+            opts.version = _utilities.get_version()
         if opts.id is None:
             if __props__ is not None:
                 raise TypeError('__props__ is only valid when passed in combination with a valid opts.id to get an existing resource')
             __props__ = dict()
 
-            if cloudwatch_log_group_arn is None:
+            if cloudwatch_log_group_arn is None and not opts.urn:
                 raise TypeError("Missing required property 'cloudwatch_log_group_arn'")
             __props__['cloudwatch_log_group_arn'] = cloudwatch_log_group_arn
-            if zone_id is None:
+            if zone_id is None and not opts.urn:
                 raise TypeError("Missing required property 'zone_id'")
             __props__['zone_id'] = zone_id
         super(QueryLog, __self__).__init__(
@@ -95,13 +108,17 @@ class QueryLog(pulumi.CustomResource):
             opts)
 
     @staticmethod
-    def get(resource_name, id, opts=None, cloudwatch_log_group_arn=None, zone_id=None):
+    def get(resource_name: str,
+            id: pulumi.Input[str],
+            opts: Optional[pulumi.ResourceOptions] = None,
+            cloudwatch_log_group_arn: Optional[pulumi.Input[str]] = None,
+            zone_id: Optional[pulumi.Input[str]] = None) -> 'QueryLog':
         """
         Get an existing QueryLog resource's state with the given name, id, and optional extra
         properties used to qualify the lookup.
 
         :param str resource_name: The unique name of the resulting resource.
-        :param str id: The unique provider ID of the resource to lookup.
+        :param pulumi.Input[str] id: The unique provider ID of the resource to lookup.
         :param pulumi.ResourceOptions opts: Options for the resource.
         :param pulumi.Input[str] cloudwatch_log_group_arn: CloudWatch log group ARN to send query logs.
         :param pulumi.Input[str] zone_id: Route53 hosted zone ID to enable query logs.
@@ -114,8 +131,25 @@ class QueryLog(pulumi.CustomResource):
         __props__["zone_id"] = zone_id
         return QueryLog(resource_name, opts=opts, __props__=__props__)
 
+    @property
+    @pulumi.getter(name="cloudwatchLogGroupArn")
+    def cloudwatch_log_group_arn(self) -> pulumi.Output[str]:
+        """
+        CloudWatch log group ARN to send query logs.
+        """
+        return pulumi.get(self, "cloudwatch_log_group_arn")
+
+    @property
+    @pulumi.getter(name="zoneId")
+    def zone_id(self) -> pulumi.Output[str]:
+        """
+        Route53 hosted zone ID to enable query logs.
+        """
+        return pulumi.get(self, "zone_id")
+
     def translate_output_property(self, prop):
-        return tables._CAMEL_TO_SNAKE_CASE_TABLE.get(prop) or prop
+        return _tables.CAMEL_TO_SNAKE_CASE_TABLE.get(prop) or prop
 
     def translate_input_property(self, prop):
-        return tables._SNAKE_TO_CAMEL_CASE_TABLE.get(prop) or prop
+        return _tables.SNAKE_TO_CAMEL_CASE_TABLE.get(prop) or prop
+

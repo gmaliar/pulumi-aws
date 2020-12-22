@@ -10,189 +10,13 @@ using Pulumi.Serialization;
 namespace Pulumi.Aws.Lambda
 {
     /// <summary>
-    /// Provides a Lambda Function resource. Lambda allows you to trigger execution of code in response to events in AWS, enabling serverless backend solutions. The Lambda Function itself includes source code and runtime configuration.
+    /// ## Import
     /// 
-    /// For information about Lambda and how to use it, see [What is AWS Lambda?](https://docs.aws.amazon.com/lambda/latest/dg/welcome.html)
+    /// Lambda Functions can be imported using the `function_name`, e.g.
     /// 
-    /// &gt; **NOTE:** Due to [AWS Lambda improved VPC networking changes that began deploying in September 2019](https://aws.amazon.com/blogs/compute/announcing-improved-vpc-networking-for-aws-lambda-functions/), EC2 subnets and security groups associated with Lambda Functions can take up to 45 minutes to successfully delete.
-    /// 
-    /// ## Example Usage
-    /// ### Lambda Layers
-    /// 
-    /// ```csharp
-    /// using Pulumi;
-    /// using Aws = Pulumi.Aws;
-    /// 
-    /// class MyStack : Stack
-    /// {
-    ///     public MyStack()
-    ///     {
-    ///         var exampleLayerVersion = new Aws.Lambda.LayerVersion("exampleLayerVersion", new Aws.Lambda.LayerVersionArgs
-    ///         {
-    ///         });
-    ///         var exampleFunction = new Aws.Lambda.Function("exampleFunction", new Aws.Lambda.FunctionArgs
-    ///         {
-    ///             Layers = 
-    ///             {
-    ///                 exampleLayerVersion.Arn,
-    ///             },
-    ///         });
-    ///     }
-    /// 
-    /// }
+    /// ```sh
+    ///  $ pulumi import aws:lambda/function:Function test_lambda my_test_lambda_function
     /// ```
-    /// ### Lambda File Systems
-    /// 
-    /// Lambda File Systems allow you to connect an Amazon Elastic File System (EFS) file system to a Lambda function to share data across function invocations, access existing data including large files, and save function state.
-    /// 
-    /// ```csharp
-    /// using Pulumi;
-    /// using Aws = Pulumi.Aws;
-    /// 
-    /// class MyStack : Stack
-    /// {
-    ///     public MyStack()
-    ///     {
-    ///         // EFS file system
-    ///         var efsForLambda = new Aws.Efs.FileSystem("efsForLambda", new Aws.Efs.FileSystemArgs
-    ///         {
-    ///             Tags = 
-    ///             {
-    ///                 { "Name", "efs_for_lambda" },
-    ///             },
-    ///         });
-    ///         // Mount target connects the file system to the subnet
-    ///         var alpha = new Aws.Efs.MountTarget("alpha", new Aws.Efs.MountTargetArgs
-    ///         {
-    ///             FileSystemId = efsForLambda.Id,
-    ///             SubnetId = aws_subnet.Subnet_for_lambda.Id,
-    ///             SecurityGroups = 
-    ///             {
-    ///                 aws_security_group.Sg_for_lambda.Id,
-    ///             },
-    ///         });
-    ///         // EFS access point used by lambda file system
-    ///         var accessPointForLambda = new Aws.Efs.AccessPoint("accessPointForLambda", new Aws.Efs.AccessPointArgs
-    ///         {
-    ///             FileSystemId = efsForLambda.Id,
-    ///             RootDirectory = new Aws.Efs.Inputs.AccessPointRootDirectoryArgs
-    ///             {
-    ///                 Path = "/lambda",
-    ///                 CreationInfo = new Aws.Efs.Inputs.AccessPointRootDirectoryCreationInfoArgs
-    ///                 {
-    ///                     OwnerGid = 1000,
-    ///                     OwnerUid = 1000,
-    ///                     Permissions = "777",
-    ///                 },
-    ///             },
-    ///             PosixUser = new Aws.Efs.Inputs.AccessPointPosixUserArgs
-    ///             {
-    ///                 Gid = 1000,
-    ///                 Uid = 1000,
-    ///             },
-    ///         });
-    ///         // A lambda function connected to an EFS file system
-    ///         // ... other configuration ...
-    ///         var example = new Aws.Lambda.Function("example", new Aws.Lambda.FunctionArgs
-    ///         {
-    ///             FileSystemConfig = new Aws.Lambda.Inputs.FunctionFileSystemConfigArgs
-    ///             {
-    ///                 Arn = accessPointForLambda.Arn,
-    ///                 LocalMountPath = "/mnt/efs",
-    ///             },
-    ///             VpcConfig = new Aws.Lambda.Inputs.FunctionVpcConfigArgs
-    ///             {
-    ///                 SubnetIds = 
-    ///                 {
-    ///                     aws_subnet.Subnet_for_lambda.Id,
-    ///                 },
-    ///                 SecurityGroupIds = 
-    ///                 {
-    ///                     aws_security_group.Sg_for_lambda.Id,
-    ///                 },
-    ///             },
-    ///         }, new CustomResourceOptions
-    ///         {
-    ///             DependsOn = 
-    ///             {
-    ///                 alpha,
-    ///             },
-    ///         });
-    ///     }
-    /// 
-    /// }
-    /// ```
-    /// ### CloudWatch Logging and Permissions
-    /// 
-    /// For more information about CloudWatch Logs for Lambda, see the [Lambda User Guide](https://docs.aws.amazon.com/lambda/latest/dg/monitoring-functions-logs.html).
-    /// 
-    /// ```csharp
-    /// using Pulumi;
-    /// using Aws = Pulumi.Aws;
-    /// 
-    /// class MyStack : Stack
-    /// {
-    ///     public MyStack()
-    ///     {
-    ///         var testLambda = new Aws.Lambda.Function("testLambda", new Aws.Lambda.FunctionArgs
-    ///         {
-    ///         }, new CustomResourceOptions
-    ///         {
-    ///             DependsOn = 
-    ///             {
-    ///                 "aws_cloudwatch_log_group.example",
-    ///                 "aws_iam_role_policy_attachment.lambda_logs",
-    ///             },
-    ///         });
-    ///         // This is to optionally manage the CloudWatch Log Group for the Lambda Function.
-    ///         // If skipping this resource configuration, also add "logs:CreateLogGroup" to the IAM policy below.
-    ///         var example = new Aws.CloudWatch.LogGroup("example", new Aws.CloudWatch.LogGroupArgs
-    ///         {
-    ///             RetentionInDays = 14,
-    ///         });
-    ///         // See also the following AWS managed policy: AWSLambdaBasicExecutionRole
-    ///         var lambdaLogging = new Aws.Iam.Policy("lambdaLogging", new Aws.Iam.PolicyArgs
-    ///         {
-    ///             Description = "IAM policy for logging from a lambda",
-    ///             Path = "/",
-    ///             Policy = @"{
-    ///   ""Version"": ""2012-10-17"",
-    ///   ""Statement"": [
-    ///     {
-    ///       ""Action"": [
-    ///         ""logs:CreateLogGroup"",
-    ///         ""logs:CreateLogStream"",
-    ///         ""logs:PutLogEvents""
-    ///       ],
-    ///       ""Resource"": ""arn:aws:logs:*:*:*"",
-    ///       ""Effect"": ""Allow""
-    ///     }
-    ///   ]
-    /// }
-    /// 
-    /// ",
-    ///         });
-    ///         var lambdaLogs = new Aws.Iam.RolePolicyAttachment("lambdaLogs", new Aws.Iam.RolePolicyAttachmentArgs
-    ///         {
-    ///             PolicyArn = lambdaLogging.Arn,
-    ///             Role = aws_iam_role.Iam_for_lambda.Name,
-    ///         });
-    ///     }
-    /// 
-    /// }
-    /// ```
-    /// ## Specifying the Deployment Package
-    /// 
-    /// AWS Lambda expects source code to be provided as a deployment package whose structure varies depending on which `runtime` is in use.
-    /// See [Runtimes](https://docs.aws.amazon.com/lambda/latest/dg/API_CreateFunction.html#SSS-CreateFunction-request-Runtime) for the valid values of `runtime`. The expected structure of the deployment package can be found in
-    /// [the AWS Lambda documentation for each runtime](https://docs.aws.amazon.com/lambda/latest/dg/deployment-package-v2.html).
-    /// 
-    /// Once you have created your deployment package you can specify it either directly as a local file (using the `filename` argument) or
-    /// indirectly via Amazon S3 (using the `s3_bucket`, `s3_key` and `s3_object_version` arguments). When providing the deployment
-    /// package via S3 it may be useful to use the `aws.s3.BucketObject` resource to upload it.
-    /// 
-    /// For larger deployment packages it is recommended by Amazon to upload via S3, since the S3 API has better support for uploading
-    /// large files efficiently.
     /// </summary>
     public partial class Function : Pulumi.CustomResource
     {
@@ -203,10 +27,16 @@ namespace Pulumi.Aws.Lambda
         public Output<string> Arn { get; private set; } = null!;
 
         /// <summary>
-        /// The path to the function's deployment package within the local filesystem. If defined, The `s3_`-prefixed options cannot be used.
+        /// The path to the function's deployment package within the local filesystem. If defined, The `s3_`-prefixed options and `image_uri` cannot be used.
         /// </summary>
         [Output("code")]
         public Output<Archive?> Code { get; private set; } = null!;
+
+        /// <summary>
+        /// Amazon Resource Name (ARN) for a Code Signing Configuration.
+        /// </summary>
+        [Output("codeSigningConfigArn")]
+        public Output<string?> CodeSigningConfigArn { get; private set; } = null!;
 
         /// <summary>
         /// Nested block to configure the function's *dead letter queue*. See details below.
@@ -236,16 +66,28 @@ namespace Pulumi.Aws.Lambda
         /// The function [entrypoint](https://docs.aws.amazon.com/lambda/latest/dg/walkthrough-custom-events-create-test-function.html) in your code.
         /// </summary>
         [Output("handler")]
-        public Output<string> Handler { get; private set; } = null!;
+        public Output<string?> Handler { get; private set; } = null!;
 
         /// <summary>
-        /// The ARN to be used for invoking Lambda Function from API Gateway - to be used in `aws.apigateway.Integration`'s `uri`
+        /// The Lambda OCI image configurations. Fields documented below. See [Using container images with Lambda](https://docs.aws.amazon.com/lambda/latest/dg/lambda-images.html)
+        /// </summary>
+        [Output("imageConfig")]
+        public Output<Outputs.FunctionImageConfig?> ImageConfig { get; private set; } = null!;
+
+        /// <summary>
+        /// The ECR image URI containing the function's deployment package. Conflicts with `filename`, `s3_bucket`, `s3_key`, and `s3_object_version`.
+        /// </summary>
+        [Output("imageUri")]
+        public Output<string?> ImageUri { get; private set; } = null!;
+
+        /// <summary>
+        /// The ARN to be used for invoking Lambda Function from API Gateway - to be used in [`aws.apigateway.Integration`](https://www.terraform.io/docs/providers/aws/r/api_gateway_integration.html)'s `uri`
         /// </summary>
         [Output("invokeArn")]
         public Output<string> InvokeArn { get; private set; } = null!;
 
         /// <summary>
-        /// Amazon Resource Name (ARN) of the AWS Key Management Service (KMS) key that is used to encrypt environment variables. If this configuration is not provided when environment variables are in use, AWS Lambda uses a default service key. If this configuration is provided when environment variables are not in use, the AWS Lambda API does not save this configuration and this provider will show a perpetual difference of adding the key. To fix the perpetual difference, remove this configuration.
+        /// (Optional) The ARN for the KMS encryption key.
         /// </summary>
         [Output("kmsKeyArn")]
         public Output<string?> KmsKeyArn { get; private set; } = null!;
@@ -273,6 +115,12 @@ namespace Pulumi.Aws.Lambda
         /// </summary>
         [Output("name")]
         public Output<string> Name { get; private set; } = null!;
+
+        /// <summary>
+        /// The Lambda deployment package type. Valid values are `Zip` and `Image`. Defaults to `Zip`.
+        /// </summary>
+        [Output("packageType")]
+        public Output<string?> PackageType { get; private set; } = null!;
 
         /// <summary>
         /// Whether to publish creation/change as new Lambda Function Version. Defaults to `false`.
@@ -303,28 +151,40 @@ namespace Pulumi.Aws.Lambda
         /// See [Runtimes](https://docs.aws.amazon.com/lambda/latest/dg/API_CreateFunction.html#SSS-CreateFunction-request-Runtime) for valid values.
         /// </summary>
         [Output("runtime")]
-        public Output<string> Runtime { get; private set; } = null!;
+        public Output<string?> Runtime { get; private set; } = null!;
 
         /// <summary>
-        /// The S3 bucket location containing the function's deployment package. Conflicts with `filename`. This bucket must reside in the same AWS region where you are creating the Lambda function.
+        /// The S3 bucket location containing the function's deployment package. Conflicts with `filename` and `image_uri`. This bucket must reside in the same AWS region where you are creating the Lambda function.
         /// </summary>
         [Output("s3Bucket")]
         public Output<string?> S3Bucket { get; private set; } = null!;
 
         /// <summary>
-        /// The S3 key of an object containing the function's deployment package. Conflicts with `filename`.
+        /// The S3 key of an object containing the function's deployment package. Conflicts with `filename` and `image_uri`.
         /// </summary>
         [Output("s3Key")]
         public Output<string?> S3Key { get; private set; } = null!;
 
         /// <summary>
-        /// The object version containing the function's deployment package. Conflicts with `filename`.
+        /// The object version containing the function's deployment package. Conflicts with `filename` and `image_uri`.
         /// </summary>
         [Output("s3ObjectVersion")]
         public Output<string?> S3ObjectVersion { get; private set; } = null!;
 
         /// <summary>
-        /// Used to trigger updates. Must be set to a base64-encoded SHA256 hash of the package file specified with either `filename` or `s3_key`. The usual way to set this is `filebase64sha256("file.zip")` (this provider 0.11.12 and later) or `base64sha256(file("file.zip"))` (this provider 0.11.11 and earlier), where "file.zip" is the local filename of the lambda function source archive.
+        /// The Amazon Resource Name (ARN) of a signing job.
+        /// </summary>
+        [Output("signingJobArn")]
+        public Output<string> SigningJobArn { get; private set; } = null!;
+
+        /// <summary>
+        /// The Amazon Resource Name (ARN) for a signing profile version.
+        /// </summary>
+        [Output("signingProfileVersionArn")]
+        public Output<string> SigningProfileVersionArn { get; private set; } = null!;
+
+        /// <summary>
+        /// Base64-encoded representation of raw SHA-256 sum of the zip file, provided either via `filename` or `s3_*` parameters.
         /// </summary>
         [Output("sourceCodeHash")]
         public Output<string> SourceCodeHash { get; private set; } = null!;
@@ -336,7 +196,7 @@ namespace Pulumi.Aws.Lambda
         public Output<int> SourceCodeSize { get; private set; } = null!;
 
         /// <summary>
-        /// A mapping of tags to assign to the object.
+        /// A map of tags to assign to the object.
         /// </summary>
         [Output("tags")]
         public Output<ImmutableDictionary<string, string>?> Tags { get; private set; } = null!;
@@ -409,10 +269,16 @@ namespace Pulumi.Aws.Lambda
     public sealed class FunctionArgs : Pulumi.ResourceArgs
     {
         /// <summary>
-        /// The path to the function's deployment package within the local filesystem. If defined, The `s3_`-prefixed options cannot be used.
+        /// The path to the function's deployment package within the local filesystem. If defined, The `s3_`-prefixed options and `image_uri` cannot be used.
         /// </summary>
         [Input("code")]
         public Input<Archive>? Code { get; set; }
+
+        /// <summary>
+        /// Amazon Resource Name (ARN) for a Code Signing Configuration.
+        /// </summary>
+        [Input("codeSigningConfigArn")]
+        public Input<string>? CodeSigningConfigArn { get; set; }
 
         /// <summary>
         /// Nested block to configure the function's *dead letter queue*. See details below.
@@ -441,11 +307,23 @@ namespace Pulumi.Aws.Lambda
         /// <summary>
         /// The function [entrypoint](https://docs.aws.amazon.com/lambda/latest/dg/walkthrough-custom-events-create-test-function.html) in your code.
         /// </summary>
-        [Input("handler", required: true)]
-        public Input<string> Handler { get; set; } = null!;
+        [Input("handler")]
+        public Input<string>? Handler { get; set; }
 
         /// <summary>
-        /// Amazon Resource Name (ARN) of the AWS Key Management Service (KMS) key that is used to encrypt environment variables. If this configuration is not provided when environment variables are in use, AWS Lambda uses a default service key. If this configuration is provided when environment variables are not in use, the AWS Lambda API does not save this configuration and this provider will show a perpetual difference of adding the key. To fix the perpetual difference, remove this configuration.
+        /// The Lambda OCI image configurations. Fields documented below. See [Using container images with Lambda](https://docs.aws.amazon.com/lambda/latest/dg/lambda-images.html)
+        /// </summary>
+        [Input("imageConfig")]
+        public Input<Inputs.FunctionImageConfigArgs>? ImageConfig { get; set; }
+
+        /// <summary>
+        /// The ECR image URI containing the function's deployment package. Conflicts with `filename`, `s3_bucket`, `s3_key`, and `s3_object_version`.
+        /// </summary>
+        [Input("imageUri")]
+        public Input<string>? ImageUri { get; set; }
+
+        /// <summary>
+        /// (Optional) The ARN for the KMS encryption key.
         /// </summary>
         [Input("kmsKeyArn")]
         public Input<string>? KmsKeyArn { get; set; }
@@ -475,6 +353,12 @@ namespace Pulumi.Aws.Lambda
         public Input<string>? Name { get; set; }
 
         /// <summary>
+        /// The Lambda deployment package type. Valid values are `Zip` and `Image`. Defaults to `Zip`.
+        /// </summary>
+        [Input("packageType")]
+        public Input<string>? PackageType { get; set; }
+
+        /// <summary>
         /// Whether to publish creation/change as new Lambda Function Version. Defaults to `false`.
         /// </summary>
         [Input("publish")]
@@ -495,29 +379,29 @@ namespace Pulumi.Aws.Lambda
         /// <summary>
         /// See [Runtimes](https://docs.aws.amazon.com/lambda/latest/dg/API_CreateFunction.html#SSS-CreateFunction-request-Runtime) for valid values.
         /// </summary>
-        [Input("runtime", required: true)]
-        public Input<string> Runtime { get; set; } = null!;
+        [Input("runtime")]
+        public InputUnion<string, Pulumi.Aws.Lambda.Runtime>? Runtime { get; set; }
 
         /// <summary>
-        /// The S3 bucket location containing the function's deployment package. Conflicts with `filename`. This bucket must reside in the same AWS region where you are creating the Lambda function.
+        /// The S3 bucket location containing the function's deployment package. Conflicts with `filename` and `image_uri`. This bucket must reside in the same AWS region where you are creating the Lambda function.
         /// </summary>
         [Input("s3Bucket")]
         public Input<string>? S3Bucket { get; set; }
 
         /// <summary>
-        /// The S3 key of an object containing the function's deployment package. Conflicts with `filename`.
+        /// The S3 key of an object containing the function's deployment package. Conflicts with `filename` and `image_uri`.
         /// </summary>
         [Input("s3Key")]
         public Input<string>? S3Key { get; set; }
 
         /// <summary>
-        /// The object version containing the function's deployment package. Conflicts with `filename`.
+        /// The object version containing the function's deployment package. Conflicts with `filename` and `image_uri`.
         /// </summary>
         [Input("s3ObjectVersion")]
         public Input<string>? S3ObjectVersion { get; set; }
 
         /// <summary>
-        /// Used to trigger updates. Must be set to a base64-encoded SHA256 hash of the package file specified with either `filename` or `s3_key`. The usual way to set this is `filebase64sha256("file.zip")` (this provider 0.11.12 and later) or `base64sha256(file("file.zip"))` (this provider 0.11.11 and earlier), where "file.zip" is the local filename of the lambda function source archive.
+        /// Base64-encoded representation of raw SHA-256 sum of the zip file, provided either via `filename` or `s3_*` parameters.
         /// </summary>
         [Input("sourceCodeHash")]
         public Input<string>? SourceCodeHash { get; set; }
@@ -526,7 +410,7 @@ namespace Pulumi.Aws.Lambda
         private InputMap<string>? _tags;
 
         /// <summary>
-        /// A mapping of tags to assign to the object.
+        /// A map of tags to assign to the object.
         /// </summary>
         public InputMap<string> Tags
         {
@@ -563,10 +447,16 @@ namespace Pulumi.Aws.Lambda
         public Input<string>? Arn { get; set; }
 
         /// <summary>
-        /// The path to the function's deployment package within the local filesystem. If defined, The `s3_`-prefixed options cannot be used.
+        /// The path to the function's deployment package within the local filesystem. If defined, The `s3_`-prefixed options and `image_uri` cannot be used.
         /// </summary>
         [Input("code")]
         public Input<Archive>? Code { get; set; }
+
+        /// <summary>
+        /// Amazon Resource Name (ARN) for a Code Signing Configuration.
+        /// </summary>
+        [Input("codeSigningConfigArn")]
+        public Input<string>? CodeSigningConfigArn { get; set; }
 
         /// <summary>
         /// Nested block to configure the function's *dead letter queue*. See details below.
@@ -599,13 +489,25 @@ namespace Pulumi.Aws.Lambda
         public Input<string>? Handler { get; set; }
 
         /// <summary>
-        /// The ARN to be used for invoking Lambda Function from API Gateway - to be used in `aws.apigateway.Integration`'s `uri`
+        /// The Lambda OCI image configurations. Fields documented below. See [Using container images with Lambda](https://docs.aws.amazon.com/lambda/latest/dg/lambda-images.html)
+        /// </summary>
+        [Input("imageConfig")]
+        public Input<Inputs.FunctionImageConfigGetArgs>? ImageConfig { get; set; }
+
+        /// <summary>
+        /// The ECR image URI containing the function's deployment package. Conflicts with `filename`, `s3_bucket`, `s3_key`, and `s3_object_version`.
+        /// </summary>
+        [Input("imageUri")]
+        public Input<string>? ImageUri { get; set; }
+
+        /// <summary>
+        /// The ARN to be used for invoking Lambda Function from API Gateway - to be used in [`aws.apigateway.Integration`](https://www.terraform.io/docs/providers/aws/r/api_gateway_integration.html)'s `uri`
         /// </summary>
         [Input("invokeArn")]
         public Input<string>? InvokeArn { get; set; }
 
         /// <summary>
-        /// Amazon Resource Name (ARN) of the AWS Key Management Service (KMS) key that is used to encrypt environment variables. If this configuration is not provided when environment variables are in use, AWS Lambda uses a default service key. If this configuration is provided when environment variables are not in use, the AWS Lambda API does not save this configuration and this provider will show a perpetual difference of adding the key. To fix the perpetual difference, remove this configuration.
+        /// (Optional) The ARN for the KMS encryption key.
         /// </summary>
         [Input("kmsKeyArn")]
         public Input<string>? KmsKeyArn { get; set; }
@@ -641,6 +543,12 @@ namespace Pulumi.Aws.Lambda
         public Input<string>? Name { get; set; }
 
         /// <summary>
+        /// The Lambda deployment package type. Valid values are `Zip` and `Image`. Defaults to `Zip`.
+        /// </summary>
+        [Input("packageType")]
+        public Input<string>? PackageType { get; set; }
+
+        /// <summary>
         /// Whether to publish creation/change as new Lambda Function Version. Defaults to `false`.
         /// </summary>
         [Input("publish")]
@@ -669,28 +577,40 @@ namespace Pulumi.Aws.Lambda
         /// See [Runtimes](https://docs.aws.amazon.com/lambda/latest/dg/API_CreateFunction.html#SSS-CreateFunction-request-Runtime) for valid values.
         /// </summary>
         [Input("runtime")]
-        public Input<string>? Runtime { get; set; }
+        public InputUnion<string, Pulumi.Aws.Lambda.Runtime>? Runtime { get; set; }
 
         /// <summary>
-        /// The S3 bucket location containing the function's deployment package. Conflicts with `filename`. This bucket must reside in the same AWS region where you are creating the Lambda function.
+        /// The S3 bucket location containing the function's deployment package. Conflicts with `filename` and `image_uri`. This bucket must reside in the same AWS region where you are creating the Lambda function.
         /// </summary>
         [Input("s3Bucket")]
         public Input<string>? S3Bucket { get; set; }
 
         /// <summary>
-        /// The S3 key of an object containing the function's deployment package. Conflicts with `filename`.
+        /// The S3 key of an object containing the function's deployment package. Conflicts with `filename` and `image_uri`.
         /// </summary>
         [Input("s3Key")]
         public Input<string>? S3Key { get; set; }
 
         /// <summary>
-        /// The object version containing the function's deployment package. Conflicts with `filename`.
+        /// The object version containing the function's deployment package. Conflicts with `filename` and `image_uri`.
         /// </summary>
         [Input("s3ObjectVersion")]
         public Input<string>? S3ObjectVersion { get; set; }
 
         /// <summary>
-        /// Used to trigger updates. Must be set to a base64-encoded SHA256 hash of the package file specified with either `filename` or `s3_key`. The usual way to set this is `filebase64sha256("file.zip")` (this provider 0.11.12 and later) or `base64sha256(file("file.zip"))` (this provider 0.11.11 and earlier), where "file.zip" is the local filename of the lambda function source archive.
+        /// The Amazon Resource Name (ARN) of a signing job.
+        /// </summary>
+        [Input("signingJobArn")]
+        public Input<string>? SigningJobArn { get; set; }
+
+        /// <summary>
+        /// The Amazon Resource Name (ARN) for a signing profile version.
+        /// </summary>
+        [Input("signingProfileVersionArn")]
+        public Input<string>? SigningProfileVersionArn { get; set; }
+
+        /// <summary>
+        /// Base64-encoded representation of raw SHA-256 sum of the zip file, provided either via `filename` or `s3_*` parameters.
         /// </summary>
         [Input("sourceCodeHash")]
         public Input<string>? SourceCodeHash { get; set; }
@@ -705,7 +625,7 @@ namespace Pulumi.Aws.Lambda
         private InputMap<string>? _tags;
 
         /// <summary>
-        /// A mapping of tags to assign to the object.
+        /// A map of tags to assign to the object.
         /// </summary>
         public InputMap<string> Tags
         {

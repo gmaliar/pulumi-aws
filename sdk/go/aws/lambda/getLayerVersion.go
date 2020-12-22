@@ -15,12 +15,15 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/lambda"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/lambda"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
+// 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi/config"
 // )
 //
 // func main() {
 // 	pulumi.Run(func(ctx *pulumi.Context) error {
+// 		cfg := config.New(ctx, "")
+// 		layerName := cfg.Require("layerName")
 // 		_, err := lambda.LookupLayerVersion(ctx, &lambda.LookupLayerVersionArgs{
 // 			LayerName: layerName,
 // 		}, nil)
@@ -68,6 +71,10 @@ type LookupLayerVersionResult struct {
 	LayerName string `pulumi:"layerName"`
 	// License info associated with the specific Lambda Layer version.
 	LicenseInfo string `pulumi:"licenseInfo"`
+	// The Amazon Resource Name (ARN) of a signing job.
+	SigningJobArn string `pulumi:"signingJobArn"`
+	// The Amazon Resource Name (ARN) for a signing profile version.
+	SigningProfileVersionArn string `pulumi:"signingProfileVersionArn"`
 	// Base64-encoded representation of raw SHA-256 sum of the zip file.
 	SourceCodeHash string `pulumi:"sourceCodeHash"`
 	// The size in bytes of the function .zip file.

@@ -4,6 +4,7 @@
 package apigateway
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -20,7 +21,7 @@ import (
 // import (
 // 	"fmt"
 //
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/apigateway"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/apigateway"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -32,64 +33,64 @@ import (
 // 		if err != nil {
 // 			return err
 // 		}
-// 		testDeployment, err := apigateway.NewDeployment(ctx, "testDeployment", &apigateway.DeploymentArgs{
-// 			RestApi:   testRestApi.ID(),
-// 			StageName: pulumi.String("dev"),
-// 		}, pulumi.DependsOn([]pulumi.Resource{
-// 			"aws_api_gateway_integration.test",
-// 		}))
-// 		if err != nil {
-// 			return err
-// 		}
-// 		testStage, err := apigateway.NewStage(ctx, "testStage", &apigateway.StageArgs{
-// 			Deployment: testDeployment.ID(),
-// 			RestApi:    testRestApi.ID(),
-// 			StageName:  pulumi.String("prod"),
-// 		})
-// 		if err != nil {
-// 			return err
-// 		}
 // 		testResource, err := apigateway.NewResource(ctx, "testResource", &apigateway.ResourceArgs{
+// 			RestApi:  testRestApi.ID(),
 // 			ParentId: testRestApi.RootResourceId,
 // 			PathPart: pulumi.String("mytestresource"),
-// 			RestApi:  testRestApi.ID(),
 // 		})
 // 		if err != nil {
 // 			return err
 // 		}
 // 		testMethod, err := apigateway.NewMethod(ctx, "testMethod", &apigateway.MethodArgs{
-// 			Authorization: pulumi.String("NONE"),
-// 			HttpMethod:    pulumi.String("GET"),
-// 			ResourceId:    testResource.ID(),
 // 			RestApi:       testRestApi.ID(),
+// 			ResourceId:    testResource.ID(),
+// 			HttpMethod:    pulumi.String("GET"),
+// 			Authorization: pulumi.String("NONE"),
+// 		})
+// 		if err != nil {
+// 			return err
+// 		}
+// 		testIntegration, err := apigateway.NewIntegration(ctx, "testIntegration", &apigateway.IntegrationArgs{
+// 			RestApi:    testRestApi.ID(),
+// 			ResourceId: testResource.ID(),
+// 			HttpMethod: testMethod.HttpMethod,
+// 			Type:       pulumi.String("MOCK"),
+// 			RequestTemplates: pulumi.StringMap{
+// 				"application/xml": pulumi.String(fmt.Sprintf("%v%v%v%v%v%v%v", "{\n", "   \"body\" : ", "$", "input.json('", "$", "')\n", "}\n")),
+// 			},
+// 		})
+// 		if err != nil {
+// 			return err
+// 		}
+// 		testDeployment, err := apigateway.NewDeployment(ctx, "testDeployment", &apigateway.DeploymentArgs{
+// 			RestApi:   testRestApi.ID(),
+// 			StageName: pulumi.String("dev"),
+// 		}, pulumi.DependsOn([]pulumi.Resource{
+// 			testIntegration,
+// 		}))
+// 		if err != nil {
+// 			return err
+// 		}
+// 		testStage, err := apigateway.NewStage(ctx, "testStage", &apigateway.StageArgs{
+// 			StageName:  pulumi.String("prod"),
+// 			RestApi:    testRestApi.ID(),
+// 			Deployment: testDeployment.ID(),
 // 		})
 // 		if err != nil {
 // 			return err
 // 		}
 // 		_, err = apigateway.NewMethodSettings(ctx, "methodSettings", &apigateway.MethodSettingsArgs{
+// 			RestApi:   testRestApi.ID(),
+// 			StageName: testStage.StageName,
 // 			MethodPath: pulumi.All(testResource.PathPart, testMethod.HttpMethod).ApplyT(func(_args []interface{}) (string, error) {
 // 				pathPart := _args[0].(string)
 // 				httpMethod := _args[1].(string)
 // 				return fmt.Sprintf("%v%v%v", pathPart, "/", httpMethod), nil
 // 			}).(pulumi.StringOutput),
-// 			RestApi: testRestApi.ID(),
 // 			Settings: &apigateway.MethodSettingsSettingsArgs{
-// 				LoggingLevel:   pulumi.String("INFO"),
 // 				MetricsEnabled: pulumi.Bool(true),
+// 				LoggingLevel:   pulumi.String("INFO"),
 // 			},
-// 			StageName: testStage.StageName,
-// 		})
-// 		if err != nil {
-// 			return err
-// 		}
-// 		_, err = apigateway.NewIntegration(ctx, "testIntegration", &apigateway.IntegrationArgs{
-// 			HttpMethod: testMethod.HttpMethod,
-// 			RequestTemplates: pulumi.StringMap{
-// 				"application/xml": pulumi.String(fmt.Sprintf("%v%v%v%v%v%v%v%v", "{\n", "   \"body\" : ", "$", "input.json('", "$", "')\n", "}\n", "\n")),
-// 			},
-// 			ResourceId: testResource.ID(),
-// 			RestApi:    testRestApi.ID(),
-// 			Type:       pulumi.String("MOCK"),
 // 		})
 // 		if err != nil {
 // 			return err
@@ -97,6 +98,14 @@ import (
 // 		return nil
 // 	})
 // }
+// ```
+//
+// ## Import
+//
+// `aws_api_gateway_method_settings` can be imported using `REST-API-ID/STAGE-NAME/METHOD-PATH`, e.g.
+//
+// ```sh
+//  $ pulumi import aws:apigateway/methodSettings:MethodSettings example 12345abcde/example/test/GET
 // ```
 type MethodSettings struct {
 	pulumi.CustomResourceState
@@ -114,20 +123,21 @@ type MethodSettings struct {
 // NewMethodSettings registers a new resource with the given unique name, arguments, and options.
 func NewMethodSettings(ctx *pulumi.Context,
 	name string, args *MethodSettingsArgs, opts ...pulumi.ResourceOption) (*MethodSettings, error) {
-	if args == nil || args.MethodPath == nil {
-		return nil, errors.New("missing required argument 'MethodPath'")
-	}
-	if args == nil || args.RestApi == nil {
-		return nil, errors.New("missing required argument 'RestApi'")
-	}
-	if args == nil || args.Settings == nil {
-		return nil, errors.New("missing required argument 'Settings'")
-	}
-	if args == nil || args.StageName == nil {
-		return nil, errors.New("missing required argument 'StageName'")
-	}
 	if args == nil {
-		args = &MethodSettingsArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.MethodPath == nil {
+		return nil, errors.New("invalid value for required argument 'MethodPath'")
+	}
+	if args.RestApi == nil {
+		return nil, errors.New("invalid value for required argument 'RestApi'")
+	}
+	if args.Settings == nil {
+		return nil, errors.New("invalid value for required argument 'Settings'")
+	}
+	if args.StageName == nil {
+		return nil, errors.New("invalid value for required argument 'StageName'")
 	}
 	var resource MethodSettings
 	err := ctx.RegisterResource("aws:apigateway/methodSettings:MethodSettings", name, args, &resource, opts...)
@@ -201,4 +211,43 @@ type MethodSettingsArgs struct {
 
 func (MethodSettingsArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*methodSettingsArgs)(nil)).Elem()
+}
+
+type MethodSettingsInput interface {
+	pulumi.Input
+
+	ToMethodSettingsOutput() MethodSettingsOutput
+	ToMethodSettingsOutputWithContext(ctx context.Context) MethodSettingsOutput
+}
+
+func (MethodSettings) ElementType() reflect.Type {
+	return reflect.TypeOf((*MethodSettings)(nil)).Elem()
+}
+
+func (i MethodSettings) ToMethodSettingsOutput() MethodSettingsOutput {
+	return i.ToMethodSettingsOutputWithContext(context.Background())
+}
+
+func (i MethodSettings) ToMethodSettingsOutputWithContext(ctx context.Context) MethodSettingsOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(MethodSettingsOutput)
+}
+
+type MethodSettingsOutput struct {
+	*pulumi.OutputState
+}
+
+func (MethodSettingsOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*MethodSettingsOutput)(nil)).Elem()
+}
+
+func (o MethodSettingsOutput) ToMethodSettingsOutput() MethodSettingsOutput {
+	return o
+}
+
+func (o MethodSettingsOutput) ToMethodSettingsOutputWithContext(ctx context.Context) MethodSettingsOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(MethodSettingsOutput{})
 }

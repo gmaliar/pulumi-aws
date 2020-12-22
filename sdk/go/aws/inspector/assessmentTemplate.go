@@ -4,6 +4,7 @@
 package inspector
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -18,21 +19,21 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/inspector"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/inspector"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
 // func main() {
 // 	pulumi.Run(func(ctx *pulumi.Context) error {
 // 		_, err := inspector.NewAssessmentTemplate(ctx, "example", &inspector.AssessmentTemplateArgs{
-// 			Duration: pulumi.Int(3600),
+// 			TargetArn: pulumi.Any(aws_inspector_assessment_target.Example.Arn),
+// 			Duration:  pulumi.Int(3600),
 // 			RulesPackageArns: pulumi.StringArray{
 // 				pulumi.String("arn:aws:inspector:us-west-2:758058086616:rulespackage/0-9hgA516p"),
 // 				pulumi.String("arn:aws:inspector:us-west-2:758058086616:rulespackage/0-H5hpSawc"),
 // 				pulumi.String("arn:aws:inspector:us-west-2:758058086616:rulespackage/0-JJOtZiqQ"),
 // 				pulumi.String("arn:aws:inspector:us-west-2:758058086616:rulespackage/0-vg5GGHSD"),
 // 			},
-// 			TargetArn: pulumi.String(aws_inspector_assessment_target.Example.Arn),
 // 		})
 // 		if err != nil {
 // 			return err
@@ -40,6 +41,14 @@ import (
 // 		return nil
 // 	})
 // }
+// ```
+//
+// ## Import
+//
+// `aws_inspector_assessment_template` can be imported by using the template assessment ARN, e.g.
+//
+// ```sh
+//  $ pulumi import aws:inspector/assessmentTemplate:AssessmentTemplate example arn:aws:inspector:us-west-2:123456789012:target/0-9IaAzhGR/template/0-WEcjR8CH
 // ```
 type AssessmentTemplate struct {
 	pulumi.CustomResourceState
@@ -61,17 +70,18 @@ type AssessmentTemplate struct {
 // NewAssessmentTemplate registers a new resource with the given unique name, arguments, and options.
 func NewAssessmentTemplate(ctx *pulumi.Context,
 	name string, args *AssessmentTemplateArgs, opts ...pulumi.ResourceOption) (*AssessmentTemplate, error) {
-	if args == nil || args.Duration == nil {
-		return nil, errors.New("missing required argument 'Duration'")
-	}
-	if args == nil || args.RulesPackageArns == nil {
-		return nil, errors.New("missing required argument 'RulesPackageArns'")
-	}
-	if args == nil || args.TargetArn == nil {
-		return nil, errors.New("missing required argument 'TargetArn'")
-	}
 	if args == nil {
-		args = &AssessmentTemplateArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.Duration == nil {
+		return nil, errors.New("invalid value for required argument 'Duration'")
+	}
+	if args.RulesPackageArns == nil {
+		return nil, errors.New("invalid value for required argument 'RulesPackageArns'")
+	}
+	if args.TargetArn == nil {
+		return nil, errors.New("invalid value for required argument 'TargetArn'")
 	}
 	var resource AssessmentTemplate
 	err := ctx.RegisterResource("aws:inspector/assessmentTemplate:AssessmentTemplate", name, args, &resource, opts...)
@@ -157,4 +167,43 @@ type AssessmentTemplateArgs struct {
 
 func (AssessmentTemplateArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*assessmentTemplateArgs)(nil)).Elem()
+}
+
+type AssessmentTemplateInput interface {
+	pulumi.Input
+
+	ToAssessmentTemplateOutput() AssessmentTemplateOutput
+	ToAssessmentTemplateOutputWithContext(ctx context.Context) AssessmentTemplateOutput
+}
+
+func (AssessmentTemplate) ElementType() reflect.Type {
+	return reflect.TypeOf((*AssessmentTemplate)(nil)).Elem()
+}
+
+func (i AssessmentTemplate) ToAssessmentTemplateOutput() AssessmentTemplateOutput {
+	return i.ToAssessmentTemplateOutputWithContext(context.Background())
+}
+
+func (i AssessmentTemplate) ToAssessmentTemplateOutputWithContext(ctx context.Context) AssessmentTemplateOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(AssessmentTemplateOutput)
+}
+
+type AssessmentTemplateOutput struct {
+	*pulumi.OutputState
+}
+
+func (AssessmentTemplateOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*AssessmentTemplateOutput)(nil)).Elem()
+}
+
+func (o AssessmentTemplateOutput) ToAssessmentTemplateOutput() AssessmentTemplateOutput {
+	return o
+}
+
+func (o AssessmentTemplateOutput) ToAssessmentTemplateOutputWithContext(ctx context.Context) AssessmentTemplateOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(AssessmentTemplateOutput{})
 }

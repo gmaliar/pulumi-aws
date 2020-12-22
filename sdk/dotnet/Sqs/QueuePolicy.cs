@@ -28,6 +28,7 @@ namespace Pulumi.Aws.Sqs
     ///         });
     ///         var test = new Aws.Sqs.QueuePolicy("test", new Aws.Sqs.QueuePolicyArgs
     ///         {
+    ///             QueueUrl = queue.Id,
     ///             Policy = queue.Arn.Apply(arn =&gt; @$"{{
     ///   ""Version"": ""2012-10-17"",
     ///   ""Id"": ""sqspolicy"",
@@ -46,13 +47,19 @@ namespace Pulumi.Aws.Sqs
     ///     }}
     ///   ]
     /// }}
-    /// 
     /// "),
-    ///             QueueUrl = queue.Id,
     ///         });
     ///     }
     /// 
     /// }
+    /// ```
+    /// 
+    /// ## Import
+    /// 
+    /// SQS Queue Policies can be imported using the queue URL, e.g.
+    /// 
+    /// ```sh
+    ///  $ pulumi import aws:sqs/queuePolicy:QueuePolicy test https://queue.amazonaws.com/0123456789012/myqueue
     /// ```
     /// </summary>
     public partial class QueuePolicy : Pulumi.CustomResource

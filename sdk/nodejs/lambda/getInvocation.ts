@@ -2,8 +2,7 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 /**
@@ -60,10 +59,4 @@ export interface GetInvocationResult {
      * String result of the lambda function invocation.
      */
     readonly result: string;
-    /**
-     * (**DEPRECATED**) This field is set only if result is a map of primitive types, where the map is string keys and string values.
-     *
-     * @deprecated use `result` attribute with jsondecode() function
-     */
-    readonly resultMap: {[key: string]: string};
 }

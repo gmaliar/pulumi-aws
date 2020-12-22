@@ -36,13 +36,14 @@ import * as utilities from "../utilities";
  *     targetVpcSubnetId: exampleNetworkAssociation.subnetId,
  * });
  * ```
- * ## Attribute Reference
  *
- * In addition to all arguments above, the following attributes are exported:
+ * ## Import
  *
- * * `id` - The ID of the Client VPN endpoint.
- * * `origin` - Indicates how the Client VPN route was added. Will be `add-route` for routes created by this resource.
- * * `type` - The type of the route.
+ * AWS Client VPN routes can be imported using the endpoint ID, target subnet ID, and destination CIDR block. All values are separated by a `,`.
+ *
+ * ```sh
+ *  $ pulumi import aws:ec2clientvpn/route:Route example cvpn-endpoint-1234567890abcdef,subnet-9876543210fedcba,10.1.0.0/24
+ * ```
  */
 export class Route extends pulumi.CustomResource {
     /**
@@ -84,11 +85,17 @@ export class Route extends pulumi.CustomResource {
      * The IPv4 address range, in CIDR notation, of the route destination.
      */
     public readonly destinationCidrBlock!: pulumi.Output<string>;
+    /**
+     * Indicates how the Client VPN route was added. Will be `add-route` for routes created by this resource.
+     */
     public /*out*/ readonly origin!: pulumi.Output<string>;
     /**
      * The ID of the Subnet to route the traffic through. It must already be attached to the Client VPN.
      */
     public readonly targetVpcSubnetId!: pulumi.Output<string>;
+    /**
+     * The type of the route.
+     */
     public /*out*/ readonly type!: pulumi.Output<string>;
 
     /**
@@ -111,13 +118,13 @@ export class Route extends pulumi.CustomResource {
             inputs["type"] = state ? state.type : undefined;
         } else {
             const args = argsOrState as RouteArgs | undefined;
-            if (!args || args.clientVpnEndpointId === undefined) {
+            if ((!args || args.clientVpnEndpointId === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'clientVpnEndpointId'");
             }
-            if (!args || args.destinationCidrBlock === undefined) {
+            if ((!args || args.destinationCidrBlock === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'destinationCidrBlock'");
             }
-            if (!args || args.targetVpcSubnetId === undefined) {
+            if ((!args || args.targetVpcSubnetId === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'targetVpcSubnetId'");
             }
             inputs["clientVpnEndpointId"] = args ? args.clientVpnEndpointId : undefined;
@@ -154,11 +161,17 @@ export interface RouteState {
      * The IPv4 address range, in CIDR notation, of the route destination.
      */
     readonly destinationCidrBlock?: pulumi.Input<string>;
+    /**
+     * Indicates how the Client VPN route was added. Will be `add-route` for routes created by this resource.
+     */
     readonly origin?: pulumi.Input<string>;
     /**
      * The ID of the Subnet to route the traffic through. It must already be attached to the Client VPN.
      */
     readonly targetVpcSubnetId?: pulumi.Input<string>;
+    /**
+     * The type of the route.
+     */
     readonly type?: pulumi.Input<string>;
 }
 

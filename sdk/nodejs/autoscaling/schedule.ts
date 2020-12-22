@@ -13,24 +13,32 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const foobarGroup = new aws.autoscaling.Group("foobar", {
+ * const foobarGroup = new aws.autoscaling.Group("foobarGroup", {
  *     availabilityZones: ["us-west-2a"],
- *     forceDelete: true,
- *     healthCheckGracePeriod: 300,
- *     healthCheckType: "ELB",
  *     maxSize: 1,
  *     minSize: 1,
+ *     healthCheckGracePeriod: 300,
+ *     healthCheckType: "ELB",
+ *     forceDelete: true,
  *     terminationPolicies: ["OldestInstance"],
  * });
- * const foobarSchedule = new aws.autoscaling.Schedule("foobar", {
- *     autoscalingGroupName: foobarGroup.name,
- *     desiredCapacity: 0,
- *     endTime: "2016-12-12T06:00:00Z",
- *     maxSize: 1,
- *     minSize: 0,
+ * const foobarSchedule = new aws.autoscaling.Schedule("foobarSchedule", {
  *     scheduledActionName: "foobar",
+ *     minSize: 0,
+ *     maxSize: 1,
+ *     desiredCapacity: 0,
  *     startTime: "2016-12-11T18:00:00Z",
+ *     endTime: "2016-12-12T06:00:00Z",
+ *     autoscalingGroupName: foobarGroup.name,
  * });
+ * ```
+ *
+ * ## Import
+ *
+ * AutoScaling ScheduledAction can be imported using the `auto-scaling-group-name` and `scheduled-action-name`, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:autoscaling/schedule:Schedule resource-name auto-scaling-group-name/scheduled-action-name
  * ```
  */
 export class Schedule extends pulumi.CustomResource {
@@ -125,10 +133,10 @@ export class Schedule extends pulumi.CustomResource {
             inputs["startTime"] = state ? state.startTime : undefined;
         } else {
             const args = argsOrState as ScheduleArgs | undefined;
-            if (!args || args.autoscalingGroupName === undefined) {
+            if ((!args || args.autoscalingGroupName === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'autoscalingGroupName'");
             }
-            if (!args || args.scheduledActionName === undefined) {
+            if ((!args || args.scheduledActionName === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'scheduledActionName'");
             }
             inputs["autoscalingGroupName"] = args ? args.autoscalingGroupName : undefined;

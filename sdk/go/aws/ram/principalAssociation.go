@@ -4,6 +4,7 @@
 package ram
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -29,7 +30,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/ram"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/ram"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -58,15 +59,15 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/ram"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/ram"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
 // func main() {
 // 	pulumi.Run(func(ctx *pulumi.Context) error {
 // 		_, err := ram.NewPrincipalAssociation(ctx, "example", &ram.PrincipalAssociationArgs{
-// 			Principal:        pulumi.String(aws_organizations_organization.Example.Arn),
-// 			ResourceShareArn: pulumi.String(aws_ram_resource_share.Example.Arn),
+// 			Principal:        pulumi.Any(aws_organizations_organization.Example.Arn),
+// 			ResourceShareArn: pulumi.Any(aws_ram_resource_share.Example.Arn),
 // 		})
 // 		if err != nil {
 // 			return err
@@ -74,6 +75,14 @@ import (
 // 		return nil
 // 	})
 // }
+// ```
+//
+// ## Import
+//
+// RAM Principal Associations can be imported using their Resource Share ARN and the `principal` separated by a comma, e.g.
+//
+// ```sh
+//  $ pulumi import aws:ram/principalAssociation:PrincipalAssociation example arn:aws:ram:eu-west-1:123456789012:resource-share/73da1ab9-b94a-4ba3-8eb4-45917f7f4b12,123456789012
 // ```
 type PrincipalAssociation struct {
 	pulumi.CustomResourceState
@@ -87,14 +96,15 @@ type PrincipalAssociation struct {
 // NewPrincipalAssociation registers a new resource with the given unique name, arguments, and options.
 func NewPrincipalAssociation(ctx *pulumi.Context,
 	name string, args *PrincipalAssociationArgs, opts ...pulumi.ResourceOption) (*PrincipalAssociation, error) {
-	if args == nil || args.Principal == nil {
-		return nil, errors.New("missing required argument 'Principal'")
-	}
-	if args == nil || args.ResourceShareArn == nil {
-		return nil, errors.New("missing required argument 'ResourceShareArn'")
-	}
 	if args == nil {
-		args = &PrincipalAssociationArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.Principal == nil {
+		return nil, errors.New("invalid value for required argument 'Principal'")
+	}
+	if args.ResourceShareArn == nil {
+		return nil, errors.New("invalid value for required argument 'ResourceShareArn'")
 	}
 	var resource PrincipalAssociation
 	err := ctx.RegisterResource("aws:ram/principalAssociation:PrincipalAssociation", name, args, &resource, opts...)
@@ -152,4 +162,43 @@ type PrincipalAssociationArgs struct {
 
 func (PrincipalAssociationArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*principalAssociationArgs)(nil)).Elem()
+}
+
+type PrincipalAssociationInput interface {
+	pulumi.Input
+
+	ToPrincipalAssociationOutput() PrincipalAssociationOutput
+	ToPrincipalAssociationOutputWithContext(ctx context.Context) PrincipalAssociationOutput
+}
+
+func (PrincipalAssociation) ElementType() reflect.Type {
+	return reflect.TypeOf((*PrincipalAssociation)(nil)).Elem()
+}
+
+func (i PrincipalAssociation) ToPrincipalAssociationOutput() PrincipalAssociationOutput {
+	return i.ToPrincipalAssociationOutputWithContext(context.Background())
+}
+
+func (i PrincipalAssociation) ToPrincipalAssociationOutputWithContext(ctx context.Context) PrincipalAssociationOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(PrincipalAssociationOutput)
+}
+
+type PrincipalAssociationOutput struct {
+	*pulumi.OutputState
+}
+
+func (PrincipalAssociationOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*PrincipalAssociationOutput)(nil)).Elem()
+}
+
+func (o PrincipalAssociationOutput) ToPrincipalAssociationOutput() PrincipalAssociationOutput {
+	return o
+}
+
+func (o PrincipalAssociationOutput) ToPrincipalAssociationOutputWithContext(ctx context.Context) PrincipalAssociationOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(PrincipalAssociationOutput{})
 }

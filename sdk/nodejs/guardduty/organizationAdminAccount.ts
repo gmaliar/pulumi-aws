@@ -5,7 +5,7 @@ import * as pulumi from "@pulumi/pulumi";
 import * as utilities from "../utilities";
 
 /**
- * Manages a GuardDuty Organization Admin Account. The AWS account utilizing this resource must be an Organizations master account. More information about Organizations support in GuardDuty can be found in the [GuardDuty User Guide](https://docs.aws.amazon.com/guardduty/latest/ug/guardduty_organizations.html).
+ * Manages a GuardDuty Organization Admin Account. The AWS account utilizing this resource must be an Organizations primary account. More information about Organizations support in GuardDuty can be found in the [GuardDuty User Guide](https://docs.aws.amazon.com/guardduty/latest/ug/guardduty_organizations.html).
  *
  * ## Example Usage
  *
@@ -21,6 +21,14 @@ import * as utilities from "../utilities";
  * const exampleOrganizationAdminAccount = new aws.guardduty.OrganizationAdminAccount("exampleOrganizationAdminAccount", {adminAccountId: "123456789012"}, {
  *     dependsOn: [exampleOrganization],
  * });
+ * ```
+ *
+ * ## Import
+ *
+ * GuardDuty Organization Admin Account can be imported using the AWS account ID, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:guardduty/organizationAdminAccount:OrganizationAdminAccount example 123456789012
  * ```
  */
 export class OrganizationAdminAccount extends pulumi.CustomResource {
@@ -71,7 +79,7 @@ export class OrganizationAdminAccount extends pulumi.CustomResource {
             inputs["adminAccountId"] = state ? state.adminAccountId : undefined;
         } else {
             const args = argsOrState as OrganizationAdminAccountArgs | undefined;
-            if (!args || args.adminAccountId === undefined) {
+            if ((!args || args.adminAccountId === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'adminAccountId'");
             }
             inputs["adminAccountId"] = args ? args.adminAccountId : undefined;

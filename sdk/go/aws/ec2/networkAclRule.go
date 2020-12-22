@@ -4,6 +4,7 @@
 package ec2
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -24,14 +25,14 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/ec2"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/ec2"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
 // func main() {
 // 	pulumi.Run(func(ctx *pulumi.Context) error {
 // 		barNetworkAcl, err := ec2.NewNetworkAcl(ctx, "barNetworkAcl", &ec2.NetworkAclArgs{
-// 			VpcId: pulumi.String(aws_vpc.Foo.Id),
+// 			VpcId: pulumi.Any(aws_vpc.Foo.Id),
 // 		})
 // 		if err != nil {
 // 			return err
@@ -42,7 +43,7 @@ import (
 // 			Egress:       pulumi.Bool(false),
 // 			Protocol:     pulumi.String("tcp"),
 // 			RuleAction:   pulumi.String("allow"),
-// 			CidrBlock:    pulumi.String(aws_vpc.Foo.Cidr_block),
+// 			CidrBlock:    pulumi.Any(aws_vpc.Foo.Cidr_block),
 // 			FromPort:     pulumi.Int(22),
 // 			ToPort:       pulumi.Int(22),
 // 		})
@@ -55,6 +56,20 @@ import (
 // ```
 //
 // > **Note:** One of either `cidrBlock` or `ipv6CidrBlock` is required.
+//
+// ## Import
+//
+// Individual rules can be imported using `NETWORK_ACL_ID:RULE_NUMBER:PROTOCOL:EGRESS`, where `PROTOCOL` can be a decimal (e.g. 6) or string (e.g. tcp) value. If importing a rule previously provisioned by Terraform, the `PROTOCOL` must be the input value used at creation time. For more information on protocol numbers and keywords, see herehttps://www.iana.org/assignments/protocol-numbers/protocol-numbers.xhtml For example, import a network ACL Rule with an argument like thisconsole
+//
+// ```sh
+//  $ pulumi import aws:ec2/networkAclRule:NetworkAclRule my_rule acl-7aaabd18:100:tcp:false
+// ```
+//
+//  Or by the procotol's decimal valueconsole
+//
+// ```sh
+//  $ pulumi import aws:ec2/networkAclRule:NetworkAclRule my_rule acl-7aaabd18:100:6:false
+// ```
 type NetworkAclRule struct {
 	pulumi.CustomResourceState
 
@@ -85,20 +100,21 @@ type NetworkAclRule struct {
 // NewNetworkAclRule registers a new resource with the given unique name, arguments, and options.
 func NewNetworkAclRule(ctx *pulumi.Context,
 	name string, args *NetworkAclRuleArgs, opts ...pulumi.ResourceOption) (*NetworkAclRule, error) {
-	if args == nil || args.NetworkAclId == nil {
-		return nil, errors.New("missing required argument 'NetworkAclId'")
-	}
-	if args == nil || args.Protocol == nil {
-		return nil, errors.New("missing required argument 'Protocol'")
-	}
-	if args == nil || args.RuleAction == nil {
-		return nil, errors.New("missing required argument 'RuleAction'")
-	}
-	if args == nil || args.RuleNumber == nil {
-		return nil, errors.New("missing required argument 'RuleNumber'")
-	}
 	if args == nil {
-		args = &NetworkAclRuleArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.NetworkAclId == nil {
+		return nil, errors.New("invalid value for required argument 'NetworkAclId'")
+	}
+	if args.Protocol == nil {
+		return nil, errors.New("invalid value for required argument 'Protocol'")
+	}
+	if args.RuleAction == nil {
+		return nil, errors.New("invalid value for required argument 'RuleAction'")
+	}
+	if args.RuleNumber == nil {
+		return nil, errors.New("invalid value for required argument 'RuleNumber'")
 	}
 	var resource NetworkAclRule
 	err := ctx.RegisterResource("aws:ec2/networkAclRule:NetworkAclRule", name, args, &resource, opts...)
@@ -228,4 +244,43 @@ type NetworkAclRuleArgs struct {
 
 func (NetworkAclRuleArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*networkAclRuleArgs)(nil)).Elem()
+}
+
+type NetworkAclRuleInput interface {
+	pulumi.Input
+
+	ToNetworkAclRuleOutput() NetworkAclRuleOutput
+	ToNetworkAclRuleOutputWithContext(ctx context.Context) NetworkAclRuleOutput
+}
+
+func (NetworkAclRule) ElementType() reflect.Type {
+	return reflect.TypeOf((*NetworkAclRule)(nil)).Elem()
+}
+
+func (i NetworkAclRule) ToNetworkAclRuleOutput() NetworkAclRuleOutput {
+	return i.ToNetworkAclRuleOutputWithContext(context.Background())
+}
+
+func (i NetworkAclRule) ToNetworkAclRuleOutputWithContext(ctx context.Context) NetworkAclRuleOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(NetworkAclRuleOutput)
+}
+
+type NetworkAclRuleOutput struct {
+	*pulumi.OutputState
+}
+
+func (NetworkAclRuleOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*NetworkAclRuleOutput)(nil)).Elem()
+}
+
+func (o NetworkAclRuleOutput) ToNetworkAclRuleOutput() NetworkAclRuleOutput {
+	return o
+}
+
+func (o NetworkAclRuleOutput) ToNetworkAclRuleOutputWithContext(ctx context.Context) NetworkAclRuleOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(NetworkAclRuleOutput{})
 }

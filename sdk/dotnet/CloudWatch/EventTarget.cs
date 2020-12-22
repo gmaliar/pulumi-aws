@@ -10,7 +10,9 @@ using Pulumi.Serialization;
 namespace Pulumi.Aws.CloudWatch
 {
     /// <summary>
-    /// Provides a CloudWatch Event Target resource.
+    /// Provides an EventBridge Target resource.
+    /// 
+    /// &gt; **Note:** EventBridge was formerly known as CloudWatch Events. The functionality is identical.
     /// 
     /// ## Example Usage
     /// 
@@ -36,7 +38,6 @@ namespace Pulumi.Aws.CloudWatch
     ///     ""EC2 Instance Terminate Unsuccessful""
     ///   ]
     /// }
-    /// 
     /// ",
     ///         });
     ///         var testStream = new Aws.Kinesis.Stream("testStream", new Aws.Kinesis.StreamArgs
@@ -45,8 +46,8 @@ namespace Pulumi.Aws.CloudWatch
     ///         });
     ///         var yada = new Aws.CloudWatch.EventTarget("yada", new Aws.CloudWatch.EventTargetArgs
     ///         {
-    ///             Arn = testStream.Arn,
     ///             Rule = console.Name,
+    ///             Arn = testStream.Arn,
     ///             RunCommandTargets = 
     ///             {
     ///                 new Aws.CloudWatch.Inputs.EventTargetRunCommandTargetArgs
@@ -95,11 +96,11 @@ namespace Pulumi.Aws.CloudWatch
     ///                     {
     ///                         new Aws.Iam.Inputs.GetPolicyDocumentStatementPrincipalArgs
     ///                         {
+    ///                             Type = "Service",
     ///                             Identifiers = 
     ///                             {
     ///                                 "events.amazonaws.com",
     ///                             },
-    ///                             Type = "Service",
     ///                         },
     ///                     },
     ///                 },
@@ -107,6 +108,7 @@ namespace Pulumi.Aws.CloudWatch
     ///         }));
     ///         var stopInstance = new Aws.Ssm.Document("stopInstance", new Aws.Ssm.DocumentArgs
     ///         {
+    ///             DocumentType = "Command",
     ///             Content = @"  {
     ///     ""schemaVersion"": ""1.2"",
     ///     ""description"": ""Stop an instance"",
@@ -124,9 +126,7 @@ namespace Pulumi.Aws.CloudWatch
     ///       }
     ///     }
     ///   }
-    /// 
     /// ",
-    ///             DocumentType = "Command",
     ///         });
     ///         var ssmLifecyclePolicyDocument = stopInstance.Arn.Apply(arn =&gt; Aws.Iam.GetPolicyDocument.InvokeAsync(new Aws.Iam.GetPolicyDocumentArgs
     ///         {
@@ -134,35 +134,35 @@ namespace Pulumi.Aws.CloudWatch
     ///             {
     ///                 new Aws.Iam.Inputs.GetPolicyDocumentStatementArgs
     ///                 {
+    ///                     Effect = "Allow",
     ///                     Actions = 
     ///                     {
     ///                         "ssm:SendCommand",
+    ///                     },
+    ///                     Resources = 
+    ///                     {
+    ///                         "arn:aws:ec2:eu-west-1:1234567890:instance/*",
     ///                     },
     ///                     Conditions = 
     ///                     {
     ///                         new Aws.Iam.Inputs.GetPolicyDocumentStatementConditionArgs
     ///                         {
     ///                             Test = "StringEquals",
+    ///                             Variable = "ec2:ResourceTag/Terminate",
     ///                             Values = 
     ///                             {
     ///                                 "*",
     ///                             },
-    ///                             Variable = "ec2:ResourceTag/Terminate",
     ///                         },
-    ///                     },
-    ///                     Effect = "Allow",
-    ///                     Resources = 
-    ///                     {
-    ///                         "arn:aws:ec2:eu-west-1:1234567890:instance/*",
     ///                     },
     ///                 },
     ///                 new Aws.Iam.Inputs.GetPolicyDocumentStatementArgs
     ///                 {
+    ///                     Effect = "Allow",
     ///                     Actions = 
     ///                     {
     ///                         "ssm:SendCommand",
     ///                     },
-    ///                     Effect = "Allow",
     ///                     Resources = 
     ///                     {
     ///                         arn,
@@ -186,8 +186,8 @@ namespace Pulumi.Aws.CloudWatch
     ///         var stopInstancesEventTarget = new Aws.CloudWatch.EventTarget("stopInstancesEventTarget", new Aws.CloudWatch.EventTargetArgs
     ///         {
     ///             Arn = stopInstance.Arn,
-    ///             RoleArn = ssmLifecycleRole.Arn,
     ///             Rule = stopInstancesEventRule.Name,
+    ///             RoleArn = ssmLifecycleRole.Arn,
     ///             RunCommandTargets = 
     ///             {
     ///                 new Aws.CloudWatch.Inputs.EventTargetRunCommandTargetArgs
@@ -224,8 +224,8 @@ namespace Pulumi.Aws.CloudWatch
     ///         {
     ///             Arn = $"arn:aws:ssm:{@var.Aws_region}::document/AWS-RunShellScript",
     ///             Input = "{\"commands\":[\"halt\"]}",
-    ///             RoleArn = aws_iam_role.Ssm_lifecycle.Arn,
     ///             Rule = stopInstancesEventRule.Name,
+    ///             RoleArn = aws_iam_role.Ssm_lifecycle.Arn,
     ///             RunCommandTargets = 
     ///             {
     ///                 new Aws.CloudWatch.Inputs.EventTargetRunCommandTargetArgs
@@ -241,6 +241,84 @@ namespace Pulumi.Aws.CloudWatch
     ///     }
     /// 
     /// }
+    /// ```
+    /// 
+    /// ## Example Input Transformer Usage - JSON Object
+    /// 
+    /// ```csharp
+    /// using Pulumi;
+    /// using Aws = Pulumi.Aws;
+    /// 
+    /// class MyStack : Stack
+    /// {
+    ///     public MyStack()
+    ///     {
+    ///         var exampleEventRule = new Aws.CloudWatch.EventRule("exampleEventRule", new Aws.CloudWatch.EventRuleArgs
+    ///         {
+    ///         });
+    ///         // ...
+    ///         var exampleEventTarget = new Aws.CloudWatch.EventTarget("exampleEventTarget", new Aws.CloudWatch.EventTargetArgs
+    ///         {
+    ///             Arn = aws_lambda_function.Example.Arn,
+    ///             Rule = exampleEventRule.Id,
+    ///             InputTransformer = new Aws.CloudWatch.Inputs.EventTargetInputTransformerArgs
+    ///             {
+    ///                 InputPaths = 
+    ///                 {
+    ///                     { "instance", "$.detail.instance" },
+    ///                     { "status", "$.detail.status" },
+    ///                 },
+    ///                 InputTemplate = @"{
+    ///   ""instance_id"": &lt;instance&gt;,
+    ///   ""instance_status"": &lt;status&gt;
+    /// }
+    /// ",
+    ///             },
+    ///         });
+    ///     }
+    /// 
+    /// }
+    /// ```
+    /// 
+    /// ## Example Input Transformer Usage - Simple String
+    /// 
+    /// ```csharp
+    /// using Pulumi;
+    /// using Aws = Pulumi.Aws;
+    /// 
+    /// class MyStack : Stack
+    /// {
+    ///     public MyStack()
+    ///     {
+    ///         var exampleEventRule = new Aws.CloudWatch.EventRule("exampleEventRule", new Aws.CloudWatch.EventRuleArgs
+    ///         {
+    ///         });
+    ///         // ...
+    ///         var exampleEventTarget = new Aws.CloudWatch.EventTarget("exampleEventTarget", new Aws.CloudWatch.EventTargetArgs
+    ///         {
+    ///             Arn = aws_lambda_function.Example.Arn,
+    ///             Rule = exampleEventRule.Id,
+    ///             InputTransformer = new Aws.CloudWatch.Inputs.EventTargetInputTransformerArgs
+    ///             {
+    ///                 InputPaths = 
+    ///                 {
+    ///                     { "instance", "$.detail.instance" },
+    ///                     { "status", "$.detail.status" },
+    ///                 },
+    ///                 InputTemplate = "\"&lt;instance&gt; is in state &lt;status&gt;\"",
+    ///             },
+    ///         });
+    ///     }
+    /// 
+    /// }
+    /// ```
+    /// 
+    /// ## Import
+    /// 
+    /// EventBridge Targets can be imported using `event_bus_name/rule-name/target-id` (if you omit `event_bus_name`, the `default` event bus will be used).
+    /// 
+    /// ```sh
+    ///  $ pulumi import aws:cloudwatch/eventTarget:EventTarget test-event-target rule-name/target-id
     /// ```
     /// </summary>
     public partial class EventTarget : Pulumi.CustomResource
@@ -264,20 +342,25 @@ namespace Pulumi.Aws.CloudWatch
         public Output<Outputs.EventTargetEcsTarget?> EcsTarget { get; private set; } = null!;
 
         /// <summary>
-        /// Valid JSON text passed to the target.
+        /// The event bus to associate with the rule. If you omit this, the `default` event bus is used.
+        /// </summary>
+        [Output("eventBusName")]
+        public Output<string?> EventBusName { get; private set; } = null!;
+
+        /// <summary>
+        /// Valid JSON text passed to the target. Conflicts with `input_path` and `input_transformer`.
         /// </summary>
         [Output("input")]
         public Output<string?> Input { get; private set; } = null!;
 
         /// <summary>
-        /// The value of the [JSONPath](http://goessner.net/articles/JsonPath/)
-        /// that is used for extracting part of the matched event when passing it to the target.
+        /// The value of the [JSONPath](http://goessner.net/articles/JsonPath/) that is used for extracting part of the matched event when passing it to the target. Conflicts with `input` and `input_transformer`.
         /// </summary>
         [Output("inputPath")]
         public Output<string?> InputPath { get; private set; } = null!;
 
         /// <summary>
-        /// Parameters used when you are providing a custom input to a target based on certain event data.
+        /// Parameters used when you are providing a custom input to a target based on certain event data. Conflicts with `input` and `input_path`.
         /// </summary>
         [Output("inputTransformer")]
         public Output<Outputs.EventTargetInputTransformer?> InputTransformer { get; private set; } = null!;
@@ -383,20 +466,25 @@ namespace Pulumi.Aws.CloudWatch
         public Input<Inputs.EventTargetEcsTargetArgs>? EcsTarget { get; set; }
 
         /// <summary>
-        /// Valid JSON text passed to the target.
+        /// The event bus to associate with the rule. If you omit this, the `default` event bus is used.
+        /// </summary>
+        [Input("eventBusName")]
+        public Input<string>? EventBusName { get; set; }
+
+        /// <summary>
+        /// Valid JSON text passed to the target. Conflicts with `input_path` and `input_transformer`.
         /// </summary>
         [Input("input")]
         public Input<string>? Input { get; set; }
 
         /// <summary>
-        /// The value of the [JSONPath](http://goessner.net/articles/JsonPath/)
-        /// that is used for extracting part of the matched event when passing it to the target.
+        /// The value of the [JSONPath](http://goessner.net/articles/JsonPath/) that is used for extracting part of the matched event when passing it to the target. Conflicts with `input` and `input_transformer`.
         /// </summary>
         [Input("inputPath")]
         public Input<string>? InputPath { get; set; }
 
         /// <summary>
-        /// Parameters used when you are providing a custom input to a target based on certain event data.
+        /// Parameters used when you are providing a custom input to a target based on certain event data. Conflicts with `input` and `input_path`.
         /// </summary>
         [Input("inputTransformer")]
         public Input<Inputs.EventTargetInputTransformerArgs>? InputTransformer { get; set; }
@@ -469,20 +557,25 @@ namespace Pulumi.Aws.CloudWatch
         public Input<Inputs.EventTargetEcsTargetGetArgs>? EcsTarget { get; set; }
 
         /// <summary>
-        /// Valid JSON text passed to the target.
+        /// The event bus to associate with the rule. If you omit this, the `default` event bus is used.
+        /// </summary>
+        [Input("eventBusName")]
+        public Input<string>? EventBusName { get; set; }
+
+        /// <summary>
+        /// Valid JSON text passed to the target. Conflicts with `input_path` and `input_transformer`.
         /// </summary>
         [Input("input")]
         public Input<string>? Input { get; set; }
 
         /// <summary>
-        /// The value of the [JSONPath](http://goessner.net/articles/JsonPath/)
-        /// that is used for extracting part of the matched event when passing it to the target.
+        /// The value of the [JSONPath](http://goessner.net/articles/JsonPath/) that is used for extracting part of the matched event when passing it to the target. Conflicts with `input` and `input_transformer`.
         /// </summary>
         [Input("inputPath")]
         public Input<string>? InputPath { get; set; }
 
         /// <summary>
-        /// Parameters used when you are providing a custom input to a target based on certain event data.
+        /// Parameters used when you are providing a custom input to a target based on certain event data. Conflicts with `input` and `input_path`.
         /// </summary>
         [Input("inputTransformer")]
         public Input<Inputs.EventTargetInputTransformerGetArgs>? InputTransformer { get; set; }

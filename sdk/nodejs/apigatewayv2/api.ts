@@ -2,8 +2,7 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 /**
@@ -32,6 +31,14 @@ import * as utilities from "../utilities";
  * const example = new aws.apigatewayv2.Api("example", {
  *     protocolType: "HTTP",
  * });
+ * ```
+ *
+ * ## Import
+ *
+ * `aws_apigatewayv2_api` can be imported by using the API identifier, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:apigatewayv2/api:Api example aabbccddee
  * ```
  */
 export class Api extends pulumi.CustomResource {
@@ -77,6 +84,10 @@ export class Api extends pulumi.CustomResource {
      */
     public /*out*/ readonly arn!: pulumi.Output<string>;
     /**
+     * An OpenAPI specification that defines the set of routes and integrations to create as part of the HTTP APIs. Supported only for HTTP APIs.
+     */
+    public readonly body!: pulumi.Output<string | undefined>;
+    /**
      * The cross-origin resource sharing (CORS) [configuration](https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api-cors.html). Applicable for HTTP APIs.
      */
     public readonly corsConfiguration!: pulumi.Output<outputs.apigatewayv2.ApiCorsConfiguration | undefined>;
@@ -85,9 +96,15 @@ export class Api extends pulumi.CustomResource {
      */
     public readonly credentialsArn!: pulumi.Output<string | undefined>;
     /**
-     * The description of the API.
+     * The description of the API. Must be less than or equal to 1024 characters in length.
      */
     public readonly description!: pulumi.Output<string | undefined>;
+    /**
+     * Whether clients can invoke the API by using the default `execute-api` endpoint.
+     * By default, clients can invoke the API with the default `{api_id}.execute-api.{region}.amazonaws.com endpoint`.
+     * To require that clients use a custom domain name to invoke the API, disable the default endpoint.
+     */
+    public readonly disableExecuteApiEndpoint!: pulumi.Output<boolean | undefined>;
     /**
      * The ARN prefix to be used in an `aws.lambda.Permission`'s `sourceArn` attribute
      * or in an `aws.iam.Policy` to authorize access to the [`@connections` API](https://docs.aws.amazon.com/apigateway/latest/developerguide/apigateway-how-to-call-websocket-api-connections.html).
@@ -95,7 +112,7 @@ export class Api extends pulumi.CustomResource {
      */
     public /*out*/ readonly executionArn!: pulumi.Output<string>;
     /**
-     * The name of the API.
+     * The name of the API. Must be less than or equal to 128 characters in length.
      */
     public readonly name!: pulumi.Output<string>;
     /**
@@ -122,7 +139,7 @@ export class Api extends pulumi.CustomResource {
      */
     public readonly target!: pulumi.Output<string | undefined>;
     /**
-     * A version identifier for the API.
+     * A version identifier for the API. Must be between 1 and 64 characters in length.
      */
     public readonly version!: pulumi.Output<string | undefined>;
 
@@ -141,9 +158,11 @@ export class Api extends pulumi.CustomResource {
             inputs["apiEndpoint"] = state ? state.apiEndpoint : undefined;
             inputs["apiKeySelectionExpression"] = state ? state.apiKeySelectionExpression : undefined;
             inputs["arn"] = state ? state.arn : undefined;
+            inputs["body"] = state ? state.body : undefined;
             inputs["corsConfiguration"] = state ? state.corsConfiguration : undefined;
             inputs["credentialsArn"] = state ? state.credentialsArn : undefined;
             inputs["description"] = state ? state.description : undefined;
+            inputs["disableExecuteApiEndpoint"] = state ? state.disableExecuteApiEndpoint : undefined;
             inputs["executionArn"] = state ? state.executionArn : undefined;
             inputs["name"] = state ? state.name : undefined;
             inputs["protocolType"] = state ? state.protocolType : undefined;
@@ -154,13 +173,15 @@ export class Api extends pulumi.CustomResource {
             inputs["version"] = state ? state.version : undefined;
         } else {
             const args = argsOrState as ApiArgs | undefined;
-            if (!args || args.protocolType === undefined) {
+            if ((!args || args.protocolType === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'protocolType'");
             }
             inputs["apiKeySelectionExpression"] = args ? args.apiKeySelectionExpression : undefined;
+            inputs["body"] = args ? args.body : undefined;
             inputs["corsConfiguration"] = args ? args.corsConfiguration : undefined;
             inputs["credentialsArn"] = args ? args.credentialsArn : undefined;
             inputs["description"] = args ? args.description : undefined;
+            inputs["disableExecuteApiEndpoint"] = args ? args.disableExecuteApiEndpoint : undefined;
             inputs["name"] = args ? args.name : undefined;
             inputs["protocolType"] = args ? args.protocolType : undefined;
             inputs["routeKey"] = args ? args.routeKey : undefined;
@@ -202,6 +223,10 @@ export interface ApiState {
      */
     readonly arn?: pulumi.Input<string>;
     /**
+     * An OpenAPI specification that defines the set of routes and integrations to create as part of the HTTP APIs. Supported only for HTTP APIs.
+     */
+    readonly body?: pulumi.Input<string>;
+    /**
      * The cross-origin resource sharing (CORS) [configuration](https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api-cors.html). Applicable for HTTP APIs.
      */
     readonly corsConfiguration?: pulumi.Input<inputs.apigatewayv2.ApiCorsConfiguration>;
@@ -210,9 +235,15 @@ export interface ApiState {
      */
     readonly credentialsArn?: pulumi.Input<string>;
     /**
-     * The description of the API.
+     * The description of the API. Must be less than or equal to 1024 characters in length.
      */
     readonly description?: pulumi.Input<string>;
+    /**
+     * Whether clients can invoke the API by using the default `execute-api` endpoint.
+     * By default, clients can invoke the API with the default `{api_id}.execute-api.{region}.amazonaws.com endpoint`.
+     * To require that clients use a custom domain name to invoke the API, disable the default endpoint.
+     */
+    readonly disableExecuteApiEndpoint?: pulumi.Input<boolean>;
     /**
      * The ARN prefix to be used in an `aws.lambda.Permission`'s `sourceArn` attribute
      * or in an `aws.iam.Policy` to authorize access to the [`@connections` API](https://docs.aws.amazon.com/apigateway/latest/developerguide/apigateway-how-to-call-websocket-api-connections.html).
@@ -220,7 +251,7 @@ export interface ApiState {
      */
     readonly executionArn?: pulumi.Input<string>;
     /**
-     * The name of the API.
+     * The name of the API. Must be less than or equal to 128 characters in length.
      */
     readonly name?: pulumi.Input<string>;
     /**
@@ -247,7 +278,7 @@ export interface ApiState {
      */
     readonly target?: pulumi.Input<string>;
     /**
-     * A version identifier for the API.
+     * A version identifier for the API. Must be between 1 and 64 characters in length.
      */
     readonly version?: pulumi.Input<string>;
 }
@@ -263,6 +294,10 @@ export interface ApiArgs {
      */
     readonly apiKeySelectionExpression?: pulumi.Input<string>;
     /**
+     * An OpenAPI specification that defines the set of routes and integrations to create as part of the HTTP APIs. Supported only for HTTP APIs.
+     */
+    readonly body?: pulumi.Input<string>;
+    /**
      * The cross-origin resource sharing (CORS) [configuration](https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api-cors.html). Applicable for HTTP APIs.
      */
     readonly corsConfiguration?: pulumi.Input<inputs.apigatewayv2.ApiCorsConfiguration>;
@@ -271,11 +306,17 @@ export interface ApiArgs {
      */
     readonly credentialsArn?: pulumi.Input<string>;
     /**
-     * The description of the API.
+     * The description of the API. Must be less than or equal to 1024 characters in length.
      */
     readonly description?: pulumi.Input<string>;
     /**
-     * The name of the API.
+     * Whether clients can invoke the API by using the default `execute-api` endpoint.
+     * By default, clients can invoke the API with the default `{api_id}.execute-api.{region}.amazonaws.com endpoint`.
+     * To require that clients use a custom domain name to invoke the API, disable the default endpoint.
+     */
+    readonly disableExecuteApiEndpoint?: pulumi.Input<boolean>;
+    /**
+     * The name of the API. Must be less than or equal to 128 characters in length.
      */
     readonly name?: pulumi.Input<string>;
     /**
@@ -302,7 +343,7 @@ export interface ApiArgs {
      */
     readonly target?: pulumi.Input<string>;
     /**
-     * A version identifier for the API.
+     * A version identifier for the API. Must be between 1 and 64 characters in length.
      */
     readonly version?: pulumi.Input<string>;
 }

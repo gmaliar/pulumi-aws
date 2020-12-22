@@ -4,6 +4,7 @@
 package ec2
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -18,7 +19,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/ec2"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/ec2"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -39,6 +40,14 @@ import (
 // 	})
 // }
 // ```
+//
+// ## Import
+//
+// Customer Gateways can be imported using the `id`, e.g.
+//
+// ```sh
+//  $ pulumi import aws:ec2/customerGateway:CustomerGateway main cgw-b4dc3961
+// ```
 type CustomerGateway struct {
 	pulumi.CustomResourceState
 
@@ -58,17 +67,18 @@ type CustomerGateway struct {
 // NewCustomerGateway registers a new resource with the given unique name, arguments, and options.
 func NewCustomerGateway(ctx *pulumi.Context,
 	name string, args *CustomerGatewayArgs, opts ...pulumi.ResourceOption) (*CustomerGateway, error) {
-	if args == nil || args.BgpAsn == nil {
-		return nil, errors.New("missing required argument 'BgpAsn'")
-	}
-	if args == nil || args.IpAddress == nil {
-		return nil, errors.New("missing required argument 'IpAddress'")
-	}
-	if args == nil || args.Type == nil {
-		return nil, errors.New("missing required argument 'Type'")
-	}
 	if args == nil {
-		args = &CustomerGatewayArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.BgpAsn == nil {
+		return nil, errors.New("invalid value for required argument 'BgpAsn'")
+	}
+	if args.IpAddress == nil {
+		return nil, errors.New("invalid value for required argument 'IpAddress'")
+	}
+	if args.Type == nil {
+		return nil, errors.New("invalid value for required argument 'Type'")
 	}
 	var resource CustomerGateway
 	err := ctx.RegisterResource("aws:ec2/customerGateway:CustomerGateway", name, args, &resource, opts...)
@@ -150,4 +160,43 @@ type CustomerGatewayArgs struct {
 
 func (CustomerGatewayArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*customerGatewayArgs)(nil)).Elem()
+}
+
+type CustomerGatewayInput interface {
+	pulumi.Input
+
+	ToCustomerGatewayOutput() CustomerGatewayOutput
+	ToCustomerGatewayOutputWithContext(ctx context.Context) CustomerGatewayOutput
+}
+
+func (CustomerGateway) ElementType() reflect.Type {
+	return reflect.TypeOf((*CustomerGateway)(nil)).Elem()
+}
+
+func (i CustomerGateway) ToCustomerGatewayOutput() CustomerGatewayOutput {
+	return i.ToCustomerGatewayOutputWithContext(context.Background())
+}
+
+func (i CustomerGateway) ToCustomerGatewayOutputWithContext(ctx context.Context) CustomerGatewayOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(CustomerGatewayOutput)
+}
+
+type CustomerGatewayOutput struct {
+	*pulumi.OutputState
+}
+
+func (CustomerGatewayOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*CustomerGatewayOutput)(nil)).Elem()
+}
+
+func (o CustomerGatewayOutput) ToCustomerGatewayOutput() CustomerGatewayOutput {
+	return o
+}
+
+func (o CustomerGatewayOutput) ToCustomerGatewayOutputWithContext(ctx context.Context) CustomerGatewayOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(CustomerGatewayOutput{})
 }

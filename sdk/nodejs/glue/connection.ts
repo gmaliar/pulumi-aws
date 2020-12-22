@@ -2,8 +2,7 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 /**
@@ -34,16 +33,24 @@ import * as utilities from "../utilities";
  *
  * const example = new aws.glue.Connection("example", {
  *     connectionProperties: {
- *         JDBC_CONNECTION_URL: pulumi.interpolate`jdbc:mysql://${aws_rds_cluster_example.endpoint}/exampledatabase`,
+ *         JDBC_CONNECTION_URL: `jdbc:mysql://${aws_rds_cluster.example.endpoint}/exampledatabase`,
  *         PASSWORD: "examplepassword",
  *         USERNAME: "exampleusername",
  *     },
  *     physicalConnectionRequirements: {
- *         availabilityZone: aws_subnet_example.availabilityZone,
- *         securityGroupIdLists: [aws_security_group_example.id],
- *         subnetId: aws_subnet_example.id,
+ *         availabilityZone: aws_subnet.example.availability_zone,
+ *         securityGroupIdLists: [aws_security_group.example.id],
+ *         subnetId: aws_subnet.example.id,
  *     },
  * });
+ * ```
+ *
+ * ## Import
+ *
+ * Glue Connections can be imported using the `CATALOG-ID` (AWS account ID if not custom) and `NAME`, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:glue/connection:Connection MyConnection 123456789012:MyConnection
  * ```
  */
 export class Connection extends pulumi.CustomResource {
@@ -87,7 +94,7 @@ export class Connection extends pulumi.CustomResource {
      */
     public readonly connectionProperties!: pulumi.Output<{[key: string]: string}>;
     /**
-     * The type of the connection. Supported are: `JDBC`, `MONGODB`, `KAFKA`. Defaults to `JBDC`.
+     * The type of the connection. Supported are: `JDBC`, `MONGODB`, `KAFKA`, and `NETWORK`. Defaults to `JBDC`.
      */
     public readonly connectionType!: pulumi.Output<string | undefined>;
     /**
@@ -129,7 +136,7 @@ export class Connection extends pulumi.CustomResource {
             inputs["physicalConnectionRequirements"] = state ? state.physicalConnectionRequirements : undefined;
         } else {
             const args = argsOrState as ConnectionArgs | undefined;
-            if (!args || args.connectionProperties === undefined) {
+            if ((!args || args.connectionProperties === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'connectionProperties'");
             }
             inputs["catalogId"] = args ? args.catalogId : undefined;
@@ -169,7 +176,7 @@ export interface ConnectionState {
      */
     readonly connectionProperties?: pulumi.Input<{[key: string]: pulumi.Input<string>}>;
     /**
-     * The type of the connection. Supported are: `JDBC`, `MONGODB`, `KAFKA`. Defaults to `JBDC`.
+     * The type of the connection. Supported are: `JDBC`, `MONGODB`, `KAFKA`, and `NETWORK`. Defaults to `JBDC`.
      */
     readonly connectionType?: pulumi.Input<string>;
     /**
@@ -203,7 +210,7 @@ export interface ConnectionArgs {
      */
     readonly connectionProperties: pulumi.Input<{[key: string]: pulumi.Input<string>}>;
     /**
-     * The type of the connection. Supported are: `JDBC`, `MONGODB`, `KAFKA`. Defaults to `JBDC`.
+     * The type of the connection. Supported are: `JDBC`, `MONGODB`, `KAFKA`, and `NETWORK`. Defaults to `JBDC`.
      */
     readonly connectionType?: pulumi.Input<string>;
     /**

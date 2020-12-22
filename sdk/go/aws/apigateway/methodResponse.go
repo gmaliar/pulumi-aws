@@ -4,6 +4,7 @@
 package apigateway
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -18,7 +19,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/apigateway"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/apigateway"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -31,35 +32,35 @@ import (
 // 			return err
 // 		}
 // 		myDemoResource, err := apigateway.NewResource(ctx, "myDemoResource", &apigateway.ResourceArgs{
+// 			RestApi:  myDemoAPI.ID(),
 // 			ParentId: myDemoAPI.RootResourceId,
 // 			PathPart: pulumi.String("mydemoresource"),
-// 			RestApi:  myDemoAPI.ID(),
 // 		})
 // 		if err != nil {
 // 			return err
 // 		}
 // 		myDemoMethod, err := apigateway.NewMethod(ctx, "myDemoMethod", &apigateway.MethodArgs{
-// 			Authorization: pulumi.String("NONE"),
-// 			HttpMethod:    pulumi.String("GET"),
-// 			ResourceId:    myDemoResource.ID(),
 // 			RestApi:       myDemoAPI.ID(),
+// 			ResourceId:    myDemoResource.ID(),
+// 			HttpMethod:    pulumi.String("GET"),
+// 			Authorization: pulumi.String("NONE"),
 // 		})
 // 		if err != nil {
 // 			return err
 // 		}
 // 		_, err = apigateway.NewIntegration(ctx, "myDemoIntegration", &apigateway.IntegrationArgs{
-// 			HttpMethod: myDemoMethod.HttpMethod,
-// 			ResourceId: myDemoResource.ID(),
 // 			RestApi:    myDemoAPI.ID(),
+// 			ResourceId: myDemoResource.ID(),
+// 			HttpMethod: myDemoMethod.HttpMethod,
 // 			Type:       pulumi.String("MOCK"),
 // 		})
 // 		if err != nil {
 // 			return err
 // 		}
 // 		_, err = apigateway.NewMethodResponse(ctx, "response200", &apigateway.MethodResponseArgs{
-// 			HttpMethod: myDemoMethod.HttpMethod,
-// 			ResourceId: myDemoResource.ID(),
 // 			RestApi:    myDemoAPI.ID(),
+// 			ResourceId: myDemoResource.ID(),
+// 			HttpMethod: myDemoMethod.HttpMethod,
 // 			StatusCode: pulumi.String("200"),
 // 		})
 // 		if err != nil {
@@ -68,6 +69,14 @@ import (
 // 		return nil
 // 	})
 // }
+// ```
+//
+// ## Import
+//
+// `aws_api_gateway_method_response` can be imported using `REST-API-ID/RESOURCE-ID/HTTP-METHOD/STATUS-CODE`, e.g.
+//
+// ```sh
+//  $ pulumi import aws:apigateway/methodResponse:MethodResponse example 12345abcde/67890fghij/GET/200
 // ```
 type MethodResponse struct {
 	pulumi.CustomResourceState
@@ -91,20 +100,21 @@ type MethodResponse struct {
 // NewMethodResponse registers a new resource with the given unique name, arguments, and options.
 func NewMethodResponse(ctx *pulumi.Context,
 	name string, args *MethodResponseArgs, opts ...pulumi.ResourceOption) (*MethodResponse, error) {
-	if args == nil || args.HttpMethod == nil {
-		return nil, errors.New("missing required argument 'HttpMethod'")
-	}
-	if args == nil || args.ResourceId == nil {
-		return nil, errors.New("missing required argument 'ResourceId'")
-	}
-	if args == nil || args.RestApi == nil {
-		return nil, errors.New("missing required argument 'RestApi'")
-	}
-	if args == nil || args.StatusCode == nil {
-		return nil, errors.New("missing required argument 'StatusCode'")
-	}
 	if args == nil {
-		args = &MethodResponseArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.HttpMethod == nil {
+		return nil, errors.New("invalid value for required argument 'HttpMethod'")
+	}
+	if args.ResourceId == nil {
+		return nil, errors.New("invalid value for required argument 'ResourceId'")
+	}
+	if args.RestApi == nil {
+		return nil, errors.New("invalid value for required argument 'RestApi'")
+	}
+	if args.StatusCode == nil {
+		return nil, errors.New("invalid value for required argument 'StatusCode'")
 	}
 	var resource MethodResponse
 	err := ctx.RegisterResource("aws:apigateway/methodResponse:MethodResponse", name, args, &resource, opts...)
@@ -202,4 +212,43 @@ type MethodResponseArgs struct {
 
 func (MethodResponseArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*methodResponseArgs)(nil)).Elem()
+}
+
+type MethodResponseInput interface {
+	pulumi.Input
+
+	ToMethodResponseOutput() MethodResponseOutput
+	ToMethodResponseOutputWithContext(ctx context.Context) MethodResponseOutput
+}
+
+func (MethodResponse) ElementType() reflect.Type {
+	return reflect.TypeOf((*MethodResponse)(nil)).Elem()
+}
+
+func (i MethodResponse) ToMethodResponseOutput() MethodResponseOutput {
+	return i.ToMethodResponseOutputWithContext(context.Background())
+}
+
+func (i MethodResponse) ToMethodResponseOutputWithContext(ctx context.Context) MethodResponseOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(MethodResponseOutput)
+}
+
+type MethodResponseOutput struct {
+	*pulumi.OutputState
+}
+
+func (MethodResponseOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*MethodResponseOutput)(nil)).Elem()
+}
+
+func (o MethodResponseOutput) ToMethodResponseOutput() MethodResponseOutput {
+	return o
+}
+
+func (o MethodResponseOutput) ToMethodResponseOutputWithContext(ctx context.Context) MethodResponseOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(MethodResponseOutput{})
 }

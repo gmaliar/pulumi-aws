@@ -4,17 +4,25 @@
 package worklink
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 )
 
+// ## Import
+//
+// WorkLink can be imported using the ARN, e.g.
+//
+// ```sh
+//  $ pulumi import aws:worklink/fleet:Fleet test arn:aws:worklink::123456789012:fleet/example
+// ```
 type Fleet struct {
 	pulumi.CustomResourceState
 
 	// The ARN of the created WorkLink Fleet.
 	Arn pulumi.StringOutput `pulumi:"arn"`
-	// The ARN of the Amazon Kinesis data stream that receives the audit events.
+	// The ARN of the Amazon Kinesis data stream that receives the audit events. Kinesis data stream name must begin with `"AmazonWorkLink-"`.
 	AuditStreamArn pulumi.StringPtrOutput `pulumi:"auditStreamArn"`
 	// The identifier used by users to sign in to the Amazon WorkLink app.
 	CompanyCode pulumi.StringOutput `pulumi:"companyCode"`
@@ -42,6 +50,7 @@ func NewFleet(ctx *pulumi.Context,
 	if args == nil {
 		args = &FleetArgs{}
 	}
+
 	var resource Fleet
 	err := ctx.RegisterResource("aws:worklink/fleet:Fleet", name, args, &resource, opts...)
 	if err != nil {
@@ -66,7 +75,7 @@ func GetFleet(ctx *pulumi.Context,
 type fleetState struct {
 	// The ARN of the created WorkLink Fleet.
 	Arn *string `pulumi:"arn"`
-	// The ARN of the Amazon Kinesis data stream that receives the audit events.
+	// The ARN of the Amazon Kinesis data stream that receives the audit events. Kinesis data stream name must begin with `"AmazonWorkLink-"`.
 	AuditStreamArn *string `pulumi:"auditStreamArn"`
 	// The identifier used by users to sign in to the Amazon WorkLink app.
 	CompanyCode *string `pulumi:"companyCode"`
@@ -91,7 +100,7 @@ type fleetState struct {
 type FleetState struct {
 	// The ARN of the created WorkLink Fleet.
 	Arn pulumi.StringPtrInput
-	// The ARN of the Amazon Kinesis data stream that receives the audit events.
+	// The ARN of the Amazon Kinesis data stream that receives the audit events. Kinesis data stream name must begin with `"AmazonWorkLink-"`.
 	AuditStreamArn pulumi.StringPtrInput
 	// The identifier used by users to sign in to the Amazon WorkLink app.
 	CompanyCode pulumi.StringPtrInput
@@ -118,7 +127,7 @@ func (FleetState) ElementType() reflect.Type {
 }
 
 type fleetArgs struct {
-	// The ARN of the Amazon Kinesis data stream that receives the audit events.
+	// The ARN of the Amazon Kinesis data stream that receives the audit events. Kinesis data stream name must begin with `"AmazonWorkLink-"`.
 	AuditStreamArn *string `pulumi:"auditStreamArn"`
 	// The certificate chain, including intermediate certificates and the root certificate authority certificate used to issue device certificates.
 	DeviceCaCertificate *string `pulumi:"deviceCaCertificate"`
@@ -136,7 +145,7 @@ type fleetArgs struct {
 
 // The set of arguments for constructing a Fleet resource.
 type FleetArgs struct {
-	// The ARN of the Amazon Kinesis data stream that receives the audit events.
+	// The ARN of the Amazon Kinesis data stream that receives the audit events. Kinesis data stream name must begin with `"AmazonWorkLink-"`.
 	AuditStreamArn pulumi.StringPtrInput
 	// The certificate chain, including intermediate certificates and the root certificate authority certificate used to issue device certificates.
 	DeviceCaCertificate pulumi.StringPtrInput
@@ -154,4 +163,43 @@ type FleetArgs struct {
 
 func (FleetArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*fleetArgs)(nil)).Elem()
+}
+
+type FleetInput interface {
+	pulumi.Input
+
+	ToFleetOutput() FleetOutput
+	ToFleetOutputWithContext(ctx context.Context) FleetOutput
+}
+
+func (Fleet) ElementType() reflect.Type {
+	return reflect.TypeOf((*Fleet)(nil)).Elem()
+}
+
+func (i Fleet) ToFleetOutput() FleetOutput {
+	return i.ToFleetOutputWithContext(context.Background())
+}
+
+func (i Fleet) ToFleetOutputWithContext(ctx context.Context) FleetOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(FleetOutput)
+}
+
+type FleetOutput struct {
+	*pulumi.OutputState
+}
+
+func (FleetOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*FleetOutput)(nil)).Elem()
+}
+
+func (o FleetOutput) ToFleetOutput() FleetOutput {
+	return o
+}
+
+func (o FleetOutput) ToFleetOutputWithContext(ctx context.Context) FleetOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(FleetOutput{})
 }

@@ -4,6 +4,7 @@
 package acm
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
@@ -34,7 +35,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/acm"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/acm"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -60,7 +61,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/acm"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/acm"
 // 	"github.com/pulumi/pulumi-tls/sdk/v2/go/tls"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
@@ -74,11 +75,6 @@ import (
 // 			return err
 // 		}
 // 		exampleSelfSignedCert, err := tls.NewSelfSignedCert(ctx, "exampleSelfSignedCert", &tls.SelfSignedCertArgs{
-// 			AllowedUses: pulumi.StringArray{
-// 				pulumi.String("key_encipherment"),
-// 				pulumi.String("digital_signature"),
-// 				pulumi.String("server_auth"),
-// 			},
 // 			KeyAlgorithm:  pulumi.String("RSA"),
 // 			PrivateKeyPem: examplePrivateKey.PrivateKeyPem,
 // 			Subjects: tls.SelfSignedCertSubjectArray{
@@ -88,13 +84,18 @@ import (
 // 				},
 // 			},
 // 			ValidityPeriodHours: pulumi.Int(12),
+// 			AllowedUses: pulumi.StringArray{
+// 				pulumi.String("key_encipherment"),
+// 				pulumi.String("digital_signature"),
+// 				pulumi.String("server_auth"),
+// 			},
 // 		})
 // 		if err != nil {
 // 			return err
 // 		}
 // 		_, err = acm.NewCertificate(ctx, "cert", &acm.CertificateArgs{
-// 			CertificateBody: exampleSelfSignedCert.CertPem,
 // 			PrivateKey:      examplePrivateKey.PrivateKeyPem,
+// 			CertificateBody: exampleSelfSignedCert.CertPem,
 // 		})
 // 		if err != nil {
 // 			return err
@@ -102,6 +103,14 @@ import (
 // 		return nil
 // 	})
 // }
+// ```
+//
+// ## Import
+//
+// Certificates can be imported using their ARN, e.g.
+//
+// ```sh
+//  $ pulumi import aws:acm/certificate:Certificate cert arn:aws:acm:eu-central-1:123456789012:certificate/7e7a28d2-163f-4b8f-b9cd-822f96c08d6a
 // ```
 type Certificate struct {
 	pulumi.CustomResourceState
@@ -117,7 +126,7 @@ type Certificate struct {
 	CertificateChain pulumi.StringPtrOutput `pulumi:"certificateChain"`
 	// A domain name for which the certificate should be issued
 	DomainName pulumi.StringOutput `pulumi:"domainName"`
-	// A list of attributes to feed into other resources to complete certificate validation. Can have more than one element, e.g. if SANs are defined. Only set if `DNS`-validation was used.
+	// Set of domain validation objects which can be used to complete certificate validation. Can have more than one element, e.g. if SANs are defined. Only set if `DNS`-validation was used.
 	DomainValidationOptions CertificateDomainValidationOptionArrayOutput `pulumi:"domainValidationOptions"`
 	// Configuration block used to set certificate options. Detailed below.
 	// * Importing an existing certificate
@@ -126,7 +135,7 @@ type Certificate struct {
 	PrivateKey pulumi.StringPtrOutput `pulumi:"privateKey"`
 	// Status of the certificate.
 	Status pulumi.StringOutput `pulumi:"status"`
-	// A list of domains that should be SANs in the issued certificate. To remove all elements of a previously configured list, set this value equal to an empty list (`[]`) to trigger recreation.
+	// Set of domains that should be SANs in the issued certificate. To remove all elements of a previously configured list, set this value equal to an empty list (`[]`) to trigger recreation.
 	SubjectAlternativeNames pulumi.StringArrayOutput `pulumi:"subjectAlternativeNames"`
 	// A map of tags to assign to the resource.
 	Tags pulumi.StringMapOutput `pulumi:"tags"`
@@ -142,6 +151,7 @@ func NewCertificate(ctx *pulumi.Context,
 	if args == nil {
 		args = &CertificateArgs{}
 	}
+
 	var resource Certificate
 	err := ctx.RegisterResource("aws:acm/certificate:Certificate", name, args, &resource, opts...)
 	if err != nil {
@@ -175,7 +185,7 @@ type certificateState struct {
 	CertificateChain *string `pulumi:"certificateChain"`
 	// A domain name for which the certificate should be issued
 	DomainName *string `pulumi:"domainName"`
-	// A list of attributes to feed into other resources to complete certificate validation. Can have more than one element, e.g. if SANs are defined. Only set if `DNS`-validation was used.
+	// Set of domain validation objects which can be used to complete certificate validation. Can have more than one element, e.g. if SANs are defined. Only set if `DNS`-validation was used.
 	DomainValidationOptions []CertificateDomainValidationOption `pulumi:"domainValidationOptions"`
 	// Configuration block used to set certificate options. Detailed below.
 	// * Importing an existing certificate
@@ -184,7 +194,7 @@ type certificateState struct {
 	PrivateKey *string `pulumi:"privateKey"`
 	// Status of the certificate.
 	Status *string `pulumi:"status"`
-	// A list of domains that should be SANs in the issued certificate. To remove all elements of a previously configured list, set this value equal to an empty list (`[]`) to trigger recreation.
+	// Set of domains that should be SANs in the issued certificate. To remove all elements of a previously configured list, set this value equal to an empty list (`[]`) to trigger recreation.
 	SubjectAlternativeNames []string `pulumi:"subjectAlternativeNames"`
 	// A map of tags to assign to the resource.
 	Tags map[string]string `pulumi:"tags"`
@@ -206,7 +216,7 @@ type CertificateState struct {
 	CertificateChain pulumi.StringPtrInput
 	// A domain name for which the certificate should be issued
 	DomainName pulumi.StringPtrInput
-	// A list of attributes to feed into other resources to complete certificate validation. Can have more than one element, e.g. if SANs are defined. Only set if `DNS`-validation was used.
+	// Set of domain validation objects which can be used to complete certificate validation. Can have more than one element, e.g. if SANs are defined. Only set if `DNS`-validation was used.
 	DomainValidationOptions CertificateDomainValidationOptionArrayInput
 	// Configuration block used to set certificate options. Detailed below.
 	// * Importing an existing certificate
@@ -215,7 +225,7 @@ type CertificateState struct {
 	PrivateKey pulumi.StringPtrInput
 	// Status of the certificate.
 	Status pulumi.StringPtrInput
-	// A list of domains that should be SANs in the issued certificate. To remove all elements of a previously configured list, set this value equal to an empty list (`[]`) to trigger recreation.
+	// Set of domains that should be SANs in the issued certificate. To remove all elements of a previously configured list, set this value equal to an empty list (`[]`) to trigger recreation.
 	SubjectAlternativeNames pulumi.StringArrayInput
 	// A map of tags to assign to the resource.
 	Tags pulumi.StringMapInput
@@ -244,7 +254,7 @@ type certificateArgs struct {
 	Options *CertificateOptions `pulumi:"options"`
 	// The certificate's PEM-formatted private key
 	PrivateKey *string `pulumi:"privateKey"`
-	// A list of domains that should be SANs in the issued certificate. To remove all elements of a previously configured list, set this value equal to an empty list (`[]`) to trigger recreation.
+	// Set of domains that should be SANs in the issued certificate. To remove all elements of a previously configured list, set this value equal to an empty list (`[]`) to trigger recreation.
 	SubjectAlternativeNames []string `pulumi:"subjectAlternativeNames"`
 	// A map of tags to assign to the resource.
 	Tags map[string]string `pulumi:"tags"`
@@ -268,7 +278,7 @@ type CertificateArgs struct {
 	Options CertificateOptionsPtrInput
 	// The certificate's PEM-formatted private key
 	PrivateKey pulumi.StringPtrInput
-	// A list of domains that should be SANs in the issued certificate. To remove all elements of a previously configured list, set this value equal to an empty list (`[]`) to trigger recreation.
+	// Set of domains that should be SANs in the issued certificate. To remove all elements of a previously configured list, set this value equal to an empty list (`[]`) to trigger recreation.
 	SubjectAlternativeNames pulumi.StringArrayInput
 	// A map of tags to assign to the resource.
 	Tags pulumi.StringMapInput
@@ -278,4 +288,43 @@ type CertificateArgs struct {
 
 func (CertificateArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*certificateArgs)(nil)).Elem()
+}
+
+type CertificateInput interface {
+	pulumi.Input
+
+	ToCertificateOutput() CertificateOutput
+	ToCertificateOutputWithContext(ctx context.Context) CertificateOutput
+}
+
+func (Certificate) ElementType() reflect.Type {
+	return reflect.TypeOf((*Certificate)(nil)).Elem()
+}
+
+func (i Certificate) ToCertificateOutput() CertificateOutput {
+	return i.ToCertificateOutputWithContext(context.Background())
+}
+
+func (i Certificate) ToCertificateOutputWithContext(ctx context.Context) CertificateOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(CertificateOutput)
+}
+
+type CertificateOutput struct {
+	*pulumi.OutputState
+}
+
+func (CertificateOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*CertificateOutput)(nil)).Elem()
+}
+
+func (o CertificateOutput) ToCertificateOutput() CertificateOutput {
+	return o
+}
+
+func (o CertificateOutput) ToCertificateOutputWithContext(ctx context.Context) CertificateOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(CertificateOutput{})
 }

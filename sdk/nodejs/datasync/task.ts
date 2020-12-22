@@ -2,8 +2,7 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 import {ARN} from "..";
@@ -11,19 +10,12 @@ import {ARN} from "..";
 /**
  * Manages an AWS DataSync Task, which represents a configuration for synchronization. Starting an execution of these DataSync Tasks (actually synchronizing files) is performed outside of this resource.
  *
- * ## Example Usage
+ * ## Import
  *
- * ```typescript
- * import * as pulumi from "@pulumi/pulumi";
- * import * as aws from "@pulumi/aws";
+ * `aws_datasync_task` can be imported by using the DataSync Task Amazon Resource Name (ARN), e.g.
  *
- * const example = new aws.datasync.Task("example", {
- *     destinationLocationArn: aws_datasync_location_s3_destination.arn,
- *     options: {
- *         bytesPerSecond: -1,
- *     },
- *     sourceLocationArn: aws_datasync_location_nfs_source.arn,
- * });
+ * ```sh
+ *  $ pulumi import aws:datasync/task:Task example arn:aws:datasync:us-east-1:123456789012:task/task-12345678901234567
  * ```
  */
 export class Task extends pulumi.CustomResource {
@@ -104,10 +96,10 @@ export class Task extends pulumi.CustomResource {
             inputs["tags"] = state ? state.tags : undefined;
         } else {
             const args = argsOrState as TaskArgs | undefined;
-            if (!args || args.destinationLocationArn === undefined) {
+            if ((!args || args.destinationLocationArn === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'destinationLocationArn'");
             }
-            if (!args || args.sourceLocationArn === undefined) {
+            if ((!args || args.sourceLocationArn === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'sourceLocationArn'");
             }
             inputs["cloudwatchLogGroupArn"] = args ? args.cloudwatchLogGroupArn : undefined;

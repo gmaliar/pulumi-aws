@@ -37,6 +37,14 @@ import * as utilities from "../utilities";
  * * `minimumSockets` - Resource must have minimum socket count in order to use the license. Default: 1
  * * `maximumSockets` - Resource must have maximum socket count in order to use the license. Default: unbounded, limit: 10000
  * * `allowedTenancy` - Defines where the license can be used. If set, restricts license usage to selected tenancies. Specify a comma delimited list of `EC2-Default`, `EC2-DedicatedHost`, `EC2-DedicatedInstance`
+ *
+ * ## Import
+ *
+ * License configurations can be imported using the `id`, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:licensemanager/licenseConfiguration:LicenseConfiguration example arn:aws:license-manager:eu-west-1:123456789012:license-configuration:lic-0123456789abcdef0123456789abcdef
+ * ```
  */
 export class LicenseConfiguration extends pulumi.CustomResource {
     /**
@@ -116,7 +124,7 @@ export class LicenseConfiguration extends pulumi.CustomResource {
             inputs["tags"] = state ? state.tags : undefined;
         } else {
             const args = argsOrState as LicenseConfigurationArgs | undefined;
-            if (!args || args.licenseCountingType === undefined) {
+            if ((!args || args.licenseCountingType === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'licenseCountingType'");
             }
             inputs["description"] = args ? args.description : undefined;

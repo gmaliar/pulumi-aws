@@ -20,15 +20,21 @@ import * as utilities from "../utilities";
  *     description: "traffic mirror filter - example",
  *     networkServices: ["amazon-dns"],
  * });
- * const target = new aws.ec2.TrafficMirrorTarget("target", {
- *     networkLoadBalancerArn: aws_lb_lb.arn,
- * });
+ * const target = new aws.ec2.TrafficMirrorTarget("target", {networkLoadBalancerArn: aws_lb.lb.arn});
  * const session = new aws.ec2.TrafficMirrorSession("session", {
  *     description: "traffic mirror session - example",
- *     networkInterfaceId: aws_instance_test.primaryNetworkInterfaceId,
+ *     networkInterfaceId: aws_instance.test.primary_network_interface_id,
  *     trafficMirrorFilterId: filter.id,
  *     trafficMirrorTargetId: target.id,
  * });
+ * ```
+ *
+ * ## Import
+ *
+ * Traffic mirror sessions can be imported using the `id`, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:ec2/trafficMirrorSession:TrafficMirrorSession session tms-0d8aa3ca35897b82e
  * ```
  */
 export class TrafficMirrorSession extends pulumi.CustomResource {
@@ -119,16 +125,16 @@ export class TrafficMirrorSession extends pulumi.CustomResource {
             inputs["virtualNetworkId"] = state ? state.virtualNetworkId : undefined;
         } else {
             const args = argsOrState as TrafficMirrorSessionArgs | undefined;
-            if (!args || args.networkInterfaceId === undefined) {
+            if ((!args || args.networkInterfaceId === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'networkInterfaceId'");
             }
-            if (!args || args.sessionNumber === undefined) {
+            if ((!args || args.sessionNumber === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'sessionNumber'");
             }
-            if (!args || args.trafficMirrorFilterId === undefined) {
+            if ((!args || args.trafficMirrorFilterId === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'trafficMirrorFilterId'");
             }
-            if (!args || args.trafficMirrorTargetId === undefined) {
+            if ((!args || args.trafficMirrorTargetId === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'trafficMirrorTargetId'");
             }
             inputs["description"] = args ? args.description : undefined;

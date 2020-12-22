@@ -23,9 +23,9 @@ import * as utilities from "../utilities";
  *     }],
  * });
  * const foo = new aws.elb.LoadBalancerCookieStickinessPolicy("foo", {
- *     cookieExpirationPeriod: 600,
- *     lbPort: 80,
  *     loadBalancer: lb.id,
+ *     lbPort: 80,
+ *     cookieExpirationPeriod: 600,
  * });
  * ```
  *
@@ -102,10 +102,10 @@ export class LoadBalancerCookieStickinessPolicy extends pulumi.CustomResource {
             inputs["name"] = state ? state.name : undefined;
         } else {
             const args = argsOrState as LoadBalancerCookieStickinessPolicyArgs | undefined;
-            if (!args || args.lbPort === undefined) {
+            if ((!args || args.lbPort === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'lbPort'");
             }
-            if (!args || args.loadBalancer === undefined) {
+            if ((!args || args.loadBalancer === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'loadBalancer'");
             }
             inputs["cookieExpirationPeriod"] = args ? args.cookieExpirationPeriod : undefined;

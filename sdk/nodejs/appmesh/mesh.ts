@@ -2,8 +2,7 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 /**
@@ -31,6 +30,14 @@ import * as utilities from "../utilities";
  *         },
  *     },
  * });
+ * ```
+ *
+ * ## Import
+ *
+ * App Mesh service meshes can be imported using the `name`, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:appmesh/mesh:Mesh simple simpleapp
  * ```
  */
 export class Mesh extends pulumi.CustomResource {
@@ -74,9 +81,17 @@ export class Mesh extends pulumi.CustomResource {
      */
     public /*out*/ readonly lastUpdatedDate!: pulumi.Output<string>;
     /**
-     * The name to use for the service mesh.
+     * The AWS account ID of the service mesh's owner.
+     */
+    public /*out*/ readonly meshOwner!: pulumi.Output<string>;
+    /**
+     * The name to use for the service mesh. Must be between 1 and 255 characters in length.
      */
     public readonly name!: pulumi.Output<string>;
+    /**
+     * The resource owner's AWS account ID.
+     */
+    public /*out*/ readonly resourceOwner!: pulumi.Output<string>;
     /**
      * The service mesh specification to apply.
      */
@@ -101,7 +116,9 @@ export class Mesh extends pulumi.CustomResource {
             inputs["arn"] = state ? state.arn : undefined;
             inputs["createdDate"] = state ? state.createdDate : undefined;
             inputs["lastUpdatedDate"] = state ? state.lastUpdatedDate : undefined;
+            inputs["meshOwner"] = state ? state.meshOwner : undefined;
             inputs["name"] = state ? state.name : undefined;
+            inputs["resourceOwner"] = state ? state.resourceOwner : undefined;
             inputs["spec"] = state ? state.spec : undefined;
             inputs["tags"] = state ? state.tags : undefined;
         } else {
@@ -112,6 +129,8 @@ export class Mesh extends pulumi.CustomResource {
             inputs["arn"] = undefined /*out*/;
             inputs["createdDate"] = undefined /*out*/;
             inputs["lastUpdatedDate"] = undefined /*out*/;
+            inputs["meshOwner"] = undefined /*out*/;
+            inputs["resourceOwner"] = undefined /*out*/;
         }
         if (!opts) {
             opts = {}
@@ -141,9 +160,17 @@ export interface MeshState {
      */
     readonly lastUpdatedDate?: pulumi.Input<string>;
     /**
-     * The name to use for the service mesh.
+     * The AWS account ID of the service mesh's owner.
+     */
+    readonly meshOwner?: pulumi.Input<string>;
+    /**
+     * The name to use for the service mesh. Must be between 1 and 255 characters in length.
      */
     readonly name?: pulumi.Input<string>;
+    /**
+     * The resource owner's AWS account ID.
+     */
+    readonly resourceOwner?: pulumi.Input<string>;
     /**
      * The service mesh specification to apply.
      */
@@ -159,7 +186,7 @@ export interface MeshState {
  */
 export interface MeshArgs {
     /**
-     * The name to use for the service mesh.
+     * The name to use for the service mesh. Must be between 1 and 255 characters in length.
      */
     readonly name?: pulumi.Input<string>;
     /**

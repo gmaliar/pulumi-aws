@@ -2,8 +2,7 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 /**
@@ -16,14 +15,13 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * // Declare the data source
- * const s3 = aws_vpc_foo.id.apply(id => aws.ec2.getVpcEndpoint({
+ * const s3 = aws.ec2.getVpcEndpoint({
+ *     vpcId: aws_vpc.foo.id,
  *     serviceName: "com.amazonaws.us-west-2.s3",
- *     vpcId: id,
- * }, { async: true }));
- * const privateS3 = new aws.ec2.VpcEndpointRouteTableAssociation("private_s3", {
- *     routeTableId: aws_route_table_private.id,
- *     vpcEndpointId: s3.id!,
+ * });
+ * const privateS3 = new aws.ec2.VpcEndpointRouteTableAssociation("privateS3", {
+ *     vpcEndpointId: s3.then(s3 => s3.id),
+ *     routeTableId: aws_route_table["private"].id,
  * });
  * ```
  */

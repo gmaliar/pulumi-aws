@@ -2,8 +2,7 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 /**
@@ -32,6 +31,14 @@ import * as utilities from "../utilities";
  *         },
  *     ],
  * });
+ * ```
+ *
+ * ## Import
+ *
+ * Redshift Parameter Groups can be imported using the `name`, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:redshift/parameterGroup:ParameterGroup paramgroup1 parameter-group-test
  * ```
  */
 export class ParameterGroup extends pulumi.CustomResource {
@@ -107,7 +114,7 @@ export class ParameterGroup extends pulumi.CustomResource {
             inputs["tags"] = state ? state.tags : undefined;
         } else {
             const args = argsOrState as ParameterGroupArgs | undefined;
-            if (!args || args.family === undefined) {
+            if ((!args || args.family === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'family'");
             }
             inputs["description"] = (args ? args.description : undefined) || "Managed by Pulumi";

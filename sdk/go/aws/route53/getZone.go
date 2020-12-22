@@ -21,7 +21,7 @@ import (
 // import (
 // 	"fmt"
 //
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/route53"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/route53"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -37,13 +37,13 @@ import (
 // 			return err
 // 		}
 // 		_, err = route53.NewRecord(ctx, "www", &route53.RecordArgs{
-// 			Name: pulumi.String(fmt.Sprintf("%v%v", "www.", selected.Name)),
+// 			ZoneId: pulumi.String(selected.ZoneId),
+// 			Name:   pulumi.String(fmt.Sprintf("%v%v", "www.", selected.Name)),
+// 			Type:   pulumi.String("A"),
+// 			Ttl:    pulumi.Int(300),
 // 			Records: pulumi.StringArray{
 // 				pulumi.String("10.0.0.1"),
 // 			},
-// 			Ttl:    pulumi.Int(300),
-// 			Type:   pulumi.String("A"),
-// 			ZoneId: pulumi.String(selected.ZoneId),
 // 		})
 // 		if err != nil {
 // 			return err

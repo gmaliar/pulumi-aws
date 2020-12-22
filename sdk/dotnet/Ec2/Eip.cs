@@ -50,24 +50,24 @@ namespace Pulumi.Aws.Ec2
     ///     {
     ///         var multi_ip = new Aws.Ec2.NetworkInterface("multi-ip", new Aws.Ec2.NetworkInterfaceArgs
     ///         {
+    ///             SubnetId = aws_subnet.Main.Id,
     ///             PrivateIps = 
     ///             {
     ///                 "10.0.0.10",
     ///                 "10.0.0.11",
     ///             },
-    ///             SubnetId = aws_subnet.Main.Id,
     ///         });
     ///         var one = new Aws.Ec2.Eip("one", new Aws.Ec2.EipArgs
     ///         {
-    ///             AssociateWithPrivateIp = "10.0.0.10",
-    ///             NetworkInterface = multi_ip.Id,
     ///             Vpc = true,
+    ///             NetworkInterface = multi_ip.Id,
+    ///             AssociateWithPrivateIp = "10.0.0.10",
     ///         });
     ///         var two = new Aws.Ec2.Eip("two", new Aws.Ec2.EipArgs
     ///         {
-    ///             AssociateWithPrivateIp = "10.0.0.11",
-    ///             NetworkInterface = multi_ip.Id,
     ///             Vpc = true,
+    ///             NetworkInterface = multi_ip.Id,
+    ///             AssociateWithPrivateIp = "10.0.0.11",
     ///         });
     ///     }
     /// 
@@ -95,14 +95,14 @@ namespace Pulumi.Aws.Ec2
     ///         });
     ///         var tfTestSubnet = new Aws.Ec2.Subnet("tfTestSubnet", new Aws.Ec2.SubnetArgs
     ///         {
+    ///             VpcId = @default.Id,
     ///             CidrBlock = "10.0.0.0/24",
     ///             MapPublicIpOnLaunch = true,
-    ///             VpcId = @default.Id,
     ///         }, new CustomResourceOptions
     ///         {
     ///             DependsOn = 
     ///             {
-    ///                 "aws_internet_gateway.gw",
+    ///                 gw,
     ///             },
     ///         });
     ///         var foo = new Aws.Ec2.Instance("foo", new Aws.Ec2.InstanceArgs
@@ -114,14 +114,14 @@ namespace Pulumi.Aws.Ec2
     ///         });
     ///         var bar = new Aws.Ec2.Eip("bar", new Aws.Ec2.EipArgs
     ///         {
-    ///             AssociateWithPrivateIp = "10.0.0.12",
-    ///             Instance = foo.Id,
     ///             Vpc = true,
+    ///             Instance = foo.Id,
+    ///             AssociateWithPrivateIp = "10.0.0.12",
     ///         }, new CustomResourceOptions
     ///         {
     ///             DependsOn = 
     ///             {
-    ///                 "aws_internet_gateway.gw",
+    ///                 gw,
     ///             },
     ///         });
     ///     }
@@ -148,6 +148,22 @@ namespace Pulumi.Aws.Ec2
     /// 
     /// }
     /// ```
+    /// 
+    /// ## Import
+    /// 
+    /// EIPs in a VPC can be imported using their Allocation ID, e.g.
+    /// 
+    /// ```sh
+    ///  $ pulumi import aws:ec2/eip:Eip bar eipalloc-00a10e96
+    /// ```
+    /// 
+    ///  EIPs in EC2 Classic can be imported using their Public IP, e.g.
+    /// 
+    /// ```sh
+    ///  $ pulumi import aws:ec2/eip:Eip bar 52.0.0.0
+    /// ```
+    /// 
+    ///  [1]https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_AssociateAddress.html
     /// </summary>
     public partial class Eip : Pulumi.CustomResource
     {
@@ -177,6 +193,9 @@ namespace Pulumi.Aws.Ec2
         [Output("customerOwnedIpv4Pool")]
         public Output<string?> CustomerOwnedIpv4Pool { get; private set; } = null!;
 
+        /// <summary>
+        /// Indicates if this EIP is for use in VPC (`vpc`) or EC2 Classic (`standard`).
+        /// </summary>
         [Output("domain")]
         public Output<string> Domain { get; private set; } = null!;
 
@@ -185,6 +204,12 @@ namespace Pulumi.Aws.Ec2
         /// </summary>
         [Output("instance")]
         public Output<string> Instance { get; private set; } = null!;
+
+        /// <summary>
+        /// The location from which the IP address is advertised. Use this parameter to limit the address to this location.
+        /// </summary>
+        [Output("networkBorderGroup")]
+        public Output<string> NetworkBorderGroup { get; private set; } = null!;
 
         /// <summary>
         /// Network interface ID to associate with.
@@ -223,7 +248,7 @@ namespace Pulumi.Aws.Ec2
         public Output<string> PublicIpv4Pool { get; private set; } = null!;
 
         /// <summary>
-        /// A map of tags to assign to the resource.
+        /// A map of tags to assign to the resource. Tags can only be applied to EIPs in a VPC.
         /// </summary>
         [Output("tags")]
         public Output<ImmutableDictionary<string, string>?> Tags { get; private set; } = null!;
@@ -301,6 +326,12 @@ namespace Pulumi.Aws.Ec2
         public Input<string>? Instance { get; set; }
 
         /// <summary>
+        /// The location from which the IP address is advertised. Use this parameter to limit the address to this location.
+        /// </summary>
+        [Input("networkBorderGroup")]
+        public Input<string>? NetworkBorderGroup { get; set; }
+
+        /// <summary>
         /// Network interface ID to associate with.
         /// </summary>
         [Input("networkInterface")]
@@ -316,7 +347,7 @@ namespace Pulumi.Aws.Ec2
         private InputMap<string>? _tags;
 
         /// <summary>
-        /// A map of tags to assign to the resource.
+        /// A map of tags to assign to the resource. Tags can only be applied to EIPs in a VPC.
         /// </summary>
         public InputMap<string> Tags
         {
@@ -363,6 +394,9 @@ namespace Pulumi.Aws.Ec2
         [Input("customerOwnedIpv4Pool")]
         public Input<string>? CustomerOwnedIpv4Pool { get; set; }
 
+        /// <summary>
+        /// Indicates if this EIP is for use in VPC (`vpc`) or EC2 Classic (`standard`).
+        /// </summary>
         [Input("domain")]
         public Input<string>? Domain { get; set; }
 
@@ -371,6 +405,12 @@ namespace Pulumi.Aws.Ec2
         /// </summary>
         [Input("instance")]
         public Input<string>? Instance { get; set; }
+
+        /// <summary>
+        /// The location from which the IP address is advertised. Use this parameter to limit the address to this location.
+        /// </summary>
+        [Input("networkBorderGroup")]
+        public Input<string>? NetworkBorderGroup { get; set; }
 
         /// <summary>
         /// Network interface ID to associate with.
@@ -412,7 +452,7 @@ namespace Pulumi.Aws.Ec2
         private InputMap<string>? _tags;
 
         /// <summary>
-        /// A map of tags to assign to the resource.
+        /// A map of tags to assign to the resource. Tags can only be applied to EIPs in a VPC.
         /// </summary>
         public InputMap<string> Tags
         {

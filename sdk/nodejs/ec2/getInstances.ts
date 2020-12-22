@@ -2,8 +2,7 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 /**
@@ -21,24 +20,24 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const testInstances = pulumi.output(aws.ec2.getInstances({
- *     filters: [{
- *         name: "instance.group-id",
- *         values: ["sg-12345678"],
- *     }],
- *     instanceStateNames: [
- *         "running",
- *         "stopped",
- *     ],
- *     instanceTags: {
- *         Role: "HardWorker",
- *     },
- * }, { async: true }));
- * const testEip: aws.ec2.Eip[] = [];
- * for (let i = 0; i < testInstances.apply(testInstances => testInstances.ids.length); i++) {
- *     testEip.push(new aws.ec2.Eip(`test-${i}`, {
- *         instance: testInstances.apply(testInstances => testInstances.ids[i]),
- *     }));
+ * export = async () => {
+ *     const testInstances = await aws.ec2.getInstances({
+ *         instanceTags: {
+ *             Role: "HardWorker",
+ *         },
+ *         filters: [{
+ *             name: "instance.group-id",
+ *             values: ["sg-12345678"],
+ *         }],
+ *         instanceStateNames: [
+ *             "running",
+ *             "stopped",
+ *         ],
+ *     });
+ *     const testEip: aws.ec2.Eip[];
+ *     for (const range = {value: 0}; range.value < testInstances.ids.length; range.value++) {
+ *         testEip.push(new aws.ec2.Eip(`testEip-${range.value}`, {instance: testInstances.ids[range.value]}));
+ *     }
  * }
  * ```
  */

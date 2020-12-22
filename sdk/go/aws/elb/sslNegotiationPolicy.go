@@ -4,6 +4,7 @@
 package elb
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -18,7 +19,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/elb"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/elb"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -42,6 +43,8 @@ import (
 // 			return err
 // 		}
 // 		_, err = elb.NewSslNegotiationPolicy(ctx, "foo", &elb.SslNegotiationPolicyArgs{
+// 			LoadBalancer: lb.ID(),
+// 			LbPort:       pulumi.Int(443),
 // 			Attributes: elb.SslNegotiationPolicyAttributeArray{
 // 				&elb.SslNegotiationPolicyAttributeArgs{
 // 					Name:  pulumi.String("Protocol-TLSv1"),
@@ -72,8 +75,6 @@ import (
 // 					Value: pulumi.String("false"),
 // 				},
 // 			},
-// 			LbPort:       pulumi.Int(443),
-// 			LoadBalancer: lb.ID(),
 // 		})
 // 		if err != nil {
 // 			return err
@@ -101,14 +102,15 @@ type SslNegotiationPolicy struct {
 // NewSslNegotiationPolicy registers a new resource with the given unique name, arguments, and options.
 func NewSslNegotiationPolicy(ctx *pulumi.Context,
 	name string, args *SslNegotiationPolicyArgs, opts ...pulumi.ResourceOption) (*SslNegotiationPolicy, error) {
-	if args == nil || args.LbPort == nil {
-		return nil, errors.New("missing required argument 'LbPort'")
-	}
-	if args == nil || args.LoadBalancer == nil {
-		return nil, errors.New("missing required argument 'LoadBalancer'")
-	}
 	if args == nil {
-		args = &SslNegotiationPolicyArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.LbPort == nil {
+		return nil, errors.New("invalid value for required argument 'LbPort'")
+	}
+	if args.LoadBalancer == nil {
+		return nil, errors.New("invalid value for required argument 'LoadBalancer'")
 	}
 	aliases := pulumi.Aliases([]pulumi.Alias{
 		{
@@ -200,4 +202,43 @@ type SslNegotiationPolicyArgs struct {
 
 func (SslNegotiationPolicyArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*sslNegotiationPolicyArgs)(nil)).Elem()
+}
+
+type SslNegotiationPolicyInput interface {
+	pulumi.Input
+
+	ToSslNegotiationPolicyOutput() SslNegotiationPolicyOutput
+	ToSslNegotiationPolicyOutputWithContext(ctx context.Context) SslNegotiationPolicyOutput
+}
+
+func (SslNegotiationPolicy) ElementType() reflect.Type {
+	return reflect.TypeOf((*SslNegotiationPolicy)(nil)).Elem()
+}
+
+func (i SslNegotiationPolicy) ToSslNegotiationPolicyOutput() SslNegotiationPolicyOutput {
+	return i.ToSslNegotiationPolicyOutputWithContext(context.Background())
+}
+
+func (i SslNegotiationPolicy) ToSslNegotiationPolicyOutputWithContext(ctx context.Context) SslNegotiationPolicyOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(SslNegotiationPolicyOutput)
+}
+
+type SslNegotiationPolicyOutput struct {
+	*pulumi.OutputState
+}
+
+func (SslNegotiationPolicyOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*SslNegotiationPolicyOutput)(nil)).Elem()
+}
+
+func (o SslNegotiationPolicyOutput) ToSslNegotiationPolicyOutput() SslNegotiationPolicyOutput {
+	return o
+}
+
+func (o SslNegotiationPolicyOutput) ToSslNegotiationPolicyOutputWithContext(ctx context.Context) SslNegotiationPolicyOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(SslNegotiationPolicyOutput{})
 }

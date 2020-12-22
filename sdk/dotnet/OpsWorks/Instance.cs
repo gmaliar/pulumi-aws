@@ -24,13 +24,13 @@ namespace Pulumi.Aws.OpsWorks
     ///     {
     ///         var my_instance = new Aws.OpsWorks.Instance("my-instance", new Aws.OpsWorks.InstanceArgs
     ///         {
-    ///             InstanceType = "t2.micro",
+    ///             StackId = aws_opsworks_stack.Main.Id,
     ///             LayerIds = 
     ///             {
     ///                 aws_opsworks_custom_layer.My_layer.Id,
     ///             },
+    ///             InstanceType = "t2.micro",
     ///             Os = "Amazon Linux 2015.09",
-    ///             StackId = aws_opsworks_stack.Main.Id,
     ///             State = "stopped",
     ///         });
     ///     }
@@ -90,6 +90,14 @@ namespace Pulumi.Aws.OpsWorks
     /// resources cannot be automatically detected by this provider. After making updates
     /// to block device configuration, resource recreation can be manually triggered by
     /// using the [`up` command with the --replace argument](https://www.pulumi.com/docs/reference/cli/pulumi_up/).
+    /// 
+    /// ## Import
+    /// 
+    /// Opsworks Instances can be imported using the `instance id`, e.g.
+    /// 
+    /// ```sh
+    ///  $ pulumi import aws:opsworks/instance:Instance my_instance 4d6d1710-ded9-42a1-b08e-b043ad7af1e2
+    /// ```
     /// </summary>
     public partial class Instance : Pulumi.CustomResource
     {

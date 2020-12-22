@@ -14,46 +14,45 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const defaultCluster = new aws.rds.Cluster("default", {
+ * const _default = new aws.rds.Cluster("default", {
  *     availabilityZones: [
  *         "us-west-2a",
  *         "us-west-2b",
  *         "us-west-2c",
  *     ],
- *     backupRetentionPeriod: 5,
- *     clusterIdentifier: "aurora-cluster-demo",
  *     databaseName: "mydb",
- *     masterPassword: "bar",
  *     masterUsername: "foo",
+ *     masterPassword: "bar",
+ *     backupRetentionPeriod: 5,
  *     preferredBackupWindow: "07:00-09:00",
  * });
  * const test1 = new aws.rds.ClusterInstance("test1", {
  *     applyImmediately: true,
- *     clusterIdentifier: defaultCluster.id,
- *     engine: defaultCluster.engine,
- *     engineVersion: defaultCluster.engineVersion,
+ *     clusterIdentifier: _default.id,
  *     identifier: "test1",
  *     instanceClass: "db.t2.small",
+ *     engine: _default.engine,
+ *     engineVersion: _default.engineVersion,
  * });
  * const test2 = new aws.rds.ClusterInstance("test2", {
  *     applyImmediately: true,
- *     clusterIdentifier: defaultCluster.id,
- *     engine: defaultCluster.engine,
- *     engineVersion: defaultCluster.engineVersion,
+ *     clusterIdentifier: _default.id,
  *     identifier: "test2",
  *     instanceClass: "db.t2.small",
+ *     engine: _default.engine,
+ *     engineVersion: _default.engineVersion,
  * });
  * const test3 = new aws.rds.ClusterInstance("test3", {
  *     applyImmediately: true,
- *     clusterIdentifier: defaultCluster.id,
- *     engine: defaultCluster.engine,
- *     engineVersion: defaultCluster.engineVersion,
+ *     clusterIdentifier: _default.id,
  *     identifier: "test3",
  *     instanceClass: "db.t2.small",
+ *     engine: _default.engine,
+ *     engineVersion: _default.engineVersion,
  * });
  * const eligible = new aws.rds.ClusterEndpoint("eligible", {
+ *     clusterIdentifier: _default.id,
  *     clusterEndpointIdentifier: "reader",
- *     clusterIdentifier: defaultCluster.id,
  *     customEndpointType: "READER",
  *     excludedMembers: [
  *         test1.id,
@@ -61,8 +60,8 @@ import * as utilities from "../utilities";
  *     ],
  * });
  * const static = new aws.rds.ClusterEndpoint("static", {
+ *     clusterIdentifier: _default.id,
  *     clusterEndpointIdentifier: "static",
- *     clusterIdentifier: defaultCluster.id,
  *     customEndpointType: "READER",
  *     staticMembers: [
  *         test1.id,
@@ -70,6 +69,16 @@ import * as utilities from "../utilities";
  *     ],
  * });
  * ```
+ *
+ * ## Import
+ *
+ * RDS Clusters Endpoint can be imported using the `cluster_endpoint_identifier`, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:rds/clusterEndpoint:ClusterEndpoint custom_reader aurora-prod-cluster-custom-reader
+ * ```
+ *
+ *  [1]https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/Aurora.Overview.Endpoints.html#Aurora.Endpoints.Cluster
  */
 export class ClusterEndpoint extends pulumi.CustomResource {
     /**
@@ -154,13 +163,13 @@ export class ClusterEndpoint extends pulumi.CustomResource {
             inputs["tags"] = state ? state.tags : undefined;
         } else {
             const args = argsOrState as ClusterEndpointArgs | undefined;
-            if (!args || args.clusterEndpointIdentifier === undefined) {
+            if ((!args || args.clusterEndpointIdentifier === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'clusterEndpointIdentifier'");
             }
-            if (!args || args.clusterIdentifier === undefined) {
+            if ((!args || args.clusterIdentifier === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'clusterIdentifier'");
             }
-            if (!args || args.customEndpointType === undefined) {
+            if ((!args || args.customEndpointType === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'customEndpointType'");
             }
             inputs["clusterEndpointIdentifier"] = args ? args.clusterEndpointIdentifier : undefined;

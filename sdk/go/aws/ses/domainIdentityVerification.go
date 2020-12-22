@@ -4,6 +4,7 @@
 package ses
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -26,8 +27,8 @@ import (
 // import (
 // 	"fmt"
 //
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/route53"
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/ses"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/route53"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/ses"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -39,16 +40,16 @@ import (
 // 		if err != nil {
 // 			return err
 // 		}
-// 		_, err = route53.NewRecord(ctx, "exampleAmazonsesVerificationRecord", &route53.RecordArgs{
+// 		exampleAmazonsesVerificationRecord, err := route53.NewRecord(ctx, "exampleAmazonsesVerificationRecord", &route53.RecordArgs{
+// 			ZoneId: pulumi.Any(aws_route53_zone.Example.Zone_id),
 // 			Name: example.ID().ApplyT(func(id string) (string, error) {
 // 				return fmt.Sprintf("%v%v", "_amazonses.", id), nil
 // 			}).(pulumi.StringOutput),
+// 			Type: pulumi.String("TXT"),
+// 			Ttl:  pulumi.Int(600),
 // 			Records: pulumi.StringArray{
 // 				example.VerificationToken,
 // 			},
-// 			Ttl:    pulumi.Int(600),
-// 			Type:   pulumi.String("TXT"),
-// 			ZoneId: pulumi.String(aws_route53_zone.Example.Zone_id),
 // 		})
 // 		if err != nil {
 // 			return err
@@ -56,7 +57,7 @@ import (
 // 		_, err = ses.NewDomainIdentityVerification(ctx, "exampleVerification", &ses.DomainIdentityVerificationArgs{
 // 			Domain: example.ID(),
 // 		}, pulumi.DependsOn([]pulumi.Resource{
-// 			"aws_route53_record.example_amazonses_verification_record",
+// 			exampleAmazonsesVerificationRecord,
 // 		}))
 // 		if err != nil {
 // 			return err
@@ -77,11 +78,12 @@ type DomainIdentityVerification struct {
 // NewDomainIdentityVerification registers a new resource with the given unique name, arguments, and options.
 func NewDomainIdentityVerification(ctx *pulumi.Context,
 	name string, args *DomainIdentityVerificationArgs, opts ...pulumi.ResourceOption) (*DomainIdentityVerification, error) {
-	if args == nil || args.Domain == nil {
-		return nil, errors.New("missing required argument 'Domain'")
-	}
 	if args == nil {
-		args = &DomainIdentityVerificationArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.Domain == nil {
+		return nil, errors.New("invalid value for required argument 'Domain'")
 	}
 	var resource DomainIdentityVerification
 	err := ctx.RegisterResource("aws:ses/domainIdentityVerification:DomainIdentityVerification", name, args, &resource, opts...)
@@ -135,4 +137,43 @@ type DomainIdentityVerificationArgs struct {
 
 func (DomainIdentityVerificationArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*domainIdentityVerificationArgs)(nil)).Elem()
+}
+
+type DomainIdentityVerificationInput interface {
+	pulumi.Input
+
+	ToDomainIdentityVerificationOutput() DomainIdentityVerificationOutput
+	ToDomainIdentityVerificationOutputWithContext(ctx context.Context) DomainIdentityVerificationOutput
+}
+
+func (DomainIdentityVerification) ElementType() reflect.Type {
+	return reflect.TypeOf((*DomainIdentityVerification)(nil)).Elem()
+}
+
+func (i DomainIdentityVerification) ToDomainIdentityVerificationOutput() DomainIdentityVerificationOutput {
+	return i.ToDomainIdentityVerificationOutputWithContext(context.Background())
+}
+
+func (i DomainIdentityVerification) ToDomainIdentityVerificationOutputWithContext(ctx context.Context) DomainIdentityVerificationOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(DomainIdentityVerificationOutput)
+}
+
+type DomainIdentityVerificationOutput struct {
+	*pulumi.OutputState
+}
+
+func (DomainIdentityVerificationOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*DomainIdentityVerificationOutput)(nil)).Elem()
+}
+
+func (o DomainIdentityVerificationOutput) ToDomainIdentityVerificationOutput() DomainIdentityVerificationOutput {
+	return o
+}
+
+func (o DomainIdentityVerificationOutput) ToDomainIdentityVerificationOutputWithContext(ctx context.Context) DomainIdentityVerificationOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(DomainIdentityVerificationOutput{})
 }

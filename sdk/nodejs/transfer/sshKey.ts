@@ -11,14 +11,13 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const fooServer = new aws.transfer.Server("foo", {
+ * const exampleServer = new aws.transfer.Server("exampleServer", {
  *     identityProviderType: "SERVICE_MANAGED",
  *     tags: {
  *         NAME: "tf-acc-test-transfer-server",
  *     },
  * });
- * const fooRole = new aws.iam.Role("foo", {
- *     assumeRolePolicy: `{
+ * const exampleRole = new aws.iam.Role("exampleRole", {assumeRolePolicy: `{
  * 	"Version": "2012-10-17",
  * 	"Statement": [
  * 		{
@@ -30,9 +29,22 @@ import * as utilities from "../utilities";
  * 		}
  * 	]
  * }
- * `,
+ * `});
+ * const exampleUser = new aws.transfer.User("exampleUser", {
+ *     serverId: exampleServer.id,
+ *     userName: "tftestuser",
+ *     role: exampleRole.arn,
+ *     tags: {
+ *         NAME: "tftestuser",
+ *     },
  * });
- * const fooRolePolicy = new aws.iam.RolePolicy("foo", {
+ * const exampleSshKey = new aws.transfer.SshKey("exampleSshKey", {
+ *     serverId: exampleServer.id,
+ *     userName: exampleUser.userName,
+ *     body: "... SSH key ...",
+ * });
+ * const exampleRolePolicy = new aws.iam.RolePolicy("exampleRolePolicy", {
+ *     role: exampleRole.id,
  *     policy: `{
  * 	"Version": "2012-10-17",
  * 	"Statement": [
@@ -47,21 +59,15 @@ import * as utilities from "../utilities";
  * 	]
  * }
  * `,
- *     role: fooRole.id,
  * });
- * const fooUser = new aws.transfer.User("foo", {
- *     role: fooRole.arn,
- *     serverId: fooServer.id,
- *     tags: {
- *         NAME: "tftestuser",
- *     },
- *     userName: "tftestuser",
- * });
- * const fooSshKey = new aws.transfer.SshKey("foo", {
- *     body: "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQD3F6tyPEFEzV0LX3X8BsXdMsQz1x2cEikKDEY0aIj41qgxMCP/iteneqXSIFZBp5vizPvaoIR3Um9xK7PGoW8giupGn+EPuxIA4cDM4vzOqOkiMPhz5XK0whEjkVzTo4+S0puvDZuwIsdiW9mxhJc7tgBNL0cYlWSYVkz4G/fslNfRPW5mYAM49f4fhtxPb5ok4Q2Lg9dPKVHO/Bgeu5woMc7RY0p1ej6D4CKFE6lymSDJpW0YHX/wqE9+cfEauh7xZcG0q9t2ta6F6fmX0agvpFyZo8aFbXeUBr7osSCJNgvavWbM/06niWrOvYX2xwWdhXmXSrbX8ZbabVohBK41 example@example.com",
- *     serverId: fooServer.id,
- *     userName: fooUser.userName,
- * });
+ * ```
+ *
+ * ## Import
+ *
+ * Transfer SSH Public Key can be imported using the `server_id` and `user_name` and `ssh_public_key_id` separated by `/`.
+ *
+ * ```sh
+ *  $ pulumi import aws:transfer/sshKey:SshKey bar s-12345678/test-username/key-12345
  * ```
  */
 export class SshKey extends pulumi.CustomResource {
@@ -122,13 +128,13 @@ export class SshKey extends pulumi.CustomResource {
             inputs["userName"] = state ? state.userName : undefined;
         } else {
             const args = argsOrState as SshKeyArgs | undefined;
-            if (!args || args.body === undefined) {
+            if ((!args || args.body === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'body'");
             }
-            if (!args || args.serverId === undefined) {
+            if ((!args || args.serverId === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'serverId'");
             }
-            if (!args || args.userName === undefined) {
+            if ((!args || args.userName === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'userName'");
             }
             inputs["body"] = args ? args.body : undefined;

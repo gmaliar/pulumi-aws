@@ -4,6 +4,7 @@
 package acmpca
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -21,7 +22,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/acmpca"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/acmpca"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -52,9 +53,9 @@ import (
 // import (
 // 	"fmt"
 //
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/acmpca"
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/iam"
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/s3"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/acmpca"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/iam"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/s3"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -64,7 +65,7 @@ import (
 // 		if err != nil {
 // 			return err
 // 		}
-// 		_, err = s3.NewBucketPolicy(ctx, "exampleBucketPolicy", &s3.BucketPolicyArgs{
+// 		exampleBucketPolicy, err := s3.NewBucketPolicy(ctx, "exampleBucketPolicy", &s3.BucketPolicyArgs{
 // 			Bucket: exampleBucket.ID(),
 // 			Policy: acmpcaBucketAccess.ApplyT(func(acmpcaBucketAccess iam.GetPolicyDocumentResult) (string, error) {
 // 				return acmpcaBucketAccess.Json, nil
@@ -90,7 +91,7 @@ import (
 // 				},
 // 			},
 // 		}, pulumi.DependsOn([]pulumi.Resource{
-// 			"aws_s3_bucket_policy.example",
+// 			exampleBucketPolicy,
 // 		}))
 // 		if err != nil {
 // 			return err
@@ -98,6 +99,14 @@ import (
 // 		return nil
 // 	})
 // }
+// ```
+//
+// ## Import
+//
+// `aws_acmpca_certificate_authority` can be imported by using the certificate authority Amazon Resource Name (ARN), e.g.
+//
+// ```sh
+//  $ pulumi import aws:acmpca/certificateAuthority:CertificateAuthority example arn:aws:acm-pca:us-east-1:123456789012:certificate-authority/12345678-1234-1234-1234-123456789012
 // ```
 type CertificateAuthority struct {
 	pulumi.CustomResourceState
@@ -135,11 +144,12 @@ type CertificateAuthority struct {
 // NewCertificateAuthority registers a new resource with the given unique name, arguments, and options.
 func NewCertificateAuthority(ctx *pulumi.Context,
 	name string, args *CertificateAuthorityArgs, opts ...pulumi.ResourceOption) (*CertificateAuthority, error) {
-	if args == nil || args.CertificateAuthorityConfiguration == nil {
-		return nil, errors.New("missing required argument 'CertificateAuthorityConfiguration'")
-	}
 	if args == nil {
-		args = &CertificateAuthorityArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.CertificateAuthorityConfiguration == nil {
+		return nil, errors.New("invalid value for required argument 'CertificateAuthorityConfiguration'")
 	}
 	var resource CertificateAuthority
 	err := ctx.RegisterResource("aws:acmpca/certificateAuthority:CertificateAuthority", name, args, &resource, opts...)
@@ -261,4 +271,43 @@ type CertificateAuthorityArgs struct {
 
 func (CertificateAuthorityArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*certificateAuthorityArgs)(nil)).Elem()
+}
+
+type CertificateAuthorityInput interface {
+	pulumi.Input
+
+	ToCertificateAuthorityOutput() CertificateAuthorityOutput
+	ToCertificateAuthorityOutputWithContext(ctx context.Context) CertificateAuthorityOutput
+}
+
+func (CertificateAuthority) ElementType() reflect.Type {
+	return reflect.TypeOf((*CertificateAuthority)(nil)).Elem()
+}
+
+func (i CertificateAuthority) ToCertificateAuthorityOutput() CertificateAuthorityOutput {
+	return i.ToCertificateAuthorityOutputWithContext(context.Background())
+}
+
+func (i CertificateAuthority) ToCertificateAuthorityOutputWithContext(ctx context.Context) CertificateAuthorityOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(CertificateAuthorityOutput)
+}
+
+type CertificateAuthorityOutput struct {
+	*pulumi.OutputState
+}
+
+func (CertificateAuthorityOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*CertificateAuthorityOutput)(nil)).Elem()
+}
+
+func (o CertificateAuthorityOutput) ToCertificateAuthorityOutput() CertificateAuthorityOutput {
+	return o
+}
+
+func (o CertificateAuthorityOutput) ToCertificateAuthorityOutputWithContext(ctx context.Context) CertificateAuthorityOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(CertificateAuthorityOutput{})
 }

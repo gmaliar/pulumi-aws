@@ -2,8 +2,7 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 /**
@@ -57,15 +56,16 @@ import * as utilities from "../utilities";
  *         "us-west-2a",
  *         "us-west-2b",
  *     ],
+ *     replicationGroupDescription: "test description",
  *     nodeType: "cache.m4.large",
  *     numberCacheClusters: 2,
  *     parameterGroupName: "default.redis3.2",
  *     port: 6379,
- *     replicationGroupDescription: "test description",
- * }, { ignoreChanges: ["numberCacheClusters"] });
- * const replica = new aws.elasticache.Cluster("replica", {
- *     replicationGroupId: example.id,
  * });
+ * let replica: aws.elasticache.Cluster | undefined;
+ * if (1 == true) {
+ *     replica = new aws.elasticache.Cluster("replica", {replicationGroupId: example.id});
+ * }
  * ```
  * ### Redis Cluster Mode Enabled
  *
@@ -93,6 +93,14 @@ import * as utilities from "../utilities";
  * > **Note:** Automatic Failover is unavailable for Redis versions earlier than 2.8.6,
  * and unavailable on T1 node types. For T2 node types, it is only available on Redis version 3.2.4 or later with cluster mode enabled. See the [High Availability Using Replication Groups](https://docs.aws.amazon.com/AmazonElastiCache/latest/red-ug/Replication.html) guide
  * for full details on using Replication Groups.
+ *
+ * ## Import
+ *
+ * ElastiCache Replication Groups can be imported using the `replication_group_id`, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:elasticache/replicationGroup:ReplicationGroup my_replication_group replication-group-1
+ * ```
  */
 export class ReplicationGroup extends pulumi.CustomResource {
     /**
@@ -233,7 +241,7 @@ export class ReplicationGroup extends pulumi.CustomResource {
      * retain automatic cache cluster snapshots before deleting them. For example, if you set
      * SnapshotRetentionLimit to 5, then a snapshot that was taken today will be retained for 5 days
      * before being deleted. If the value of SnapshotRetentionLimit is set to zero (0), backups are turned off.
-     * Please note that setting a `snapshotRetentionLimit` is not supported on cache.t1.micro or cache.t2.* cache nodes
+     * Please note that setting a `snapshotRetentionLimit` is not supported on cache.t1.micro cache nodes
      */
     public readonly snapshotRetentionLimit!: pulumi.Output<number | undefined>;
     /**
@@ -246,7 +254,7 @@ export class ReplicationGroup extends pulumi.CustomResource {
      */
     public readonly subnetGroupName!: pulumi.Output<string>;
     /**
-     * A map of tags to assign to the resource
+     * A map of tags to assign to the resource. Adding tags to this resource will add or overwrite any existing tags on the clusters in the replication group and not to the group itself.
      */
     public readonly tags!: pulumi.Output<{[key: string]: string} | undefined>;
     /**
@@ -298,7 +306,7 @@ export class ReplicationGroup extends pulumi.CustomResource {
             inputs["transitEncryptionEnabled"] = state ? state.transitEncryptionEnabled : undefined;
         } else {
             const args = argsOrState as ReplicationGroupArgs | undefined;
-            if (!args || args.replicationGroupDescription === undefined) {
+            if ((!args || args.replicationGroupDescription === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'replicationGroupDescription'");
             }
             inputs["applyImmediately"] = args ? args.applyImmediately : undefined;
@@ -458,7 +466,7 @@ export interface ReplicationGroupState {
      * retain automatic cache cluster snapshots before deleting them. For example, if you set
      * SnapshotRetentionLimit to 5, then a snapshot that was taken today will be retained for 5 days
      * before being deleted. If the value of SnapshotRetentionLimit is set to zero (0), backups are turned off.
-     * Please note that setting a `snapshotRetentionLimit` is not supported on cache.t1.micro or cache.t2.* cache nodes
+     * Please note that setting a `snapshotRetentionLimit` is not supported on cache.t1.micro cache nodes
      */
     readonly snapshotRetentionLimit?: pulumi.Input<number>;
     /**
@@ -471,7 +479,7 @@ export interface ReplicationGroupState {
      */
     readonly subnetGroupName?: pulumi.Input<string>;
     /**
-     * A map of tags to assign to the resource
+     * A map of tags to assign to the resource. Adding tags to this resource will add or overwrite any existing tags on the clusters in the replication group and not to the group itself.
      */
     readonly tags?: pulumi.Input<{[key: string]: pulumi.Input<string>}>;
     /**
@@ -583,7 +591,7 @@ export interface ReplicationGroupArgs {
      * retain automatic cache cluster snapshots before deleting them. For example, if you set
      * SnapshotRetentionLimit to 5, then a snapshot that was taken today will be retained for 5 days
      * before being deleted. If the value of SnapshotRetentionLimit is set to zero (0), backups are turned off.
-     * Please note that setting a `snapshotRetentionLimit` is not supported on cache.t1.micro or cache.t2.* cache nodes
+     * Please note that setting a `snapshotRetentionLimit` is not supported on cache.t1.micro cache nodes
      */
     readonly snapshotRetentionLimit?: pulumi.Input<number>;
     /**
@@ -596,7 +604,7 @@ export interface ReplicationGroupArgs {
      */
     readonly subnetGroupName?: pulumi.Input<string>;
     /**
-     * A map of tags to assign to the resource
+     * A map of tags to assign to the resource. Adding tags to this resource will add or overwrite any existing tags on the clusters in the replication group and not to the group itself.
      */
     readonly tags?: pulumi.Input<{[key: string]: pulumi.Input<string>}>;
     /**

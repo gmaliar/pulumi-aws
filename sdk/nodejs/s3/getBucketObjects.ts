@@ -2,8 +2,7 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 /**
@@ -19,16 +18,13 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const myObjects = pulumi.output(aws.s3.getBucketObjects({
+ * const myObjects = aws.s3.getBucketObjects({
  *     bucket: "ourcorp",
- * }, { async: true }));
- * const objectInfo: pulumi.Output<aws.s3.GetBucketObjectResult>[] = [];
- * for (let i = 0; i < myObjects.apply(myObjects => myObjects.keys.length); i++) {
- *     objectInfo.push(pulumi.all([myObjects, myObjects]).apply(([myObjects, myObjects1]) => aws.s3.getBucketObject({
- *         bucket: myObjects.bucket,
- *         key: myObjects1.keys[i],
- *     }, { async: true })));
- * }
+ * });
+ * const objectInfo = .map(__index => aws.s3.getBucketObject({
+ *     key: _arg0_,
+ *     bucket: _arg1_.bucket,
+ * }));
  * ```
  */
 export function getBucketObjects(args: GetBucketObjectsArgs, opts?: pulumi.InvokeOptions): Promise<GetBucketObjectsResult> {

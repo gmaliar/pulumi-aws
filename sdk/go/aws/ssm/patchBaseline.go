@@ -4,6 +4,7 @@
 package ssm
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
@@ -23,7 +24,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/ssm"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/ssm"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -48,7 +49,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/ssm"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/ssm"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -139,7 +140,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/ssm"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/ssm"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -195,6 +196,14 @@ import (
 // 	})
 // }
 // ```
+//
+// ## Import
+//
+// SSM Patch Baselines can be imported by their baseline ID, e.g.
+//
+// ```sh
+//  $ pulumi import aws:ssm/patchBaseline:PatchBaseline example pb-12345678
+// ```
 type PatchBaseline struct {
 	pulumi.CustomResourceState
 
@@ -224,6 +233,7 @@ func NewPatchBaseline(ctx *pulumi.Context,
 	if args == nil {
 		args = &PatchBaselineArgs{}
 	}
+
 	var resource PatchBaseline
 	err := ctx.RegisterResource("aws:ssm/patchBaseline:PatchBaseline", name, args, &resource, opts...)
 	if err != nil {
@@ -336,4 +346,43 @@ type PatchBaselineArgs struct {
 
 func (PatchBaselineArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*patchBaselineArgs)(nil)).Elem()
+}
+
+type PatchBaselineInput interface {
+	pulumi.Input
+
+	ToPatchBaselineOutput() PatchBaselineOutput
+	ToPatchBaselineOutputWithContext(ctx context.Context) PatchBaselineOutput
+}
+
+func (PatchBaseline) ElementType() reflect.Type {
+	return reflect.TypeOf((*PatchBaseline)(nil)).Elem()
+}
+
+func (i PatchBaseline) ToPatchBaselineOutput() PatchBaselineOutput {
+	return i.ToPatchBaselineOutputWithContext(context.Background())
+}
+
+func (i PatchBaseline) ToPatchBaselineOutputWithContext(ctx context.Context) PatchBaselineOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(PatchBaselineOutput)
+}
+
+type PatchBaselineOutput struct {
+	*pulumi.OutputState
+}
+
+func (PatchBaselineOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*PatchBaselineOutput)(nil)).Elem()
+}
+
+func (o PatchBaselineOutput) ToPatchBaselineOutput() PatchBaselineOutput {
+	return o
+}
+
+func (o PatchBaselineOutput) ToPatchBaselineOutputWithContext(ctx context.Context) PatchBaselineOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(PatchBaselineOutput{})
 }

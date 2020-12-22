@@ -25,17 +25,17 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const foobarGroup = new aws.autoscaling.Group("foobar", {
+ * const foobarGroup = new aws.autoscaling.Group("foobarGroup", {
  *     availabilityZones: ["us-west-2a"],
  *     healthCheckType: "EC2",
+ *     terminationPolicies: ["OldestInstance"],
  *     tags: [{
  *         key: "Foo",
- *         propagateAtLaunch: true,
  *         value: "foo-bar",
+ *         propagateAtLaunch: true,
  *     }],
- *     terminationPolicies: ["OldestInstance"],
  * });
- * const foobarLifecycleHook = new aws.autoscaling.LifecycleHook("foobar", {
+ * const foobarLifecycleHook = new aws.autoscaling.LifecycleHook("foobarLifecycleHook", {
  *     autoscalingGroupName: foobarGroup.name,
  *     defaultResult: "CONTINUE",
  *     heartbeatTimeout: 2000,
@@ -47,6 +47,14 @@ import * as utilities from "../utilities";
  *     notificationTargetArn: "arn:aws:sqs:us-east-1:444455556666:queue1*",
  *     roleArn: "arn:aws:iam::123456789012:role/S3Access",
  * });
+ * ```
+ *
+ * ## Import
+ *
+ * AutoScaling Lifecycle Hooks can be imported using the role autoscaling_group_name and name separated by `/`.
+ *
+ * ```sh
+ *  $ pulumi import aws:autoscaling/lifecycleHook:LifecycleHook test-lifecycle-hook asg-name/lifecycle-hook-name
  * ```
  */
 export class LifecycleHook extends pulumi.CustomResource {
@@ -132,10 +140,10 @@ export class LifecycleHook extends pulumi.CustomResource {
             inputs["roleArn"] = state ? state.roleArn : undefined;
         } else {
             const args = argsOrState as LifecycleHookArgs | undefined;
-            if (!args || args.autoscalingGroupName === undefined) {
+            if ((!args || args.autoscalingGroupName === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'autoscalingGroupName'");
             }
-            if (!args || args.lifecycleTransition === undefined) {
+            if ((!args || args.lifecycleTransition === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'lifecycleTransition'");
             }
             inputs["autoscalingGroupName"] = args ? args.autoscalingGroupName : undefined;

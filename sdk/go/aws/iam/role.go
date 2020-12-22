@@ -4,6 +4,7 @@
 package iam
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -22,7 +23,7 @@ import (
 // import (
 // 	"fmt"
 //
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/iam"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/iam"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -47,7 +48,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/iam"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/iam"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -61,10 +62,10 @@ import (
 // 					},
 // 					Principals: []iam.GetPolicyDocumentStatementPrincipal{
 // 						iam.GetPolicyDocumentStatementPrincipal{
+// 							Type: "Service",
 // 							Identifiers: []string{
 // 								"ec2.amazonaws.com",
 // 							},
-// 							Type: "Service",
 // 						},
 // 					},
 // 				},
@@ -74,8 +75,8 @@ import (
 // 			return err
 // 		}
 // 		_, err = iam.NewRole(ctx, "instance", &iam.RoleArgs{
-// 			AssumeRolePolicy: pulumi.String(instance_assume_role_policy.Json),
 // 			Path:             pulumi.String("/system/"),
+// 			AssumeRolePolicy: pulumi.String(instance_assume_role_policy.Json),
 // 		})
 // 		if err != nil {
 // 			return err
@@ -83,6 +84,14 @@ import (
 // 		return nil
 // 	})
 // }
+// ```
+//
+// ## Import
+//
+// IAM Roles can be imported using the `name`, e.g.
+//
+// ```sh
+//  $ pulumi import aws:iam/role:Role developer developer_name
 // ```
 type Role struct {
 	pulumi.CustomResourceState
@@ -117,11 +126,12 @@ type Role struct {
 // NewRole registers a new resource with the given unique name, arguments, and options.
 func NewRole(ctx *pulumi.Context,
 	name string, args *RoleArgs, opts ...pulumi.ResourceOption) (*Role, error) {
-	if args == nil || args.AssumeRolePolicy == nil {
-		return nil, errors.New("missing required argument 'AssumeRolePolicy'")
-	}
 	if args == nil {
-		args = &RoleArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.AssumeRolePolicy == nil {
+		return nil, errors.New("invalid value for required argument 'AssumeRolePolicy'")
 	}
 	var resource Role
 	err := ctx.RegisterResource("aws:iam/role:Role", name, args, &resource, opts...)
@@ -251,4 +261,43 @@ type RoleArgs struct {
 
 func (RoleArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*roleArgs)(nil)).Elem()
+}
+
+type RoleInput interface {
+	pulumi.Input
+
+	ToRoleOutput() RoleOutput
+	ToRoleOutputWithContext(ctx context.Context) RoleOutput
+}
+
+func (Role) ElementType() reflect.Type {
+	return reflect.TypeOf((*Role)(nil)).Elem()
+}
+
+func (i Role) ToRoleOutput() RoleOutput {
+	return i.ToRoleOutputWithContext(context.Background())
+}
+
+func (i Role) ToRoleOutputWithContext(ctx context.Context) RoleOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(RoleOutput)
+}
+
+type RoleOutput struct {
+	*pulumi.OutputState
+}
+
+func (RoleOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*RoleOutput)(nil)).Elem()
+}
+
+func (o RoleOutput) ToRoleOutput() RoleOutput {
+	return o
+}
+
+func (o RoleOutput) ToRoleOutputWithContext(ctx context.Context) RoleOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(RoleOutput{})
 }

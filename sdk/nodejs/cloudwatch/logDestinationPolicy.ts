@@ -13,25 +13,33 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const testDestination = new aws.cloudwatch.LogDestination("test_destination", {
- *     roleArn: aws_iam_role_iam_for_cloudwatch.arn,
- *     targetArn: aws_kinesis_stream_kinesis_for_cloudwatch.arn,
+ * const testDestination = new aws.cloudwatch.LogDestination("testDestination", {
+ *     roleArn: aws_iam_role.iam_for_cloudwatch.arn,
+ *     targetArn: aws_kinesis_stream.kinesis_for_cloudwatch.arn,
  * });
  * const testDestinationPolicyPolicyDocument = testDestination.arn.apply(arn => aws.iam.getPolicyDocument({
  *     statements: [{
- *         actions: ["logs:PutSubscriptionFilter"],
  *         effect: "Allow",
  *         principals: [{
- *             identifiers: ["123456789012"],
  *             type: "AWS",
+ *             identifiers: ["123456789012"],
  *         }],
+ *         actions: ["logs:PutSubscriptionFilter"],
  *         resources: [arn],
  *     }],
- * }, { async: true }));
- * const testDestinationPolicyLogDestinationPolicy = new aws.cloudwatch.LogDestinationPolicy("test_destination_policy", {
- *     accessPolicy: testDestinationPolicyPolicyDocument.json,
+ * }));
+ * const testDestinationPolicyLogDestinationPolicy = new aws.cloudwatch.LogDestinationPolicy("testDestinationPolicyLogDestinationPolicy", {
  *     destinationName: testDestination.name,
+ *     accessPolicy: testDestinationPolicyPolicyDocument.json,
  * });
+ * ```
+ *
+ * ## Import
+ *
+ * CloudWatch Logs destination policies can be imported using the `destination_name`, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:cloudwatch/logDestinationPolicy:LogDestinationPolicy test_destination_policy test_destination
  * ```
  */
 export class LogDestinationPolicy extends pulumi.CustomResource {
@@ -87,10 +95,10 @@ export class LogDestinationPolicy extends pulumi.CustomResource {
             inputs["destinationName"] = state ? state.destinationName : undefined;
         } else {
             const args = argsOrState as LogDestinationPolicyArgs | undefined;
-            if (!args || args.accessPolicy === undefined) {
+            if ((!args || args.accessPolicy === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'accessPolicy'");
             }
-            if (!args || args.destinationName === undefined) {
+            if ((!args || args.destinationName === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'destinationName'");
             }
             inputs["accessPolicy"] = args ? args.accessPolicy : undefined;

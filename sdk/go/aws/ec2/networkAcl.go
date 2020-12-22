@@ -4,6 +4,7 @@
 package ec2
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -25,37 +26,37 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/ec2"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/ec2"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
 // func main() {
 // 	pulumi.Run(func(ctx *pulumi.Context) error {
 // 		_, err := ec2.NewNetworkAcl(ctx, "main", &ec2.NetworkAclArgs{
+// 			VpcId: pulumi.Any(aws_vpc.Main.Id),
 // 			Egress: ec2.NetworkAclEgressArray{
 // 				&ec2.NetworkAclEgressArgs{
+// 					Protocol:  pulumi.String("tcp"),
+// 					RuleNo:    pulumi.Int(200),
 // 					Action:    pulumi.String("allow"),
 // 					CidrBlock: pulumi.String("10.3.0.0/18"),
 // 					FromPort:  pulumi.Int(443),
-// 					Protocol:  pulumi.String("tcp"),
-// 					RuleNo:    pulumi.Int(200),
 // 					ToPort:    pulumi.Int(443),
 // 				},
 // 			},
 // 			Ingress: ec2.NetworkAclIngressArray{
 // 				&ec2.NetworkAclIngressArgs{
+// 					Protocol:  pulumi.String("tcp"),
+// 					RuleNo:    pulumi.Int(100),
 // 					Action:    pulumi.String("allow"),
 // 					CidrBlock: pulumi.String("10.3.0.0/18"),
 // 					FromPort:  pulumi.Int(80),
-// 					Protocol:  pulumi.String("tcp"),
-// 					RuleNo:    pulumi.Int(100),
 // 					ToPort:    pulumi.Int(80),
 // 				},
 // 			},
 // 			Tags: pulumi.StringMap{
 // 				"Name": pulumi.String("main"),
 // 			},
-// 			VpcId: pulumi.String(aws_vpc.Main.Id),
 // 		})
 // 		if err != nil {
 // 			return err
@@ -63,6 +64,14 @@ import (
 // 		return nil
 // 	})
 // }
+// ```
+//
+// ## Import
+//
+// Network ACLs can be imported using the `id`, e.g.
+//
+// ```sh
+//  $ pulumi import aws:ec2/networkAcl:NetworkAcl main acl-7aaabd18
 // ```
 type NetworkAcl struct {
 	pulumi.CustomResourceState
@@ -86,11 +95,12 @@ type NetworkAcl struct {
 // NewNetworkAcl registers a new resource with the given unique name, arguments, and options.
 func NewNetworkAcl(ctx *pulumi.Context,
 	name string, args *NetworkAclArgs, opts ...pulumi.ResourceOption) (*NetworkAcl, error) {
-	if args == nil || args.VpcId == nil {
-		return nil, errors.New("missing required argument 'VpcId'")
-	}
 	if args == nil {
-		args = &NetworkAclArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.VpcId == nil {
+		return nil, errors.New("invalid value for required argument 'VpcId'")
 	}
 	var resource NetworkAcl
 	err := ctx.RegisterResource("aws:ec2/networkAcl:NetworkAcl", name, args, &resource, opts...)
@@ -180,4 +190,43 @@ type NetworkAclArgs struct {
 
 func (NetworkAclArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*networkAclArgs)(nil)).Elem()
+}
+
+type NetworkAclInput interface {
+	pulumi.Input
+
+	ToNetworkAclOutput() NetworkAclOutput
+	ToNetworkAclOutputWithContext(ctx context.Context) NetworkAclOutput
+}
+
+func (NetworkAcl) ElementType() reflect.Type {
+	return reflect.TypeOf((*NetworkAcl)(nil)).Elem()
+}
+
+func (i NetworkAcl) ToNetworkAclOutput() NetworkAclOutput {
+	return i.ToNetworkAclOutputWithContext(context.Background())
+}
+
+func (i NetworkAcl) ToNetworkAclOutputWithContext(ctx context.Context) NetworkAclOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(NetworkAclOutput)
+}
+
+type NetworkAclOutput struct {
+	*pulumi.OutputState
+}
+
+func (NetworkAclOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*NetworkAclOutput)(nil)).Elem()
+}
+
+func (o NetworkAclOutput) ToNetworkAclOutput() NetworkAclOutput {
+	return o
+}
+
+func (o NetworkAclOutput) ToNetworkAclOutputWithContext(ctx context.Context) NetworkAclOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(NetworkAclOutput{})
 }

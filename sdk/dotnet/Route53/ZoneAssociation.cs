@@ -10,14 +10,76 @@ using Pulumi.Serialization;
 namespace Pulumi.Aws.Route53
 {
     /// <summary>
-    /// Manages a Route53 Hosted Zone VPC association. VPC associations can only be made on private zones.
+    /// Manages a Route53 Hosted Zone VPC association. VPC associations can only be made on private zones. See the `aws.route53.VpcAssociationAuthorization` resource for setting up cross-account associations.
     /// 
     /// &gt; **NOTE:** Unless explicit association ordering is required (e.g. a separate cross-account association authorization), usage of this resource is not recommended. Use the `vpc` configuration blocks available within the `aws.route53.Zone` resource instead.
     /// 
     /// &gt; **NOTE:** This provider provides both this standalone Zone VPC Association resource and exclusive VPC associations defined in-line in the `aws.route53.Zone` resource via `vpc` configuration blocks. At this time, you cannot use those in-line VPC associations in conjunction with this resource and the same zone ID otherwise it will cause a perpetual difference in plan output. You can optionally use [`ignoreChanges`](https://www.pulumi.com/docs/intro/concepts/programming-model/#ignorechanges) in the `aws.route53.Zone` resource to manage additional associations via this resource.
+    /// 
+    /// ## Example Usage
+    /// 
+    /// ```csharp
+    /// using Pulumi;
+    /// using Aws = Pulumi.Aws;
+    /// 
+    /// class MyStack : Stack
+    /// {
+    ///     public MyStack()
+    ///     {
+    ///         var primary = new Aws.Ec2.Vpc("primary", new Aws.Ec2.VpcArgs
+    ///         {
+    ///             CidrBlock = "10.6.0.0/16",
+    ///             EnableDnsHostnames = true,
+    ///             EnableDnsSupport = true,
+    ///         });
+    ///         var secondaryVpc = new Aws.Ec2.Vpc("secondaryVpc", new Aws.Ec2.VpcArgs
+    ///         {
+    ///             CidrBlock = "10.7.0.0/16",
+    ///             EnableDnsHostnames = true,
+    ///             EnableDnsSupport = true,
+    ///         });
+    ///         var example = new Aws.Route53.Zone("example", new Aws.Route53.ZoneArgs
+    ///         {
+    ///             Vpcs = 
+    ///             {
+    ///                 new Aws.Route53.Inputs.ZoneVpcArgs
+    ///                 {
+    ///                     VpcId = primary.Id,
+    ///                 },
+    ///             },
+    ///         });
+    ///         var secondaryZoneAssociation = new Aws.Route53.ZoneAssociation("secondaryZoneAssociation", new Aws.Route53.ZoneAssociationArgs
+    ///         {
+    ///             ZoneId = example.ZoneId,
+    ///             VpcId = secondaryVpc.Id,
+    ///         });
+    ///     }
+    /// 
+    /// }
+    /// ```
+    /// 
+    /// ## Import
+    /// 
+    /// Route 53 Hosted Zone Associations can be imported via the Hosted Zone ID and VPC ID, separated by a colon (`:`), e.g.
+    /// 
+    /// ```sh
+    ///  $ pulumi import aws:route53/zoneAssociation:ZoneAssociation example Z123456ABCDEFG:vpc-12345678
+    /// ```
+    /// 
+    ///  If the VPC is in a different region than the Terraform AWS Provider region configuration, the VPC Region can be added to the end. e.g.
+    /// 
+    /// ```sh
+    ///  $ pulumi import aws:route53/zoneAssociation:ZoneAssociation example Z123456ABCDEFG:vpc-12345678:us-east-2
+    /// ```
     /// </summary>
     public partial class ZoneAssociation : Pulumi.CustomResource
     {
+        /// <summary>
+        /// The account ID of the account that created the hosted zone.
+        /// </summary>
+        [Output("owningAccount")]
+        public Output<string> OwningAccount { get; private set; } = null!;
+
         /// <summary>
         /// The VPC to associate with the private hosted zone.
         /// </summary>
@@ -107,6 +169,12 @@ namespace Pulumi.Aws.Route53
 
     public sealed class ZoneAssociationState : Pulumi.ResourceArgs
     {
+        /// <summary>
+        /// The account ID of the account that created the hosted zone.
+        /// </summary>
+        [Input("owningAccount")]
+        public Input<string>? OwningAccount { get; set; }
+
         /// <summary>
         /// The VPC to associate with the private hosted zone.
         /// </summary>

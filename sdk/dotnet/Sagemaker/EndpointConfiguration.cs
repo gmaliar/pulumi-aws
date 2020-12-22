@@ -30,10 +30,10 @@ namespace Pulumi.Aws.Sagemaker
     ///             {
     ///                 new Aws.Sagemaker.Inputs.EndpointConfigurationProductionVariantArgs
     ///                 {
+    ///                     VariantName = "variant-1",
+    ///                     ModelName = aws_sagemaker_model.M.Name,
     ///                     InitialInstanceCount = 1,
     ///                     InstanceType = "ml.t2.medium",
-    ///                     ModelName = aws_sagemaker_model.M.Name,
-    ///                     VariantName = "variant-1",
     ///                 },
     ///             },
     ///             Tags = 
@@ -45,6 +45,14 @@ namespace Pulumi.Aws.Sagemaker
     /// 
     /// }
     /// ```
+    /// 
+    /// ## Import
+    /// 
+    /// Endpoint configurations can be imported using the `name`, e.g.
+    /// 
+    /// ```sh
+    ///  $ pulumi import aws:sagemaker/endpointConfiguration:EndpointConfiguration test_endpoint_config endpoint-config-foo
+    /// ```
     /// </summary>
     public partial class EndpointConfiguration : Pulumi.CustomResource
     {
@@ -53,6 +61,12 @@ namespace Pulumi.Aws.Sagemaker
         /// </summary>
         [Output("arn")]
         public Output<string> Arn { get; private set; } = null!;
+
+        /// <summary>
+        /// Specifies the parameters to capture input/output of Sagemaker models endpoints. Fields are documented below.
+        /// </summary>
+        [Output("dataCaptureConfig")]
+        public Output<Outputs.EndpointConfigurationDataCaptureConfig?> DataCaptureConfig { get; private set; } = null!;
 
         /// <summary>
         /// Amazon Resource Name (ARN) of a AWS Key Management Service key that Amazon SageMaker uses to encrypt data on the storage volume attached to the ML compute instance that hosts the endpoint.
@@ -125,6 +139,12 @@ namespace Pulumi.Aws.Sagemaker
     public sealed class EndpointConfigurationArgs : Pulumi.ResourceArgs
     {
         /// <summary>
+        /// Specifies the parameters to capture input/output of Sagemaker models endpoints. Fields are documented below.
+        /// </summary>
+        [Input("dataCaptureConfig")]
+        public Input<Inputs.EndpointConfigurationDataCaptureConfigArgs>? DataCaptureConfig { get; set; }
+
+        /// <summary>
         /// Amazon Resource Name (ARN) of a AWS Key Management Service key that Amazon SageMaker uses to encrypt data on the storage volume attached to the ML compute instance that hosts the endpoint.
         /// </summary>
         [Input("kmsKeyArn")]
@@ -172,6 +192,12 @@ namespace Pulumi.Aws.Sagemaker
         /// </summary>
         [Input("arn")]
         public Input<string>? Arn { get; set; }
+
+        /// <summary>
+        /// Specifies the parameters to capture input/output of Sagemaker models endpoints. Fields are documented below.
+        /// </summary>
+        [Input("dataCaptureConfig")]
+        public Input<Inputs.EndpointConfigurationDataCaptureConfigGetArgs>? DataCaptureConfig { get; set; }
 
         /// <summary>
         /// Amazon Resource Name (ARN) of a AWS Key Management Service key that Amazon SageMaker uses to encrypt data on the storage volume attached to the ML compute instance that hosts the endpoint.

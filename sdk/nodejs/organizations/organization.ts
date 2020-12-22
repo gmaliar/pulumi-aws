@@ -2,26 +2,16 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 /**
- * Provides a resource to create an organization.
+ * ## Import
  *
- * ## Example Usage
+ * The AWS organization can be imported by using the `id`, e.g.
  *
- * ```typescript
- * import * as pulumi from "@pulumi/pulumi";
- * import * as aws from "@pulumi/aws";
- *
- * const org = new aws.organizations.Organization("org", {
- *     awsServiceAccessPrincipals: [
- *         "cloudtrail.amazonaws.com",
- *         "config.amazonaws.com",
- *     ],
- *     featureSet: "ALL",
- * });
+ * ```sh
+ *  $ pulumi import aws:organizations/organization:Organization my_org o-1234567
  * ```
  */
 export class Organization extends pulumi.CustomResource {

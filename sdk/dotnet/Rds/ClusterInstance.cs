@@ -44,10 +44,9 @@ namespace Pulumi.Aws.Rds
     ///                 "us-west-2b",
     ///                 "us-west-2c",
     ///             },
-    ///             ClusterIdentifier = "aurora-cluster-demo",
     ///             DatabaseName = "mydb",
-    ///             MasterPassword = "barbut8chars",
     ///             MasterUsername = "foo",
+    ///             MasterPassword = "barbut8chars",
     ///         });
     ///         var clusterInstances = new List&lt;Aws.Rds.ClusterInstance&gt;();
     ///         for (var rangeIndex = 0; rangeIndex &lt; 2; rangeIndex++)
@@ -55,16 +54,24 @@ namespace Pulumi.Aws.Rds
     ///             var range = new { Value = rangeIndex };
     ///             clusterInstances.Add(new Aws.Rds.ClusterInstance($"clusterInstances-{range.Value}", new Aws.Rds.ClusterInstanceArgs
     ///             {
+    ///                 Identifier = $"aurora-cluster-demo-{range.Value}",
     ///                 ClusterIdentifier = @default.Id,
+    ///                 InstanceClass = "db.r4.large",
     ///                 Engine = @default.Engine,
     ///                 EngineVersion = @default.EngineVersion,
-    ///                 Identifier = $"aurora-cluster-demo-{range.Value}",
-    ///                 InstanceClass = "db.r4.large",
     ///             }));
     ///         }
     ///     }
     /// 
     /// }
+    /// ```
+    /// 
+    /// ## Import
+    /// 
+    /// RDS Cluster Instances can be imported using the `identifier`, e.g.
+    /// 
+    /// ```sh
+    ///  $ pulumi import aws:rds/clusterInstance:ClusterInstance prod_instance_1 aurora-cluster-instance-1
     /// ```
     /// </summary>
     public partial class ClusterInstance : Pulumi.CustomResource
@@ -146,7 +153,7 @@ namespace Pulumi.Aws.Rds
         public Output<string?> Engine { get; private set; } = null!;
 
         /// <summary>
-        /// The database engine version.
+        /// The database engine version
         /// </summary>
         [Output("engineVersion")]
         public Output<string> EngineVersion { get; private set; } = null!;
@@ -359,7 +366,7 @@ namespace Pulumi.Aws.Rds
         public Input<string>? Engine { get; set; }
 
         /// <summary>
-        /// The database engine version.
+        /// The database engine version
         /// </summary>
         [Input("engineVersion")]
         public Input<string>? EngineVersion { get; set; }
@@ -381,7 +388,7 @@ namespace Pulumi.Aws.Rds
         /// and memory, see [Scaling Aurora DB Instances](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Aurora.Managing.html). Aurora uses `db.*` instance classes/types. Please see [AWS Documentation](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Concepts.DBInstanceClass.html) for currently available instance classes and complete details.
         /// </summary>
         [Input("instanceClass", required: true)]
-        public Input<string> InstanceClass { get; set; } = null!;
+        public InputUnion<string, Pulumi.Aws.Rds.InstanceType> InstanceClass { get; set; } = null!;
 
         /// <summary>
         /// The interval, in seconds, between points when Enhanced Monitoring metrics are collected for the DB instance. To disable collecting Enhanced Monitoring metrics, specify 0. The default is 0. Valid Values: 0, 1, 5, 10, 15, 30, 60.
@@ -533,7 +540,7 @@ namespace Pulumi.Aws.Rds
         public Input<string>? Engine { get; set; }
 
         /// <summary>
-        /// The database engine version.
+        /// The database engine version
         /// </summary>
         [Input("engineVersion")]
         public Input<string>? EngineVersion { get; set; }
@@ -555,7 +562,7 @@ namespace Pulumi.Aws.Rds
         /// and memory, see [Scaling Aurora DB Instances](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Aurora.Managing.html). Aurora uses `db.*` instance classes/types. Please see [AWS Documentation](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Concepts.DBInstanceClass.html) for currently available instance classes and complete details.
         /// </summary>
         [Input("instanceClass")]
-        public Input<string>? InstanceClass { get; set; }
+        public InputUnion<string, Pulumi.Aws.Rds.InstanceType>? InstanceClass { get; set; }
 
         /// <summary>
         /// The ARN for the KMS encryption key if one is set to the cluster.

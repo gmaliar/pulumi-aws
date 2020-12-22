@@ -2,8 +2,7 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 /**
@@ -17,8 +16,15 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const awsSnsTopic = new aws.sns.Topic("aws_sns_topic", {});
- * const myArchive = new aws.glacier.Vault("my_archive", {
+ * const awsSnsTopic = new aws.sns.Topic("awsSnsTopic", {});
+ * const myArchive = new aws.glacier.Vault("myArchive", {
+ *     notifications: [{
+ *         snsTopic: awsSnsTopic.arn,
+ *         events: [
+ *             "ArchiveRetrievalCompleted",
+ *             "InventoryRetrievalCompleted",
+ *         ],
+ *     }],
  *     accessPolicy: `{
  *     "Version":"2012-10-17",
  *     "Statement":[
@@ -35,17 +41,18 @@ import * as utilities from "../utilities";
  *     ]
  * }
  * `,
- *     notifications: [{
- *         events: [
- *             "ArchiveRetrievalCompleted",
- *             "InventoryRetrievalCompleted",
- *         ],
- *         snsTopic: awsSnsTopic.arn,
- *     }],
  *     tags: {
  *         Test: "MyArchive",
  *     },
  * });
+ * ```
+ *
+ * ## Import
+ *
+ * Glacier Vaults can be imported using the `name`, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:glacier/vault:Vault archive my_archive
  * ```
  */
 export class Vault extends pulumi.CustomResource {

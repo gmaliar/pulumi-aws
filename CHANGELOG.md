@@ -2,9 +2,141 @@ CHANGELOG
 =========
 
 ## HEAD (Unreleased)
+* Add ECS managed policies
+* Upgrade to v2.16.0 of pulumi-terraform-bridge
+    * Preserve unknowns during provider preview
 * Update `ecs.ContainerDefinition.Secret` valueFrom to `pulumi.Input<string>`
-
 ---
+
+## 3.20.0 (2020-12-14)
+* Update to v3.21.0 of the AWS Terraform Provider
+
+## 3.19.3 (2020-12-10)
+* Update AWS EC2 Instance Type List.
+* Add support for EC2 Dedicated hosts
+
+## 3.19.2 (2020-12-08)
+* Add support for MSK `topics` to `aws.lambda.eventSourceMapping`.
+* Add support for autonaming FIFO `aws.sqs.Queue` with a `.fifo` suffix
+* Upgrade to v2.15.3 of pulumi-terraform-bridge
+  * Bug fix: Corrects a panic caused by reading sets with partially-known elements.
+
+## 3.19.1 (2020-12-08)
+* Upgrade to v2.15.2 of pulumi-terraform-bridge
+    * Bug fix: Corrects an issue where replacements were not being correctly identified and leading to panics.
+
+## 3.19.0 (2020-12-04)
+* Upgrade to v3.20.0 of the AWS Terraform Provider
+
+## 3.18.0 (2020-12-04)
+* Upgrade to v2.15.0 of pulumi-terraform-bridge & v2.15.0 of pulumi/pkg and pulumi/sdk
+    * These changes introduce enums to the Go and Python SDKs.
+    * This introduces package/module registration for NodeJS and Python.
+* Updated properties that use enums to refer to new generated enums.
+
+## 3.17.0 (2020-12-01)
+* Upgrade to v3.19.0 of the AWS Terraform Provider
+
+## 3.16.0 (2020-11-26)
+* Upgrade to v3.18.0 of the AWS Terraform Provider
+
+## 3.15.0 (2020-11-26)
+* Upgrade to v3.17.0 of the AWS Terraform Provider
+
+## 3.14.0 (2020-11-20)
+* Upgrade to v3.16.0 of the AWS Terraform Provider
+
+## 3.13.0 (2020-11-19)
+* Upgrade to v3.15.0 of the AWS Terraform Provider
+* Add support for autonaming RDS Aurora Clusters
+* Upgrade to pulumi-terraform-bridge v2.13.2  
+  * This adds support for import specific examples in documentation
+
+## 3.12.2 (2020-11-12)
+* Add support for the autonaming of MSK Clusters
+
+## 3.12.1 (2020-11-06)
+* Upgrade to v3.14.1 of the AWS Terraform Provider
+
+## 3.12.0 (2020-11-06)
+* Upgrade to v3.14.0 of the AWS Terraform Provider
+
+## 3.11.1 (2020-11-05)
+* Upgrade to pulumi-terraform-bridge v2.12.1
+
+## 3.11.0 (2020-10-30)
+* Upgrade to v3.13.0 of the AWS Terraform Provider
+* Add enum values for `aws.iam.ManagedPolicy`: `AmazonSSMAutomationApproverAccess`, `AmazonSSMDirectoryServiceAccess`, `AmazonSSMPatchAssociation`
+
+## 3.10.1 (2020-10-28)
+* Ensure `aws.lex.BotAlias`, `aws.lex.Bot`, `aws.lex.Intent` and `aws.lex.SlotType` have autonaming rules in place that adhere to AWS requirements
+* Add missing enum values for `aws.autoscaling.Group` `EnabledMetrics`
+* Add enum value for `aws.iam.ManagedPolicy` `AWSLambdaSQSQueueExecutionRole`
+
+## 3.10.0 (2020-10-26)
+* Upgrade to v3.12.0 of the AWS Terraform Provider
+
+## 3.9.0 (2020-10-23)
+* Upgrade to Pulumi v2.12.0 and pulumi-terraform-bridge v2.11.0
+* Improving the accuracy of previews leading to a more accurate understanding of what will actually change rather than assuming all output properties will change.  
+  ** PLEASE NOTE:**  
+  This new preview functionality can be disabled by setting `PULUMI_DISABLE_PROVIDER_PREVIEW` to `1` or `false`.
+
+## 3.8.0 (2020-10-16)
+* Upgrade to v3.11.0 of the AWS Terraform Provider
+
+## 3.7.0 (2020-10-14)
+* Upgrade to v3.10.0 of the AWS Terraform Provider
+* Disable autonaming on `directoryservice.Directory` as the `name` needs to be a fully qualified name for the directory
+* Schematize enums, generate new constants and update existing constants for Nodejs. [#1151](https://github.com/pulumi/pulumi-aws/pull/1151)
+* Upgrade to pulumi-terraform-bridge v2.11.0
+
+## 3.6.1 (2020-10-08)
+* Upgrade to pulumi-terraform-bridge v2.10.4 which fixes a regression in how config values are passed to the provider
+
+## 3.6.0 (2020-10-07)
+* Upgrade to v3.9.0 of the AWS Terraform Provider
+* Upgrade to pulumi-terraform-bridge v2.10.2
+* Upgrade to Pulumi v2.10.2
+
+## 3.5.0 (2020-09-25)
+* Upgrade to v3.8.0 of the AWS Terraform Provider
+* Ensure default values for codebuild project are the correct schema type
+
+## 3.4.0 (2020-09-21)
+* Upgrade to v3.7.0 of the AWS Terraform Provider
+
+## 3.3.0 (2020-09-19)
+* Add gov regions for east (us-gov-east-1) and west (us-gov-west-1)
+* Enforce `appsync.DataSource` to adhere to AWS naming conventions of not using `-` in names.
+* Upgrade to pulumi-terraform-bridge v2.9.2
+* Upgrade to Pulumi v2.10.1
+* Upgrade to v3.6.0 of the AWS Terraform Provider
+
+## 3.2.1 (2020-08-26)
+* Upgrade to pulumi-terraform-bridge v2.7.3
+
+## 3.2.0 (2020-08-24)
+* Upgrade to pulumi-terraform-bridge v2.7.0
+* Upgrade to Pulumi v2.9.0, which adds type annotations and input/output classes to Python
+
+## 3.1.0 (2020-08-12)
+* Upgrade to v3.1.0 of the AWS Terraform Provider
+* Relax naming restrictions on `elasticache.ReplicationGroup` `replicationGroupId` to allow 40 characters as per
+  [AWS docs](https://docs.aws.amazon.com/cli/latest/reference/elasticache/create-replication-group.html)
+
+## 3.0.0 (2020-08-11)
+* Upgrade to v3.0.0 of the AWS Terraform Provider  
+  **Please Note:**
+  * A number of `deprecated` properties on resources have been removed. You can check the full list in the
+  [upstream CHANGELOG](https://github.com/pulumi/terraform-provider-aws/blob/upstream-v3.0.0/CHANGELOG.md#300-july-31-2020)
+  * Some of the v3.0.0 highlights:
+    * Improved Credential Ordering
+    * Major changes to the `aws.acm.Certificate` to fix a number of issues regarding perpetual diffs of propertes
+    * Enabling drift detection of `loadBalancers` and `targetGroupArns` in `aws.autoscaling.Group`
+* Add ManagedPolicies.AWSXRayDaemonWriteAccess
+* Upgrade to pulumi-terraform-bridge v2.6.0
+* Upgrade to Pulumi v2.7.1
 
 ## 2.13.1 (2020-07-22)
 * Update `aws.Tags` interface to reflect changes from version `2.10.0`
@@ -13,7 +145,7 @@ CHANGELOG
 * Upgrade to v2.70.0 of the AWS Terraform Provider
 
 ## 2.12.0 (2020-07-06)
-* Upgrade to v2.69.0 of the AWS Terraform Provider
+* Upgrade to v2.69.0 of the AWS Terraform Provider  
   ** Please Note the following **
   * `ec2.CustomerGateway.bgpAsn` has changed from an `int` to `string` to allow 4-byte ASNs
 * Add `C5A` instance type family to `aws.ec2.InstanceTypes`.
@@ -26,7 +158,7 @@ CHANGELOG
 * Ensure `autoscaling.Group.Tag` and `autoscaling.Group.Tags` do not panic due to their underlying types in the Terraform schema
 
 ## 2.10.0 (2020-06-23)
-* Upgrade to v2.67.0 of the AWS Terraform Provider
+* Upgrade to v2.67.0 of the AWS Terraform Provider  
   ** Please Note the following **
   * The use of maps when specifying `tags` has changed to be a map that can only contain string values
   * `apigateway.state.variables` has changed to be a map that can only contain string values
@@ -488,5 +620,3 @@ compiler complains.
 * Allow passing an existing `Role` to `serverless.Function` ([pulumi/pulumi-aws#210](https://github.com/pulumi/pulumi-aws/pull/210)). FunctionOptions now includes a `Role` property, for scenarios where you wish to use an existing `Role` or share one across multiple Lambda functions.
 * (**Breaking**) Support configuring the paths to include in `serverless.Function` ([pulumi/pulumi-aws#210](https://github.com/pulumi/pulumi-aws/pull/210)). Previously, all files in the directory would be included in the Lambda deployment package. With this change, only the generated `__index.js` and `./node_modules` are included by default. To add other files, use the new `includePaths` property in FunctionOptions.
 * (**Breaking**) Rename `aws.s3.Bucket#websites` to the singular `aws.s3.Bucket#website`. ([pulumi/pulumi-aws#207](https://github.com/pulumi/pulumi-aws/pull/207)). Since this property contains only one element, it has been renamed to `website` (singular) and is no longer an array property.
-
-

@@ -2,8 +2,7 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 /**
@@ -16,7 +15,7 @@ import * as utilities from "../utilities";
  * import * as aws from "@pulumi/aws";
  *
  * const example = new aws.gamelift.Fleet("example", {
- *     buildId: aws_gamelift_build_example.id,
+ *     buildId: aws_gamelift_build.example.id,
  *     ec2InstanceType: "t2.micro",
  *     fleetType: "ON_DEMAND",
  *     runtimeConfiguration: {
@@ -27,6 +26,10 @@ import * as utilities from "../utilities";
  *     },
  * });
  * ```
+ *
+ * ## Import
+ *
+ * Gamelift Fleets cannot be imported at this time.
  */
 export class Fleet extends pulumi.CustomResource {
     /**
@@ -143,10 +146,10 @@ export class Fleet extends pulumi.CustomResource {
             inputs["tags"] = state ? state.tags : undefined;
         } else {
             const args = argsOrState as FleetArgs | undefined;
-            if (!args || args.buildId === undefined) {
+            if ((!args || args.buildId === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'buildId'");
             }
-            if (!args || args.ec2InstanceType === undefined) {
+            if ((!args || args.ec2InstanceType === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'ec2InstanceType'");
             }
             inputs["buildId"] = args ? args.buildId : undefined;

@@ -23,6 +23,14 @@ import * as utilities from "../utilities";
  *     enabled: true,
  * });
  * ```
+ *
+ * ## Import
+ *
+ * Pinpoint ADM Channel can be imported using the `application-id`, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:pinpoint/admChannel:AdmChannel channel application-id
+ * ```
  */
 export class AdmChannel extends pulumi.CustomResource {
     /**
@@ -87,13 +95,13 @@ export class AdmChannel extends pulumi.CustomResource {
             inputs["enabled"] = state ? state.enabled : undefined;
         } else {
             const args = argsOrState as AdmChannelArgs | undefined;
-            if (!args || args.applicationId === undefined) {
+            if ((!args || args.applicationId === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'applicationId'");
             }
-            if (!args || args.clientId === undefined) {
+            if ((!args || args.clientId === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'clientId'");
             }
-            if (!args || args.clientSecret === undefined) {
+            if ((!args || args.clientSecret === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'clientSecret'");
             }
             inputs["applicationId"] = args ? args.applicationId : undefined;

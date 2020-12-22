@@ -2,8 +2,7 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 /**
@@ -15,15 +14,14 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const mainIdentityPool = new aws.cognito.IdentityPool("main", {
- *     allowUnauthenticatedIdentities: false,
+ * const mainIdentityPool = new aws.cognito.IdentityPool("mainIdentityPool", {
  *     identityPoolName: "identity pool",
+ *     allowUnauthenticatedIdentities: false,
  *     supportedLoginProviders: {
  *         "graph.facebook.com": "7346241598935555",
  *     },
  * });
- * const authenticatedRole = new aws.iam.Role("authenticated", {
- *     assumeRolePolicy: pulumi.interpolate`{
+ * const authenticatedRole = new aws.iam.Role("authenticatedRole", {assumeRolePolicy: pulumi.interpolate`{
  *   "Version": "2012-10-17",
  *   "Statement": [
  *     {
@@ -43,9 +41,9 @@ import * as utilities from "../utilities";
  *     }
  *   ]
  * }
- * `,
- * });
- * const authenticatedRolePolicy = new aws.iam.RolePolicy("authenticated", {
+ * `});
+ * const authenticatedRolePolicy = new aws.iam.RolePolicy("authenticatedRolePolicy", {
+ *     role: authenticatedRole.id,
  *     policy: `{
  *   "Version": "2012-10-17",
  *   "Statement": [
@@ -63,25 +61,32 @@ import * as utilities from "../utilities";
  *   ]
  * }
  * `,
- *     role: authenticatedRole.id,
  * });
- * const mainIdentityPoolRoleAttachment = new aws.cognito.IdentityPoolRoleAttachment("main", {
+ * const mainIdentityPoolRoleAttachment = new aws.cognito.IdentityPoolRoleAttachment("mainIdentityPoolRoleAttachment", {
  *     identityPoolId: mainIdentityPool.id,
  *     roleMappings: [{
- *         ambiguousRoleResolution: "AuthenticatedRole",
  *         identityProvider: "graph.facebook.com",
+ *         ambiguousRoleResolution: "AuthenticatedRole",
+ *         type: "Rules",
  *         mappingRules: [{
  *             claim: "isAdmin",
  *             matchType: "Equals",
  *             roleArn: authenticatedRole.arn,
  *             value: "paid",
  *         }],
- *         type: "Rules",
  *     }],
  *     roles: {
  *         authenticated: authenticatedRole.arn,
  *     },
  * });
+ * ```
+ *
+ * ## Import
+ *
+ * Cognito Identity Pool Roles Attachment can be imported using the Identity Pool id, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:cognito/identityPoolRoleAttachment:IdentityPoolRoleAttachment example <identity-pool-id>
  * ```
  */
 export class IdentityPoolRoleAttachment extends pulumi.CustomResource {
@@ -142,10 +147,10 @@ export class IdentityPoolRoleAttachment extends pulumi.CustomResource {
             inputs["roles"] = state ? state.roles : undefined;
         } else {
             const args = argsOrState as IdentityPoolRoleAttachmentArgs | undefined;
-            if (!args || args.identityPoolId === undefined) {
+            if ((!args || args.identityPoolId === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'identityPoolId'");
             }
-            if (!args || args.roles === undefined) {
+            if ((!args || args.roles === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'roles'");
             }
             inputs["identityPoolId"] = args ? args.identityPoolId : undefined;

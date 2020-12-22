@@ -2,9 +2,10 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
-import {EngineType, InstanceType} from "./index";
+import {EngineType} from "./index";
 
 /**
  * Provides an RDS Cluster Instance Resource. A Cluster Instance Resource defines
@@ -28,27 +29,34 @@ import {EngineType, InstanceType} from "./index";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const defaultCluster = new aws.rds.Cluster("default", {
+ * const _default = new aws.rds.Cluster("default", {
  *     availabilityZones: [
  *         "us-west-2a",
  *         "us-west-2b",
  *         "us-west-2c",
  *     ],
- *     clusterIdentifier: "aurora-cluster-demo",
  *     databaseName: "mydb",
- *     masterPassword: "barbut8chars",
  *     masterUsername: "foo",
+ *     masterPassword: "barbut8chars",
  * });
- * const clusterInstances: aws.rds.ClusterInstance[] = [];
- * for (let i = 0; i < 2; i++) {
- *     clusterInstances.push(new aws.rds.ClusterInstance(`cluster_instances-${i}`, {
- *         clusterIdentifier: defaultCluster.id,
- *         engine: defaultCluster.engine,
- *         engineVersion: defaultCluster.engineVersion,
- *         identifier: `aurora-cluster-demo-${i}`,
+ * const clusterInstances: aws.rds.ClusterInstance[];
+ * for (const range = {value: 0}; range.value < 2; range.value++) {
+ *     clusterInstances.push(new aws.rds.ClusterInstance(`clusterInstances-${range.value}`, {
+ *         identifier: `aurora-cluster-demo-${range.value}`,
+ *         clusterIdentifier: _default.id,
  *         instanceClass: "db.r4.large",
+ *         engine: _default.engine,
+ *         engineVersion: _default.engineVersion,
  *     }));
  * }
+ * ```
+ *
+ * ## Import
+ *
+ * RDS Cluster Instances can be imported using the `identifier`, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:rds/clusterInstance:ClusterInstance prod_instance_1 aurora-cluster-instance-1
  * ```
  */
 export class ClusterInstance extends pulumi.CustomResource {
@@ -132,7 +140,7 @@ export class ClusterInstance extends pulumi.CustomResource {
      */
     public readonly engine!: pulumi.Output<EngineType | undefined>;
     /**
-     * The database engine version.
+     * The database engine version
      */
     public readonly engineVersion!: pulumi.Output<string>;
     /**
@@ -250,10 +258,10 @@ export class ClusterInstance extends pulumi.CustomResource {
             inputs["writer"] = state ? state.writer : undefined;
         } else {
             const args = argsOrState as ClusterInstanceArgs | undefined;
-            if (!args || args.clusterIdentifier === undefined) {
+            if ((!args || args.clusterIdentifier === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'clusterIdentifier'");
             }
-            if (!args || args.instanceClass === undefined) {
+            if ((!args || args.instanceClass === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'instanceClass'");
             }
             inputs["applyImmediately"] = args ? args.applyImmediately : undefined;
@@ -354,7 +362,7 @@ export interface ClusterInstanceState {
      */
     readonly engine?: pulumi.Input<EngineType>;
     /**
-     * The database engine version.
+     * The database engine version
      */
     readonly engineVersion?: pulumi.Input<string>;
     /**
@@ -369,7 +377,7 @@ export interface ClusterInstanceState {
      * The instance class to use. For details on CPU
      * and memory, see [Scaling Aurora DB Instances](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Aurora.Managing.html). Aurora uses `db.*` instance classes/types. Please see [AWS Documentation](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Concepts.DBInstanceClass.html) for currently available instance classes and complete details.
      */
-    readonly instanceClass?: pulumi.Input<string | InstanceType>;
+    readonly instanceClass?: pulumi.Input<string | enums.rds.InstanceType>;
     /**
      * The ARN for the KMS encryption key if one is set to the cluster.
      */
@@ -475,7 +483,7 @@ export interface ClusterInstanceArgs {
      */
     readonly engine?: pulumi.Input<EngineType>;
     /**
-     * The database engine version.
+     * The database engine version
      */
     readonly engineVersion?: pulumi.Input<string>;
     /**
@@ -490,7 +498,7 @@ export interface ClusterInstanceArgs {
      * The instance class to use. For details on CPU
      * and memory, see [Scaling Aurora DB Instances](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Aurora.Managing.html). Aurora uses `db.*` instance classes/types. Please see [AWS Documentation](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Concepts.DBInstanceClass.html) for currently available instance classes and complete details.
      */
-    readonly instanceClass: pulumi.Input<string | InstanceType>;
+    readonly instanceClass: pulumi.Input<string | enums.rds.InstanceType>;
     /**
      * The interval, in seconds, between points when Enhanced Monitoring metrics are collected for the DB instance. To disable collecting Enhanced Monitoring metrics, specify 0. The default is 0. Valid Values: 0, 1, 5, 10, 15, 30, 60.
      */

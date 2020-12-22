@@ -19,6 +19,14 @@ import * as utilities from "../utilities";
  *     localGatewayVirtualInterfaceGroupId: data.aws_ec2_local_gateway_virtual_interface_group.example.id,
  * });
  * ```
+ *
+ * ## Import
+ *
+ * `aws_ec2_local_gateway_route` can be imported by using the EC2 Local Gateway Route Table identifier and destination CIDR block separated by underscores (`_`), e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:ec2/localGatewayRoute:LocalGatewayRoute example lgw-rtb-12345678_172.16.0.0/16
+ * ```
  */
 export class LocalGatewayRoute extends pulumi.CustomResource {
     /**
@@ -78,13 +86,13 @@ export class LocalGatewayRoute extends pulumi.CustomResource {
             inputs["localGatewayVirtualInterfaceGroupId"] = state ? state.localGatewayVirtualInterfaceGroupId : undefined;
         } else {
             const args = argsOrState as LocalGatewayRouteArgs | undefined;
-            if (!args || args.destinationCidrBlock === undefined) {
+            if ((!args || args.destinationCidrBlock === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'destinationCidrBlock'");
             }
-            if (!args || args.localGatewayRouteTableId === undefined) {
+            if ((!args || args.localGatewayRouteTableId === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'localGatewayRouteTableId'");
             }
-            if (!args || args.localGatewayVirtualInterfaceGroupId === undefined) {
+            if ((!args || args.localGatewayVirtualInterfaceGroupId === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'localGatewayVirtualInterfaceGroupId'");
             }
             inputs["destinationCidrBlock"] = args ? args.destinationCidrBlock : undefined;

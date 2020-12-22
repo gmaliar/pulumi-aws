@@ -48,19 +48,26 @@ namespace Pulumi.Aws.Cognito
     ///     }
     ///   ]
     /// }
-    /// 
     /// ",
     ///         });
     ///         var mainUserGroup = new Aws.Cognito.UserGroup("mainUserGroup", new Aws.Cognito.UserGroupArgs
     ///         {
+    ///             UserPoolId = mainUserPool.Id,
     ///             Description = "Managed by Pulumi",
     ///             Precedence = 42,
     ///             RoleArn = groupRole.Arn,
-    ///             UserPoolId = mainUserPool.Id,
     ///         });
     ///     }
     /// 
     /// }
+    /// ```
+    /// 
+    /// ## Import
+    /// 
+    /// Cognito User Groups can be imported using the `user_pool_id`/`name` attributes concatenated, e.g.
+    /// 
+    /// ```sh
+    ///  $ pulumi import aws:cognito/userGroup:UserGroup group us-east-1_vG78M4goG/user-group
     /// ```
     /// </summary>
     public partial class UserGroup : Pulumi.CustomResource

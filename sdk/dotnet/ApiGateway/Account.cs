@@ -39,7 +39,6 @@ namespace Pulumi.Aws.ApiGateway
     ///     }
     ///   ]
     /// }
-    /// 
     /// ",
     ///         });
     ///         var demo = new Aws.ApiGateway.Account("demo", new Aws.ApiGateway.AccountArgs
@@ -48,6 +47,7 @@ namespace Pulumi.Aws.ApiGateway
     ///         });
     ///         var cloudwatchRolePolicy = new Aws.Iam.RolePolicy("cloudwatchRolePolicy", new Aws.Iam.RolePolicyArgs
     ///         {
+    ///             Role = cloudwatchRole.Id,
     ///             Policy = @"{
     ///     ""Version"": ""2012-10-17"",
     ///     ""Statement"": [
@@ -66,21 +66,25 @@ namespace Pulumi.Aws.ApiGateway
     ///         }
     ///     ]
     /// }
-    /// 
     /// ",
-    ///             Role = cloudwatchRole.Id,
     ///         });
     ///     }
     /// 
     /// }
     /// ```
+    /// 
+    /// ## Import
+    /// 
+    /// API Gateway Accounts can be imported using the word `api-gateway-account`, e.g.
+    /// 
+    /// ```sh
+    ///  $ pulumi import aws:apigateway/account:Account demo api-gateway-account
+    /// ```
     /// </summary>
     public partial class Account : Pulumi.CustomResource
     {
         /// <summary>
-        /// The ARN of an IAM role for CloudWatch (to allow logging &amp; monitoring).
-        /// See more [in AWS Docs](https://docs.aws.amazon.com/apigateway/latest/developerguide/how-to-stage-settings.html#how-to-stage-settings-console).
-        /// Logging &amp; monitoring can be enabled/disabled and otherwise tuned on the API Gateway Stage level.
+        /// The ARN of an IAM role for CloudWatch (to allow logging &amp; monitoring). See more [in AWS Docs](https://docs.aws.amazon.com/apigateway/latest/developerguide/how-to-stage-settings.html#how-to-stage-settings-console). Logging &amp; monitoring can be enabled/disabled and otherwise tuned on the API Gateway Stage level.
         /// </summary>
         [Output("cloudwatchRoleArn")]
         public Output<string?> CloudwatchRoleArn { get; private set; } = null!;
@@ -138,9 +142,7 @@ namespace Pulumi.Aws.ApiGateway
     public sealed class AccountArgs : Pulumi.ResourceArgs
     {
         /// <summary>
-        /// The ARN of an IAM role for CloudWatch (to allow logging &amp; monitoring).
-        /// See more [in AWS Docs](https://docs.aws.amazon.com/apigateway/latest/developerguide/how-to-stage-settings.html#how-to-stage-settings-console).
-        /// Logging &amp; monitoring can be enabled/disabled and otherwise tuned on the API Gateway Stage level.
+        /// The ARN of an IAM role for CloudWatch (to allow logging &amp; monitoring). See more [in AWS Docs](https://docs.aws.amazon.com/apigateway/latest/developerguide/how-to-stage-settings.html#how-to-stage-settings-console). Logging &amp; monitoring can be enabled/disabled and otherwise tuned on the API Gateway Stage level.
         /// </summary>
         [Input("cloudwatchRoleArn")]
         public Input<string>? CloudwatchRoleArn { get; set; }
@@ -153,9 +155,7 @@ namespace Pulumi.Aws.ApiGateway
     public sealed class AccountState : Pulumi.ResourceArgs
     {
         /// <summary>
-        /// The ARN of an IAM role for CloudWatch (to allow logging &amp; monitoring).
-        /// See more [in AWS Docs](https://docs.aws.amazon.com/apigateway/latest/developerguide/how-to-stage-settings.html#how-to-stage-settings-console).
-        /// Logging &amp; monitoring can be enabled/disabled and otherwise tuned on the API Gateway Stage level.
+        /// The ARN of an IAM role for CloudWatch (to allow logging &amp; monitoring). See more [in AWS Docs](https://docs.aws.amazon.com/apigateway/latest/developerguide/how-to-stage-settings.html#how-to-stage-settings-console). Logging &amp; monitoring can be enabled/disabled and otherwise tuned on the API Gateway Stage level.
         /// </summary>
         [Input("cloudwatchRoleArn")]
         public Input<string>? CloudwatchRoleArn { get; set; }

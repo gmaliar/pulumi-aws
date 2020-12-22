@@ -170,7 +170,6 @@ namespace Pulumi.Aws.AppSync
     ///         }
     ///     ]
     /// }
-    /// 
     /// ",
     ///         });
     ///         var exampleRolePolicyAttachment = new Aws.Iam.RolePolicyAttachment("exampleRolePolicyAttachment", new Aws.Iam.RolePolicyAttachmentArgs
@@ -178,6 +177,7 @@ namespace Pulumi.Aws.AppSync
     ///             PolicyArn = "arn:aws:iam::aws:policy/service-role/AWSAppSyncPushToCloudWatchLogs",
     ///             Role = exampleRole.Name,
     ///         });
+    ///         // ... other configuration ...
     ///         var exampleGraphQLApi = new Aws.AppSync.GraphQLApi("exampleGraphQLApi", new Aws.AppSync.GraphQLApiArgs
     ///         {
     ///             LogConfig = new Aws.AppSync.Inputs.GraphQLApiLogConfigArgs
@@ -189,6 +189,14 @@ namespace Pulumi.Aws.AppSync
     ///     }
     /// 
     /// }
+    /// ```
+    /// 
+    /// ## Import
+    /// 
+    /// AppSync GraphQL API can be imported using the GraphQL API ID, e.g.
+    /// 
+    /// ```sh
+    ///  $ pulumi import aws:appsync/graphQLApi:GraphQLApi example 0123456789
     /// ```
     /// </summary>
     public partial class GraphQLApi : Pulumi.CustomResource

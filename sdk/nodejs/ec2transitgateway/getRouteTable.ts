@@ -2,8 +2,7 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 /**
@@ -79,6 +78,10 @@ export interface GetRouteTableArgs {
  */
 export interface GetRouteTableResult {
     /**
+     * EC2 Transit Gateway Route Table Amazon Resource Name (ARN).
+     */
+    readonly arn: string;
+    /**
      * Boolean whether this is the default association route table for the EC2 Transit Gateway
      */
     readonly defaultAssociationRouteTable: boolean;
@@ -90,7 +93,7 @@ export interface GetRouteTableResult {
     /**
      * EC2 Transit Gateway Route Table identifier
      */
-    readonly id?: string;
+    readonly id: string;
     /**
      * Key-value tags for the EC2 Transit Gateway Route Table
      */

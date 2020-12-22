@@ -4,6 +4,7 @@
 package ec2transitgateway
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -18,15 +19,15 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/ec2transitgateway"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/ec2transitgateway"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
 // func main() {
 // 	pulumi.Run(func(ctx *pulumi.Context) error {
 // 		_, err := ec2transitgateway.NewRouteTableAssociation(ctx, "example", &ec2transitgateway.RouteTableAssociationArgs{
-// 			TransitGatewayAttachmentId: pulumi.String(aws_ec2_transit_gateway_vpc_attachment.Example.Id),
-// 			TransitGatewayRouteTableId: pulumi.String(aws_ec2_transit_gateway_route_table.Example.Id),
+// 			TransitGatewayAttachmentId: pulumi.Any(aws_ec2_transit_gateway_vpc_attachment.Example.Id),
+// 			TransitGatewayRouteTableId: pulumi.Any(aws_ec2_transit_gateway_route_table.Example.Id),
 // 		})
 // 		if err != nil {
 // 			return err
@@ -34,6 +35,14 @@ import (
 // 		return nil
 // 	})
 // }
+// ```
+//
+// ## Import
+//
+// `aws_ec2_transit_gateway_route_table_association` can be imported by using the EC2 Transit Gateway Route Table identifier, an underscore, and the EC2 Transit Gateway Attachment identifier, e.g.
+//
+// ```sh
+//  $ pulumi import aws:ec2transitgateway/routeTableAssociation:RouteTableAssociation example tgw-rtb-12345678_tgw-attach-87654321
 // ```
 type RouteTableAssociation struct {
 	pulumi.CustomResourceState
@@ -51,14 +60,15 @@ type RouteTableAssociation struct {
 // NewRouteTableAssociation registers a new resource with the given unique name, arguments, and options.
 func NewRouteTableAssociation(ctx *pulumi.Context,
 	name string, args *RouteTableAssociationArgs, opts ...pulumi.ResourceOption) (*RouteTableAssociation, error) {
-	if args == nil || args.TransitGatewayAttachmentId == nil {
-		return nil, errors.New("missing required argument 'TransitGatewayAttachmentId'")
-	}
-	if args == nil || args.TransitGatewayRouteTableId == nil {
-		return nil, errors.New("missing required argument 'TransitGatewayRouteTableId'")
-	}
 	if args == nil {
-		args = &RouteTableAssociationArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.TransitGatewayAttachmentId == nil {
+		return nil, errors.New("invalid value for required argument 'TransitGatewayAttachmentId'")
+	}
+	if args.TransitGatewayRouteTableId == nil {
+		return nil, errors.New("invalid value for required argument 'TransitGatewayRouteTableId'")
 	}
 	var resource RouteTableAssociation
 	err := ctx.RegisterResource("aws:ec2transitgateway/routeTableAssociation:RouteTableAssociation", name, args, &resource, opts...)
@@ -124,4 +134,43 @@ type RouteTableAssociationArgs struct {
 
 func (RouteTableAssociationArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*routeTableAssociationArgs)(nil)).Elem()
+}
+
+type RouteTableAssociationInput interface {
+	pulumi.Input
+
+	ToRouteTableAssociationOutput() RouteTableAssociationOutput
+	ToRouteTableAssociationOutputWithContext(ctx context.Context) RouteTableAssociationOutput
+}
+
+func (RouteTableAssociation) ElementType() reflect.Type {
+	return reflect.TypeOf((*RouteTableAssociation)(nil)).Elem()
+}
+
+func (i RouteTableAssociation) ToRouteTableAssociationOutput() RouteTableAssociationOutput {
+	return i.ToRouteTableAssociationOutputWithContext(context.Background())
+}
+
+func (i RouteTableAssociation) ToRouteTableAssociationOutputWithContext(ctx context.Context) RouteTableAssociationOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(RouteTableAssociationOutput)
+}
+
+type RouteTableAssociationOutput struct {
+	*pulumi.OutputState
+}
+
+func (RouteTableAssociationOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*RouteTableAssociationOutput)(nil)).Elem()
+}
+
+func (o RouteTableAssociationOutput) ToRouteTableAssociationOutput() RouteTableAssociationOutput {
+	return o
+}
+
+func (o RouteTableAssociationOutput) ToRouteTableAssociationOutputWithContext(ctx context.Context) RouteTableAssociationOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(RouteTableAssociationOutput{})
 }

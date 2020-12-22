@@ -2,8 +2,7 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 /**
@@ -18,9 +17,7 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const main = new aws.ec2.Vpc("main", {
- *     cidrBlock: "10.0.0.0/16",
- * });
+ * const main = new aws.ec2.Vpc("main", {cidrBlock: "10.0.0.0/16"});
  * const test = new aws.lb.TargetGroup("test", {
  *     port: 80,
  *     protocol: "HTTP",
@@ -33,9 +30,7 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const main = new aws.ec2.Vpc("main", {
- *     cidrBlock: "10.0.0.0/16",
- * });
+ * const main = new aws.ec2.Vpc("main", {cidrBlock: "10.0.0.0/16"});
  * const ip_example = new aws.lb.TargetGroup("ip-example", {
  *     port: 80,
  *     protocol: "HTTP",
@@ -52,6 +47,14 @@ import * as utilities from "../utilities";
  * const lambda_example = new aws.lb.TargetGroup("lambda-example", {
  *     targetType: "lambda",
  * });
+ * ```
+ *
+ * ## Import
+ *
+ * Target Groups can be imported using their ARN, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:alb/targetGroup:TargetGroup app_front_end arn:aws:elasticloadbalancing:us-west-2:187416307283:targetgroup/app-front-end/20cfe21448b66314
  * ```
  */
 export class TargetGroup extends pulumi.CustomResource {
@@ -119,7 +122,7 @@ export class TargetGroup extends pulumi.CustomResource {
      */
     public readonly port!: pulumi.Output<number | undefined>;
     /**
-     * The protocol to use for routing traffic to the targets. Should be one of "TCP", "TLS", "UDP", "TCP_UDP", "HTTP" or "HTTPS". Required when `targetType` is `instance` or `ip`. Does not apply when `targetType` is `lambda`.
+     * The protocol to use for routing traffic to the targets. Should be one of `GENEVE`, `HTTP`, `HTTPS`, `TCP`, `TCP_UDP`, `TLS`, or `UDP`. Required when `targetType` is `instance` or `ip`. Does not apply when `targetType` is `lambda`.
      */
     public readonly protocol!: pulumi.Output<string | undefined>;
     /**
@@ -131,7 +134,7 @@ export class TargetGroup extends pulumi.CustomResource {
      */
     public readonly slowStart!: pulumi.Output<number | undefined>;
     /**
-     * A Stickiness block. Stickiness blocks are documented below. `stickiness` is only valid if used with Load Balancers of type `Application`
+     * A Stickiness block. Stickiness blocks are documented below.
      */
     public readonly stickiness!: pulumi.Output<outputs.alb.TargetGroupStickiness>;
     /**
@@ -253,7 +256,7 @@ export interface TargetGroupState {
      */
     readonly port?: pulumi.Input<number>;
     /**
-     * The protocol to use for routing traffic to the targets. Should be one of "TCP", "TLS", "UDP", "TCP_UDP", "HTTP" or "HTTPS". Required when `targetType` is `instance` or `ip`. Does not apply when `targetType` is `lambda`.
+     * The protocol to use for routing traffic to the targets. Should be one of `GENEVE`, `HTTP`, `HTTPS`, `TCP`, `TCP_UDP`, `TLS`, or `UDP`. Required when `targetType` is `instance` or `ip`. Does not apply when `targetType` is `lambda`.
      */
     readonly protocol?: pulumi.Input<string>;
     /**
@@ -265,7 +268,7 @@ export interface TargetGroupState {
      */
     readonly slowStart?: pulumi.Input<number>;
     /**
-     * A Stickiness block. Stickiness blocks are documented below. `stickiness` is only valid if used with Load Balancers of type `Application`
+     * A Stickiness block. Stickiness blocks are documented below.
      */
     readonly stickiness?: pulumi.Input<inputs.alb.TargetGroupStickiness>;
     /**
@@ -320,7 +323,7 @@ export interface TargetGroupArgs {
      */
     readonly port?: pulumi.Input<number>;
     /**
-     * The protocol to use for routing traffic to the targets. Should be one of "TCP", "TLS", "UDP", "TCP_UDP", "HTTP" or "HTTPS". Required when `targetType` is `instance` or `ip`. Does not apply when `targetType` is `lambda`.
+     * The protocol to use for routing traffic to the targets. Should be one of `GENEVE`, `HTTP`, `HTTPS`, `TCP`, `TCP_UDP`, `TLS`, or `UDP`. Required when `targetType` is `instance` or `ip`. Does not apply when `targetType` is `lambda`.
      */
     readonly protocol?: pulumi.Input<string>;
     /**
@@ -332,7 +335,7 @@ export interface TargetGroupArgs {
      */
     readonly slowStart?: pulumi.Input<number>;
     /**
-     * A Stickiness block. Stickiness blocks are documented below. `stickiness` is only valid if used with Load Balancers of type `Application`
+     * A Stickiness block. Stickiness blocks are documented below.
      */
     readonly stickiness?: pulumi.Input<inputs.alb.TargetGroupStickiness>;
     /**

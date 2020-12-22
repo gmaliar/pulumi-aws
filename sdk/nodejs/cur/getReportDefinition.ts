@@ -2,8 +2,7 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 /**
@@ -71,7 +70,15 @@ export interface GetReportDefinitionResult {
      * The provider-assigned unique ID for this managed resource.
      */
     readonly id: string;
+    /**
+     * If true reports are updated after they have been finalized.
+     */
+    readonly refreshClosedReports: boolean;
     readonly reportName: string;
+    /**
+     * Overwrite the previous version of each report or to deliver the report in addition to the previous versions.
+     */
+    readonly reportVersioning: string;
     /**
      * Name of customer S3 bucket.
      */

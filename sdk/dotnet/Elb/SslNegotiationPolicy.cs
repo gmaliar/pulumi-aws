@@ -42,6 +42,8 @@ namespace Pulumi.Aws.Elb
     ///         });
     ///         var foo = new Aws.Elb.SslNegotiationPolicy("foo", new Aws.Elb.SslNegotiationPolicyArgs
     ///         {
+    ///             LoadBalancer = lb.Id,
+    ///             LbPort = 443,
     ///             Attributes = 
     ///             {
     ///                 new Aws.Elb.Inputs.SslNegotiationPolicyAttributeArgs
@@ -80,8 +82,6 @@ namespace Pulumi.Aws.Elb
     ///                     Value = "false",
     ///                 },
     ///             },
-    ///             LbPort = 443,
-    ///             LoadBalancer = lb.Id,
     ///         });
     ///     }
     /// 
@@ -142,7 +142,7 @@ namespace Pulumi.Aws.Elb
                 Version = Utilities.Version,
                 Aliases =
                 {
-                    new Alias { Type = "aws:elasticloadbalancing/sslNegotiationPolicy:SslNegotiationPolicy"},
+                    new Pulumi.Alias { Type = "aws:elasticloadbalancing/sslNegotiationPolicy:SslNegotiationPolicy"},
                 },
             };
             var merged = CustomResourceOptions.Merge(defaultOptions, options);

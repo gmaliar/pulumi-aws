@@ -4,6 +4,7 @@
 package ec2transitgateway
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -18,15 +19,15 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/ec2transitgateway"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/ec2transitgateway"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
 // func main() {
 // 	pulumi.Run(func(ctx *pulumi.Context) error {
 // 		_, err := ec2transitgateway.NewRouteTablePropagation(ctx, "example", &ec2transitgateway.RouteTablePropagationArgs{
-// 			TransitGatewayAttachmentId: pulumi.String(aws_ec2_transit_gateway_vpc_attachment.Example.Id),
-// 			TransitGatewayRouteTableId: pulumi.String(aws_ec2_transit_gateway_route_table.Example.Id),
+// 			TransitGatewayAttachmentId: pulumi.Any(aws_ec2_transit_gateway_vpc_attachment.Example.Id),
+// 			TransitGatewayRouteTableId: pulumi.Any(aws_ec2_transit_gateway_route_table.Example.Id),
 // 		})
 // 		if err != nil {
 // 			return err
@@ -34,6 +35,14 @@ import (
 // 		return nil
 // 	})
 // }
+// ```
+//
+// ## Import
+//
+// `aws_ec2_transit_gateway_route_table_propagation` can be imported by using the EC2 Transit Gateway Route Table identifier, an underscore, and the EC2 Transit Gateway Attachment identifier, e.g.
+//
+// ```sh
+//  $ pulumi import aws:ec2transitgateway/routeTablePropagation:RouteTablePropagation example tgw-rtb-12345678_tgw-attach-87654321
 // ```
 type RouteTablePropagation struct {
 	pulumi.CustomResourceState
@@ -51,14 +60,15 @@ type RouteTablePropagation struct {
 // NewRouteTablePropagation registers a new resource with the given unique name, arguments, and options.
 func NewRouteTablePropagation(ctx *pulumi.Context,
 	name string, args *RouteTablePropagationArgs, opts ...pulumi.ResourceOption) (*RouteTablePropagation, error) {
-	if args == nil || args.TransitGatewayAttachmentId == nil {
-		return nil, errors.New("missing required argument 'TransitGatewayAttachmentId'")
-	}
-	if args == nil || args.TransitGatewayRouteTableId == nil {
-		return nil, errors.New("missing required argument 'TransitGatewayRouteTableId'")
-	}
 	if args == nil {
-		args = &RouteTablePropagationArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.TransitGatewayAttachmentId == nil {
+		return nil, errors.New("invalid value for required argument 'TransitGatewayAttachmentId'")
+	}
+	if args.TransitGatewayRouteTableId == nil {
+		return nil, errors.New("invalid value for required argument 'TransitGatewayRouteTableId'")
 	}
 	var resource RouteTablePropagation
 	err := ctx.RegisterResource("aws:ec2transitgateway/routeTablePropagation:RouteTablePropagation", name, args, &resource, opts...)
@@ -124,4 +134,43 @@ type RouteTablePropagationArgs struct {
 
 func (RouteTablePropagationArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*routeTablePropagationArgs)(nil)).Elem()
+}
+
+type RouteTablePropagationInput interface {
+	pulumi.Input
+
+	ToRouteTablePropagationOutput() RouteTablePropagationOutput
+	ToRouteTablePropagationOutputWithContext(ctx context.Context) RouteTablePropagationOutput
+}
+
+func (RouteTablePropagation) ElementType() reflect.Type {
+	return reflect.TypeOf((*RouteTablePropagation)(nil)).Elem()
+}
+
+func (i RouteTablePropagation) ToRouteTablePropagationOutput() RouteTablePropagationOutput {
+	return i.ToRouteTablePropagationOutputWithContext(context.Background())
+}
+
+func (i RouteTablePropagation) ToRouteTablePropagationOutputWithContext(ctx context.Context) RouteTablePropagationOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(RouteTablePropagationOutput)
+}
+
+type RouteTablePropagationOutput struct {
+	*pulumi.OutputState
+}
+
+func (RouteTablePropagationOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*RouteTablePropagationOutput)(nil)).Elem()
+}
+
+func (o RouteTablePropagationOutput) ToRouteTablePropagationOutput() RouteTablePropagationOutput {
+	return o
+}
+
+func (o RouteTablePropagationOutput) ToRouteTablePropagationOutputWithContext(ctx context.Context) RouteTablePropagationOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(RouteTablePropagationOutput{})
 }

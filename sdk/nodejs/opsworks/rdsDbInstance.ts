@@ -15,11 +15,11 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const myInstance = new aws.opsworks.RdsDbInstance("my_instance", {
- *     dbPassword: "somePass",
+ * const myInstance = new aws.opsworks.RdsDbInstance("myInstance", {
+ *     stackId: aws_opsworks_stack.my_stack.id,
+ *     rdsDbInstanceArn: aws_db_instance.my_instance.arn,
  *     dbUser: "someUser",
- *     rdsDbInstanceArn: aws_db_instance_my_instance.arn,
- *     stackId: aws_opsworks_stack_my_stack.id,
+ *     dbPassword: "somePass",
  * });
  * ```
  */
@@ -86,16 +86,16 @@ export class RdsDbInstance extends pulumi.CustomResource {
             inputs["stackId"] = state ? state.stackId : undefined;
         } else {
             const args = argsOrState as RdsDbInstanceArgs | undefined;
-            if (!args || args.dbPassword === undefined) {
+            if ((!args || args.dbPassword === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'dbPassword'");
             }
-            if (!args || args.dbUser === undefined) {
+            if ((!args || args.dbUser === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'dbUser'");
             }
-            if (!args || args.rdsDbInstanceArn === undefined) {
+            if ((!args || args.rdsDbInstanceArn === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'rdsDbInstanceArn'");
             }
-            if (!args || args.stackId === undefined) {
+            if ((!args || args.stackId === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'stackId'");
             }
             inputs["dbPassword"] = args ? args.dbPassword : undefined;

@@ -33,15 +33,23 @@ namespace Pulumi.Aws.Ebs
     ///         });
     ///         var exampleSnapshot = new Aws.Ebs.Snapshot("exampleSnapshot", new Aws.Ebs.SnapshotArgs
     ///         {
+    ///             VolumeId = example.Id,
     ///             Tags = 
     ///             {
     ///                 { "Name", "HelloWorld_snap" },
     ///             },
-    ///             VolumeId = example.Id,
     ///         });
     ///     }
     /// 
     /// }
+    /// ```
+    /// 
+    /// ## Import
+    /// 
+    /// EBS Snapshot can be imported using the `id`, e.g.
+    /// 
+    /// ```sh
+    ///  $ pulumi import aws:ebs/snapshot:Snapshot id snap-049df61146c4d7901
     /// ```
     /// </summary>
     public partial class Snapshot : Pulumi.CustomResource

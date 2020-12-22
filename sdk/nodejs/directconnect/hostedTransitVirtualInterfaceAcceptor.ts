@@ -17,26 +17,39 @@ import * as utilities from "../utilities";
  * import * as aws from "@pulumi/aws";
  *
  * const accepter = new aws.Provider("accepter", {});
- * const accepterCallerIdentity = pulumi.output(aws.getCallerIdentity({ provider: accepter, async: true }));
+ * // Accepter's credentials.
+ * const accepterCallerIdentity = aws.getCallerIdentity({});
  * // Accepter's side of the VIF.
- * const example = new aws.directconnect.Gateway("example", {
- *     amazonSideAsn: "64512",
- * }, { provider: accepter });
+ * const example = new aws.directconnect.Gateway("example", {amazonSideAsn: 64512}, {
+ *     provider: aws.accepter,
+ * });
  * // Creator's side of the VIF
  * const creator = new aws.directconnect.HostedTransitVirtualInterface("creator", {
+ *     connectionId: "dxcon-zzzzzzzz",
+ *     ownerAccountId: accepterCallerIdentity.then(accepterCallerIdentity => accepterCallerIdentity.accountId),
+ *     vlan: 4094,
  *     addressFamily: "ipv4",
  *     bgpAsn: 65352,
- *     connectionId: "dxcon-zzzzzzzz",
- *     ownerAccountId: accepterCallerIdentity.accountId,
- *     vlan: 4094,
- * }, { dependsOn: [example] });
- * const accepterHostedTransitVirtualInterfaceAcceptor = new aws.directconnect.HostedTransitVirtualInterfaceAcceptor("accepter", {
+ * }, {
+ *     dependsOn: [example],
+ * });
+ * const accepterHostedTransitVirtualInterfaceAcceptor = new aws.directconnect.HostedTransitVirtualInterfaceAcceptor("accepterHostedTransitVirtualInterfaceAcceptor", {
+ *     virtualInterfaceId: creator.id,
  *     dxGatewayId: example.id,
  *     tags: {
  *         Side: "Accepter",
  *     },
- *     virtualInterfaceId: creator.id,
- * }, { provider: accepter });
+ * }, {
+ *     provider: aws.accepter,
+ * });
+ * ```
+ *
+ * ## Import
+ *
+ * Direct Connect hosted transit virtual interfaces can be imported using the `vif id`, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:directconnect/hostedTransitVirtualInterfaceAcceptor:HostedTransitVirtualInterfaceAcceptor test dxvif-33cc44dd
  * ```
  */
 export class HostedTransitVirtualInterfaceAcceptor extends pulumi.CustomResource {
@@ -102,10 +115,10 @@ export class HostedTransitVirtualInterfaceAcceptor extends pulumi.CustomResource
             inputs["virtualInterfaceId"] = state ? state.virtualInterfaceId : undefined;
         } else {
             const args = argsOrState as HostedTransitVirtualInterfaceAcceptorArgs | undefined;
-            if (!args || args.dxGatewayId === undefined) {
+            if ((!args || args.dxGatewayId === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'dxGatewayId'");
             }
-            if (!args || args.virtualInterfaceId === undefined) {
+            if ((!args || args.virtualInterfaceId === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'virtualInterfaceId'");
             }
             inputs["dxGatewayId"] = args ? args.dxGatewayId : undefined;

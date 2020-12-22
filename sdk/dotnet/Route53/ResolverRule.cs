@@ -45,12 +45,8 @@ namespace Pulumi.Aws.Route53
     ///         var fwd = new Aws.Route53.ResolverRule("fwd", new Aws.Route53.ResolverRuleArgs
     ///         {
     ///             DomainName = "example.com",
-    ///             ResolverEndpointId = aws_route53_resolver_endpoint.Foo.Id,
     ///             RuleType = "FORWARD",
-    ///             Tags = 
-    ///             {
-    ///                 { "Environment", "Prod" },
-    ///             },
+    ///             ResolverEndpointId = aws_route53_resolver_endpoint.Foo.Id,
     ///             TargetIps = 
     ///             {
     ///                 new Aws.Route53.Inputs.ResolverRuleTargetIpArgs
@@ -58,10 +54,22 @@ namespace Pulumi.Aws.Route53
     ///                     Ip = "123.45.67.89",
     ///                 },
     ///             },
+    ///             Tags = 
+    ///             {
+    ///                 { "Environment", "Prod" },
+    ///             },
     ///         });
     ///     }
     /// 
     /// }
+    /// ```
+    /// 
+    /// ## Import
+    /// 
+    /// Route53 Resolver rules can be imported using the `id`, e.g.
+    /// 
+    /// ```sh
+    ///  $ pulumi import aws:route53/resolverRule:ResolverRule sys rslvr-rr-0123456789abcdef0
     /// ```
     /// </summary>
     public partial class ResolverRule : Pulumi.CustomResource

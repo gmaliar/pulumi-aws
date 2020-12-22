@@ -23,19 +23,19 @@ namespace Pulumi.Aws.RedShift
     ///         var defaultCluster = new Aws.RedShift.Cluster("defaultCluster", new Aws.RedShift.ClusterArgs
     ///         {
     ///             ClusterIdentifier = "tf-redshift-cluster",
-    ///             ClusterType = "single-node",
     ///             DatabaseName = "mydb",
-    ///             MasterPassword = "Mustbe8characters",
     ///             MasterUsername = "foo",
+    ///             MasterPassword = "Mustbe8characters",
     ///             NodeType = "dc1.large",
+    ///             ClusterType = "single-node",
     ///         });
     ///         var defaultSnapshotSchedule = new Aws.RedShift.SnapshotSchedule("defaultSnapshotSchedule", new Aws.RedShift.SnapshotScheduleArgs
     ///         {
+    ///             Identifier = "tf-redshift-snapshot-schedule",
     ///             Definitions = 
     ///             {
     ///                 "rate(12 hours)",
     ///             },
-    ///             Identifier = "tf-redshift-snapshot-schedule",
     ///         });
     ///         var defaultSnapshotScheduleAssociation = new Aws.RedShift.SnapshotScheduleAssociation("defaultSnapshotScheduleAssociation", new Aws.RedShift.SnapshotScheduleAssociationArgs
     ///         {
@@ -45,6 +45,14 @@ namespace Pulumi.Aws.RedShift
     ///     }
     /// 
     /// }
+    /// ```
+    /// 
+    /// ## Import
+    /// 
+    /// Redshift Snapshot Schedule Association can be imported using the `&lt;cluster-identifier&gt;/&lt;schedule-identifier&gt;`, e.g.
+    /// 
+    /// ```sh
+    ///  $ pulumi import aws:redshift/snapshotScheduleAssociation:SnapshotScheduleAssociation default tf-redshift-cluster/tf-redshift-snapshot-schedule
     /// ```
     /// </summary>
     public partial class SnapshotScheduleAssociation : Pulumi.CustomResource

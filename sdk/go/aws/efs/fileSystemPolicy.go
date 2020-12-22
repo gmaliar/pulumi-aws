@@ -4,6 +4,7 @@
 package efs
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -20,7 +21,7 @@ import (
 // import (
 // 	"fmt"
 //
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/efs"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/efs"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -32,7 +33,7 @@ import (
 // 		}
 // 		_, err = efs.NewFileSystemPolicy(ctx, "policy", &efs.FileSystemPolicyArgs{
 // 			FileSystemId: fs.ID(),
-// 			Policy:       pulumi.String(fmt.Sprintf("%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v", "{\n", "    \"Version\": \"2012-10-17\",\n", "    \"Id\": \"ExamplePolicy01\",\n", "    \"Statement\": [\n", "        {\n", "            \"Sid\": \"ExampleSatement01\",\n", "            \"Effect\": \"Allow\",\n", "            \"Principal\": {\n", "                \"AWS\": \"*\"\n", "            },\n", "            \"Resource\": \"", aws_efs_file_system.Test.Arn, "\",\n", "            \"Action\": [\n", "                \"elasticfilesystem:ClientMount\",\n", "                \"elasticfilesystem:ClientWrite\"\n", "            ],\n", "            \"Condition\": {\n", "                \"Bool\": {\n", "                    \"aws:SecureTransport\": \"true\"\n", "                }\n", "            }\n", "        }\n", "    ]\n", "}\n", "\n")),
+// 			Policy:       pulumi.String(fmt.Sprintf("%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v", "{\n", "    \"Version\": \"2012-10-17\",\n", "    \"Id\": \"ExamplePolicy01\",\n", "    \"Statement\": [\n", "        {\n", "            \"Sid\": \"ExampleStatement01\",\n", "            \"Effect\": \"Allow\",\n", "            \"Principal\": {\n", "                \"AWS\": \"*\"\n", "            },\n", "            \"Resource\": \"", aws_efs_file_system.Test.Arn, "\",\n", "            \"Action\": [\n", "                \"elasticfilesystem:ClientMount\",\n", "                \"elasticfilesystem:ClientWrite\"\n", "            ],\n", "            \"Condition\": {\n", "                \"Bool\": {\n", "                    \"aws:SecureTransport\": \"true\"\n", "                }\n", "            }\n", "        }\n", "    ]\n", "}\n")),
 // 		})
 // 		if err != nil {
 // 			return err
@@ -40,6 +41,14 @@ import (
 // 		return nil
 // 	})
 // }
+// ```
+//
+// ## Import
+//
+// The EFS file system policies can be imported using the `id`, e.g.
+//
+// ```sh
+//  $ pulumi import aws:efs/fileSystemPolicy:FileSystemPolicy foo fs-6fa144c6
 // ```
 type FileSystemPolicy struct {
 	pulumi.CustomResourceState
@@ -53,14 +62,15 @@ type FileSystemPolicy struct {
 // NewFileSystemPolicy registers a new resource with the given unique name, arguments, and options.
 func NewFileSystemPolicy(ctx *pulumi.Context,
 	name string, args *FileSystemPolicyArgs, opts ...pulumi.ResourceOption) (*FileSystemPolicy, error) {
-	if args == nil || args.FileSystemId == nil {
-		return nil, errors.New("missing required argument 'FileSystemId'")
-	}
-	if args == nil || args.Policy == nil {
-		return nil, errors.New("missing required argument 'Policy'")
-	}
 	if args == nil {
-		args = &FileSystemPolicyArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.FileSystemId == nil {
+		return nil, errors.New("invalid value for required argument 'FileSystemId'")
+	}
+	if args.Policy == nil {
+		return nil, errors.New("invalid value for required argument 'Policy'")
 	}
 	var resource FileSystemPolicy
 	err := ctx.RegisterResource("aws:efs/fileSystemPolicy:FileSystemPolicy", name, args, &resource, opts...)
@@ -118,4 +128,43 @@ type FileSystemPolicyArgs struct {
 
 func (FileSystemPolicyArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*fileSystemPolicyArgs)(nil)).Elem()
+}
+
+type FileSystemPolicyInput interface {
+	pulumi.Input
+
+	ToFileSystemPolicyOutput() FileSystemPolicyOutput
+	ToFileSystemPolicyOutputWithContext(ctx context.Context) FileSystemPolicyOutput
+}
+
+func (FileSystemPolicy) ElementType() reflect.Type {
+	return reflect.TypeOf((*FileSystemPolicy)(nil)).Elem()
+}
+
+func (i FileSystemPolicy) ToFileSystemPolicyOutput() FileSystemPolicyOutput {
+	return i.ToFileSystemPolicyOutputWithContext(context.Background())
+}
+
+func (i FileSystemPolicy) ToFileSystemPolicyOutputWithContext(ctx context.Context) FileSystemPolicyOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(FileSystemPolicyOutput)
+}
+
+type FileSystemPolicyOutput struct {
+	*pulumi.OutputState
+}
+
+func (FileSystemPolicyOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*FileSystemPolicyOutput)(nil)).Elem()
+}
+
+func (o FileSystemPolicyOutput) ToFileSystemPolicyOutput() FileSystemPolicyOutput {
+	return o
+}
+
+func (o FileSystemPolicyOutput) ToFileSystemPolicyOutputWithContext(ctx context.Context) FileSystemPolicyOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(FileSystemPolicyOutput{})
 }

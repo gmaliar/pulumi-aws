@@ -47,11 +47,26 @@ namespace Pulumi.Aws.CloudFront
     /// 
     /// ```csharp
     /// using Pulumi;
+    /// using Aws = Pulumi.Aws;
     /// 
     /// class MyStack : Stack
     /// {
     ///     public MyStack()
     ///     {
+    ///         // ... other configuration ...
+    ///         var example = new Aws.CloudFront.Distribution("example", new Aws.CloudFront.DistributionArgs
+    ///         {
+    ///             Origins = 
+    ///             {
+    ///                 new Aws.CloudFront.Inputs.DistributionOriginArgs
+    ///                 {
+    ///                     S3OriginConfig = new Aws.CloudFront.Inputs.DistributionOriginS3OriginConfigArgs
+    ///                     {
+    ///                         OriginAccessIdentity = aws_cloudfront_origin_access_identity.Example.Cloudfront_access_identity_path,
+    ///                     },
+    ///                 },
+    ///             },
+    ///         });
     ///     }
     /// 
     /// }
@@ -82,42 +97,20 @@ namespace Pulumi.Aws.CloudFront
     ///                     {
     ///                         "s3:GetObject",
     ///                     },
-    ///                     Principals = 
-    ///                     {
-    ///                         new Aws.Iam.Inputs.GetPolicyDocumentStatementPrincipalArgs
-    ///                         {
-    ///                             Identifiers = 
-    ///                             {
-    ///                                 aws_cloudfront_origin_access_identity.Origin_access_identity.Iam_arn,
-    ///                             },
-    ///                             Type = "AWS",
-    ///                         },
-    ///                     },
     ///                     Resources = 
     ///                     {
     ///                         $"{aws_s3_bucket.Example.Arn}/*",
     ///                     },
-    ///                 },
-    ///                 new Aws.Iam.Inputs.GetPolicyDocumentStatementArgs
-    ///                 {
-    ///                     Actions = 
-    ///                     {
-    ///                         "s3:ListBucket",
-    ///                     },
     ///                     Principals = 
     ///                     {
     ///                         new Aws.Iam.Inputs.GetPolicyDocumentStatementPrincipalArgs
     ///                         {
+    ///                             Type = "AWS",
     ///                             Identifiers = 
     ///                             {
     ///                                 aws_cloudfront_origin_access_identity.Origin_access_identity.Iam_arn,
     ///                             },
-    ///                             Type = "AWS",
     ///                         },
-    ///                     },
-    ///                     Resources = 
-    ///                     {
-    ///                         aws_s3_bucket.Example.Arn,
     ///                     },
     ///                 },
     ///             },
@@ -136,6 +129,14 @@ namespace Pulumi.Aws.CloudFront
     /// [2]: http://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/private-content-restricting-access-to-s3.html
     /// [3]: https://www.terraform.io/docs/providers/aws/r/cloudfront_distribution.html
     /// [4]: https://www.terraform.io/docs/providers/aws/r/s3_bucket.html
+    /// 
+    /// ## Import
+    /// 
+    /// Cloudfront Origin Access Identities can be imported using the `id`, e.g.
+    /// 
+    /// ```sh
+    ///  $ pulumi import aws:cloudfront/originAccessIdentity:OriginAccessIdentity origin_access E74FTE3AEXAMPLE
+    /// ```
     /// </summary>
     public partial class OriginAccessIdentity : Pulumi.CustomResource
     {

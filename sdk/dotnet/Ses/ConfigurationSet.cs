@@ -29,6 +29,14 @@ namespace Pulumi.Aws.Ses
     /// 
     /// }
     /// ```
+    /// 
+    /// ## Import
+    /// 
+    /// SES Configuration Sets can be imported using their `name`, e.g.
+    /// 
+    /// ```sh
+    ///  $ pulumi import aws:ses/configurationSet:ConfigurationSet test some-configuration-set-test
+    /// ```
     /// </summary>
     public partial class ConfigurationSet : Pulumi.CustomResource
     {
@@ -63,7 +71,7 @@ namespace Pulumi.Aws.Ses
                 Version = Utilities.Version,
                 Aliases =
                 {
-                    new Alias { Type = "aws:ses/confgurationSet:ConfgurationSet"},
+                    new Pulumi.Alias { Type = "aws:ses/confgurationSet:ConfgurationSet"},
                 },
             };
             var merged = CustomResourceOptions.Merge(defaultOptions, options);

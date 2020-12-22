@@ -4,6 +4,7 @@
 package pinpoint
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -13,6 +14,14 @@ import (
 // Provides a Pinpoint APNs VoIP Sandbox Channel resource.
 //
 // > **Note:** All arguments, including certificates and tokens, will be stored in the raw state as plain-text.
+//
+// ## Import
+//
+// Pinpoint APNs VoIP Sandbox Channel can be imported using the `application-id`, e.g.
+//
+// ```sh
+//  $ pulumi import aws:pinpoint/apnsVoipSandboxChannel:ApnsVoipSandboxChannel apns_voip_sandbox application-id
+// ```
 type ApnsVoipSandboxChannel struct {
 	pulumi.CustomResourceState
 
@@ -42,11 +51,12 @@ type ApnsVoipSandboxChannel struct {
 // NewApnsVoipSandboxChannel registers a new resource with the given unique name, arguments, and options.
 func NewApnsVoipSandboxChannel(ctx *pulumi.Context,
 	name string, args *ApnsVoipSandboxChannelArgs, opts ...pulumi.ResourceOption) (*ApnsVoipSandboxChannel, error) {
-	if args == nil || args.ApplicationId == nil {
-		return nil, errors.New("missing required argument 'ApplicationId'")
-	}
 	if args == nil {
-		args = &ApnsVoipSandboxChannelArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.ApplicationId == nil {
+		return nil, errors.New("invalid value for required argument 'ApplicationId'")
 	}
 	var resource ApnsVoipSandboxChannel
 	err := ctx.RegisterResource("aws:pinpoint/apnsVoipSandboxChannel:ApnsVoipSandboxChannel", name, args, &resource, opts...)
@@ -172,4 +182,43 @@ type ApnsVoipSandboxChannelArgs struct {
 
 func (ApnsVoipSandboxChannelArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*apnsVoipSandboxChannelArgs)(nil)).Elem()
+}
+
+type ApnsVoipSandboxChannelInput interface {
+	pulumi.Input
+
+	ToApnsVoipSandboxChannelOutput() ApnsVoipSandboxChannelOutput
+	ToApnsVoipSandboxChannelOutputWithContext(ctx context.Context) ApnsVoipSandboxChannelOutput
+}
+
+func (ApnsVoipSandboxChannel) ElementType() reflect.Type {
+	return reflect.TypeOf((*ApnsVoipSandboxChannel)(nil)).Elem()
+}
+
+func (i ApnsVoipSandboxChannel) ToApnsVoipSandboxChannelOutput() ApnsVoipSandboxChannelOutput {
+	return i.ToApnsVoipSandboxChannelOutputWithContext(context.Background())
+}
+
+func (i ApnsVoipSandboxChannel) ToApnsVoipSandboxChannelOutputWithContext(ctx context.Context) ApnsVoipSandboxChannelOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(ApnsVoipSandboxChannelOutput)
+}
+
+type ApnsVoipSandboxChannelOutput struct {
+	*pulumi.OutputState
+}
+
+func (ApnsVoipSandboxChannelOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*ApnsVoipSandboxChannelOutput)(nil)).Elem()
+}
+
+func (o ApnsVoipSandboxChannelOutput) ToApnsVoipSandboxChannelOutput() ApnsVoipSandboxChannelOutput {
+	return o
+}
+
+func (o ApnsVoipSandboxChannelOutput) ToApnsVoipSandboxChannelOutputWithContext(ctx context.Context) ApnsVoipSandboxChannelOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(ApnsVoipSandboxChannelOutput{})
 }

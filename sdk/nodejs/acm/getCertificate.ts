@@ -2,8 +2,7 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 /**
@@ -17,8 +16,19 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
+ * // Find a certificate that is issued
+ * const issued = pulumi.output(aws.acm.getCertificate({
+ *     domain: "tf.example.com",
+ *     statuses: ["ISSUED"],
+ * }, { async: true }));
+ * // Find a certificate issued by (not imported into) ACM
+ * const amazonIssued = pulumi.output(aws.acm.getCertificate({
+ *     domain: "tf.example.com",
+ *     mostRecent: true,
+ *     types: ["AMAZON_ISSUED"],
+ * }, { async: true }));
  * // Find a RSA 4096 bit certificate
- * const example = pulumi.output(aws.acm.getCertificate({
+ * const rsa4096 = pulumi.output(aws.acm.getCertificate({
  *     domain: "tf.example.com",
  *     keyTypes: ["RSA_4096"],
  * }, { async: true }));
@@ -79,7 +89,7 @@ export interface GetCertificateArgs {
  */
 export interface GetCertificateResult {
     /**
-     * Set to the ARN of the found certificate, suitable for referencing in other resources that support ACM certificates.
+     * Amazon Resource Name (ARN) of the found certificate, suitable for referencing in other resources that support ACM certificates.
      */
     readonly arn: string;
     readonly domain: string;

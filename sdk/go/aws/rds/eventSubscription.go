@@ -4,6 +4,7 @@
 package rds
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -18,8 +19,8 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/rds"
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/sns"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/rds"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/sns"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -27,14 +28,14 @@ import (
 // 	pulumi.Run(func(ctx *pulumi.Context) error {
 // 		defaultInstance, err := rds.NewInstance(ctx, "defaultInstance", &rds.InstanceArgs{
 // 			AllocatedStorage:   pulumi.Int(10),
-// 			DbSubnetGroupName:  pulumi.String("my_database_subnet_group"),
 // 			Engine:             pulumi.String("mysql"),
 // 			EngineVersion:      pulumi.String("5.6.17"),
 // 			InstanceClass:      pulumi.String("db.t2.micro"),
 // 			Name:               pulumi.String("mydb"),
-// 			ParameterGroupName: pulumi.String("default.mysql5.6"),
-// 			Password:           pulumi.String("bar"),
 // 			Username:           pulumi.String("foo"),
+// 			Password:           pulumi.String("bar"),
+// 			DbSubnetGroupName:  pulumi.String("my_database_subnet_group"),
+// 			ParameterGroupName: pulumi.String("default.mysql5.6"),
 // 		})
 // 		if err != nil {
 // 			return err
@@ -44,6 +45,11 @@ import (
 // 			return err
 // 		}
 // 		_, err = rds.NewEventSubscription(ctx, "defaultEventSubscription", &rds.EventSubscriptionArgs{
+// 			SnsTopic:   defaultTopic.Arn,
+// 			SourceType: pulumi.String("db-instance"),
+// 			SourceIds: pulumi.StringArray{
+// 				defaultInstance.ID(),
+// 			},
 // 			EventCategories: pulumi.StringArray{
 // 				pulumi.String("availability"),
 // 				pulumi.String("deletion"),
@@ -56,11 +62,6 @@ import (
 // 				pulumi.String("recovery"),
 // 				pulumi.String("restoration"),
 // 			},
-// 			SnsTopic: defaultTopic.Arn,
-// 			SourceIds: pulumi.StringArray{
-// 				defaultInstance.ID(),
-// 			},
-// 			SourceType: pulumi.String("db-instance"),
 // 		})
 // 		if err != nil {
 // 			return err
@@ -76,6 +77,14 @@ import (
 // * `id` - The name of the RDS event notification subscription
 // * `arn` - The Amazon Resource Name of the RDS event notification subscription
 // * `customerAwsId` - The AWS customer account associated with the RDS event notification subscription
+//
+// ## Import
+//
+// DB Event Subscriptions can be imported using the `name`, e.g.
+//
+// ```sh
+//  $ pulumi import aws:rds/eventSubscription:EventSubscription default rds-event-sub
+// ```
 type EventSubscription struct {
 	pulumi.CustomResourceState
 
@@ -102,11 +111,12 @@ type EventSubscription struct {
 // NewEventSubscription registers a new resource with the given unique name, arguments, and options.
 func NewEventSubscription(ctx *pulumi.Context,
 	name string, args *EventSubscriptionArgs, opts ...pulumi.ResourceOption) (*EventSubscription, error) {
-	if args == nil || args.SnsTopic == nil {
-		return nil, errors.New("missing required argument 'SnsTopic'")
-	}
 	if args == nil {
-		args = &EventSubscriptionArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.SnsTopic == nil {
+		return nil, errors.New("invalid value for required argument 'SnsTopic'")
 	}
 	var resource EventSubscription
 	err := ctx.RegisterResource("aws:rds/eventSubscription:EventSubscription", name, args, &resource, opts...)
@@ -216,4 +226,43 @@ type EventSubscriptionArgs struct {
 
 func (EventSubscriptionArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*eventSubscriptionArgs)(nil)).Elem()
+}
+
+type EventSubscriptionInput interface {
+	pulumi.Input
+
+	ToEventSubscriptionOutput() EventSubscriptionOutput
+	ToEventSubscriptionOutputWithContext(ctx context.Context) EventSubscriptionOutput
+}
+
+func (EventSubscription) ElementType() reflect.Type {
+	return reflect.TypeOf((*EventSubscription)(nil)).Elem()
+}
+
+func (i EventSubscription) ToEventSubscriptionOutput() EventSubscriptionOutput {
+	return i.ToEventSubscriptionOutputWithContext(context.Background())
+}
+
+func (i EventSubscription) ToEventSubscriptionOutputWithContext(ctx context.Context) EventSubscriptionOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(EventSubscriptionOutput)
+}
+
+type EventSubscriptionOutput struct {
+	*pulumi.OutputState
+}
+
+func (EventSubscriptionOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*EventSubscriptionOutput)(nil)).Elem()
+}
+
+func (o EventSubscriptionOutput) ToEventSubscriptionOutput() EventSubscriptionOutput {
+	return o
+}
+
+func (o EventSubscriptionOutput) ToEventSubscriptionOutputWithContext(ctx context.Context) EventSubscriptionOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(EventSubscriptionOutput{})
 }

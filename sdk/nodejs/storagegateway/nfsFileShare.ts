@@ -2,8 +2,7 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 /**
@@ -17,10 +16,18 @@ import * as utilities from "../utilities";
  *
  * const example = new aws.storagegateway.NfsFileShare("example", {
  *     clientLists: ["0.0.0.0/0"],
- *     gatewayArn: aws_storagegateway_gateway_example.arn,
- *     locationArn: aws_s3_bucket_example.arn,
- *     roleArn: aws_iam_role_example.arn,
+ *     gatewayArn: aws_storagegateway_gateway.example.arn,
+ *     locationArn: aws_s3_bucket.example.arn,
+ *     roleArn: aws_iam_role.example.arn,
  * });
+ * ```
+ *
+ * ## Import
+ *
+ * `aws_storagegateway_nfs_file_share` can be imported by using the NFS File Share Amazon Resource Name (ARN), e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:storagegateway/nfsFileShare:NfsFileShare example arn:aws:storagegateway:us-east-1:123456789012:share/share-12345678
  * ```
  */
 export class NfsFileShare extends pulumi.CustomResource {
@@ -56,6 +63,10 @@ export class NfsFileShare extends pulumi.CustomResource {
      */
     public /*out*/ readonly arn!: pulumi.Output<string>;
     /**
+     * Refresh cache information. see Cache Attributes for more details.
+     */
+    public readonly cacheAttributes!: pulumi.Output<outputs.storagegateway.NfsFileShareCacheAttributes | undefined>;
+    /**
      * The list of clients that are allowed to access the file gateway. The list must contain either valid IP addresses or valid CIDR blocks. Set to `["0.0.0.0/0"]` to not limit access. Minimum 1 item. Maximum 100 items.
      */
     public readonly clientLists!: pulumi.Output<string[]>;
@@ -63,6 +74,10 @@ export class NfsFileShare extends pulumi.CustomResource {
      * The default storage class for objects put into an Amazon S3 bucket by the file gateway. Defaults to `S3_STANDARD`. Valid values: `S3_STANDARD`, `S3_STANDARD_IA`, `S3_ONEZONE_IA`.
      */
     public readonly defaultStorageClass!: pulumi.Output<string | undefined>;
+    /**
+     * The name of the file share. Must be set if an S3 prefix name is set in `locationArn`.
+     */
+    public readonly fileShareName!: pulumi.Output<string>;
     /**
      * ID of the NFS File Share.
      */
@@ -88,9 +103,13 @@ export class NfsFileShare extends pulumi.CustomResource {
      */
     public readonly locationArn!: pulumi.Output<string>;
     /**
-     * Nested argument with file share default values. More information below.
+     * Nested argument with file share default values. More information below. see NFS File Share Defaults for more details.
      */
     public readonly nfsFileShareDefaults!: pulumi.Output<outputs.storagegateway.NfsFileShareNfsFileShareDefaults | undefined>;
+    /**
+     * The notification policy of the file share. For more information see the [AWS Documentation](https://docs.aws.amazon.com/storagegateway/latest/APIReference/API_CreateNFSFileShare.html#StorageGateway-CreateNFSFileShare-request-NotificationPolicy). Default value is `{}`.
+     */
+    public readonly notificationPolicy!: pulumi.Output<string | undefined>;
     /**
      * Access Control List permission for S3 bucket objects. Defaults to `private`.
      */
@@ -133,8 +152,10 @@ export class NfsFileShare extends pulumi.CustomResource {
         if (opts && opts.id) {
             const state = argsOrState as NfsFileShareState | undefined;
             inputs["arn"] = state ? state.arn : undefined;
+            inputs["cacheAttributes"] = state ? state.cacheAttributes : undefined;
             inputs["clientLists"] = state ? state.clientLists : undefined;
             inputs["defaultStorageClass"] = state ? state.defaultStorageClass : undefined;
+            inputs["fileShareName"] = state ? state.fileShareName : undefined;
             inputs["fileshareId"] = state ? state.fileshareId : undefined;
             inputs["gatewayArn"] = state ? state.gatewayArn : undefined;
             inputs["guessMimeTypeEnabled"] = state ? state.guessMimeTypeEnabled : undefined;
@@ -142,6 +163,7 @@ export class NfsFileShare extends pulumi.CustomResource {
             inputs["kmsKeyArn"] = state ? state.kmsKeyArn : undefined;
             inputs["locationArn"] = state ? state.locationArn : undefined;
             inputs["nfsFileShareDefaults"] = state ? state.nfsFileShareDefaults : undefined;
+            inputs["notificationPolicy"] = state ? state.notificationPolicy : undefined;
             inputs["objectAcl"] = state ? state.objectAcl : undefined;
             inputs["path"] = state ? state.path : undefined;
             inputs["readOnly"] = state ? state.readOnly : undefined;
@@ -151,26 +173,29 @@ export class NfsFileShare extends pulumi.CustomResource {
             inputs["tags"] = state ? state.tags : undefined;
         } else {
             const args = argsOrState as NfsFileShareArgs | undefined;
-            if (!args || args.clientLists === undefined) {
+            if ((!args || args.clientLists === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'clientLists'");
             }
-            if (!args || args.gatewayArn === undefined) {
+            if ((!args || args.gatewayArn === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'gatewayArn'");
             }
-            if (!args || args.locationArn === undefined) {
+            if ((!args || args.locationArn === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'locationArn'");
             }
-            if (!args || args.roleArn === undefined) {
+            if ((!args || args.roleArn === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'roleArn'");
             }
+            inputs["cacheAttributes"] = args ? args.cacheAttributes : undefined;
             inputs["clientLists"] = args ? args.clientLists : undefined;
             inputs["defaultStorageClass"] = args ? args.defaultStorageClass : undefined;
+            inputs["fileShareName"] = args ? args.fileShareName : undefined;
             inputs["gatewayArn"] = args ? args.gatewayArn : undefined;
             inputs["guessMimeTypeEnabled"] = args ? args.guessMimeTypeEnabled : undefined;
             inputs["kmsEncrypted"] = args ? args.kmsEncrypted : undefined;
             inputs["kmsKeyArn"] = args ? args.kmsKeyArn : undefined;
             inputs["locationArn"] = args ? args.locationArn : undefined;
             inputs["nfsFileShareDefaults"] = args ? args.nfsFileShareDefaults : undefined;
+            inputs["notificationPolicy"] = args ? args.notificationPolicy : undefined;
             inputs["objectAcl"] = args ? args.objectAcl : undefined;
             inputs["readOnly"] = args ? args.readOnly : undefined;
             inputs["requesterPays"] = args ? args.requesterPays : undefined;
@@ -201,6 +226,10 @@ export interface NfsFileShareState {
      */
     readonly arn?: pulumi.Input<string>;
     /**
+     * Refresh cache information. see Cache Attributes for more details.
+     */
+    readonly cacheAttributes?: pulumi.Input<inputs.storagegateway.NfsFileShareCacheAttributes>;
+    /**
      * The list of clients that are allowed to access the file gateway. The list must contain either valid IP addresses or valid CIDR blocks. Set to `["0.0.0.0/0"]` to not limit access. Minimum 1 item. Maximum 100 items.
      */
     readonly clientLists?: pulumi.Input<pulumi.Input<string>[]>;
@@ -208,6 +237,10 @@ export interface NfsFileShareState {
      * The default storage class for objects put into an Amazon S3 bucket by the file gateway. Defaults to `S3_STANDARD`. Valid values: `S3_STANDARD`, `S3_STANDARD_IA`, `S3_ONEZONE_IA`.
      */
     readonly defaultStorageClass?: pulumi.Input<string>;
+    /**
+     * The name of the file share. Must be set if an S3 prefix name is set in `locationArn`.
+     */
+    readonly fileShareName?: pulumi.Input<string>;
     /**
      * ID of the NFS File Share.
      */
@@ -233,9 +266,13 @@ export interface NfsFileShareState {
      */
     readonly locationArn?: pulumi.Input<string>;
     /**
-     * Nested argument with file share default values. More information below.
+     * Nested argument with file share default values. More information below. see NFS File Share Defaults for more details.
      */
     readonly nfsFileShareDefaults?: pulumi.Input<inputs.storagegateway.NfsFileShareNfsFileShareDefaults>;
+    /**
+     * The notification policy of the file share. For more information see the [AWS Documentation](https://docs.aws.amazon.com/storagegateway/latest/APIReference/API_CreateNFSFileShare.html#StorageGateway-CreateNFSFileShare-request-NotificationPolicy). Default value is `{}`.
+     */
+    readonly notificationPolicy?: pulumi.Input<string>;
     /**
      * Access Control List permission for S3 bucket objects. Defaults to `private`.
      */
@@ -271,6 +308,10 @@ export interface NfsFileShareState {
  */
 export interface NfsFileShareArgs {
     /**
+     * Refresh cache information. see Cache Attributes for more details.
+     */
+    readonly cacheAttributes?: pulumi.Input<inputs.storagegateway.NfsFileShareCacheAttributes>;
+    /**
      * The list of clients that are allowed to access the file gateway. The list must contain either valid IP addresses or valid CIDR blocks. Set to `["0.0.0.0/0"]` to not limit access. Minimum 1 item. Maximum 100 items.
      */
     readonly clientLists: pulumi.Input<pulumi.Input<string>[]>;
@@ -278,6 +319,10 @@ export interface NfsFileShareArgs {
      * The default storage class for objects put into an Amazon S3 bucket by the file gateway. Defaults to `S3_STANDARD`. Valid values: `S3_STANDARD`, `S3_STANDARD_IA`, `S3_ONEZONE_IA`.
      */
     readonly defaultStorageClass?: pulumi.Input<string>;
+    /**
+     * The name of the file share. Must be set if an S3 prefix name is set in `locationArn`.
+     */
+    readonly fileShareName?: pulumi.Input<string>;
     /**
      * Amazon Resource Name (ARN) of the file gateway.
      */
@@ -299,9 +344,13 @@ export interface NfsFileShareArgs {
      */
     readonly locationArn: pulumi.Input<string>;
     /**
-     * Nested argument with file share default values. More information below.
+     * Nested argument with file share default values. More information below. see NFS File Share Defaults for more details.
      */
     readonly nfsFileShareDefaults?: pulumi.Input<inputs.storagegateway.NfsFileShareNfsFileShareDefaults>;
+    /**
+     * The notification policy of the file share. For more information see the [AWS Documentation](https://docs.aws.amazon.com/storagegateway/latest/APIReference/API_CreateNFSFileShare.html#StorageGateway-CreateNFSFileShare-request-NotificationPolicy). Default value is `{}`.
+     */
+    readonly notificationPolicy?: pulumi.Input<string>;
     /**
      * Access Control List permission for S3 bucket objects. Defaults to `private`.
      */

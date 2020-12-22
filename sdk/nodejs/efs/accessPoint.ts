@@ -2,8 +2,7 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 /**
@@ -15,9 +14,15 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const test = new aws.efs.AccessPoint("test", {
- *     fileSystemId: aws_efs_file_system_foo.id,
- * });
+ * const test = new aws.efs.AccessPoint("test", {fileSystemId: aws_efs_file_system.foo.id});
+ * ```
+ *
+ * ## Import
+ *
+ * The EFS access points can be imported using the `id`, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:efs/accessPoint:AccessPoint test fsap-52a643fb
  * ```
  */
 export class AccessPoint extends pulumi.CustomResource {
@@ -95,7 +100,7 @@ export class AccessPoint extends pulumi.CustomResource {
             inputs["tags"] = state ? state.tags : undefined;
         } else {
             const args = argsOrState as AccessPointArgs | undefined;
-            if (!args || args.fileSystemId === undefined) {
+            if ((!args || args.fileSystemId === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'fileSystemId'");
             }
             inputs["fileSystemId"] = args ? args.fileSystemId : undefined;

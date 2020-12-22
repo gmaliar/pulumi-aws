@@ -30,7 +30,7 @@ type AmiCopyEbsBlockDevice struct {
 	// as the selected snapshot.
 	VolumeSize *int `pulumi:"volumeSize"`
 	// The type of EBS volume to create. Can be one of "standard" (the
-	// default), "io1" or "gp2".
+	// default), "io1", "io2" or "gp2".
 	VolumeType *string `pulumi:"volumeType"`
 }
 
@@ -65,7 +65,7 @@ type AmiCopyEbsBlockDeviceArgs struct {
 	// as the selected snapshot.
 	VolumeSize pulumi.IntPtrInput `pulumi:"volumeSize"`
 	// The type of EBS volume to create. Can be one of "standard" (the
-	// default), "io1" or "gp2".
+	// default), "io1", "io2" or "gp2".
 	VolumeType pulumi.StringPtrInput `pulumi:"volumeType"`
 }
 
@@ -157,7 +157,7 @@ func (o AmiCopyEbsBlockDeviceOutput) VolumeSize() pulumi.IntPtrOutput {
 }
 
 // The type of EBS volume to create. Can be one of "standard" (the
-// default), "io1" or "gp2".
+// default), "io1", "io2" or "gp2".
 func (o AmiCopyEbsBlockDeviceOutput) VolumeType() pulumi.StringPtrOutput {
 	return o.ApplyT(func(v AmiCopyEbsBlockDevice) *string { return v.VolumeType }).(pulumi.StringPtrOutput)
 }
@@ -311,7 +311,7 @@ type AmiEbsBlockDevice struct {
 	// as the selected snapshot.
 	VolumeSize *int `pulumi:"volumeSize"`
 	// The type of EBS volume to create. Can be one of "standard" (the
-	// default), "io1" or "gp2".
+	// default), "io1", "io2" or "gp2".
 	VolumeType *string `pulumi:"volumeType"`
 }
 
@@ -346,7 +346,7 @@ type AmiEbsBlockDeviceArgs struct {
 	// as the selected snapshot.
 	VolumeSize pulumi.IntPtrInput `pulumi:"volumeSize"`
 	// The type of EBS volume to create. Can be one of "standard" (the
-	// default), "io1" or "gp2".
+	// default), "io1", "io2" or "gp2".
 	VolumeType pulumi.StringPtrInput `pulumi:"volumeType"`
 }
 
@@ -438,7 +438,7 @@ func (o AmiEbsBlockDeviceOutput) VolumeSize() pulumi.IntPtrOutput {
 }
 
 // The type of EBS volume to create. Can be one of "standard" (the
-// default), "io1" or "gp2".
+// default), "io1", "io2" or "gp2".
 func (o AmiEbsBlockDeviceOutput) VolumeType() pulumi.StringPtrOutput {
 	return o.ApplyT(func(v AmiEbsBlockDevice) *string { return v.VolumeType }).(pulumi.StringPtrOutput)
 }
@@ -592,7 +592,7 @@ type AmiFromInstanceEbsBlockDevice struct {
 	// as the selected snapshot.
 	VolumeSize *int `pulumi:"volumeSize"`
 	// The type of EBS volume to create. Can be one of "standard" (the
-	// default), "io1" or "gp2".
+	// default), "io1", "io2" or "gp2".
 	VolumeType *string `pulumi:"volumeType"`
 }
 
@@ -627,7 +627,7 @@ type AmiFromInstanceEbsBlockDeviceArgs struct {
 	// as the selected snapshot.
 	VolumeSize pulumi.IntPtrInput `pulumi:"volumeSize"`
 	// The type of EBS volume to create. Can be one of "standard" (the
-	// default), "io1" or "gp2".
+	// default), "io1", "io2" or "gp2".
 	VolumeType pulumi.StringPtrInput `pulumi:"volumeType"`
 }
 
@@ -719,7 +719,7 @@ func (o AmiFromInstanceEbsBlockDeviceOutput) VolumeSize() pulumi.IntPtrOutput {
 }
 
 // The type of EBS volume to create. Can be one of "standard" (the
-// default), "io1" or "gp2".
+// default), "io1", "io2" or "gp2".
 func (o AmiFromInstanceEbsBlockDeviceOutput) VolumeType() pulumi.StringPtrOutput {
 	return o.ApplyT(func(v AmiFromInstanceEbsBlockDevice) *string { return v.VolumeType }).(pulumi.StringPtrOutput)
 }
@@ -1220,6 +1220,8 @@ type DefaultRouteTableRoute struct {
 	NetworkInterfaceId *string `pulumi:"networkInterfaceId"`
 	// Identifier of an EC2 Transit Gateway.
 	TransitGatewayId *string `pulumi:"transitGatewayId"`
+	// Identifier of a VPC Endpoint. This route must be removed prior to VPC Endpoint deletion.
+	VpcEndpointId *string `pulumi:"vpcEndpointId"`
 	// Identifier of a VPC peering connection.
 	VpcPeeringConnectionId *string `pulumi:"vpcPeeringConnectionId"`
 }
@@ -1252,6 +1254,8 @@ type DefaultRouteTableRouteArgs struct {
 	NetworkInterfaceId pulumi.StringPtrInput `pulumi:"networkInterfaceId"`
 	// Identifier of an EC2 Transit Gateway.
 	TransitGatewayId pulumi.StringPtrInput `pulumi:"transitGatewayId"`
+	// Identifier of a VPC Endpoint. This route must be removed prior to VPC Endpoint deletion.
+	VpcEndpointId pulumi.StringPtrInput `pulumi:"vpcEndpointId"`
 	// Identifier of a VPC peering connection.
 	VpcPeeringConnectionId pulumi.StringPtrInput `pulumi:"vpcPeeringConnectionId"`
 }
@@ -1347,6 +1351,11 @@ func (o DefaultRouteTableRouteOutput) TransitGatewayId() pulumi.StringPtrOutput 
 	return o.ApplyT(func(v DefaultRouteTableRoute) *string { return v.TransitGatewayId }).(pulumi.StringPtrOutput)
 }
 
+// Identifier of a VPC Endpoint. This route must be removed prior to VPC Endpoint deletion.
+func (o DefaultRouteTableRouteOutput) VpcEndpointId() pulumi.StringPtrOutput {
+	return o.ApplyT(func(v DefaultRouteTableRoute) *string { return v.VpcEndpointId }).(pulumi.StringPtrOutput)
+}
+
 // Identifier of a VPC peering connection.
 func (o DefaultRouteTableRouteOutput) VpcPeeringConnectionId() pulumi.StringPtrOutput {
 	return o.ApplyT(func(v DefaultRouteTableRoute) *string { return v.VpcPeeringConnectionId }).(pulumi.StringPtrOutput)
@@ -1373,16 +1382,24 @@ func (o DefaultRouteTableRouteArrayOutput) Index(i pulumi.IntInput) DefaultRoute
 }
 
 type DefaultSecurityGroupEgress struct {
+	// List of CIDR blocks.
 	CidrBlocks []string `pulumi:"cidrBlocks"`
-	// The description of the security group
-	Description    *string  `pulumi:"description"`
-	FromPort       int      `pulumi:"fromPort"`
+	// Description of this egress rule.
+	Description *string `pulumi:"description"`
+	// The start port (or ICMP type number if protocol is "icmp")
+	FromPort int `pulumi:"fromPort"`
+	// List of IPv6 CIDR blocks.
 	Ipv6CidrBlocks []string `pulumi:"ipv6CidrBlocks"`
-	PrefixListIds  []string `pulumi:"prefixListIds"`
-	Protocol       string   `pulumi:"protocol"`
+	// List of prefix list IDs (for allowing access to VPC endpoints)
+	PrefixListIds []string `pulumi:"prefixListIds"`
+	// The protocol. If you select a protocol of "-1" (semantically equivalent to `"all"`, which is not a valid value here), you must specify a "fromPort" and "toPort" equal to 0. If not icmp, tcp, udp, or "-1" use the [protocol number](https://www.iana.org/assignments/protocol-numbers/protocol-numbers.xhtml)
+	Protocol string `pulumi:"protocol"`
+	// List of security group Group Names if using EC2-Classic, or Group IDs if using a VPC.
 	SecurityGroups []string `pulumi:"securityGroups"`
-	Self           *bool    `pulumi:"self"`
-	ToPort         int      `pulumi:"toPort"`
+	// If true, the security group itself will be added as a source to this egress rule.
+	Self *bool `pulumi:"self"`
+	// The end range port (or ICMP code if protocol is "icmp").
+	ToPort int `pulumi:"toPort"`
 }
 
 // DefaultSecurityGroupEgressInput is an input type that accepts DefaultSecurityGroupEgressArgs and DefaultSecurityGroupEgressOutput values.
@@ -1397,16 +1414,24 @@ type DefaultSecurityGroupEgressInput interface {
 }
 
 type DefaultSecurityGroupEgressArgs struct {
+	// List of CIDR blocks.
 	CidrBlocks pulumi.StringArrayInput `pulumi:"cidrBlocks"`
-	// The description of the security group
-	Description    pulumi.StringPtrInput   `pulumi:"description"`
-	FromPort       pulumi.IntInput         `pulumi:"fromPort"`
+	// Description of this egress rule.
+	Description pulumi.StringPtrInput `pulumi:"description"`
+	// The start port (or ICMP type number if protocol is "icmp")
+	FromPort pulumi.IntInput `pulumi:"fromPort"`
+	// List of IPv6 CIDR blocks.
 	Ipv6CidrBlocks pulumi.StringArrayInput `pulumi:"ipv6CidrBlocks"`
-	PrefixListIds  pulumi.StringArrayInput `pulumi:"prefixListIds"`
-	Protocol       pulumi.StringInput      `pulumi:"protocol"`
+	// List of prefix list IDs (for allowing access to VPC endpoints)
+	PrefixListIds pulumi.StringArrayInput `pulumi:"prefixListIds"`
+	// The protocol. If you select a protocol of "-1" (semantically equivalent to `"all"`, which is not a valid value here), you must specify a "fromPort" and "toPort" equal to 0. If not icmp, tcp, udp, or "-1" use the [protocol number](https://www.iana.org/assignments/protocol-numbers/protocol-numbers.xhtml)
+	Protocol pulumi.StringInput `pulumi:"protocol"`
+	// List of security group Group Names if using EC2-Classic, or Group IDs if using a VPC.
 	SecurityGroups pulumi.StringArrayInput `pulumi:"securityGroups"`
-	Self           pulumi.BoolPtrInput     `pulumi:"self"`
-	ToPort         pulumi.IntInput         `pulumi:"toPort"`
+	// If true, the security group itself will be added as a source to this egress rule.
+	Self pulumi.BoolPtrInput `pulumi:"self"`
+	// The end range port (or ICMP code if protocol is "icmp").
+	ToPort pulumi.IntInput `pulumi:"toPort"`
 }
 
 func (DefaultSecurityGroupEgressArgs) ElementType() reflect.Type {
@@ -1460,39 +1485,47 @@ func (o DefaultSecurityGroupEgressOutput) ToDefaultSecurityGroupEgressOutputWith
 	return o
 }
 
+// List of CIDR blocks.
 func (o DefaultSecurityGroupEgressOutput) CidrBlocks() pulumi.StringArrayOutput {
 	return o.ApplyT(func(v DefaultSecurityGroupEgress) []string { return v.CidrBlocks }).(pulumi.StringArrayOutput)
 }
 
-// The description of the security group
+// Description of this egress rule.
 func (o DefaultSecurityGroupEgressOutput) Description() pulumi.StringPtrOutput {
 	return o.ApplyT(func(v DefaultSecurityGroupEgress) *string { return v.Description }).(pulumi.StringPtrOutput)
 }
 
+// The start port (or ICMP type number if protocol is "icmp")
 func (o DefaultSecurityGroupEgressOutput) FromPort() pulumi.IntOutput {
 	return o.ApplyT(func(v DefaultSecurityGroupEgress) int { return v.FromPort }).(pulumi.IntOutput)
 }
 
+// List of IPv6 CIDR blocks.
 func (o DefaultSecurityGroupEgressOutput) Ipv6CidrBlocks() pulumi.StringArrayOutput {
 	return o.ApplyT(func(v DefaultSecurityGroupEgress) []string { return v.Ipv6CidrBlocks }).(pulumi.StringArrayOutput)
 }
 
+// List of prefix list IDs (for allowing access to VPC endpoints)
 func (o DefaultSecurityGroupEgressOutput) PrefixListIds() pulumi.StringArrayOutput {
 	return o.ApplyT(func(v DefaultSecurityGroupEgress) []string { return v.PrefixListIds }).(pulumi.StringArrayOutput)
 }
 
+// The protocol. If you select a protocol of "-1" (semantically equivalent to `"all"`, which is not a valid value here), you must specify a "fromPort" and "toPort" equal to 0. If not icmp, tcp, udp, or "-1" use the [protocol number](https://www.iana.org/assignments/protocol-numbers/protocol-numbers.xhtml)
 func (o DefaultSecurityGroupEgressOutput) Protocol() pulumi.StringOutput {
 	return o.ApplyT(func(v DefaultSecurityGroupEgress) string { return v.Protocol }).(pulumi.StringOutput)
 }
 
+// List of security group Group Names if using EC2-Classic, or Group IDs if using a VPC.
 func (o DefaultSecurityGroupEgressOutput) SecurityGroups() pulumi.StringArrayOutput {
 	return o.ApplyT(func(v DefaultSecurityGroupEgress) []string { return v.SecurityGroups }).(pulumi.StringArrayOutput)
 }
 
+// If true, the security group itself will be added as a source to this egress rule.
 func (o DefaultSecurityGroupEgressOutput) Self() pulumi.BoolPtrOutput {
 	return o.ApplyT(func(v DefaultSecurityGroupEgress) *bool { return v.Self }).(pulumi.BoolPtrOutput)
 }
 
+// The end range port (or ICMP code if protocol is "icmp").
 func (o DefaultSecurityGroupEgressOutput) ToPort() pulumi.IntOutput {
 	return o.ApplyT(func(v DefaultSecurityGroupEgress) int { return v.ToPort }).(pulumi.IntOutput)
 }
@@ -1518,16 +1551,24 @@ func (o DefaultSecurityGroupEgressArrayOutput) Index(i pulumi.IntInput) DefaultS
 }
 
 type DefaultSecurityGroupIngress struct {
+	// List of CIDR blocks.
 	CidrBlocks []string `pulumi:"cidrBlocks"`
-	// The description of the security group
-	Description    *string  `pulumi:"description"`
-	FromPort       int      `pulumi:"fromPort"`
+	// Description of this egress rule.
+	Description *string `pulumi:"description"`
+	// The start port (or ICMP type number if protocol is "icmp")
+	FromPort int `pulumi:"fromPort"`
+	// List of IPv6 CIDR blocks.
 	Ipv6CidrBlocks []string `pulumi:"ipv6CidrBlocks"`
-	PrefixListIds  []string `pulumi:"prefixListIds"`
-	Protocol       string   `pulumi:"protocol"`
+	// List of prefix list IDs (for allowing access to VPC endpoints)
+	PrefixListIds []string `pulumi:"prefixListIds"`
+	// The protocol. If you select a protocol of "-1" (semantically equivalent to `"all"`, which is not a valid value here), you must specify a "fromPort" and "toPort" equal to 0. If not icmp, tcp, udp, or "-1" use the [protocol number](https://www.iana.org/assignments/protocol-numbers/protocol-numbers.xhtml)
+	Protocol string `pulumi:"protocol"`
+	// List of security group Group Names if using EC2-Classic, or Group IDs if using a VPC.
 	SecurityGroups []string `pulumi:"securityGroups"`
-	Self           *bool    `pulumi:"self"`
-	ToPort         int      `pulumi:"toPort"`
+	// If true, the security group itself will be added as a source to this egress rule.
+	Self *bool `pulumi:"self"`
+	// The end range port (or ICMP code if protocol is "icmp").
+	ToPort int `pulumi:"toPort"`
 }
 
 // DefaultSecurityGroupIngressInput is an input type that accepts DefaultSecurityGroupIngressArgs and DefaultSecurityGroupIngressOutput values.
@@ -1542,16 +1583,24 @@ type DefaultSecurityGroupIngressInput interface {
 }
 
 type DefaultSecurityGroupIngressArgs struct {
+	// List of CIDR blocks.
 	CidrBlocks pulumi.StringArrayInput `pulumi:"cidrBlocks"`
-	// The description of the security group
-	Description    pulumi.StringPtrInput   `pulumi:"description"`
-	FromPort       pulumi.IntInput         `pulumi:"fromPort"`
+	// Description of this egress rule.
+	Description pulumi.StringPtrInput `pulumi:"description"`
+	// The start port (or ICMP type number if protocol is "icmp")
+	FromPort pulumi.IntInput `pulumi:"fromPort"`
+	// List of IPv6 CIDR blocks.
 	Ipv6CidrBlocks pulumi.StringArrayInput `pulumi:"ipv6CidrBlocks"`
-	PrefixListIds  pulumi.StringArrayInput `pulumi:"prefixListIds"`
-	Protocol       pulumi.StringInput      `pulumi:"protocol"`
+	// List of prefix list IDs (for allowing access to VPC endpoints)
+	PrefixListIds pulumi.StringArrayInput `pulumi:"prefixListIds"`
+	// The protocol. If you select a protocol of "-1" (semantically equivalent to `"all"`, which is not a valid value here), you must specify a "fromPort" and "toPort" equal to 0. If not icmp, tcp, udp, or "-1" use the [protocol number](https://www.iana.org/assignments/protocol-numbers/protocol-numbers.xhtml)
+	Protocol pulumi.StringInput `pulumi:"protocol"`
+	// List of security group Group Names if using EC2-Classic, or Group IDs if using a VPC.
 	SecurityGroups pulumi.StringArrayInput `pulumi:"securityGroups"`
-	Self           pulumi.BoolPtrInput     `pulumi:"self"`
-	ToPort         pulumi.IntInput         `pulumi:"toPort"`
+	// If true, the security group itself will be added as a source to this egress rule.
+	Self pulumi.BoolPtrInput `pulumi:"self"`
+	// The end range port (or ICMP code if protocol is "icmp").
+	ToPort pulumi.IntInput `pulumi:"toPort"`
 }
 
 func (DefaultSecurityGroupIngressArgs) ElementType() reflect.Type {
@@ -1605,39 +1654,47 @@ func (o DefaultSecurityGroupIngressOutput) ToDefaultSecurityGroupIngressOutputWi
 	return o
 }
 
+// List of CIDR blocks.
 func (o DefaultSecurityGroupIngressOutput) CidrBlocks() pulumi.StringArrayOutput {
 	return o.ApplyT(func(v DefaultSecurityGroupIngress) []string { return v.CidrBlocks }).(pulumi.StringArrayOutput)
 }
 
-// The description of the security group
+// Description of this egress rule.
 func (o DefaultSecurityGroupIngressOutput) Description() pulumi.StringPtrOutput {
 	return o.ApplyT(func(v DefaultSecurityGroupIngress) *string { return v.Description }).(pulumi.StringPtrOutput)
 }
 
+// The start port (or ICMP type number if protocol is "icmp")
 func (o DefaultSecurityGroupIngressOutput) FromPort() pulumi.IntOutput {
 	return o.ApplyT(func(v DefaultSecurityGroupIngress) int { return v.FromPort }).(pulumi.IntOutput)
 }
 
+// List of IPv6 CIDR blocks.
 func (o DefaultSecurityGroupIngressOutput) Ipv6CidrBlocks() pulumi.StringArrayOutput {
 	return o.ApplyT(func(v DefaultSecurityGroupIngress) []string { return v.Ipv6CidrBlocks }).(pulumi.StringArrayOutput)
 }
 
+// List of prefix list IDs (for allowing access to VPC endpoints)
 func (o DefaultSecurityGroupIngressOutput) PrefixListIds() pulumi.StringArrayOutput {
 	return o.ApplyT(func(v DefaultSecurityGroupIngress) []string { return v.PrefixListIds }).(pulumi.StringArrayOutput)
 }
 
+// The protocol. If you select a protocol of "-1" (semantically equivalent to `"all"`, which is not a valid value here), you must specify a "fromPort" and "toPort" equal to 0. If not icmp, tcp, udp, or "-1" use the [protocol number](https://www.iana.org/assignments/protocol-numbers/protocol-numbers.xhtml)
 func (o DefaultSecurityGroupIngressOutput) Protocol() pulumi.StringOutput {
 	return o.ApplyT(func(v DefaultSecurityGroupIngress) string { return v.Protocol }).(pulumi.StringOutput)
 }
 
+// List of security group Group Names if using EC2-Classic, or Group IDs if using a VPC.
 func (o DefaultSecurityGroupIngressOutput) SecurityGroups() pulumi.StringArrayOutput {
 	return o.ApplyT(func(v DefaultSecurityGroupIngress) []string { return v.SecurityGroups }).(pulumi.StringArrayOutput)
 }
 
+// If true, the security group itself will be added as a source to this egress rule.
 func (o DefaultSecurityGroupIngressOutput) Self() pulumi.BoolPtrOutput {
 	return o.ApplyT(func(v DefaultSecurityGroupIngress) *bool { return v.Self }).(pulumi.BoolPtrOutput)
 }
 
+// The end range port (or ICMP code if protocol is "icmp").
 func (o DefaultSecurityGroupIngressOutput) ToPort() pulumi.IntOutput {
 	return o.ApplyT(func(v DefaultSecurityGroupIngress) int { return v.ToPort }).(pulumi.IntOutput)
 }
@@ -2265,6 +2322,8 @@ type FleetSpotOptions struct {
 	InstanceInterruptionBehavior *string `pulumi:"instanceInterruptionBehavior"`
 	// Number of Spot pools across which to allocate your target Spot capacity. Valid only when Spot `allocationStrategy` is set to `lowestPrice`. Default: `1`.
 	InstancePoolsToUseCount *int `pulumi:"instancePoolsToUseCount"`
+	// Nested argument containing maintenance strategies for managing your Spot Instances that are at an elevated risk of being interrupted. Defined below.
+	MaintenanceStrategies *FleetSpotOptionsMaintenanceStrategies `pulumi:"maintenanceStrategies"`
 }
 
 // FleetSpotOptionsInput is an input type that accepts FleetSpotOptionsArgs and FleetSpotOptionsOutput values.
@@ -2285,6 +2344,8 @@ type FleetSpotOptionsArgs struct {
 	InstanceInterruptionBehavior pulumi.StringPtrInput `pulumi:"instanceInterruptionBehavior"`
 	// Number of Spot pools across which to allocate your target Spot capacity. Valid only when Spot `allocationStrategy` is set to `lowestPrice`. Default: `1`.
 	InstancePoolsToUseCount pulumi.IntPtrInput `pulumi:"instancePoolsToUseCount"`
+	// Nested argument containing maintenance strategies for managing your Spot Instances that are at an elevated risk of being interrupted. Defined below.
+	MaintenanceStrategies FleetSpotOptionsMaintenanceStrategiesPtrInput `pulumi:"maintenanceStrategies"`
 }
 
 func (FleetSpotOptionsArgs) ElementType() reflect.Type {
@@ -2379,6 +2440,11 @@ func (o FleetSpotOptionsOutput) InstancePoolsToUseCount() pulumi.IntPtrOutput {
 	return o.ApplyT(func(v FleetSpotOptions) *int { return v.InstancePoolsToUseCount }).(pulumi.IntPtrOutput)
 }
 
+// Nested argument containing maintenance strategies for managing your Spot Instances that are at an elevated risk of being interrupted. Defined below.
+func (o FleetSpotOptionsOutput) MaintenanceStrategies() FleetSpotOptionsMaintenanceStrategiesPtrOutput {
+	return o.ApplyT(func(v FleetSpotOptions) *FleetSpotOptionsMaintenanceStrategies { return v.MaintenanceStrategies }).(FleetSpotOptionsMaintenanceStrategiesPtrOutput)
+}
+
 type FleetSpotOptionsPtrOutput struct{ *pulumi.OutputState }
 
 func (FleetSpotOptionsPtrOutput) ElementType() reflect.Type {
@@ -2425,6 +2491,282 @@ func (o FleetSpotOptionsPtrOutput) InstancePoolsToUseCount() pulumi.IntPtrOutput
 		}
 		return v.InstancePoolsToUseCount
 	}).(pulumi.IntPtrOutput)
+}
+
+// Nested argument containing maintenance strategies for managing your Spot Instances that are at an elevated risk of being interrupted. Defined below.
+func (o FleetSpotOptionsPtrOutput) MaintenanceStrategies() FleetSpotOptionsMaintenanceStrategiesPtrOutput {
+	return o.ApplyT(func(v *FleetSpotOptions) *FleetSpotOptionsMaintenanceStrategies {
+		if v == nil {
+			return nil
+		}
+		return v.MaintenanceStrategies
+	}).(FleetSpotOptionsMaintenanceStrategiesPtrOutput)
+}
+
+type FleetSpotOptionsMaintenanceStrategies struct {
+	// Nested argument containing the capacity rebalance for your fleet request. Defined below.
+	CapacityRebalance *FleetSpotOptionsMaintenanceStrategiesCapacityRebalance `pulumi:"capacityRebalance"`
+}
+
+// FleetSpotOptionsMaintenanceStrategiesInput is an input type that accepts FleetSpotOptionsMaintenanceStrategiesArgs and FleetSpotOptionsMaintenanceStrategiesOutput values.
+// You can construct a concrete instance of `FleetSpotOptionsMaintenanceStrategiesInput` via:
+//
+//          FleetSpotOptionsMaintenanceStrategiesArgs{...}
+type FleetSpotOptionsMaintenanceStrategiesInput interface {
+	pulumi.Input
+
+	ToFleetSpotOptionsMaintenanceStrategiesOutput() FleetSpotOptionsMaintenanceStrategiesOutput
+	ToFleetSpotOptionsMaintenanceStrategiesOutputWithContext(context.Context) FleetSpotOptionsMaintenanceStrategiesOutput
+}
+
+type FleetSpotOptionsMaintenanceStrategiesArgs struct {
+	// Nested argument containing the capacity rebalance for your fleet request. Defined below.
+	CapacityRebalance FleetSpotOptionsMaintenanceStrategiesCapacityRebalancePtrInput `pulumi:"capacityRebalance"`
+}
+
+func (FleetSpotOptionsMaintenanceStrategiesArgs) ElementType() reflect.Type {
+	return reflect.TypeOf((*FleetSpotOptionsMaintenanceStrategies)(nil)).Elem()
+}
+
+func (i FleetSpotOptionsMaintenanceStrategiesArgs) ToFleetSpotOptionsMaintenanceStrategiesOutput() FleetSpotOptionsMaintenanceStrategiesOutput {
+	return i.ToFleetSpotOptionsMaintenanceStrategiesOutputWithContext(context.Background())
+}
+
+func (i FleetSpotOptionsMaintenanceStrategiesArgs) ToFleetSpotOptionsMaintenanceStrategiesOutputWithContext(ctx context.Context) FleetSpotOptionsMaintenanceStrategiesOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(FleetSpotOptionsMaintenanceStrategiesOutput)
+}
+
+func (i FleetSpotOptionsMaintenanceStrategiesArgs) ToFleetSpotOptionsMaintenanceStrategiesPtrOutput() FleetSpotOptionsMaintenanceStrategiesPtrOutput {
+	return i.ToFleetSpotOptionsMaintenanceStrategiesPtrOutputWithContext(context.Background())
+}
+
+func (i FleetSpotOptionsMaintenanceStrategiesArgs) ToFleetSpotOptionsMaintenanceStrategiesPtrOutputWithContext(ctx context.Context) FleetSpotOptionsMaintenanceStrategiesPtrOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(FleetSpotOptionsMaintenanceStrategiesOutput).ToFleetSpotOptionsMaintenanceStrategiesPtrOutputWithContext(ctx)
+}
+
+// FleetSpotOptionsMaintenanceStrategiesPtrInput is an input type that accepts FleetSpotOptionsMaintenanceStrategiesArgs, FleetSpotOptionsMaintenanceStrategiesPtr and FleetSpotOptionsMaintenanceStrategiesPtrOutput values.
+// You can construct a concrete instance of `FleetSpotOptionsMaintenanceStrategiesPtrInput` via:
+//
+//          FleetSpotOptionsMaintenanceStrategiesArgs{...}
+//
+//  or:
+//
+//          nil
+type FleetSpotOptionsMaintenanceStrategiesPtrInput interface {
+	pulumi.Input
+
+	ToFleetSpotOptionsMaintenanceStrategiesPtrOutput() FleetSpotOptionsMaintenanceStrategiesPtrOutput
+	ToFleetSpotOptionsMaintenanceStrategiesPtrOutputWithContext(context.Context) FleetSpotOptionsMaintenanceStrategiesPtrOutput
+}
+
+type fleetSpotOptionsMaintenanceStrategiesPtrType FleetSpotOptionsMaintenanceStrategiesArgs
+
+func FleetSpotOptionsMaintenanceStrategiesPtr(v *FleetSpotOptionsMaintenanceStrategiesArgs) FleetSpotOptionsMaintenanceStrategiesPtrInput {
+	return (*fleetSpotOptionsMaintenanceStrategiesPtrType)(v)
+}
+
+func (*fleetSpotOptionsMaintenanceStrategiesPtrType) ElementType() reflect.Type {
+	return reflect.TypeOf((**FleetSpotOptionsMaintenanceStrategies)(nil)).Elem()
+}
+
+func (i *fleetSpotOptionsMaintenanceStrategiesPtrType) ToFleetSpotOptionsMaintenanceStrategiesPtrOutput() FleetSpotOptionsMaintenanceStrategiesPtrOutput {
+	return i.ToFleetSpotOptionsMaintenanceStrategiesPtrOutputWithContext(context.Background())
+}
+
+func (i *fleetSpotOptionsMaintenanceStrategiesPtrType) ToFleetSpotOptionsMaintenanceStrategiesPtrOutputWithContext(ctx context.Context) FleetSpotOptionsMaintenanceStrategiesPtrOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(FleetSpotOptionsMaintenanceStrategiesPtrOutput)
+}
+
+type FleetSpotOptionsMaintenanceStrategiesOutput struct{ *pulumi.OutputState }
+
+func (FleetSpotOptionsMaintenanceStrategiesOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*FleetSpotOptionsMaintenanceStrategies)(nil)).Elem()
+}
+
+func (o FleetSpotOptionsMaintenanceStrategiesOutput) ToFleetSpotOptionsMaintenanceStrategiesOutput() FleetSpotOptionsMaintenanceStrategiesOutput {
+	return o
+}
+
+func (o FleetSpotOptionsMaintenanceStrategiesOutput) ToFleetSpotOptionsMaintenanceStrategiesOutputWithContext(ctx context.Context) FleetSpotOptionsMaintenanceStrategiesOutput {
+	return o
+}
+
+func (o FleetSpotOptionsMaintenanceStrategiesOutput) ToFleetSpotOptionsMaintenanceStrategiesPtrOutput() FleetSpotOptionsMaintenanceStrategiesPtrOutput {
+	return o.ToFleetSpotOptionsMaintenanceStrategiesPtrOutputWithContext(context.Background())
+}
+
+func (o FleetSpotOptionsMaintenanceStrategiesOutput) ToFleetSpotOptionsMaintenanceStrategiesPtrOutputWithContext(ctx context.Context) FleetSpotOptionsMaintenanceStrategiesPtrOutput {
+	return o.ApplyT(func(v FleetSpotOptionsMaintenanceStrategies) *FleetSpotOptionsMaintenanceStrategies {
+		return &v
+	}).(FleetSpotOptionsMaintenanceStrategiesPtrOutput)
+}
+
+// Nested argument containing the capacity rebalance for your fleet request. Defined below.
+func (o FleetSpotOptionsMaintenanceStrategiesOutput) CapacityRebalance() FleetSpotOptionsMaintenanceStrategiesCapacityRebalancePtrOutput {
+	return o.ApplyT(func(v FleetSpotOptionsMaintenanceStrategies) *FleetSpotOptionsMaintenanceStrategiesCapacityRebalance {
+		return v.CapacityRebalance
+	}).(FleetSpotOptionsMaintenanceStrategiesCapacityRebalancePtrOutput)
+}
+
+type FleetSpotOptionsMaintenanceStrategiesPtrOutput struct{ *pulumi.OutputState }
+
+func (FleetSpotOptionsMaintenanceStrategiesPtrOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((**FleetSpotOptionsMaintenanceStrategies)(nil)).Elem()
+}
+
+func (o FleetSpotOptionsMaintenanceStrategiesPtrOutput) ToFleetSpotOptionsMaintenanceStrategiesPtrOutput() FleetSpotOptionsMaintenanceStrategiesPtrOutput {
+	return o
+}
+
+func (o FleetSpotOptionsMaintenanceStrategiesPtrOutput) ToFleetSpotOptionsMaintenanceStrategiesPtrOutputWithContext(ctx context.Context) FleetSpotOptionsMaintenanceStrategiesPtrOutput {
+	return o
+}
+
+func (o FleetSpotOptionsMaintenanceStrategiesPtrOutput) Elem() FleetSpotOptionsMaintenanceStrategiesOutput {
+	return o.ApplyT(func(v *FleetSpotOptionsMaintenanceStrategies) FleetSpotOptionsMaintenanceStrategies { return *v }).(FleetSpotOptionsMaintenanceStrategiesOutput)
+}
+
+// Nested argument containing the capacity rebalance for your fleet request. Defined below.
+func (o FleetSpotOptionsMaintenanceStrategiesPtrOutput) CapacityRebalance() FleetSpotOptionsMaintenanceStrategiesCapacityRebalancePtrOutput {
+	return o.ApplyT(func(v *FleetSpotOptionsMaintenanceStrategies) *FleetSpotOptionsMaintenanceStrategiesCapacityRebalance {
+		if v == nil {
+			return nil
+		}
+		return v.CapacityRebalance
+	}).(FleetSpotOptionsMaintenanceStrategiesCapacityRebalancePtrOutput)
+}
+
+type FleetSpotOptionsMaintenanceStrategiesCapacityRebalance struct {
+	// The replacement strategy to use. Only available for fleets of `type` set to `maintain`. Valid values: `launch`.
+	ReplacementStrategy *string `pulumi:"replacementStrategy"`
+}
+
+// FleetSpotOptionsMaintenanceStrategiesCapacityRebalanceInput is an input type that accepts FleetSpotOptionsMaintenanceStrategiesCapacityRebalanceArgs and FleetSpotOptionsMaintenanceStrategiesCapacityRebalanceOutput values.
+// You can construct a concrete instance of `FleetSpotOptionsMaintenanceStrategiesCapacityRebalanceInput` via:
+//
+//          FleetSpotOptionsMaintenanceStrategiesCapacityRebalanceArgs{...}
+type FleetSpotOptionsMaintenanceStrategiesCapacityRebalanceInput interface {
+	pulumi.Input
+
+	ToFleetSpotOptionsMaintenanceStrategiesCapacityRebalanceOutput() FleetSpotOptionsMaintenanceStrategiesCapacityRebalanceOutput
+	ToFleetSpotOptionsMaintenanceStrategiesCapacityRebalanceOutputWithContext(context.Context) FleetSpotOptionsMaintenanceStrategiesCapacityRebalanceOutput
+}
+
+type FleetSpotOptionsMaintenanceStrategiesCapacityRebalanceArgs struct {
+	// The replacement strategy to use. Only available for fleets of `type` set to `maintain`. Valid values: `launch`.
+	ReplacementStrategy pulumi.StringPtrInput `pulumi:"replacementStrategy"`
+}
+
+func (FleetSpotOptionsMaintenanceStrategiesCapacityRebalanceArgs) ElementType() reflect.Type {
+	return reflect.TypeOf((*FleetSpotOptionsMaintenanceStrategiesCapacityRebalance)(nil)).Elem()
+}
+
+func (i FleetSpotOptionsMaintenanceStrategiesCapacityRebalanceArgs) ToFleetSpotOptionsMaintenanceStrategiesCapacityRebalanceOutput() FleetSpotOptionsMaintenanceStrategiesCapacityRebalanceOutput {
+	return i.ToFleetSpotOptionsMaintenanceStrategiesCapacityRebalanceOutputWithContext(context.Background())
+}
+
+func (i FleetSpotOptionsMaintenanceStrategiesCapacityRebalanceArgs) ToFleetSpotOptionsMaintenanceStrategiesCapacityRebalanceOutputWithContext(ctx context.Context) FleetSpotOptionsMaintenanceStrategiesCapacityRebalanceOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(FleetSpotOptionsMaintenanceStrategiesCapacityRebalanceOutput)
+}
+
+func (i FleetSpotOptionsMaintenanceStrategiesCapacityRebalanceArgs) ToFleetSpotOptionsMaintenanceStrategiesCapacityRebalancePtrOutput() FleetSpotOptionsMaintenanceStrategiesCapacityRebalancePtrOutput {
+	return i.ToFleetSpotOptionsMaintenanceStrategiesCapacityRebalancePtrOutputWithContext(context.Background())
+}
+
+func (i FleetSpotOptionsMaintenanceStrategiesCapacityRebalanceArgs) ToFleetSpotOptionsMaintenanceStrategiesCapacityRebalancePtrOutputWithContext(ctx context.Context) FleetSpotOptionsMaintenanceStrategiesCapacityRebalancePtrOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(FleetSpotOptionsMaintenanceStrategiesCapacityRebalanceOutput).ToFleetSpotOptionsMaintenanceStrategiesCapacityRebalancePtrOutputWithContext(ctx)
+}
+
+// FleetSpotOptionsMaintenanceStrategiesCapacityRebalancePtrInput is an input type that accepts FleetSpotOptionsMaintenanceStrategiesCapacityRebalanceArgs, FleetSpotOptionsMaintenanceStrategiesCapacityRebalancePtr and FleetSpotOptionsMaintenanceStrategiesCapacityRebalancePtrOutput values.
+// You can construct a concrete instance of `FleetSpotOptionsMaintenanceStrategiesCapacityRebalancePtrInput` via:
+//
+//          FleetSpotOptionsMaintenanceStrategiesCapacityRebalanceArgs{...}
+//
+//  or:
+//
+//          nil
+type FleetSpotOptionsMaintenanceStrategiesCapacityRebalancePtrInput interface {
+	pulumi.Input
+
+	ToFleetSpotOptionsMaintenanceStrategiesCapacityRebalancePtrOutput() FleetSpotOptionsMaintenanceStrategiesCapacityRebalancePtrOutput
+	ToFleetSpotOptionsMaintenanceStrategiesCapacityRebalancePtrOutputWithContext(context.Context) FleetSpotOptionsMaintenanceStrategiesCapacityRebalancePtrOutput
+}
+
+type fleetSpotOptionsMaintenanceStrategiesCapacityRebalancePtrType FleetSpotOptionsMaintenanceStrategiesCapacityRebalanceArgs
+
+func FleetSpotOptionsMaintenanceStrategiesCapacityRebalancePtr(v *FleetSpotOptionsMaintenanceStrategiesCapacityRebalanceArgs) FleetSpotOptionsMaintenanceStrategiesCapacityRebalancePtrInput {
+	return (*fleetSpotOptionsMaintenanceStrategiesCapacityRebalancePtrType)(v)
+}
+
+func (*fleetSpotOptionsMaintenanceStrategiesCapacityRebalancePtrType) ElementType() reflect.Type {
+	return reflect.TypeOf((**FleetSpotOptionsMaintenanceStrategiesCapacityRebalance)(nil)).Elem()
+}
+
+func (i *fleetSpotOptionsMaintenanceStrategiesCapacityRebalancePtrType) ToFleetSpotOptionsMaintenanceStrategiesCapacityRebalancePtrOutput() FleetSpotOptionsMaintenanceStrategiesCapacityRebalancePtrOutput {
+	return i.ToFleetSpotOptionsMaintenanceStrategiesCapacityRebalancePtrOutputWithContext(context.Background())
+}
+
+func (i *fleetSpotOptionsMaintenanceStrategiesCapacityRebalancePtrType) ToFleetSpotOptionsMaintenanceStrategiesCapacityRebalancePtrOutputWithContext(ctx context.Context) FleetSpotOptionsMaintenanceStrategiesCapacityRebalancePtrOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(FleetSpotOptionsMaintenanceStrategiesCapacityRebalancePtrOutput)
+}
+
+type FleetSpotOptionsMaintenanceStrategiesCapacityRebalanceOutput struct{ *pulumi.OutputState }
+
+func (FleetSpotOptionsMaintenanceStrategiesCapacityRebalanceOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*FleetSpotOptionsMaintenanceStrategiesCapacityRebalance)(nil)).Elem()
+}
+
+func (o FleetSpotOptionsMaintenanceStrategiesCapacityRebalanceOutput) ToFleetSpotOptionsMaintenanceStrategiesCapacityRebalanceOutput() FleetSpotOptionsMaintenanceStrategiesCapacityRebalanceOutput {
+	return o
+}
+
+func (o FleetSpotOptionsMaintenanceStrategiesCapacityRebalanceOutput) ToFleetSpotOptionsMaintenanceStrategiesCapacityRebalanceOutputWithContext(ctx context.Context) FleetSpotOptionsMaintenanceStrategiesCapacityRebalanceOutput {
+	return o
+}
+
+func (o FleetSpotOptionsMaintenanceStrategiesCapacityRebalanceOutput) ToFleetSpotOptionsMaintenanceStrategiesCapacityRebalancePtrOutput() FleetSpotOptionsMaintenanceStrategiesCapacityRebalancePtrOutput {
+	return o.ToFleetSpotOptionsMaintenanceStrategiesCapacityRebalancePtrOutputWithContext(context.Background())
+}
+
+func (o FleetSpotOptionsMaintenanceStrategiesCapacityRebalanceOutput) ToFleetSpotOptionsMaintenanceStrategiesCapacityRebalancePtrOutputWithContext(ctx context.Context) FleetSpotOptionsMaintenanceStrategiesCapacityRebalancePtrOutput {
+	return o.ApplyT(func(v FleetSpotOptionsMaintenanceStrategiesCapacityRebalance) *FleetSpotOptionsMaintenanceStrategiesCapacityRebalance {
+		return &v
+	}).(FleetSpotOptionsMaintenanceStrategiesCapacityRebalancePtrOutput)
+}
+
+// The replacement strategy to use. Only available for fleets of `type` set to `maintain`. Valid values: `launch`.
+func (o FleetSpotOptionsMaintenanceStrategiesCapacityRebalanceOutput) ReplacementStrategy() pulumi.StringPtrOutput {
+	return o.ApplyT(func(v FleetSpotOptionsMaintenanceStrategiesCapacityRebalance) *string { return v.ReplacementStrategy }).(pulumi.StringPtrOutput)
+}
+
+type FleetSpotOptionsMaintenanceStrategiesCapacityRebalancePtrOutput struct{ *pulumi.OutputState }
+
+func (FleetSpotOptionsMaintenanceStrategiesCapacityRebalancePtrOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((**FleetSpotOptionsMaintenanceStrategiesCapacityRebalance)(nil)).Elem()
+}
+
+func (o FleetSpotOptionsMaintenanceStrategiesCapacityRebalancePtrOutput) ToFleetSpotOptionsMaintenanceStrategiesCapacityRebalancePtrOutput() FleetSpotOptionsMaintenanceStrategiesCapacityRebalancePtrOutput {
+	return o
+}
+
+func (o FleetSpotOptionsMaintenanceStrategiesCapacityRebalancePtrOutput) ToFleetSpotOptionsMaintenanceStrategiesCapacityRebalancePtrOutputWithContext(ctx context.Context) FleetSpotOptionsMaintenanceStrategiesCapacityRebalancePtrOutput {
+	return o
+}
+
+func (o FleetSpotOptionsMaintenanceStrategiesCapacityRebalancePtrOutput) Elem() FleetSpotOptionsMaintenanceStrategiesCapacityRebalanceOutput {
+	return o.ApplyT(func(v *FleetSpotOptionsMaintenanceStrategiesCapacityRebalance) FleetSpotOptionsMaintenanceStrategiesCapacityRebalance {
+		return *v
+	}).(FleetSpotOptionsMaintenanceStrategiesCapacityRebalanceOutput)
+}
+
+// The replacement strategy to use. Only available for fleets of `type` set to `maintain`. Valid values: `launch`.
+func (o FleetSpotOptionsMaintenanceStrategiesCapacityRebalancePtrOutput) ReplacementStrategy() pulumi.StringPtrOutput {
+	return o.ApplyT(func(v *FleetSpotOptionsMaintenanceStrategiesCapacityRebalance) *string {
+		if v == nil {
+			return nil
+		}
+		return v.ReplacementStrategy
+	}).(pulumi.StringPtrOutput)
 }
 
 type FleetTargetCapacitySpecification struct {
@@ -2758,7 +3100,7 @@ type InstanceEbsBlockDevice struct {
 	Encrypted *bool `pulumi:"encrypted"`
 	// The amount of provisioned
 	// [IOPS](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-io-characteristics.html).
-	// This must be set with a `volumeType` of `"io1"`.
+	// This must be set with a `volumeType` of `"io1/io2"`.
 	Iops *int `pulumi:"iops"`
 	// Amazon Resource Name (ARN) of the KMS Key to use when encrypting the volume. Must be configured to perform drift detection.
 	KmsKeyId *string `pulumi:"kmsKeyId"`
@@ -2767,8 +3109,8 @@ type InstanceEbsBlockDevice struct {
 	VolumeId   *string `pulumi:"volumeId"`
 	// The size of the volume in gibibytes (GiB).
 	VolumeSize *int `pulumi:"volumeSize"`
-	// The type of volume. Can be `"standard"`, `"gp2"`,
-	// or `"io1"`. (Default: `"gp2"`).
+	// The type of volume. Can be `"standard"`, `"gp2"`, `"io1"`
+	// or `"io2"`. (Default: `"gp2"`).
 	VolumeType *string `pulumi:"volumeType"`
 }
 
@@ -2795,7 +3137,7 @@ type InstanceEbsBlockDeviceArgs struct {
 	Encrypted pulumi.BoolPtrInput `pulumi:"encrypted"`
 	// The amount of provisioned
 	// [IOPS](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-io-characteristics.html).
-	// This must be set with a `volumeType` of `"io1"`.
+	// This must be set with a `volumeType` of `"io1/io2"`.
 	Iops pulumi.IntPtrInput `pulumi:"iops"`
 	// Amazon Resource Name (ARN) of the KMS Key to use when encrypting the volume. Must be configured to perform drift detection.
 	KmsKeyId pulumi.StringPtrInput `pulumi:"kmsKeyId"`
@@ -2804,8 +3146,8 @@ type InstanceEbsBlockDeviceArgs struct {
 	VolumeId   pulumi.StringPtrInput `pulumi:"volumeId"`
 	// The size of the volume in gibibytes (GiB).
 	VolumeSize pulumi.IntPtrInput `pulumi:"volumeSize"`
-	// The type of volume. Can be `"standard"`, `"gp2"`,
-	// or `"io1"`. (Default: `"gp2"`).
+	// The type of volume. Can be `"standard"`, `"gp2"`, `"io1"`
+	// or `"io2"`. (Default: `"gp2"`).
 	VolumeType pulumi.StringPtrInput `pulumi:"volumeType"`
 }
 
@@ -2880,7 +3222,7 @@ func (o InstanceEbsBlockDeviceOutput) Encrypted() pulumi.BoolPtrOutput {
 
 // The amount of provisioned
 // [IOPS](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-io-characteristics.html).
-// This must be set with a `volumeType` of `"io1"`.
+// This must be set with a `volumeType` of `"io1/io2"`.
 func (o InstanceEbsBlockDeviceOutput) Iops() pulumi.IntPtrOutput {
 	return o.ApplyT(func(v InstanceEbsBlockDevice) *int { return v.Iops }).(pulumi.IntPtrOutput)
 }
@@ -2904,8 +3246,8 @@ func (o InstanceEbsBlockDeviceOutput) VolumeSize() pulumi.IntPtrOutput {
 	return o.ApplyT(func(v InstanceEbsBlockDevice) *int { return v.VolumeSize }).(pulumi.IntPtrOutput)
 }
 
-// The type of volume. Can be `"standard"`, `"gp2"`,
-// or `"io1"`. (Default: `"gp2"`).
+// The type of volume. Can be `"standard"`, `"gp2"`, `"io1"`
+// or `"io2"`. (Default: `"gp2"`).
 func (o InstanceEbsBlockDeviceOutput) VolumeType() pulumi.StringPtrOutput {
 	return o.ApplyT(func(v InstanceEbsBlockDevice) *string { return v.VolumeType }).(pulumi.StringPtrOutput)
 }
@@ -3345,7 +3687,7 @@ type InstanceRootBlockDevice struct {
 	Encrypted *bool `pulumi:"encrypted"`
 	// The amount of provisioned
 	// [IOPS](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-io-characteristics.html).
-	// This is only valid for `volumeType` of `"io1"`, and must be specified if
+	// This is only valid for `volumeType` of `"io1/io2"`, and must be specified if
 	// using that type
 	Iops *int `pulumi:"iops"`
 	// Amazon Resource Name (ARN) of the KMS Key to use when encrypting the volume. Must be configured to perform drift detection.
@@ -3353,7 +3695,7 @@ type InstanceRootBlockDevice struct {
 	VolumeId *string `pulumi:"volumeId"`
 	// The size of the volume in gibibytes (GiB).
 	VolumeSize *int `pulumi:"volumeSize"`
-	// The type of volume. Can be `"standard"`, `"gp2"`, `"io1"`, `"sc1"`, or `"st1"`. (Default: `"standard"`).
+	// The type of volume. Can be `"standard"`, `"gp2"`, `"io1"`, `"io2"`, `"sc1"`, or `"st1"`. (Default: `"gp2"`).
 	VolumeType *string `pulumi:"volumeType"`
 }
 
@@ -3378,7 +3720,7 @@ type InstanceRootBlockDeviceArgs struct {
 	Encrypted pulumi.BoolPtrInput `pulumi:"encrypted"`
 	// The amount of provisioned
 	// [IOPS](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-io-characteristics.html).
-	// This is only valid for `volumeType` of `"io1"`, and must be specified if
+	// This is only valid for `volumeType` of `"io1/io2"`, and must be specified if
 	// using that type
 	Iops pulumi.IntPtrInput `pulumi:"iops"`
 	// Amazon Resource Name (ARN) of the KMS Key to use when encrypting the volume. Must be configured to perform drift detection.
@@ -3386,7 +3728,7 @@ type InstanceRootBlockDeviceArgs struct {
 	VolumeId pulumi.StringPtrInput `pulumi:"volumeId"`
 	// The size of the volume in gibibytes (GiB).
 	VolumeSize pulumi.IntPtrInput `pulumi:"volumeSize"`
-	// The type of volume. Can be `"standard"`, `"gp2"`, `"io1"`, `"sc1"`, or `"st1"`. (Default: `"standard"`).
+	// The type of volume. Can be `"standard"`, `"gp2"`, `"io1"`, `"io2"`, `"sc1"`, or `"st1"`. (Default: `"gp2"`).
 	VolumeType pulumi.StringPtrInput `pulumi:"volumeType"`
 }
 
@@ -3485,7 +3827,7 @@ func (o InstanceRootBlockDeviceOutput) Encrypted() pulumi.BoolPtrOutput {
 
 // The amount of provisioned
 // [IOPS](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-io-characteristics.html).
-// This is only valid for `volumeType` of `"io1"`, and must be specified if
+// This is only valid for `volumeType` of `"io1/io2"`, and must be specified if
 // using that type
 func (o InstanceRootBlockDeviceOutput) Iops() pulumi.IntPtrOutput {
 	return o.ApplyT(func(v InstanceRootBlockDevice) *int { return v.Iops }).(pulumi.IntPtrOutput)
@@ -3505,7 +3847,7 @@ func (o InstanceRootBlockDeviceOutput) VolumeSize() pulumi.IntPtrOutput {
 	return o.ApplyT(func(v InstanceRootBlockDevice) *int { return v.VolumeSize }).(pulumi.IntPtrOutput)
 }
 
-// The type of volume. Can be `"standard"`, `"gp2"`, `"io1"`, `"sc1"`, or `"st1"`. (Default: `"standard"`).
+// The type of volume. Can be `"standard"`, `"gp2"`, `"io1"`, `"io2"`, `"sc1"`, or `"st1"`. (Default: `"gp2"`).
 func (o InstanceRootBlockDeviceOutput) VolumeType() pulumi.StringPtrOutput {
 	return o.ApplyT(func(v InstanceRootBlockDevice) *string { return v.VolumeType }).(pulumi.StringPtrOutput)
 }
@@ -3561,7 +3903,7 @@ func (o InstanceRootBlockDevicePtrOutput) Encrypted() pulumi.BoolPtrOutput {
 
 // The amount of provisioned
 // [IOPS](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-io-characteristics.html).
-// This is only valid for `volumeType` of `"io1"`, and must be specified if
+// This is only valid for `volumeType` of `"io1/io2"`, and must be specified if
 // using that type
 func (o InstanceRootBlockDevicePtrOutput) Iops() pulumi.IntPtrOutput {
 	return o.ApplyT(func(v *InstanceRootBlockDevice) *int {
@@ -3601,7 +3943,7 @@ func (o InstanceRootBlockDevicePtrOutput) VolumeSize() pulumi.IntPtrOutput {
 	}).(pulumi.IntPtrOutput)
 }
 
-// The type of volume. Can be `"standard"`, `"gp2"`, `"io1"`, `"sc1"`, or `"st1"`. (Default: `"standard"`).
+// The type of volume. Can be `"standard"`, `"gp2"`, `"io1"`, `"io2"`, `"sc1"`, or `"st1"`. (Default: `"gp2"`).
 func (o InstanceRootBlockDevicePtrOutput) VolumeType() pulumi.StringPtrOutput {
 	return o.ApplyT(func(v *InstanceRootBlockDevice) *string {
 		if v == nil {
@@ -4171,16 +4513,17 @@ type LaunchTemplateBlockDeviceMappingEbs struct {
 	Encrypted *string `pulumi:"encrypted"`
 	// The amount of provisioned
 	// [IOPS](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-io-characteristics.html).
-	// This must be set with a `volumeType` of `"io1"`.
+	// This must be set with a `volumeType` of `"io1/io2"`.
 	Iops *int `pulumi:"iops"`
 	// The ARN of the AWS Key Management Service (AWS KMS) customer master key (CMK) to use when creating the encrypted volume.
 	// `encrypted` must be set to `true` when this is set.
 	KmsKeyId *string `pulumi:"kmsKeyId"`
 	// The Snapshot ID to mount.
 	SnapshotId *string `pulumi:"snapshotId"`
+	Throughput *int    `pulumi:"throughput"`
 	// The size of the volume in gigabytes.
 	VolumeSize *int `pulumi:"volumeSize"`
-	// The type of volume. Can be `"standard"`, `"gp2"`, or `"io1"`. (Default: `"standard"`).
+	// The volume type. Can be `standard`, `gp2`, `gp3`, `io1`, `io2`, `sc1` or `st1` (Default: `gp2`).
 	VolumeType *string `pulumi:"volumeType"`
 }
 
@@ -4203,16 +4546,17 @@ type LaunchTemplateBlockDeviceMappingEbsArgs struct {
 	Encrypted pulumi.StringPtrInput `pulumi:"encrypted"`
 	// The amount of provisioned
 	// [IOPS](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-io-characteristics.html).
-	// This must be set with a `volumeType` of `"io1"`.
+	// This must be set with a `volumeType` of `"io1/io2"`.
 	Iops pulumi.IntPtrInput `pulumi:"iops"`
 	// The ARN of the AWS Key Management Service (AWS KMS) customer master key (CMK) to use when creating the encrypted volume.
 	// `encrypted` must be set to `true` when this is set.
 	KmsKeyId pulumi.StringPtrInput `pulumi:"kmsKeyId"`
 	// The Snapshot ID to mount.
 	SnapshotId pulumi.StringPtrInput `pulumi:"snapshotId"`
+	Throughput pulumi.IntPtrInput    `pulumi:"throughput"`
 	// The size of the volume in gigabytes.
 	VolumeSize pulumi.IntPtrInput `pulumi:"volumeSize"`
-	// The type of volume. Can be `"standard"`, `"gp2"`, or `"io1"`. (Default: `"standard"`).
+	// The volume type. Can be `standard`, `gp2`, `gp3`, `io1`, `io2`, `sc1` or `st1` (Default: `gp2`).
 	VolumeType pulumi.StringPtrInput `pulumi:"volumeType"`
 }
 
@@ -4306,7 +4650,7 @@ func (o LaunchTemplateBlockDeviceMappingEbsOutput) Encrypted() pulumi.StringPtrO
 
 // The amount of provisioned
 // [IOPS](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-io-characteristics.html).
-// This must be set with a `volumeType` of `"io1"`.
+// This must be set with a `volumeType` of `"io1/io2"`.
 func (o LaunchTemplateBlockDeviceMappingEbsOutput) Iops() pulumi.IntPtrOutput {
 	return o.ApplyT(func(v LaunchTemplateBlockDeviceMappingEbs) *int { return v.Iops }).(pulumi.IntPtrOutput)
 }
@@ -4322,12 +4666,16 @@ func (o LaunchTemplateBlockDeviceMappingEbsOutput) SnapshotId() pulumi.StringPtr
 	return o.ApplyT(func(v LaunchTemplateBlockDeviceMappingEbs) *string { return v.SnapshotId }).(pulumi.StringPtrOutput)
 }
 
+func (o LaunchTemplateBlockDeviceMappingEbsOutput) Throughput() pulumi.IntPtrOutput {
+	return o.ApplyT(func(v LaunchTemplateBlockDeviceMappingEbs) *int { return v.Throughput }).(pulumi.IntPtrOutput)
+}
+
 // The size of the volume in gigabytes.
 func (o LaunchTemplateBlockDeviceMappingEbsOutput) VolumeSize() pulumi.IntPtrOutput {
 	return o.ApplyT(func(v LaunchTemplateBlockDeviceMappingEbs) *int { return v.VolumeSize }).(pulumi.IntPtrOutput)
 }
 
-// The type of volume. Can be `"standard"`, `"gp2"`, or `"io1"`. (Default: `"standard"`).
+// The volume type. Can be `standard`, `gp2`, `gp3`, `io1`, `io2`, `sc1` or `st1` (Default: `gp2`).
 func (o LaunchTemplateBlockDeviceMappingEbsOutput) VolumeType() pulumi.StringPtrOutput {
 	return o.ApplyT(func(v LaunchTemplateBlockDeviceMappingEbs) *string { return v.VolumeType }).(pulumi.StringPtrOutput)
 }
@@ -4373,7 +4721,7 @@ func (o LaunchTemplateBlockDeviceMappingEbsPtrOutput) Encrypted() pulumi.StringP
 
 // The amount of provisioned
 // [IOPS](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-io-characteristics.html).
-// This must be set with a `volumeType` of `"io1"`.
+// This must be set with a `volumeType` of `"io1/io2"`.
 func (o LaunchTemplateBlockDeviceMappingEbsPtrOutput) Iops() pulumi.IntPtrOutput {
 	return o.ApplyT(func(v *LaunchTemplateBlockDeviceMappingEbs) *int {
 		if v == nil {
@@ -4404,6 +4752,15 @@ func (o LaunchTemplateBlockDeviceMappingEbsPtrOutput) SnapshotId() pulumi.String
 	}).(pulumi.StringPtrOutput)
 }
 
+func (o LaunchTemplateBlockDeviceMappingEbsPtrOutput) Throughput() pulumi.IntPtrOutput {
+	return o.ApplyT(func(v *LaunchTemplateBlockDeviceMappingEbs) *int {
+		if v == nil {
+			return nil
+		}
+		return v.Throughput
+	}).(pulumi.IntPtrOutput)
+}
+
 // The size of the volume in gigabytes.
 func (o LaunchTemplateBlockDeviceMappingEbsPtrOutput) VolumeSize() pulumi.IntPtrOutput {
 	return o.ApplyT(func(v *LaunchTemplateBlockDeviceMappingEbs) *int {
@@ -4414,7 +4771,7 @@ func (o LaunchTemplateBlockDeviceMappingEbsPtrOutput) VolumeSize() pulumi.IntPtr
 	}).(pulumi.IntPtrOutput)
 }
 
-// The type of volume. Can be `"standard"`, `"gp2"`, or `"io1"`. (Default: `"standard"`).
+// The volume type. Can be `standard`, `gp2`, `gp3`, `io1`, `io2`, `sc1` or `st1` (Default: `gp2`).
 func (o LaunchTemplateBlockDeviceMappingEbsPtrOutput) VolumeType() pulumi.StringPtrOutput {
 	return o.ApplyT(func(v *LaunchTemplateBlockDeviceMappingEbs) *string {
 		if v == nil {
@@ -6272,10 +6629,12 @@ func (o LaunchTemplateMonitoringPtrOutput) Enabled() pulumi.BoolPtrOutput {
 }
 
 type LaunchTemplateNetworkInterface struct {
+	// Associate a Carrier IP address with `eth0` for a new network interface. Use this option when you launch an instance in a Wavelength Zone and want to associate a Carrier IP address with the network interface. Boolean value.
+	AssociateCarrierIpAddress *string `pulumi:"associateCarrierIpAddress"`
 	// Associate a public ip address with the network interface.  Boolean value.
 	AssociatePublicIpAddress *string `pulumi:"associatePublicIpAddress"`
 	// Whether the network interface should be destroyed on instance termination. Defaults to `false` if not set.
-	DeleteOnTermination *bool `pulumi:"deleteOnTermination"`
+	DeleteOnTermination *string `pulumi:"deleteOnTermination"`
 	// Description of the network interface.
 	Description *string `pulumi:"description"`
 	// The integer index of the network interface attachment.
@@ -6310,10 +6669,12 @@ type LaunchTemplateNetworkInterfaceInput interface {
 }
 
 type LaunchTemplateNetworkInterfaceArgs struct {
+	// Associate a Carrier IP address with `eth0` for a new network interface. Use this option when you launch an instance in a Wavelength Zone and want to associate a Carrier IP address with the network interface. Boolean value.
+	AssociateCarrierIpAddress pulumi.StringPtrInput `pulumi:"associateCarrierIpAddress"`
 	// Associate a public ip address with the network interface.  Boolean value.
 	AssociatePublicIpAddress pulumi.StringPtrInput `pulumi:"associatePublicIpAddress"`
 	// Whether the network interface should be destroyed on instance termination. Defaults to `false` if not set.
-	DeleteOnTermination pulumi.BoolPtrInput `pulumi:"deleteOnTermination"`
+	DeleteOnTermination pulumi.StringPtrInput `pulumi:"deleteOnTermination"`
 	// Description of the network interface.
 	Description pulumi.StringPtrInput `pulumi:"description"`
 	// The integer index of the network interface attachment.
@@ -6387,14 +6748,19 @@ func (o LaunchTemplateNetworkInterfaceOutput) ToLaunchTemplateNetworkInterfaceOu
 	return o
 }
 
+// Associate a Carrier IP address with `eth0` for a new network interface. Use this option when you launch an instance in a Wavelength Zone and want to associate a Carrier IP address with the network interface. Boolean value.
+func (o LaunchTemplateNetworkInterfaceOutput) AssociateCarrierIpAddress() pulumi.StringPtrOutput {
+	return o.ApplyT(func(v LaunchTemplateNetworkInterface) *string { return v.AssociateCarrierIpAddress }).(pulumi.StringPtrOutput)
+}
+
 // Associate a public ip address with the network interface.  Boolean value.
 func (o LaunchTemplateNetworkInterfaceOutput) AssociatePublicIpAddress() pulumi.StringPtrOutput {
 	return o.ApplyT(func(v LaunchTemplateNetworkInterface) *string { return v.AssociatePublicIpAddress }).(pulumi.StringPtrOutput)
 }
 
 // Whether the network interface should be destroyed on instance termination. Defaults to `false` if not set.
-func (o LaunchTemplateNetworkInterfaceOutput) DeleteOnTermination() pulumi.BoolPtrOutput {
-	return o.ApplyT(func(v LaunchTemplateNetworkInterface) *bool { return v.DeleteOnTermination }).(pulumi.BoolPtrOutput)
+func (o LaunchTemplateNetworkInterfaceOutput) DeleteOnTermination() pulumi.StringPtrOutput {
+	return o.ApplyT(func(v LaunchTemplateNetworkInterface) *string { return v.DeleteOnTermination }).(pulumi.StringPtrOutput)
 }
 
 // Description of the network interface.
@@ -6713,7 +7079,7 @@ func (o LaunchTemplatePlacementPtrOutput) Tenancy() pulumi.StringPtrOutput {
 }
 
 type LaunchTemplateTagSpecification struct {
-	// The type of resource to tag. Valid values are `instance` and `volume`.
+	// The type of resource to tag. Valid values are `instance`, `volume`, `elastic-gpu` and `spot-instances-request`.
 	ResourceType *string `pulumi:"resourceType"`
 	// A map of tags to assign to the resource.
 	Tags map[string]string `pulumi:"tags"`
@@ -6731,7 +7097,7 @@ type LaunchTemplateTagSpecificationInput interface {
 }
 
 type LaunchTemplateTagSpecificationArgs struct {
-	// The type of resource to tag. Valid values are `instance` and `volume`.
+	// The type of resource to tag. Valid values are `instance`, `volume`, `elastic-gpu` and `spot-instances-request`.
 	ResourceType pulumi.StringPtrInput `pulumi:"resourceType"`
 	// A map of tags to assign to the resource.
 	Tags pulumi.StringMapInput `pulumi:"tags"`
@@ -6788,7 +7154,7 @@ func (o LaunchTemplateTagSpecificationOutput) ToLaunchTemplateTagSpecificationOu
 	return o
 }
 
-// The type of resource to tag. Valid values are `instance` and `volume`.
+// The type of resource to tag. Valid values are `instance`, `volume`, `elastic-gpu` and `spot-instances-request`.
 func (o LaunchTemplateTagSpecificationOutput) ResourceType() pulumi.StringPtrOutput {
 	return o.ApplyT(func(v LaunchTemplateTagSpecification) *string { return v.ResourceType }).(pulumi.StringPtrOutput)
 }
@@ -7669,12 +8035,16 @@ type RouteTableRoute struct {
 	InstanceId *string `pulumi:"instanceId"`
 	// The Ipv6 CIDR block of the route.
 	Ipv6CidrBlock *string `pulumi:"ipv6CidrBlock"`
+	// Identifier of a Outpost local gateway.
+	LocalGatewayId *string `pulumi:"localGatewayId"`
 	// Identifier of a VPC NAT gateway.
 	NatGatewayId *string `pulumi:"natGatewayId"`
 	// Identifier of an EC2 network interface.
 	NetworkInterfaceId *string `pulumi:"networkInterfaceId"`
 	// Identifier of an EC2 Transit Gateway.
 	TransitGatewayId *string `pulumi:"transitGatewayId"`
+	// Identifier of a VPC Endpoint.
+	VpcEndpointId *string `pulumi:"vpcEndpointId"`
 	// Identifier of a VPC peering connection.
 	VpcPeeringConnectionId *string `pulumi:"vpcPeeringConnectionId"`
 }
@@ -7701,12 +8071,16 @@ type RouteTableRouteArgs struct {
 	InstanceId pulumi.StringPtrInput `pulumi:"instanceId"`
 	// The Ipv6 CIDR block of the route.
 	Ipv6CidrBlock pulumi.StringPtrInput `pulumi:"ipv6CidrBlock"`
+	// Identifier of a Outpost local gateway.
+	LocalGatewayId pulumi.StringPtrInput `pulumi:"localGatewayId"`
 	// Identifier of a VPC NAT gateway.
 	NatGatewayId pulumi.StringPtrInput `pulumi:"natGatewayId"`
 	// Identifier of an EC2 network interface.
 	NetworkInterfaceId pulumi.StringPtrInput `pulumi:"networkInterfaceId"`
 	// Identifier of an EC2 Transit Gateway.
 	TransitGatewayId pulumi.StringPtrInput `pulumi:"transitGatewayId"`
+	// Identifier of a VPC Endpoint.
+	VpcEndpointId pulumi.StringPtrInput `pulumi:"vpcEndpointId"`
 	// Identifier of a VPC peering connection.
 	VpcPeeringConnectionId pulumi.StringPtrInput `pulumi:"vpcPeeringConnectionId"`
 }
@@ -7787,6 +8161,11 @@ func (o RouteTableRouteOutput) Ipv6CidrBlock() pulumi.StringPtrOutput {
 	return o.ApplyT(func(v RouteTableRoute) *string { return v.Ipv6CidrBlock }).(pulumi.StringPtrOutput)
 }
 
+// Identifier of a Outpost local gateway.
+func (o RouteTableRouteOutput) LocalGatewayId() pulumi.StringPtrOutput {
+	return o.ApplyT(func(v RouteTableRoute) *string { return v.LocalGatewayId }).(pulumi.StringPtrOutput)
+}
+
 // Identifier of a VPC NAT gateway.
 func (o RouteTableRouteOutput) NatGatewayId() pulumi.StringPtrOutput {
 	return o.ApplyT(func(v RouteTableRoute) *string { return v.NatGatewayId }).(pulumi.StringPtrOutput)
@@ -7800,6 +8179,11 @@ func (o RouteTableRouteOutput) NetworkInterfaceId() pulumi.StringPtrOutput {
 // Identifier of an EC2 Transit Gateway.
 func (o RouteTableRouteOutput) TransitGatewayId() pulumi.StringPtrOutput {
 	return o.ApplyT(func(v RouteTableRoute) *string { return v.TransitGatewayId }).(pulumi.StringPtrOutput)
+}
+
+// Identifier of a VPC Endpoint.
+func (o RouteTableRouteOutput) VpcEndpointId() pulumi.StringPtrOutput {
+	return o.ApplyT(func(v RouteTableRoute) *string { return v.VpcEndpointId }).(pulumi.StringPtrOutput)
 }
 
 // Identifier of a VPC peering connection.
@@ -8422,6 +8806,7 @@ type SpotFleetRequestLaunchSpecificationEbsBlockDevice struct {
 	Iops                *int    `pulumi:"iops"`
 	KmsKeyId            *string `pulumi:"kmsKeyId"`
 	SnapshotId          *string `pulumi:"snapshotId"`
+	Throughput          *int    `pulumi:"throughput"`
 	VolumeSize          *int    `pulumi:"volumeSize"`
 	VolumeType          *string `pulumi:"volumeType"`
 }
@@ -8444,6 +8829,7 @@ type SpotFleetRequestLaunchSpecificationEbsBlockDeviceArgs struct {
 	Iops                pulumi.IntPtrInput    `pulumi:"iops"`
 	KmsKeyId            pulumi.StringPtrInput `pulumi:"kmsKeyId"`
 	SnapshotId          pulumi.StringPtrInput `pulumi:"snapshotId"`
+	Throughput          pulumi.IntPtrInput    `pulumi:"throughput"`
 	VolumeSize          pulumi.IntPtrInput    `pulumi:"volumeSize"`
 	VolumeType          pulumi.StringPtrInput `pulumi:"volumeType"`
 }
@@ -8521,6 +8907,10 @@ func (o SpotFleetRequestLaunchSpecificationEbsBlockDeviceOutput) KmsKeyId() pulu
 
 func (o SpotFleetRequestLaunchSpecificationEbsBlockDeviceOutput) SnapshotId() pulumi.StringPtrOutput {
 	return o.ApplyT(func(v SpotFleetRequestLaunchSpecificationEbsBlockDevice) *string { return v.SnapshotId }).(pulumi.StringPtrOutput)
+}
+
+func (o SpotFleetRequestLaunchSpecificationEbsBlockDeviceOutput) Throughput() pulumi.IntPtrOutput {
+	return o.ApplyT(func(v SpotFleetRequestLaunchSpecificationEbsBlockDevice) *int { return v.Throughput }).(pulumi.IntPtrOutput)
 }
 
 func (o SpotFleetRequestLaunchSpecificationEbsBlockDeviceOutput) VolumeSize() pulumi.IntPtrOutput {
@@ -8656,6 +9046,7 @@ type SpotFleetRequestLaunchSpecificationRootBlockDevice struct {
 	Encrypted           *bool   `pulumi:"encrypted"`
 	Iops                *int    `pulumi:"iops"`
 	KmsKeyId            *string `pulumi:"kmsKeyId"`
+	Throughput          *int    `pulumi:"throughput"`
 	VolumeSize          *int    `pulumi:"volumeSize"`
 	VolumeType          *string `pulumi:"volumeType"`
 }
@@ -8676,6 +9067,7 @@ type SpotFleetRequestLaunchSpecificationRootBlockDeviceArgs struct {
 	Encrypted           pulumi.BoolPtrInput   `pulumi:"encrypted"`
 	Iops                pulumi.IntPtrInput    `pulumi:"iops"`
 	KmsKeyId            pulumi.StringPtrInput `pulumi:"kmsKeyId"`
+	Throughput          pulumi.IntPtrInput    `pulumi:"throughput"`
 	VolumeSize          pulumi.IntPtrInput    `pulumi:"volumeSize"`
 	VolumeType          pulumi.StringPtrInput `pulumi:"volumeType"`
 }
@@ -8745,6 +9137,10 @@ func (o SpotFleetRequestLaunchSpecificationRootBlockDeviceOutput) Iops() pulumi.
 
 func (o SpotFleetRequestLaunchSpecificationRootBlockDeviceOutput) KmsKeyId() pulumi.StringPtrOutput {
 	return o.ApplyT(func(v SpotFleetRequestLaunchSpecificationRootBlockDevice) *string { return v.KmsKeyId }).(pulumi.StringPtrOutput)
+}
+
+func (o SpotFleetRequestLaunchSpecificationRootBlockDeviceOutput) Throughput() pulumi.IntPtrOutput {
+	return o.ApplyT(func(v SpotFleetRequestLaunchSpecificationRootBlockDevice) *int { return v.Throughput }).(pulumi.IntPtrOutput)
 }
 
 func (o SpotFleetRequestLaunchSpecificationRootBlockDeviceOutput) VolumeSize() pulumi.IntPtrOutput {
@@ -9097,6 +9493,276 @@ func (o SpotFleetRequestLaunchTemplateConfigOverrideArrayOutput) Index(i pulumi.
 	}).(SpotFleetRequestLaunchTemplateConfigOverrideOutput)
 }
 
+type SpotFleetRequestSpotMaintenanceStrategies struct {
+	// Nested argument containing the capacity rebalance for your fleet request. Defined below.
+	CapacityRebalance *SpotFleetRequestSpotMaintenanceStrategiesCapacityRebalance `pulumi:"capacityRebalance"`
+}
+
+// SpotFleetRequestSpotMaintenanceStrategiesInput is an input type that accepts SpotFleetRequestSpotMaintenanceStrategiesArgs and SpotFleetRequestSpotMaintenanceStrategiesOutput values.
+// You can construct a concrete instance of `SpotFleetRequestSpotMaintenanceStrategiesInput` via:
+//
+//          SpotFleetRequestSpotMaintenanceStrategiesArgs{...}
+type SpotFleetRequestSpotMaintenanceStrategiesInput interface {
+	pulumi.Input
+
+	ToSpotFleetRequestSpotMaintenanceStrategiesOutput() SpotFleetRequestSpotMaintenanceStrategiesOutput
+	ToSpotFleetRequestSpotMaintenanceStrategiesOutputWithContext(context.Context) SpotFleetRequestSpotMaintenanceStrategiesOutput
+}
+
+type SpotFleetRequestSpotMaintenanceStrategiesArgs struct {
+	// Nested argument containing the capacity rebalance for your fleet request. Defined below.
+	CapacityRebalance SpotFleetRequestSpotMaintenanceStrategiesCapacityRebalancePtrInput `pulumi:"capacityRebalance"`
+}
+
+func (SpotFleetRequestSpotMaintenanceStrategiesArgs) ElementType() reflect.Type {
+	return reflect.TypeOf((*SpotFleetRequestSpotMaintenanceStrategies)(nil)).Elem()
+}
+
+func (i SpotFleetRequestSpotMaintenanceStrategiesArgs) ToSpotFleetRequestSpotMaintenanceStrategiesOutput() SpotFleetRequestSpotMaintenanceStrategiesOutput {
+	return i.ToSpotFleetRequestSpotMaintenanceStrategiesOutputWithContext(context.Background())
+}
+
+func (i SpotFleetRequestSpotMaintenanceStrategiesArgs) ToSpotFleetRequestSpotMaintenanceStrategiesOutputWithContext(ctx context.Context) SpotFleetRequestSpotMaintenanceStrategiesOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(SpotFleetRequestSpotMaintenanceStrategiesOutput)
+}
+
+func (i SpotFleetRequestSpotMaintenanceStrategiesArgs) ToSpotFleetRequestSpotMaintenanceStrategiesPtrOutput() SpotFleetRequestSpotMaintenanceStrategiesPtrOutput {
+	return i.ToSpotFleetRequestSpotMaintenanceStrategiesPtrOutputWithContext(context.Background())
+}
+
+func (i SpotFleetRequestSpotMaintenanceStrategiesArgs) ToSpotFleetRequestSpotMaintenanceStrategiesPtrOutputWithContext(ctx context.Context) SpotFleetRequestSpotMaintenanceStrategiesPtrOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(SpotFleetRequestSpotMaintenanceStrategiesOutput).ToSpotFleetRequestSpotMaintenanceStrategiesPtrOutputWithContext(ctx)
+}
+
+// SpotFleetRequestSpotMaintenanceStrategiesPtrInput is an input type that accepts SpotFleetRequestSpotMaintenanceStrategiesArgs, SpotFleetRequestSpotMaintenanceStrategiesPtr and SpotFleetRequestSpotMaintenanceStrategiesPtrOutput values.
+// You can construct a concrete instance of `SpotFleetRequestSpotMaintenanceStrategiesPtrInput` via:
+//
+//          SpotFleetRequestSpotMaintenanceStrategiesArgs{...}
+//
+//  or:
+//
+//          nil
+type SpotFleetRequestSpotMaintenanceStrategiesPtrInput interface {
+	pulumi.Input
+
+	ToSpotFleetRequestSpotMaintenanceStrategiesPtrOutput() SpotFleetRequestSpotMaintenanceStrategiesPtrOutput
+	ToSpotFleetRequestSpotMaintenanceStrategiesPtrOutputWithContext(context.Context) SpotFleetRequestSpotMaintenanceStrategiesPtrOutput
+}
+
+type spotFleetRequestSpotMaintenanceStrategiesPtrType SpotFleetRequestSpotMaintenanceStrategiesArgs
+
+func SpotFleetRequestSpotMaintenanceStrategiesPtr(v *SpotFleetRequestSpotMaintenanceStrategiesArgs) SpotFleetRequestSpotMaintenanceStrategiesPtrInput {
+	return (*spotFleetRequestSpotMaintenanceStrategiesPtrType)(v)
+}
+
+func (*spotFleetRequestSpotMaintenanceStrategiesPtrType) ElementType() reflect.Type {
+	return reflect.TypeOf((**SpotFleetRequestSpotMaintenanceStrategies)(nil)).Elem()
+}
+
+func (i *spotFleetRequestSpotMaintenanceStrategiesPtrType) ToSpotFleetRequestSpotMaintenanceStrategiesPtrOutput() SpotFleetRequestSpotMaintenanceStrategiesPtrOutput {
+	return i.ToSpotFleetRequestSpotMaintenanceStrategiesPtrOutputWithContext(context.Background())
+}
+
+func (i *spotFleetRequestSpotMaintenanceStrategiesPtrType) ToSpotFleetRequestSpotMaintenanceStrategiesPtrOutputWithContext(ctx context.Context) SpotFleetRequestSpotMaintenanceStrategiesPtrOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(SpotFleetRequestSpotMaintenanceStrategiesPtrOutput)
+}
+
+type SpotFleetRequestSpotMaintenanceStrategiesOutput struct{ *pulumi.OutputState }
+
+func (SpotFleetRequestSpotMaintenanceStrategiesOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*SpotFleetRequestSpotMaintenanceStrategies)(nil)).Elem()
+}
+
+func (o SpotFleetRequestSpotMaintenanceStrategiesOutput) ToSpotFleetRequestSpotMaintenanceStrategiesOutput() SpotFleetRequestSpotMaintenanceStrategiesOutput {
+	return o
+}
+
+func (o SpotFleetRequestSpotMaintenanceStrategiesOutput) ToSpotFleetRequestSpotMaintenanceStrategiesOutputWithContext(ctx context.Context) SpotFleetRequestSpotMaintenanceStrategiesOutput {
+	return o
+}
+
+func (o SpotFleetRequestSpotMaintenanceStrategiesOutput) ToSpotFleetRequestSpotMaintenanceStrategiesPtrOutput() SpotFleetRequestSpotMaintenanceStrategiesPtrOutput {
+	return o.ToSpotFleetRequestSpotMaintenanceStrategiesPtrOutputWithContext(context.Background())
+}
+
+func (o SpotFleetRequestSpotMaintenanceStrategiesOutput) ToSpotFleetRequestSpotMaintenanceStrategiesPtrOutputWithContext(ctx context.Context) SpotFleetRequestSpotMaintenanceStrategiesPtrOutput {
+	return o.ApplyT(func(v SpotFleetRequestSpotMaintenanceStrategies) *SpotFleetRequestSpotMaintenanceStrategies {
+		return &v
+	}).(SpotFleetRequestSpotMaintenanceStrategiesPtrOutput)
+}
+
+// Nested argument containing the capacity rebalance for your fleet request. Defined below.
+func (o SpotFleetRequestSpotMaintenanceStrategiesOutput) CapacityRebalance() SpotFleetRequestSpotMaintenanceStrategiesCapacityRebalancePtrOutput {
+	return o.ApplyT(func(v SpotFleetRequestSpotMaintenanceStrategies) *SpotFleetRequestSpotMaintenanceStrategiesCapacityRebalance {
+		return v.CapacityRebalance
+	}).(SpotFleetRequestSpotMaintenanceStrategiesCapacityRebalancePtrOutput)
+}
+
+type SpotFleetRequestSpotMaintenanceStrategiesPtrOutput struct{ *pulumi.OutputState }
+
+func (SpotFleetRequestSpotMaintenanceStrategiesPtrOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((**SpotFleetRequestSpotMaintenanceStrategies)(nil)).Elem()
+}
+
+func (o SpotFleetRequestSpotMaintenanceStrategiesPtrOutput) ToSpotFleetRequestSpotMaintenanceStrategiesPtrOutput() SpotFleetRequestSpotMaintenanceStrategiesPtrOutput {
+	return o
+}
+
+func (o SpotFleetRequestSpotMaintenanceStrategiesPtrOutput) ToSpotFleetRequestSpotMaintenanceStrategiesPtrOutputWithContext(ctx context.Context) SpotFleetRequestSpotMaintenanceStrategiesPtrOutput {
+	return o
+}
+
+func (o SpotFleetRequestSpotMaintenanceStrategiesPtrOutput) Elem() SpotFleetRequestSpotMaintenanceStrategiesOutput {
+	return o.ApplyT(func(v *SpotFleetRequestSpotMaintenanceStrategies) SpotFleetRequestSpotMaintenanceStrategies {
+		return *v
+	}).(SpotFleetRequestSpotMaintenanceStrategiesOutput)
+}
+
+// Nested argument containing the capacity rebalance for your fleet request. Defined below.
+func (o SpotFleetRequestSpotMaintenanceStrategiesPtrOutput) CapacityRebalance() SpotFleetRequestSpotMaintenanceStrategiesCapacityRebalancePtrOutput {
+	return o.ApplyT(func(v *SpotFleetRequestSpotMaintenanceStrategies) *SpotFleetRequestSpotMaintenanceStrategiesCapacityRebalance {
+		if v == nil {
+			return nil
+		}
+		return v.CapacityRebalance
+	}).(SpotFleetRequestSpotMaintenanceStrategiesCapacityRebalancePtrOutput)
+}
+
+type SpotFleetRequestSpotMaintenanceStrategiesCapacityRebalance struct {
+	// The replacement strategy to use. Only available for spot fleets with `fleetType` set to `maintain`. Valid values: `launch`.
+	ReplacementStrategy *string `pulumi:"replacementStrategy"`
+}
+
+// SpotFleetRequestSpotMaintenanceStrategiesCapacityRebalanceInput is an input type that accepts SpotFleetRequestSpotMaintenanceStrategiesCapacityRebalanceArgs and SpotFleetRequestSpotMaintenanceStrategiesCapacityRebalanceOutput values.
+// You can construct a concrete instance of `SpotFleetRequestSpotMaintenanceStrategiesCapacityRebalanceInput` via:
+//
+//          SpotFleetRequestSpotMaintenanceStrategiesCapacityRebalanceArgs{...}
+type SpotFleetRequestSpotMaintenanceStrategiesCapacityRebalanceInput interface {
+	pulumi.Input
+
+	ToSpotFleetRequestSpotMaintenanceStrategiesCapacityRebalanceOutput() SpotFleetRequestSpotMaintenanceStrategiesCapacityRebalanceOutput
+	ToSpotFleetRequestSpotMaintenanceStrategiesCapacityRebalanceOutputWithContext(context.Context) SpotFleetRequestSpotMaintenanceStrategiesCapacityRebalanceOutput
+}
+
+type SpotFleetRequestSpotMaintenanceStrategiesCapacityRebalanceArgs struct {
+	// The replacement strategy to use. Only available for spot fleets with `fleetType` set to `maintain`. Valid values: `launch`.
+	ReplacementStrategy pulumi.StringPtrInput `pulumi:"replacementStrategy"`
+}
+
+func (SpotFleetRequestSpotMaintenanceStrategiesCapacityRebalanceArgs) ElementType() reflect.Type {
+	return reflect.TypeOf((*SpotFleetRequestSpotMaintenanceStrategiesCapacityRebalance)(nil)).Elem()
+}
+
+func (i SpotFleetRequestSpotMaintenanceStrategiesCapacityRebalanceArgs) ToSpotFleetRequestSpotMaintenanceStrategiesCapacityRebalanceOutput() SpotFleetRequestSpotMaintenanceStrategiesCapacityRebalanceOutput {
+	return i.ToSpotFleetRequestSpotMaintenanceStrategiesCapacityRebalanceOutputWithContext(context.Background())
+}
+
+func (i SpotFleetRequestSpotMaintenanceStrategiesCapacityRebalanceArgs) ToSpotFleetRequestSpotMaintenanceStrategiesCapacityRebalanceOutputWithContext(ctx context.Context) SpotFleetRequestSpotMaintenanceStrategiesCapacityRebalanceOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(SpotFleetRequestSpotMaintenanceStrategiesCapacityRebalanceOutput)
+}
+
+func (i SpotFleetRequestSpotMaintenanceStrategiesCapacityRebalanceArgs) ToSpotFleetRequestSpotMaintenanceStrategiesCapacityRebalancePtrOutput() SpotFleetRequestSpotMaintenanceStrategiesCapacityRebalancePtrOutput {
+	return i.ToSpotFleetRequestSpotMaintenanceStrategiesCapacityRebalancePtrOutputWithContext(context.Background())
+}
+
+func (i SpotFleetRequestSpotMaintenanceStrategiesCapacityRebalanceArgs) ToSpotFleetRequestSpotMaintenanceStrategiesCapacityRebalancePtrOutputWithContext(ctx context.Context) SpotFleetRequestSpotMaintenanceStrategiesCapacityRebalancePtrOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(SpotFleetRequestSpotMaintenanceStrategiesCapacityRebalanceOutput).ToSpotFleetRequestSpotMaintenanceStrategiesCapacityRebalancePtrOutputWithContext(ctx)
+}
+
+// SpotFleetRequestSpotMaintenanceStrategiesCapacityRebalancePtrInput is an input type that accepts SpotFleetRequestSpotMaintenanceStrategiesCapacityRebalanceArgs, SpotFleetRequestSpotMaintenanceStrategiesCapacityRebalancePtr and SpotFleetRequestSpotMaintenanceStrategiesCapacityRebalancePtrOutput values.
+// You can construct a concrete instance of `SpotFleetRequestSpotMaintenanceStrategiesCapacityRebalancePtrInput` via:
+//
+//          SpotFleetRequestSpotMaintenanceStrategiesCapacityRebalanceArgs{...}
+//
+//  or:
+//
+//          nil
+type SpotFleetRequestSpotMaintenanceStrategiesCapacityRebalancePtrInput interface {
+	pulumi.Input
+
+	ToSpotFleetRequestSpotMaintenanceStrategiesCapacityRebalancePtrOutput() SpotFleetRequestSpotMaintenanceStrategiesCapacityRebalancePtrOutput
+	ToSpotFleetRequestSpotMaintenanceStrategiesCapacityRebalancePtrOutputWithContext(context.Context) SpotFleetRequestSpotMaintenanceStrategiesCapacityRebalancePtrOutput
+}
+
+type spotFleetRequestSpotMaintenanceStrategiesCapacityRebalancePtrType SpotFleetRequestSpotMaintenanceStrategiesCapacityRebalanceArgs
+
+func SpotFleetRequestSpotMaintenanceStrategiesCapacityRebalancePtr(v *SpotFleetRequestSpotMaintenanceStrategiesCapacityRebalanceArgs) SpotFleetRequestSpotMaintenanceStrategiesCapacityRebalancePtrInput {
+	return (*spotFleetRequestSpotMaintenanceStrategiesCapacityRebalancePtrType)(v)
+}
+
+func (*spotFleetRequestSpotMaintenanceStrategiesCapacityRebalancePtrType) ElementType() reflect.Type {
+	return reflect.TypeOf((**SpotFleetRequestSpotMaintenanceStrategiesCapacityRebalance)(nil)).Elem()
+}
+
+func (i *spotFleetRequestSpotMaintenanceStrategiesCapacityRebalancePtrType) ToSpotFleetRequestSpotMaintenanceStrategiesCapacityRebalancePtrOutput() SpotFleetRequestSpotMaintenanceStrategiesCapacityRebalancePtrOutput {
+	return i.ToSpotFleetRequestSpotMaintenanceStrategiesCapacityRebalancePtrOutputWithContext(context.Background())
+}
+
+func (i *spotFleetRequestSpotMaintenanceStrategiesCapacityRebalancePtrType) ToSpotFleetRequestSpotMaintenanceStrategiesCapacityRebalancePtrOutputWithContext(ctx context.Context) SpotFleetRequestSpotMaintenanceStrategiesCapacityRebalancePtrOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(SpotFleetRequestSpotMaintenanceStrategiesCapacityRebalancePtrOutput)
+}
+
+type SpotFleetRequestSpotMaintenanceStrategiesCapacityRebalanceOutput struct{ *pulumi.OutputState }
+
+func (SpotFleetRequestSpotMaintenanceStrategiesCapacityRebalanceOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*SpotFleetRequestSpotMaintenanceStrategiesCapacityRebalance)(nil)).Elem()
+}
+
+func (o SpotFleetRequestSpotMaintenanceStrategiesCapacityRebalanceOutput) ToSpotFleetRequestSpotMaintenanceStrategiesCapacityRebalanceOutput() SpotFleetRequestSpotMaintenanceStrategiesCapacityRebalanceOutput {
+	return o
+}
+
+func (o SpotFleetRequestSpotMaintenanceStrategiesCapacityRebalanceOutput) ToSpotFleetRequestSpotMaintenanceStrategiesCapacityRebalanceOutputWithContext(ctx context.Context) SpotFleetRequestSpotMaintenanceStrategiesCapacityRebalanceOutput {
+	return o
+}
+
+func (o SpotFleetRequestSpotMaintenanceStrategiesCapacityRebalanceOutput) ToSpotFleetRequestSpotMaintenanceStrategiesCapacityRebalancePtrOutput() SpotFleetRequestSpotMaintenanceStrategiesCapacityRebalancePtrOutput {
+	return o.ToSpotFleetRequestSpotMaintenanceStrategiesCapacityRebalancePtrOutputWithContext(context.Background())
+}
+
+func (o SpotFleetRequestSpotMaintenanceStrategiesCapacityRebalanceOutput) ToSpotFleetRequestSpotMaintenanceStrategiesCapacityRebalancePtrOutputWithContext(ctx context.Context) SpotFleetRequestSpotMaintenanceStrategiesCapacityRebalancePtrOutput {
+	return o.ApplyT(func(v SpotFleetRequestSpotMaintenanceStrategiesCapacityRebalance) *SpotFleetRequestSpotMaintenanceStrategiesCapacityRebalance {
+		return &v
+	}).(SpotFleetRequestSpotMaintenanceStrategiesCapacityRebalancePtrOutput)
+}
+
+// The replacement strategy to use. Only available for spot fleets with `fleetType` set to `maintain`. Valid values: `launch`.
+func (o SpotFleetRequestSpotMaintenanceStrategiesCapacityRebalanceOutput) ReplacementStrategy() pulumi.StringPtrOutput {
+	return o.ApplyT(func(v SpotFleetRequestSpotMaintenanceStrategiesCapacityRebalance) *string {
+		return v.ReplacementStrategy
+	}).(pulumi.StringPtrOutput)
+}
+
+type SpotFleetRequestSpotMaintenanceStrategiesCapacityRebalancePtrOutput struct{ *pulumi.OutputState }
+
+func (SpotFleetRequestSpotMaintenanceStrategiesCapacityRebalancePtrOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((**SpotFleetRequestSpotMaintenanceStrategiesCapacityRebalance)(nil)).Elem()
+}
+
+func (o SpotFleetRequestSpotMaintenanceStrategiesCapacityRebalancePtrOutput) ToSpotFleetRequestSpotMaintenanceStrategiesCapacityRebalancePtrOutput() SpotFleetRequestSpotMaintenanceStrategiesCapacityRebalancePtrOutput {
+	return o
+}
+
+func (o SpotFleetRequestSpotMaintenanceStrategiesCapacityRebalancePtrOutput) ToSpotFleetRequestSpotMaintenanceStrategiesCapacityRebalancePtrOutputWithContext(ctx context.Context) SpotFleetRequestSpotMaintenanceStrategiesCapacityRebalancePtrOutput {
+	return o
+}
+
+func (o SpotFleetRequestSpotMaintenanceStrategiesCapacityRebalancePtrOutput) Elem() SpotFleetRequestSpotMaintenanceStrategiesCapacityRebalanceOutput {
+	return o.ApplyT(func(v *SpotFleetRequestSpotMaintenanceStrategiesCapacityRebalance) SpotFleetRequestSpotMaintenanceStrategiesCapacityRebalance {
+		return *v
+	}).(SpotFleetRequestSpotMaintenanceStrategiesCapacityRebalanceOutput)
+}
+
+// The replacement strategy to use. Only available for spot fleets with `fleetType` set to `maintain`. Valid values: `launch`.
+func (o SpotFleetRequestSpotMaintenanceStrategiesCapacityRebalancePtrOutput) ReplacementStrategy() pulumi.StringPtrOutput {
+	return o.ApplyT(func(v *SpotFleetRequestSpotMaintenanceStrategiesCapacityRebalance) *string {
+		if v == nil {
+			return nil
+		}
+		return v.ReplacementStrategy
+	}).(pulumi.StringPtrOutput)
+}
+
 type SpotInstanceRequestCreditSpecification struct {
 	// The credit option for CPU usage. Can be `"standard"` or `"unlimited"`. T3 instances are launched as unlimited by default. T2 instances are launched as standard by default.
 	CpuCredits *string `pulumi:"cpuCredits"`
@@ -9240,7 +9906,7 @@ type SpotInstanceRequestEbsBlockDevice struct {
 	Encrypted *bool `pulumi:"encrypted"`
 	// The amount of provisioned
 	// [IOPS](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-io-characteristics.html).
-	// This must be set with a `volumeType` of `"io1"`.
+	// This must be set with a `volumeType` of `"io1/io2"`.
 	Iops *int `pulumi:"iops"`
 	// Amazon Resource Name (ARN) of the KMS Key to use when encrypting the volume. Must be configured to perform drift detection.
 	KmsKeyId *string `pulumi:"kmsKeyId"`
@@ -9249,8 +9915,8 @@ type SpotInstanceRequestEbsBlockDevice struct {
 	VolumeId   *string `pulumi:"volumeId"`
 	// The size of the volume in gibibytes (GiB).
 	VolumeSize *int `pulumi:"volumeSize"`
-	// The type of volume. Can be `"standard"`, `"gp2"`,
-	// or `"io1"`. (Default: `"gp2"`).
+	// The type of volume. Can be `"standard"`, `"gp2"`, `"io1"`
+	// or `"io2"`. (Default: `"gp2"`).
 	VolumeType *string `pulumi:"volumeType"`
 }
 
@@ -9277,7 +9943,7 @@ type SpotInstanceRequestEbsBlockDeviceArgs struct {
 	Encrypted pulumi.BoolPtrInput `pulumi:"encrypted"`
 	// The amount of provisioned
 	// [IOPS](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-io-characteristics.html).
-	// This must be set with a `volumeType` of `"io1"`.
+	// This must be set with a `volumeType` of `"io1/io2"`.
 	Iops pulumi.IntPtrInput `pulumi:"iops"`
 	// Amazon Resource Name (ARN) of the KMS Key to use when encrypting the volume. Must be configured to perform drift detection.
 	KmsKeyId pulumi.StringPtrInput `pulumi:"kmsKeyId"`
@@ -9286,8 +9952,8 @@ type SpotInstanceRequestEbsBlockDeviceArgs struct {
 	VolumeId   pulumi.StringPtrInput `pulumi:"volumeId"`
 	// The size of the volume in gibibytes (GiB).
 	VolumeSize pulumi.IntPtrInput `pulumi:"volumeSize"`
-	// The type of volume. Can be `"standard"`, `"gp2"`,
-	// or `"io1"`. (Default: `"gp2"`).
+	// The type of volume. Can be `"standard"`, `"gp2"`, `"io1"`
+	// or `"io2"`. (Default: `"gp2"`).
 	VolumeType pulumi.StringPtrInput `pulumi:"volumeType"`
 }
 
@@ -9362,7 +10028,7 @@ func (o SpotInstanceRequestEbsBlockDeviceOutput) Encrypted() pulumi.BoolPtrOutpu
 
 // The amount of provisioned
 // [IOPS](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-io-characteristics.html).
-// This must be set with a `volumeType` of `"io1"`.
+// This must be set with a `volumeType` of `"io1/io2"`.
 func (o SpotInstanceRequestEbsBlockDeviceOutput) Iops() pulumi.IntPtrOutput {
 	return o.ApplyT(func(v SpotInstanceRequestEbsBlockDevice) *int { return v.Iops }).(pulumi.IntPtrOutput)
 }
@@ -9386,8 +10052,8 @@ func (o SpotInstanceRequestEbsBlockDeviceOutput) VolumeSize() pulumi.IntPtrOutpu
 	return o.ApplyT(func(v SpotInstanceRequestEbsBlockDevice) *int { return v.VolumeSize }).(pulumi.IntPtrOutput)
 }
 
-// The type of volume. Can be `"standard"`, `"gp2"`,
-// or `"io1"`. (Default: `"gp2"`).
+// The type of volume. Can be `"standard"`, `"gp2"`, `"io1"`
+// or `"io2"`. (Default: `"gp2"`).
 func (o SpotInstanceRequestEbsBlockDeviceOutput) VolumeType() pulumi.StringPtrOutput {
 	return o.ApplyT(func(v SpotInstanceRequestEbsBlockDevice) *string { return v.VolumeType }).(pulumi.StringPtrOutput)
 }
@@ -9827,7 +10493,7 @@ type SpotInstanceRequestRootBlockDevice struct {
 	Encrypted *bool `pulumi:"encrypted"`
 	// The amount of provisioned
 	// [IOPS](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-io-characteristics.html).
-	// This is only valid for `volumeType` of `"io1"`, and must be specified if
+	// This is only valid for `volumeType` of `"io1/io2"`, and must be specified if
 	// using that type
 	Iops *int `pulumi:"iops"`
 	// Amazon Resource Name (ARN) of the KMS Key to use when encrypting the volume. Must be configured to perform drift detection.
@@ -9835,7 +10501,7 @@ type SpotInstanceRequestRootBlockDevice struct {
 	VolumeId *string `pulumi:"volumeId"`
 	// The size of the volume in gibibytes (GiB).
 	VolumeSize *int `pulumi:"volumeSize"`
-	// The type of volume. Can be `"standard"`, `"gp2"`, `"io1"`, `"sc1"`, or `"st1"`. (Default: `"standard"`).
+	// The type of volume. Can be `"standard"`, `"gp2"`, `"io1"`, `"io2"`, `"sc1"`, or `"st1"`. (Default: `"gp2"`).
 	VolumeType *string `pulumi:"volumeType"`
 }
 
@@ -9860,7 +10526,7 @@ type SpotInstanceRequestRootBlockDeviceArgs struct {
 	Encrypted pulumi.BoolPtrInput `pulumi:"encrypted"`
 	// The amount of provisioned
 	// [IOPS](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-io-characteristics.html).
-	// This is only valid for `volumeType` of `"io1"`, and must be specified if
+	// This is only valid for `volumeType` of `"io1/io2"`, and must be specified if
 	// using that type
 	Iops pulumi.IntPtrInput `pulumi:"iops"`
 	// Amazon Resource Name (ARN) of the KMS Key to use when encrypting the volume. Must be configured to perform drift detection.
@@ -9868,7 +10534,7 @@ type SpotInstanceRequestRootBlockDeviceArgs struct {
 	VolumeId pulumi.StringPtrInput `pulumi:"volumeId"`
 	// The size of the volume in gibibytes (GiB).
 	VolumeSize pulumi.IntPtrInput `pulumi:"volumeSize"`
-	// The type of volume. Can be `"standard"`, `"gp2"`, `"io1"`, `"sc1"`, or `"st1"`. (Default: `"standard"`).
+	// The type of volume. Can be `"standard"`, `"gp2"`, `"io1"`, `"io2"`, `"sc1"`, or `"st1"`. (Default: `"gp2"`).
 	VolumeType pulumi.StringPtrInput `pulumi:"volumeType"`
 }
 
@@ -9967,7 +10633,7 @@ func (o SpotInstanceRequestRootBlockDeviceOutput) Encrypted() pulumi.BoolPtrOutp
 
 // The amount of provisioned
 // [IOPS](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-io-characteristics.html).
-// This is only valid for `volumeType` of `"io1"`, and must be specified if
+// This is only valid for `volumeType` of `"io1/io2"`, and must be specified if
 // using that type
 func (o SpotInstanceRequestRootBlockDeviceOutput) Iops() pulumi.IntPtrOutput {
 	return o.ApplyT(func(v SpotInstanceRequestRootBlockDevice) *int { return v.Iops }).(pulumi.IntPtrOutput)
@@ -9987,7 +10653,7 @@ func (o SpotInstanceRequestRootBlockDeviceOutput) VolumeSize() pulumi.IntPtrOutp
 	return o.ApplyT(func(v SpotInstanceRequestRootBlockDevice) *int { return v.VolumeSize }).(pulumi.IntPtrOutput)
 }
 
-// The type of volume. Can be `"standard"`, `"gp2"`, `"io1"`, `"sc1"`, or `"st1"`. (Default: `"standard"`).
+// The type of volume. Can be `"standard"`, `"gp2"`, `"io1"`, `"io2"`, `"sc1"`, or `"st1"`. (Default: `"gp2"`).
 func (o SpotInstanceRequestRootBlockDeviceOutput) VolumeType() pulumi.StringPtrOutput {
 	return o.ApplyT(func(v SpotInstanceRequestRootBlockDevice) *string { return v.VolumeType }).(pulumi.StringPtrOutput)
 }
@@ -10043,7 +10709,7 @@ func (o SpotInstanceRequestRootBlockDevicePtrOutput) Encrypted() pulumi.BoolPtrO
 
 // The amount of provisioned
 // [IOPS](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-io-characteristics.html).
-// This is only valid for `volumeType` of `"io1"`, and must be specified if
+// This is only valid for `volumeType` of `"io1/io2"`, and must be specified if
 // using that type
 func (o SpotInstanceRequestRootBlockDevicePtrOutput) Iops() pulumi.IntPtrOutput {
 	return o.ApplyT(func(v *SpotInstanceRequestRootBlockDevice) *int {
@@ -10083,7 +10749,7 @@ func (o SpotInstanceRequestRootBlockDevicePtrOutput) VolumeSize() pulumi.IntPtrO
 	}).(pulumi.IntPtrOutput)
 }
 
-// The type of volume. Can be `"standard"`, `"gp2"`, `"io1"`, `"sc1"`, or `"st1"`. (Default: `"standard"`).
+// The type of volume. Can be `"standard"`, `"gp2"`, `"io1"`, `"io2"`, `"sc1"`, or `"st1"`. (Default: `"gp2"`).
 func (o SpotInstanceRequestRootBlockDevicePtrOutput) VolumeType() pulumi.StringPtrOutput {
 	return o.ApplyT(func(v *SpotInstanceRequestRootBlockDevice) *string {
 		if v == nil {
@@ -12546,6 +13212,448 @@ func (o GetInstanceRootBlockDeviceArrayOutput) Index(i pulumi.IntInput) GetInsta
 	}).(GetInstanceRootBlockDeviceOutput)
 }
 
+type GetInstanceTypeFpga struct {
+	Count        int    `pulumi:"count"`
+	Manufacturer string `pulumi:"manufacturer"`
+	// Size of the instance memory, in MiB.
+	MemorySize int    `pulumi:"memorySize"`
+	Name       string `pulumi:"name"`
+}
+
+// GetInstanceTypeFpgaInput is an input type that accepts GetInstanceTypeFpgaArgs and GetInstanceTypeFpgaOutput values.
+// You can construct a concrete instance of `GetInstanceTypeFpgaInput` via:
+//
+//          GetInstanceTypeFpgaArgs{...}
+type GetInstanceTypeFpgaInput interface {
+	pulumi.Input
+
+	ToGetInstanceTypeFpgaOutput() GetInstanceTypeFpgaOutput
+	ToGetInstanceTypeFpgaOutputWithContext(context.Context) GetInstanceTypeFpgaOutput
+}
+
+type GetInstanceTypeFpgaArgs struct {
+	Count        pulumi.IntInput    `pulumi:"count"`
+	Manufacturer pulumi.StringInput `pulumi:"manufacturer"`
+	// Size of the instance memory, in MiB.
+	MemorySize pulumi.IntInput    `pulumi:"memorySize"`
+	Name       pulumi.StringInput `pulumi:"name"`
+}
+
+func (GetInstanceTypeFpgaArgs) ElementType() reflect.Type {
+	return reflect.TypeOf((*GetInstanceTypeFpga)(nil)).Elem()
+}
+
+func (i GetInstanceTypeFpgaArgs) ToGetInstanceTypeFpgaOutput() GetInstanceTypeFpgaOutput {
+	return i.ToGetInstanceTypeFpgaOutputWithContext(context.Background())
+}
+
+func (i GetInstanceTypeFpgaArgs) ToGetInstanceTypeFpgaOutputWithContext(ctx context.Context) GetInstanceTypeFpgaOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(GetInstanceTypeFpgaOutput)
+}
+
+// GetInstanceTypeFpgaArrayInput is an input type that accepts GetInstanceTypeFpgaArray and GetInstanceTypeFpgaArrayOutput values.
+// You can construct a concrete instance of `GetInstanceTypeFpgaArrayInput` via:
+//
+//          GetInstanceTypeFpgaArray{ GetInstanceTypeFpgaArgs{...} }
+type GetInstanceTypeFpgaArrayInput interface {
+	pulumi.Input
+
+	ToGetInstanceTypeFpgaArrayOutput() GetInstanceTypeFpgaArrayOutput
+	ToGetInstanceTypeFpgaArrayOutputWithContext(context.Context) GetInstanceTypeFpgaArrayOutput
+}
+
+type GetInstanceTypeFpgaArray []GetInstanceTypeFpgaInput
+
+func (GetInstanceTypeFpgaArray) ElementType() reflect.Type {
+	return reflect.TypeOf((*[]GetInstanceTypeFpga)(nil)).Elem()
+}
+
+func (i GetInstanceTypeFpgaArray) ToGetInstanceTypeFpgaArrayOutput() GetInstanceTypeFpgaArrayOutput {
+	return i.ToGetInstanceTypeFpgaArrayOutputWithContext(context.Background())
+}
+
+func (i GetInstanceTypeFpgaArray) ToGetInstanceTypeFpgaArrayOutputWithContext(ctx context.Context) GetInstanceTypeFpgaArrayOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(GetInstanceTypeFpgaArrayOutput)
+}
+
+type GetInstanceTypeFpgaOutput struct{ *pulumi.OutputState }
+
+func (GetInstanceTypeFpgaOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*GetInstanceTypeFpga)(nil)).Elem()
+}
+
+func (o GetInstanceTypeFpgaOutput) ToGetInstanceTypeFpgaOutput() GetInstanceTypeFpgaOutput {
+	return o
+}
+
+func (o GetInstanceTypeFpgaOutput) ToGetInstanceTypeFpgaOutputWithContext(ctx context.Context) GetInstanceTypeFpgaOutput {
+	return o
+}
+
+func (o GetInstanceTypeFpgaOutput) Count() pulumi.IntOutput {
+	return o.ApplyT(func(v GetInstanceTypeFpga) int { return v.Count }).(pulumi.IntOutput)
+}
+
+func (o GetInstanceTypeFpgaOutput) Manufacturer() pulumi.StringOutput {
+	return o.ApplyT(func(v GetInstanceTypeFpga) string { return v.Manufacturer }).(pulumi.StringOutput)
+}
+
+// Size of the instance memory, in MiB.
+func (o GetInstanceTypeFpgaOutput) MemorySize() pulumi.IntOutput {
+	return o.ApplyT(func(v GetInstanceTypeFpga) int { return v.MemorySize }).(pulumi.IntOutput)
+}
+
+func (o GetInstanceTypeFpgaOutput) Name() pulumi.StringOutput {
+	return o.ApplyT(func(v GetInstanceTypeFpga) string { return v.Name }).(pulumi.StringOutput)
+}
+
+type GetInstanceTypeFpgaArrayOutput struct{ *pulumi.OutputState }
+
+func (GetInstanceTypeFpgaArrayOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*[]GetInstanceTypeFpga)(nil)).Elem()
+}
+
+func (o GetInstanceTypeFpgaArrayOutput) ToGetInstanceTypeFpgaArrayOutput() GetInstanceTypeFpgaArrayOutput {
+	return o
+}
+
+func (o GetInstanceTypeFpgaArrayOutput) ToGetInstanceTypeFpgaArrayOutputWithContext(ctx context.Context) GetInstanceTypeFpgaArrayOutput {
+	return o
+}
+
+func (o GetInstanceTypeFpgaArrayOutput) Index(i pulumi.IntInput) GetInstanceTypeFpgaOutput {
+	return pulumi.All(o, i).ApplyT(func(vs []interface{}) GetInstanceTypeFpga {
+		return vs[0].([]GetInstanceTypeFpga)[vs[1].(int)]
+	}).(GetInstanceTypeFpgaOutput)
+}
+
+type GetInstanceTypeGpus struct {
+	Count        int    `pulumi:"count"`
+	Manufacturer string `pulumi:"manufacturer"`
+	// Size of the instance memory, in MiB.
+	MemorySize int    `pulumi:"memorySize"`
+	Name       string `pulumi:"name"`
+}
+
+// GetInstanceTypeGpusInput is an input type that accepts GetInstanceTypeGpusArgs and GetInstanceTypeGpusOutput values.
+// You can construct a concrete instance of `GetInstanceTypeGpusInput` via:
+//
+//          GetInstanceTypeGpusArgs{...}
+type GetInstanceTypeGpusInput interface {
+	pulumi.Input
+
+	ToGetInstanceTypeGpusOutput() GetInstanceTypeGpusOutput
+	ToGetInstanceTypeGpusOutputWithContext(context.Context) GetInstanceTypeGpusOutput
+}
+
+type GetInstanceTypeGpusArgs struct {
+	Count        pulumi.IntInput    `pulumi:"count"`
+	Manufacturer pulumi.StringInput `pulumi:"manufacturer"`
+	// Size of the instance memory, in MiB.
+	MemorySize pulumi.IntInput    `pulumi:"memorySize"`
+	Name       pulumi.StringInput `pulumi:"name"`
+}
+
+func (GetInstanceTypeGpusArgs) ElementType() reflect.Type {
+	return reflect.TypeOf((*GetInstanceTypeGpus)(nil)).Elem()
+}
+
+func (i GetInstanceTypeGpusArgs) ToGetInstanceTypeGpusOutput() GetInstanceTypeGpusOutput {
+	return i.ToGetInstanceTypeGpusOutputWithContext(context.Background())
+}
+
+func (i GetInstanceTypeGpusArgs) ToGetInstanceTypeGpusOutputWithContext(ctx context.Context) GetInstanceTypeGpusOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(GetInstanceTypeGpusOutput)
+}
+
+// GetInstanceTypeGpusArrayInput is an input type that accepts GetInstanceTypeGpusArray and GetInstanceTypeGpusArrayOutput values.
+// You can construct a concrete instance of `GetInstanceTypeGpusArrayInput` via:
+//
+//          GetInstanceTypeGpusArray{ GetInstanceTypeGpusArgs{...} }
+type GetInstanceTypeGpusArrayInput interface {
+	pulumi.Input
+
+	ToGetInstanceTypeGpusArrayOutput() GetInstanceTypeGpusArrayOutput
+	ToGetInstanceTypeGpusArrayOutputWithContext(context.Context) GetInstanceTypeGpusArrayOutput
+}
+
+type GetInstanceTypeGpusArray []GetInstanceTypeGpusInput
+
+func (GetInstanceTypeGpusArray) ElementType() reflect.Type {
+	return reflect.TypeOf((*[]GetInstanceTypeGpus)(nil)).Elem()
+}
+
+func (i GetInstanceTypeGpusArray) ToGetInstanceTypeGpusArrayOutput() GetInstanceTypeGpusArrayOutput {
+	return i.ToGetInstanceTypeGpusArrayOutputWithContext(context.Background())
+}
+
+func (i GetInstanceTypeGpusArray) ToGetInstanceTypeGpusArrayOutputWithContext(ctx context.Context) GetInstanceTypeGpusArrayOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(GetInstanceTypeGpusArrayOutput)
+}
+
+type GetInstanceTypeGpusOutput struct{ *pulumi.OutputState }
+
+func (GetInstanceTypeGpusOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*GetInstanceTypeGpus)(nil)).Elem()
+}
+
+func (o GetInstanceTypeGpusOutput) ToGetInstanceTypeGpusOutput() GetInstanceTypeGpusOutput {
+	return o
+}
+
+func (o GetInstanceTypeGpusOutput) ToGetInstanceTypeGpusOutputWithContext(ctx context.Context) GetInstanceTypeGpusOutput {
+	return o
+}
+
+func (o GetInstanceTypeGpusOutput) Count() pulumi.IntOutput {
+	return o.ApplyT(func(v GetInstanceTypeGpus) int { return v.Count }).(pulumi.IntOutput)
+}
+
+func (o GetInstanceTypeGpusOutput) Manufacturer() pulumi.StringOutput {
+	return o.ApplyT(func(v GetInstanceTypeGpus) string { return v.Manufacturer }).(pulumi.StringOutput)
+}
+
+// Size of the instance memory, in MiB.
+func (o GetInstanceTypeGpusOutput) MemorySize() pulumi.IntOutput {
+	return o.ApplyT(func(v GetInstanceTypeGpus) int { return v.MemorySize }).(pulumi.IntOutput)
+}
+
+func (o GetInstanceTypeGpusOutput) Name() pulumi.StringOutput {
+	return o.ApplyT(func(v GetInstanceTypeGpus) string { return v.Name }).(pulumi.StringOutput)
+}
+
+type GetInstanceTypeGpusArrayOutput struct{ *pulumi.OutputState }
+
+func (GetInstanceTypeGpusArrayOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*[]GetInstanceTypeGpus)(nil)).Elem()
+}
+
+func (o GetInstanceTypeGpusArrayOutput) ToGetInstanceTypeGpusArrayOutput() GetInstanceTypeGpusArrayOutput {
+	return o
+}
+
+func (o GetInstanceTypeGpusArrayOutput) ToGetInstanceTypeGpusArrayOutputWithContext(ctx context.Context) GetInstanceTypeGpusArrayOutput {
+	return o
+}
+
+func (o GetInstanceTypeGpusArrayOutput) Index(i pulumi.IntInput) GetInstanceTypeGpusOutput {
+	return pulumi.All(o, i).ApplyT(func(vs []interface{}) GetInstanceTypeGpus {
+		return vs[0].([]GetInstanceTypeGpus)[vs[1].(int)]
+	}).(GetInstanceTypeGpusOutput)
+}
+
+type GetInstanceTypeInferenceAccelerator struct {
+	Count        int    `pulumi:"count"`
+	Manufacturer string `pulumi:"manufacturer"`
+	Name         string `pulumi:"name"`
+}
+
+// GetInstanceTypeInferenceAcceleratorInput is an input type that accepts GetInstanceTypeInferenceAcceleratorArgs and GetInstanceTypeInferenceAcceleratorOutput values.
+// You can construct a concrete instance of `GetInstanceTypeInferenceAcceleratorInput` via:
+//
+//          GetInstanceTypeInferenceAcceleratorArgs{...}
+type GetInstanceTypeInferenceAcceleratorInput interface {
+	pulumi.Input
+
+	ToGetInstanceTypeInferenceAcceleratorOutput() GetInstanceTypeInferenceAcceleratorOutput
+	ToGetInstanceTypeInferenceAcceleratorOutputWithContext(context.Context) GetInstanceTypeInferenceAcceleratorOutput
+}
+
+type GetInstanceTypeInferenceAcceleratorArgs struct {
+	Count        pulumi.IntInput    `pulumi:"count"`
+	Manufacturer pulumi.StringInput `pulumi:"manufacturer"`
+	Name         pulumi.StringInput `pulumi:"name"`
+}
+
+func (GetInstanceTypeInferenceAcceleratorArgs) ElementType() reflect.Type {
+	return reflect.TypeOf((*GetInstanceTypeInferenceAccelerator)(nil)).Elem()
+}
+
+func (i GetInstanceTypeInferenceAcceleratorArgs) ToGetInstanceTypeInferenceAcceleratorOutput() GetInstanceTypeInferenceAcceleratorOutput {
+	return i.ToGetInstanceTypeInferenceAcceleratorOutputWithContext(context.Background())
+}
+
+func (i GetInstanceTypeInferenceAcceleratorArgs) ToGetInstanceTypeInferenceAcceleratorOutputWithContext(ctx context.Context) GetInstanceTypeInferenceAcceleratorOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(GetInstanceTypeInferenceAcceleratorOutput)
+}
+
+// GetInstanceTypeInferenceAcceleratorArrayInput is an input type that accepts GetInstanceTypeInferenceAcceleratorArray and GetInstanceTypeInferenceAcceleratorArrayOutput values.
+// You can construct a concrete instance of `GetInstanceTypeInferenceAcceleratorArrayInput` via:
+//
+//          GetInstanceTypeInferenceAcceleratorArray{ GetInstanceTypeInferenceAcceleratorArgs{...} }
+type GetInstanceTypeInferenceAcceleratorArrayInput interface {
+	pulumi.Input
+
+	ToGetInstanceTypeInferenceAcceleratorArrayOutput() GetInstanceTypeInferenceAcceleratorArrayOutput
+	ToGetInstanceTypeInferenceAcceleratorArrayOutputWithContext(context.Context) GetInstanceTypeInferenceAcceleratorArrayOutput
+}
+
+type GetInstanceTypeInferenceAcceleratorArray []GetInstanceTypeInferenceAcceleratorInput
+
+func (GetInstanceTypeInferenceAcceleratorArray) ElementType() reflect.Type {
+	return reflect.TypeOf((*[]GetInstanceTypeInferenceAccelerator)(nil)).Elem()
+}
+
+func (i GetInstanceTypeInferenceAcceleratorArray) ToGetInstanceTypeInferenceAcceleratorArrayOutput() GetInstanceTypeInferenceAcceleratorArrayOutput {
+	return i.ToGetInstanceTypeInferenceAcceleratorArrayOutputWithContext(context.Background())
+}
+
+func (i GetInstanceTypeInferenceAcceleratorArray) ToGetInstanceTypeInferenceAcceleratorArrayOutputWithContext(ctx context.Context) GetInstanceTypeInferenceAcceleratorArrayOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(GetInstanceTypeInferenceAcceleratorArrayOutput)
+}
+
+type GetInstanceTypeInferenceAcceleratorOutput struct{ *pulumi.OutputState }
+
+func (GetInstanceTypeInferenceAcceleratorOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*GetInstanceTypeInferenceAccelerator)(nil)).Elem()
+}
+
+func (o GetInstanceTypeInferenceAcceleratorOutput) ToGetInstanceTypeInferenceAcceleratorOutput() GetInstanceTypeInferenceAcceleratorOutput {
+	return o
+}
+
+func (o GetInstanceTypeInferenceAcceleratorOutput) ToGetInstanceTypeInferenceAcceleratorOutputWithContext(ctx context.Context) GetInstanceTypeInferenceAcceleratorOutput {
+	return o
+}
+
+func (o GetInstanceTypeInferenceAcceleratorOutput) Count() pulumi.IntOutput {
+	return o.ApplyT(func(v GetInstanceTypeInferenceAccelerator) int { return v.Count }).(pulumi.IntOutput)
+}
+
+func (o GetInstanceTypeInferenceAcceleratorOutput) Manufacturer() pulumi.StringOutput {
+	return o.ApplyT(func(v GetInstanceTypeInferenceAccelerator) string { return v.Manufacturer }).(pulumi.StringOutput)
+}
+
+func (o GetInstanceTypeInferenceAcceleratorOutput) Name() pulumi.StringOutput {
+	return o.ApplyT(func(v GetInstanceTypeInferenceAccelerator) string { return v.Name }).(pulumi.StringOutput)
+}
+
+type GetInstanceTypeInferenceAcceleratorArrayOutput struct{ *pulumi.OutputState }
+
+func (GetInstanceTypeInferenceAcceleratorArrayOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*[]GetInstanceTypeInferenceAccelerator)(nil)).Elem()
+}
+
+func (o GetInstanceTypeInferenceAcceleratorArrayOutput) ToGetInstanceTypeInferenceAcceleratorArrayOutput() GetInstanceTypeInferenceAcceleratorArrayOutput {
+	return o
+}
+
+func (o GetInstanceTypeInferenceAcceleratorArrayOutput) ToGetInstanceTypeInferenceAcceleratorArrayOutputWithContext(ctx context.Context) GetInstanceTypeInferenceAcceleratorArrayOutput {
+	return o
+}
+
+func (o GetInstanceTypeInferenceAcceleratorArrayOutput) Index(i pulumi.IntInput) GetInstanceTypeInferenceAcceleratorOutput {
+	return pulumi.All(o, i).ApplyT(func(vs []interface{}) GetInstanceTypeInferenceAccelerator {
+		return vs[0].([]GetInstanceTypeInferenceAccelerator)[vs[1].(int)]
+	}).(GetInstanceTypeInferenceAcceleratorOutput)
+}
+
+type GetInstanceTypeInstanceDisk struct {
+	Count int    `pulumi:"count"`
+	Size  int    `pulumi:"size"`
+	Type  string `pulumi:"type"`
+}
+
+// GetInstanceTypeInstanceDiskInput is an input type that accepts GetInstanceTypeInstanceDiskArgs and GetInstanceTypeInstanceDiskOutput values.
+// You can construct a concrete instance of `GetInstanceTypeInstanceDiskInput` via:
+//
+//          GetInstanceTypeInstanceDiskArgs{...}
+type GetInstanceTypeInstanceDiskInput interface {
+	pulumi.Input
+
+	ToGetInstanceTypeInstanceDiskOutput() GetInstanceTypeInstanceDiskOutput
+	ToGetInstanceTypeInstanceDiskOutputWithContext(context.Context) GetInstanceTypeInstanceDiskOutput
+}
+
+type GetInstanceTypeInstanceDiskArgs struct {
+	Count pulumi.IntInput    `pulumi:"count"`
+	Size  pulumi.IntInput    `pulumi:"size"`
+	Type  pulumi.StringInput `pulumi:"type"`
+}
+
+func (GetInstanceTypeInstanceDiskArgs) ElementType() reflect.Type {
+	return reflect.TypeOf((*GetInstanceTypeInstanceDisk)(nil)).Elem()
+}
+
+func (i GetInstanceTypeInstanceDiskArgs) ToGetInstanceTypeInstanceDiskOutput() GetInstanceTypeInstanceDiskOutput {
+	return i.ToGetInstanceTypeInstanceDiskOutputWithContext(context.Background())
+}
+
+func (i GetInstanceTypeInstanceDiskArgs) ToGetInstanceTypeInstanceDiskOutputWithContext(ctx context.Context) GetInstanceTypeInstanceDiskOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(GetInstanceTypeInstanceDiskOutput)
+}
+
+// GetInstanceTypeInstanceDiskArrayInput is an input type that accepts GetInstanceTypeInstanceDiskArray and GetInstanceTypeInstanceDiskArrayOutput values.
+// You can construct a concrete instance of `GetInstanceTypeInstanceDiskArrayInput` via:
+//
+//          GetInstanceTypeInstanceDiskArray{ GetInstanceTypeInstanceDiskArgs{...} }
+type GetInstanceTypeInstanceDiskArrayInput interface {
+	pulumi.Input
+
+	ToGetInstanceTypeInstanceDiskArrayOutput() GetInstanceTypeInstanceDiskArrayOutput
+	ToGetInstanceTypeInstanceDiskArrayOutputWithContext(context.Context) GetInstanceTypeInstanceDiskArrayOutput
+}
+
+type GetInstanceTypeInstanceDiskArray []GetInstanceTypeInstanceDiskInput
+
+func (GetInstanceTypeInstanceDiskArray) ElementType() reflect.Type {
+	return reflect.TypeOf((*[]GetInstanceTypeInstanceDisk)(nil)).Elem()
+}
+
+func (i GetInstanceTypeInstanceDiskArray) ToGetInstanceTypeInstanceDiskArrayOutput() GetInstanceTypeInstanceDiskArrayOutput {
+	return i.ToGetInstanceTypeInstanceDiskArrayOutputWithContext(context.Background())
+}
+
+func (i GetInstanceTypeInstanceDiskArray) ToGetInstanceTypeInstanceDiskArrayOutputWithContext(ctx context.Context) GetInstanceTypeInstanceDiskArrayOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(GetInstanceTypeInstanceDiskArrayOutput)
+}
+
+type GetInstanceTypeInstanceDiskOutput struct{ *pulumi.OutputState }
+
+func (GetInstanceTypeInstanceDiskOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*GetInstanceTypeInstanceDisk)(nil)).Elem()
+}
+
+func (o GetInstanceTypeInstanceDiskOutput) ToGetInstanceTypeInstanceDiskOutput() GetInstanceTypeInstanceDiskOutput {
+	return o
+}
+
+func (o GetInstanceTypeInstanceDiskOutput) ToGetInstanceTypeInstanceDiskOutputWithContext(ctx context.Context) GetInstanceTypeInstanceDiskOutput {
+	return o
+}
+
+func (o GetInstanceTypeInstanceDiskOutput) Count() pulumi.IntOutput {
+	return o.ApplyT(func(v GetInstanceTypeInstanceDisk) int { return v.Count }).(pulumi.IntOutput)
+}
+
+func (o GetInstanceTypeInstanceDiskOutput) Size() pulumi.IntOutput {
+	return o.ApplyT(func(v GetInstanceTypeInstanceDisk) int { return v.Size }).(pulumi.IntOutput)
+}
+
+func (o GetInstanceTypeInstanceDiskOutput) Type() pulumi.StringOutput {
+	return o.ApplyT(func(v GetInstanceTypeInstanceDisk) string { return v.Type }).(pulumi.StringOutput)
+}
+
+type GetInstanceTypeInstanceDiskArrayOutput struct{ *pulumi.OutputState }
+
+func (GetInstanceTypeInstanceDiskArrayOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*[]GetInstanceTypeInstanceDisk)(nil)).Elem()
+}
+
+func (o GetInstanceTypeInstanceDiskArrayOutput) ToGetInstanceTypeInstanceDiskArrayOutput() GetInstanceTypeInstanceDiskArrayOutput {
+	return o
+}
+
+func (o GetInstanceTypeInstanceDiskArrayOutput) ToGetInstanceTypeInstanceDiskArrayOutputWithContext(ctx context.Context) GetInstanceTypeInstanceDiskArrayOutput {
+	return o
+}
+
+func (o GetInstanceTypeInstanceDiskArrayOutput) Index(i pulumi.IntInput) GetInstanceTypeInstanceDiskOutput {
+	return pulumi.All(o, i).ApplyT(func(vs []interface{}) GetInstanceTypeInstanceDisk {
+		return vs[0].([]GetInstanceTypeInstanceDisk)[vs[1].(int)]
+	}).(GetInstanceTypeInstanceDiskOutput)
+}
+
 type GetInstanceTypeOfferingFilter struct {
 	// Name of the filter. The `location` filter depends on the top-level `locationType` argument and if not specified, defaults to the current region.
 	Name string `pulumi:"name"`
@@ -13085,6 +14193,8 @@ type GetLaunchConfigurationEbsBlockDevice struct {
 	Encrypted bool `pulumi:"encrypted"`
 	// The provisioned IOPs of the volume.
 	Iops int `pulumi:"iops"`
+	// Whether the device in the block device mapping of the AMI is suppressed.
+	NoDevice bool `pulumi:"noDevice"`
 	// The Snapshot ID of the mount.
 	SnapshotId string `pulumi:"snapshotId"`
 	// The Size of the volume.
@@ -13113,6 +14223,8 @@ type GetLaunchConfigurationEbsBlockDeviceArgs struct {
 	Encrypted pulumi.BoolInput `pulumi:"encrypted"`
 	// The provisioned IOPs of the volume.
 	Iops pulumi.IntInput `pulumi:"iops"`
+	// Whether the device in the block device mapping of the AMI is suppressed.
+	NoDevice pulumi.BoolInput `pulumi:"noDevice"`
 	// The Snapshot ID of the mount.
 	SnapshotId pulumi.StringInput `pulumi:"snapshotId"`
 	// The Size of the volume.
@@ -13190,6 +14302,11 @@ func (o GetLaunchConfigurationEbsBlockDeviceOutput) Encrypted() pulumi.BoolOutpu
 // The provisioned IOPs of the volume.
 func (o GetLaunchConfigurationEbsBlockDeviceOutput) Iops() pulumi.IntOutput {
 	return o.ApplyT(func(v GetLaunchConfigurationEbsBlockDevice) int { return v.Iops }).(pulumi.IntOutput)
+}
+
+// Whether the device in the block device mapping of the AMI is suppressed.
+func (o GetLaunchConfigurationEbsBlockDeviceOutput) NoDevice() pulumi.BoolOutput {
+	return o.ApplyT(func(v GetLaunchConfigurationEbsBlockDevice) bool { return v.NoDevice }).(pulumi.BoolOutput)
 }
 
 // The Snapshot ID of the mount.
@@ -13584,6 +14701,7 @@ type GetLaunchTemplateBlockDeviceMappingEb struct {
 	Iops                int    `pulumi:"iops"`
 	KmsKeyId            string `pulumi:"kmsKeyId"`
 	SnapshotId          string `pulumi:"snapshotId"`
+	Throughput          int    `pulumi:"throughput"`
 	VolumeSize          int    `pulumi:"volumeSize"`
 	VolumeType          string `pulumi:"volumeType"`
 }
@@ -13605,6 +14723,7 @@ type GetLaunchTemplateBlockDeviceMappingEbArgs struct {
 	Iops                pulumi.IntInput    `pulumi:"iops"`
 	KmsKeyId            pulumi.StringInput `pulumi:"kmsKeyId"`
 	SnapshotId          pulumi.StringInput `pulumi:"snapshotId"`
+	Throughput          pulumi.IntInput    `pulumi:"throughput"`
 	VolumeSize          pulumi.IntInput    `pulumi:"volumeSize"`
 	VolumeType          pulumi.StringInput `pulumi:"volumeType"`
 }
@@ -13678,6 +14797,10 @@ func (o GetLaunchTemplateBlockDeviceMappingEbOutput) KmsKeyId() pulumi.StringOut
 
 func (o GetLaunchTemplateBlockDeviceMappingEbOutput) SnapshotId() pulumi.StringOutput {
 	return o.ApplyT(func(v GetLaunchTemplateBlockDeviceMappingEb) string { return v.SnapshotId }).(pulumi.StringOutput)
+}
+
+func (o GetLaunchTemplateBlockDeviceMappingEbOutput) Throughput() pulumi.IntOutput {
+	return o.ApplyT(func(v GetLaunchTemplateBlockDeviceMappingEb) int { return v.Throughput }).(pulumi.IntOutput)
 }
 
 func (o GetLaunchTemplateBlockDeviceMappingEbOutput) VolumeSize() pulumi.IntOutput {
@@ -14632,8 +15755,9 @@ func (o GetLaunchTemplateMonitoringArrayOutput) Index(i pulumi.IntInput) GetLaun
 }
 
 type GetLaunchTemplateNetworkInterface struct {
-	AssociatePublicIpAddress *bool `pulumi:"associatePublicIpAddress"`
-	DeleteOnTermination      bool  `pulumi:"deleteOnTermination"`
+	AssociateCarrierIpAddress string `pulumi:"associateCarrierIpAddress"`
+	AssociatePublicIpAddress  *bool  `pulumi:"associatePublicIpAddress"`
+	DeleteOnTermination       *bool  `pulumi:"deleteOnTermination"`
 	// Description of the launch template.
 	Description        string   `pulumi:"description"`
 	DeviceIndex        int      `pulumi:"deviceIndex"`
@@ -14659,8 +15783,9 @@ type GetLaunchTemplateNetworkInterfaceInput interface {
 }
 
 type GetLaunchTemplateNetworkInterfaceArgs struct {
-	AssociatePublicIpAddress pulumi.BoolPtrInput `pulumi:"associatePublicIpAddress"`
-	DeleteOnTermination      pulumi.BoolInput    `pulumi:"deleteOnTermination"`
+	AssociateCarrierIpAddress pulumi.StringInput  `pulumi:"associateCarrierIpAddress"`
+	AssociatePublicIpAddress  pulumi.BoolPtrInput `pulumi:"associatePublicIpAddress"`
+	DeleteOnTermination       pulumi.BoolPtrInput `pulumi:"deleteOnTermination"`
 	// Description of the launch template.
 	Description        pulumi.StringInput      `pulumi:"description"`
 	DeviceIndex        pulumi.IntInput         `pulumi:"deviceIndex"`
@@ -14725,12 +15850,16 @@ func (o GetLaunchTemplateNetworkInterfaceOutput) ToGetLaunchTemplateNetworkInter
 	return o
 }
 
+func (o GetLaunchTemplateNetworkInterfaceOutput) AssociateCarrierIpAddress() pulumi.StringOutput {
+	return o.ApplyT(func(v GetLaunchTemplateNetworkInterface) string { return v.AssociateCarrierIpAddress }).(pulumi.StringOutput)
+}
+
 func (o GetLaunchTemplateNetworkInterfaceOutput) AssociatePublicIpAddress() pulumi.BoolPtrOutput {
 	return o.ApplyT(func(v GetLaunchTemplateNetworkInterface) *bool { return v.AssociatePublicIpAddress }).(pulumi.BoolPtrOutput)
 }
 
-func (o GetLaunchTemplateNetworkInterfaceOutput) DeleteOnTermination() pulumi.BoolOutput {
-	return o.ApplyT(func(v GetLaunchTemplateNetworkInterface) bool { return v.DeleteOnTermination }).(pulumi.BoolOutput)
+func (o GetLaunchTemplateNetworkInterfaceOutput) DeleteOnTermination() pulumi.BoolPtrOutput {
+	return o.ApplyT(func(v GetLaunchTemplateNetworkInterface) *bool { return v.DeleteOnTermination }).(pulumi.BoolPtrOutput)
 }
 
 // Description of the launch template.
@@ -16727,12 +17856,16 @@ type GetRouteTableRoute struct {
 	InstanceId string `pulumi:"instanceId"`
 	// The IPv6 CIDR block of the route.
 	Ipv6CidrBlock string `pulumi:"ipv6CidrBlock"`
+	// The Local Gateway ID.
+	LocalGatewayId string `pulumi:"localGatewayId"`
 	// The NAT Gateway ID.
 	NatGatewayId string `pulumi:"natGatewayId"`
 	// The ID of the elastic network interface (eni) to use.
 	NetworkInterfaceId string `pulumi:"networkInterfaceId"`
 	// The EC2 Transit Gateway ID.
 	TransitGatewayId string `pulumi:"transitGatewayId"`
+	// The VPC Endpoint ID.
+	VpcEndpointId string `pulumi:"vpcEndpointId"`
 	// The VPC Peering ID.
 	VpcPeeringConnectionId string `pulumi:"vpcPeeringConnectionId"`
 }
@@ -16759,12 +17892,16 @@ type GetRouteTableRouteArgs struct {
 	InstanceId pulumi.StringInput `pulumi:"instanceId"`
 	// The IPv6 CIDR block of the route.
 	Ipv6CidrBlock pulumi.StringInput `pulumi:"ipv6CidrBlock"`
+	// The Local Gateway ID.
+	LocalGatewayId pulumi.StringInput `pulumi:"localGatewayId"`
 	// The NAT Gateway ID.
 	NatGatewayId pulumi.StringInput `pulumi:"natGatewayId"`
 	// The ID of the elastic network interface (eni) to use.
 	NetworkInterfaceId pulumi.StringInput `pulumi:"networkInterfaceId"`
 	// The EC2 Transit Gateway ID.
 	TransitGatewayId pulumi.StringInput `pulumi:"transitGatewayId"`
+	// The VPC Endpoint ID.
+	VpcEndpointId pulumi.StringInput `pulumi:"vpcEndpointId"`
 	// The VPC Peering ID.
 	VpcPeeringConnectionId pulumi.StringInput `pulumi:"vpcPeeringConnectionId"`
 }
@@ -16845,6 +17982,11 @@ func (o GetRouteTableRouteOutput) Ipv6CidrBlock() pulumi.StringOutput {
 	return o.ApplyT(func(v GetRouteTableRoute) string { return v.Ipv6CidrBlock }).(pulumi.StringOutput)
 }
 
+// The Local Gateway ID.
+func (o GetRouteTableRouteOutput) LocalGatewayId() pulumi.StringOutput {
+	return o.ApplyT(func(v GetRouteTableRoute) string { return v.LocalGatewayId }).(pulumi.StringOutput)
+}
+
 // The NAT Gateway ID.
 func (o GetRouteTableRouteOutput) NatGatewayId() pulumi.StringOutput {
 	return o.ApplyT(func(v GetRouteTableRoute) string { return v.NatGatewayId }).(pulumi.StringOutput)
@@ -16858,6 +18000,11 @@ func (o GetRouteTableRouteOutput) NetworkInterfaceId() pulumi.StringOutput {
 // The EC2 Transit Gateway ID.
 func (o GetRouteTableRouteOutput) TransitGatewayId() pulumi.StringOutput {
 	return o.ApplyT(func(v GetRouteTableRoute) string { return v.TransitGatewayId }).(pulumi.StringOutput)
+}
+
+// The VPC Endpoint ID.
+func (o GetRouteTableRouteOutput) VpcEndpointId() pulumi.StringOutput {
+	return o.ApplyT(func(v GetRouteTableRoute) string { return v.VpcEndpointId }).(pulumi.StringOutput)
 }
 
 // The VPC Peering ID.
@@ -17207,6 +18354,112 @@ func (o GetSecurityGroupsFilterArrayOutput) Index(i pulumi.IntInput) GetSecurity
 	return pulumi.All(o, i).ApplyT(func(vs []interface{}) GetSecurityGroupsFilter {
 		return vs[0].([]GetSecurityGroupsFilter)[vs[1].(int)]
 	}).(GetSecurityGroupsFilterOutput)
+}
+
+type GetSpotPriceFilter struct {
+	// Name of the filter.
+	Name string `pulumi:"name"`
+	// List of one or more values for the filter.
+	Values []string `pulumi:"values"`
+}
+
+// GetSpotPriceFilterInput is an input type that accepts GetSpotPriceFilterArgs and GetSpotPriceFilterOutput values.
+// You can construct a concrete instance of `GetSpotPriceFilterInput` via:
+//
+//          GetSpotPriceFilterArgs{...}
+type GetSpotPriceFilterInput interface {
+	pulumi.Input
+
+	ToGetSpotPriceFilterOutput() GetSpotPriceFilterOutput
+	ToGetSpotPriceFilterOutputWithContext(context.Context) GetSpotPriceFilterOutput
+}
+
+type GetSpotPriceFilterArgs struct {
+	// Name of the filter.
+	Name pulumi.StringInput `pulumi:"name"`
+	// List of one or more values for the filter.
+	Values pulumi.StringArrayInput `pulumi:"values"`
+}
+
+func (GetSpotPriceFilterArgs) ElementType() reflect.Type {
+	return reflect.TypeOf((*GetSpotPriceFilter)(nil)).Elem()
+}
+
+func (i GetSpotPriceFilterArgs) ToGetSpotPriceFilterOutput() GetSpotPriceFilterOutput {
+	return i.ToGetSpotPriceFilterOutputWithContext(context.Background())
+}
+
+func (i GetSpotPriceFilterArgs) ToGetSpotPriceFilterOutputWithContext(ctx context.Context) GetSpotPriceFilterOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(GetSpotPriceFilterOutput)
+}
+
+// GetSpotPriceFilterArrayInput is an input type that accepts GetSpotPriceFilterArray and GetSpotPriceFilterArrayOutput values.
+// You can construct a concrete instance of `GetSpotPriceFilterArrayInput` via:
+//
+//          GetSpotPriceFilterArray{ GetSpotPriceFilterArgs{...} }
+type GetSpotPriceFilterArrayInput interface {
+	pulumi.Input
+
+	ToGetSpotPriceFilterArrayOutput() GetSpotPriceFilterArrayOutput
+	ToGetSpotPriceFilterArrayOutputWithContext(context.Context) GetSpotPriceFilterArrayOutput
+}
+
+type GetSpotPriceFilterArray []GetSpotPriceFilterInput
+
+func (GetSpotPriceFilterArray) ElementType() reflect.Type {
+	return reflect.TypeOf((*[]GetSpotPriceFilter)(nil)).Elem()
+}
+
+func (i GetSpotPriceFilterArray) ToGetSpotPriceFilterArrayOutput() GetSpotPriceFilterArrayOutput {
+	return i.ToGetSpotPriceFilterArrayOutputWithContext(context.Background())
+}
+
+func (i GetSpotPriceFilterArray) ToGetSpotPriceFilterArrayOutputWithContext(ctx context.Context) GetSpotPriceFilterArrayOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(GetSpotPriceFilterArrayOutput)
+}
+
+type GetSpotPriceFilterOutput struct{ *pulumi.OutputState }
+
+func (GetSpotPriceFilterOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*GetSpotPriceFilter)(nil)).Elem()
+}
+
+func (o GetSpotPriceFilterOutput) ToGetSpotPriceFilterOutput() GetSpotPriceFilterOutput {
+	return o
+}
+
+func (o GetSpotPriceFilterOutput) ToGetSpotPriceFilterOutputWithContext(ctx context.Context) GetSpotPriceFilterOutput {
+	return o
+}
+
+// Name of the filter.
+func (o GetSpotPriceFilterOutput) Name() pulumi.StringOutput {
+	return o.ApplyT(func(v GetSpotPriceFilter) string { return v.Name }).(pulumi.StringOutput)
+}
+
+// List of one or more values for the filter.
+func (o GetSpotPriceFilterOutput) Values() pulumi.StringArrayOutput {
+	return o.ApplyT(func(v GetSpotPriceFilter) []string { return v.Values }).(pulumi.StringArrayOutput)
+}
+
+type GetSpotPriceFilterArrayOutput struct{ *pulumi.OutputState }
+
+func (GetSpotPriceFilterArrayOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*[]GetSpotPriceFilter)(nil)).Elem()
+}
+
+func (o GetSpotPriceFilterArrayOutput) ToGetSpotPriceFilterArrayOutput() GetSpotPriceFilterArrayOutput {
+	return o
+}
+
+func (o GetSpotPriceFilterArrayOutput) ToGetSpotPriceFilterArrayOutputWithContext(ctx context.Context) GetSpotPriceFilterArrayOutput {
+	return o
+}
+
+func (o GetSpotPriceFilterArrayOutput) Index(i pulumi.IntInput) GetSpotPriceFilterOutput {
+	return pulumi.All(o, i).ApplyT(func(vs []interface{}) GetSpotPriceFilter {
+		return vs[0].([]GetSpotPriceFilter)[vs[1].(int)]
+	}).(GetSpotPriceFilterOutput)
 }
 
 type GetSubnetFilter struct {
@@ -18211,6 +19464,118 @@ func (o GetVpcPeeringConnectionFilterArrayOutput) Index(i pulumi.IntInput) GetVp
 	}).(GetVpcPeeringConnectionFilterOutput)
 }
 
+type GetVpcPeeringConnectionsFilter struct {
+	// The name of the field to filter by, as defined by
+	// [the underlying AWS API](http://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_DescribeVpcPeeringConnections.html).
+	Name string `pulumi:"name"`
+	// Set of values that are accepted for the given field.
+	// A VPC Peering Connection will be selected if any one of the given values matches.
+	Values []string `pulumi:"values"`
+}
+
+// GetVpcPeeringConnectionsFilterInput is an input type that accepts GetVpcPeeringConnectionsFilterArgs and GetVpcPeeringConnectionsFilterOutput values.
+// You can construct a concrete instance of `GetVpcPeeringConnectionsFilterInput` via:
+//
+//          GetVpcPeeringConnectionsFilterArgs{...}
+type GetVpcPeeringConnectionsFilterInput interface {
+	pulumi.Input
+
+	ToGetVpcPeeringConnectionsFilterOutput() GetVpcPeeringConnectionsFilterOutput
+	ToGetVpcPeeringConnectionsFilterOutputWithContext(context.Context) GetVpcPeeringConnectionsFilterOutput
+}
+
+type GetVpcPeeringConnectionsFilterArgs struct {
+	// The name of the field to filter by, as defined by
+	// [the underlying AWS API](http://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_DescribeVpcPeeringConnections.html).
+	Name pulumi.StringInput `pulumi:"name"`
+	// Set of values that are accepted for the given field.
+	// A VPC Peering Connection will be selected if any one of the given values matches.
+	Values pulumi.StringArrayInput `pulumi:"values"`
+}
+
+func (GetVpcPeeringConnectionsFilterArgs) ElementType() reflect.Type {
+	return reflect.TypeOf((*GetVpcPeeringConnectionsFilter)(nil)).Elem()
+}
+
+func (i GetVpcPeeringConnectionsFilterArgs) ToGetVpcPeeringConnectionsFilterOutput() GetVpcPeeringConnectionsFilterOutput {
+	return i.ToGetVpcPeeringConnectionsFilterOutputWithContext(context.Background())
+}
+
+func (i GetVpcPeeringConnectionsFilterArgs) ToGetVpcPeeringConnectionsFilterOutputWithContext(ctx context.Context) GetVpcPeeringConnectionsFilterOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(GetVpcPeeringConnectionsFilterOutput)
+}
+
+// GetVpcPeeringConnectionsFilterArrayInput is an input type that accepts GetVpcPeeringConnectionsFilterArray and GetVpcPeeringConnectionsFilterArrayOutput values.
+// You can construct a concrete instance of `GetVpcPeeringConnectionsFilterArrayInput` via:
+//
+//          GetVpcPeeringConnectionsFilterArray{ GetVpcPeeringConnectionsFilterArgs{...} }
+type GetVpcPeeringConnectionsFilterArrayInput interface {
+	pulumi.Input
+
+	ToGetVpcPeeringConnectionsFilterArrayOutput() GetVpcPeeringConnectionsFilterArrayOutput
+	ToGetVpcPeeringConnectionsFilterArrayOutputWithContext(context.Context) GetVpcPeeringConnectionsFilterArrayOutput
+}
+
+type GetVpcPeeringConnectionsFilterArray []GetVpcPeeringConnectionsFilterInput
+
+func (GetVpcPeeringConnectionsFilterArray) ElementType() reflect.Type {
+	return reflect.TypeOf((*[]GetVpcPeeringConnectionsFilter)(nil)).Elem()
+}
+
+func (i GetVpcPeeringConnectionsFilterArray) ToGetVpcPeeringConnectionsFilterArrayOutput() GetVpcPeeringConnectionsFilterArrayOutput {
+	return i.ToGetVpcPeeringConnectionsFilterArrayOutputWithContext(context.Background())
+}
+
+func (i GetVpcPeeringConnectionsFilterArray) ToGetVpcPeeringConnectionsFilterArrayOutputWithContext(ctx context.Context) GetVpcPeeringConnectionsFilterArrayOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(GetVpcPeeringConnectionsFilterArrayOutput)
+}
+
+type GetVpcPeeringConnectionsFilterOutput struct{ *pulumi.OutputState }
+
+func (GetVpcPeeringConnectionsFilterOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*GetVpcPeeringConnectionsFilter)(nil)).Elem()
+}
+
+func (o GetVpcPeeringConnectionsFilterOutput) ToGetVpcPeeringConnectionsFilterOutput() GetVpcPeeringConnectionsFilterOutput {
+	return o
+}
+
+func (o GetVpcPeeringConnectionsFilterOutput) ToGetVpcPeeringConnectionsFilterOutputWithContext(ctx context.Context) GetVpcPeeringConnectionsFilterOutput {
+	return o
+}
+
+// The name of the field to filter by, as defined by
+// [the underlying AWS API](http://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_DescribeVpcPeeringConnections.html).
+func (o GetVpcPeeringConnectionsFilterOutput) Name() pulumi.StringOutput {
+	return o.ApplyT(func(v GetVpcPeeringConnectionsFilter) string { return v.Name }).(pulumi.StringOutput)
+}
+
+// Set of values that are accepted for the given field.
+// A VPC Peering Connection will be selected if any one of the given values matches.
+func (o GetVpcPeeringConnectionsFilterOutput) Values() pulumi.StringArrayOutput {
+	return o.ApplyT(func(v GetVpcPeeringConnectionsFilter) []string { return v.Values }).(pulumi.StringArrayOutput)
+}
+
+type GetVpcPeeringConnectionsFilterArrayOutput struct{ *pulumi.OutputState }
+
+func (GetVpcPeeringConnectionsFilterArrayOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*[]GetVpcPeeringConnectionsFilter)(nil)).Elem()
+}
+
+func (o GetVpcPeeringConnectionsFilterArrayOutput) ToGetVpcPeeringConnectionsFilterArrayOutput() GetVpcPeeringConnectionsFilterArrayOutput {
+	return o
+}
+
+func (o GetVpcPeeringConnectionsFilterArrayOutput) ToGetVpcPeeringConnectionsFilterArrayOutputWithContext(ctx context.Context) GetVpcPeeringConnectionsFilterArrayOutput {
+	return o
+}
+
+func (o GetVpcPeeringConnectionsFilterArrayOutput) Index(i pulumi.IntInput) GetVpcPeeringConnectionsFilterOutput {
+	return pulumi.All(o, i).ApplyT(func(vs []interface{}) GetVpcPeeringConnectionsFilter {
+		return vs[0].([]GetVpcPeeringConnectionsFilter)[vs[1].(int)]
+	}).(GetVpcPeeringConnectionsFilterOutput)
+}
+
 type GetVpcsFilter struct {
 	// The name of the field to filter by, as defined by
 	// [the underlying AWS API](http://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_DescribeVpcs.html).
@@ -18468,6 +19833,10 @@ func init() {
 	pulumi.RegisterOutputType(FleetOnDemandOptionsPtrOutput{})
 	pulumi.RegisterOutputType(FleetSpotOptionsOutput{})
 	pulumi.RegisterOutputType(FleetSpotOptionsPtrOutput{})
+	pulumi.RegisterOutputType(FleetSpotOptionsMaintenanceStrategiesOutput{})
+	pulumi.RegisterOutputType(FleetSpotOptionsMaintenanceStrategiesPtrOutput{})
+	pulumi.RegisterOutputType(FleetSpotOptionsMaintenanceStrategiesCapacityRebalanceOutput{})
+	pulumi.RegisterOutputType(FleetSpotOptionsMaintenanceStrategiesCapacityRebalancePtrOutput{})
 	pulumi.RegisterOutputType(FleetTargetCapacitySpecificationOutput{})
 	pulumi.RegisterOutputType(FleetTargetCapacitySpecificationPtrOutput{})
 	pulumi.RegisterOutputType(InstanceCreditSpecificationOutput{})
@@ -18553,6 +19922,10 @@ func init() {
 	pulumi.RegisterOutputType(SpotFleetRequestLaunchTemplateConfigLaunchTemplateSpecificationOutput{})
 	pulumi.RegisterOutputType(SpotFleetRequestLaunchTemplateConfigOverrideOutput{})
 	pulumi.RegisterOutputType(SpotFleetRequestLaunchTemplateConfigOverrideArrayOutput{})
+	pulumi.RegisterOutputType(SpotFleetRequestSpotMaintenanceStrategiesOutput{})
+	pulumi.RegisterOutputType(SpotFleetRequestSpotMaintenanceStrategiesPtrOutput{})
+	pulumi.RegisterOutputType(SpotFleetRequestSpotMaintenanceStrategiesCapacityRebalanceOutput{})
+	pulumi.RegisterOutputType(SpotFleetRequestSpotMaintenanceStrategiesCapacityRebalancePtrOutput{})
 	pulumi.RegisterOutputType(SpotInstanceRequestCreditSpecificationOutput{})
 	pulumi.RegisterOutputType(SpotInstanceRequestCreditSpecificationPtrOutput{})
 	pulumi.RegisterOutputType(SpotInstanceRequestEbsBlockDeviceOutput{})
@@ -18601,6 +19974,14 @@ func init() {
 	pulumi.RegisterOutputType(GetInstanceMetadataOptionArrayOutput{})
 	pulumi.RegisterOutputType(GetInstanceRootBlockDeviceOutput{})
 	pulumi.RegisterOutputType(GetInstanceRootBlockDeviceArrayOutput{})
+	pulumi.RegisterOutputType(GetInstanceTypeFpgaOutput{})
+	pulumi.RegisterOutputType(GetInstanceTypeFpgaArrayOutput{})
+	pulumi.RegisterOutputType(GetInstanceTypeGpusOutput{})
+	pulumi.RegisterOutputType(GetInstanceTypeGpusArrayOutput{})
+	pulumi.RegisterOutputType(GetInstanceTypeInferenceAcceleratorOutput{})
+	pulumi.RegisterOutputType(GetInstanceTypeInferenceAcceleratorArrayOutput{})
+	pulumi.RegisterOutputType(GetInstanceTypeInstanceDiskOutput{})
+	pulumi.RegisterOutputType(GetInstanceTypeInstanceDiskArrayOutput{})
 	pulumi.RegisterOutputType(GetInstanceTypeOfferingFilterOutput{})
 	pulumi.RegisterOutputType(GetInstanceTypeOfferingFilterArrayOutput{})
 	pulumi.RegisterOutputType(GetInstanceTypeOfferingsFilterOutput{})
@@ -18683,6 +20064,8 @@ func init() {
 	pulumi.RegisterOutputType(GetSecurityGroupFilterArrayOutput{})
 	pulumi.RegisterOutputType(GetSecurityGroupsFilterOutput{})
 	pulumi.RegisterOutputType(GetSecurityGroupsFilterArrayOutput{})
+	pulumi.RegisterOutputType(GetSpotPriceFilterOutput{})
+	pulumi.RegisterOutputType(GetSpotPriceFilterArrayOutput{})
 	pulumi.RegisterOutputType(GetSubnetFilterOutput{})
 	pulumi.RegisterOutputType(GetSubnetFilterArrayOutput{})
 	pulumi.RegisterOutputType(GetSubnetIdsFilterOutput{})
@@ -18701,6 +20084,8 @@ func init() {
 	pulumi.RegisterOutputType(GetVpcFilterArrayOutput{})
 	pulumi.RegisterOutputType(GetVpcPeeringConnectionFilterOutput{})
 	pulumi.RegisterOutputType(GetVpcPeeringConnectionFilterArrayOutput{})
+	pulumi.RegisterOutputType(GetVpcPeeringConnectionsFilterOutput{})
+	pulumi.RegisterOutputType(GetVpcPeeringConnectionsFilterArrayOutput{})
 	pulumi.RegisterOutputType(GetVpcsFilterOutput{})
 	pulumi.RegisterOutputType(GetVpcsFilterArrayOutput{})
 	pulumi.RegisterOutputType(GetVpnGatewayFilterOutput{})

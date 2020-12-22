@@ -2,8 +2,7 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 /**
@@ -15,26 +14,26 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const testCluster = pulumi.output(aws.redshift.getCluster({
+ * const testCluster = aws.redshift.getCluster({
  *     clusterIdentifier: "test-cluster",
- * }, { async: true }));
- * const testStream = new aws.kinesis.FirehoseDeliveryStream("test_stream", {
+ * });
+ * const testStream = new aws.kinesis.FirehoseDeliveryStream("testStream", {
  *     destination: "redshift",
- *     redshiftConfiguration: {
- *         clusterJdbcurl: pulumi.interpolate`jdbc:redshift://${testCluster.endpoint}/${testCluster.databaseName}`,
- *         copyOptions: "delimiter '|'", // the default delimiter
- *         dataTableColumns: "test-col",
- *         dataTableName: "test-table",
- *         password: "T3stPass",
- *         roleArn: aws_iam_role_firehose_role.arn,
- *         username: "testuser",
- *     },
  *     s3Configuration: {
- *         bucketArn: aws_s3_bucket_bucket.arn,
- *         bufferInterval: 400,
+ *         roleArn: aws_iam_role.firehose_role.arn,
+ *         bucketArn: aws_s3_bucket.bucket.arn,
  *         bufferSize: 10,
+ *         bufferInterval: 400,
  *         compressionFormat: "GZIP",
- *         roleArn: aws_iam_role_firehose_role.arn,
+ *     },
+ *     redshiftConfiguration: {
+ *         roleArn: aws_iam_role.firehose_role.arn,
+ *         clusterJdbcurl: Promise.all([testCluster, testCluster]).then(([testCluster, testCluster1]) => `jdbc:redshift://${testCluster.endpoint}/${testCluster1.databaseName}`),
+ *         username: "testuser",
+ *         password: "T3stPass",
+ *         dataTableName: "test-table",
+ *         copyOptions: "delimiter '|'",
+ *         dataTableColumns: "test-col",
  *     },
  * });
  * ```

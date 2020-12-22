@@ -20,6 +20,14 @@ import * as utilities from "../utilities";
  *     optInStatus: "opted-in",
  * });
  * ```
+ *
+ * ## Import
+ *
+ * EC2 Availability Zone Groups can be imported using the group name, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:ec2/availabilityZoneGroup:AvailabilityZoneGroup example us-west-2-lax-1
+ * ```
  */
 export class AvailabilityZoneGroup extends pulumi.CustomResource {
     /**
@@ -74,10 +82,10 @@ export class AvailabilityZoneGroup extends pulumi.CustomResource {
             inputs["optInStatus"] = state ? state.optInStatus : undefined;
         } else {
             const args = argsOrState as AvailabilityZoneGroupArgs | undefined;
-            if (!args || args.groupName === undefined) {
+            if ((!args || args.groupName === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'groupName'");
             }
-            if (!args || args.optInStatus === undefined) {
+            if ((!args || args.optInStatus === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'optInStatus'");
             }
             inputs["groupName"] = args ? args.groupName : undefined;

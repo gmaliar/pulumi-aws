@@ -2,8 +2,7 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 import {Application, ApplicationVersion} from "./index";
@@ -22,9 +21,7 @@ import {Application, ApplicationVersion} from "./index";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const tftest = new aws.elasticbeanstalk.Application("tftest", {
- *     description: "tf-test-desc",
- * });
+ * const tftest = new aws.elasticbeanstalk.Application("tftest", {description: "tf-test-desc"});
  * const tfenvtest = new aws.elasticbeanstalk.Environment("tfenvtest", {
  *     application: tftest.name,
  *     solutionStackName: "64bit Amazon Linux 2015.03 v2.0.3 running Go 1.4",
@@ -48,25 +45,31 @@ import {Application, ApplicationVersion} from "./index";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const tftest = new aws.elasticbeanstalk.Application("tftest", {
- *     description: "tf-test-desc",
- * });
+ * const tftest = new aws.elasticbeanstalk.Application("tftest", {description: "tf-test-desc"});
  * const tfenvtest = new aws.elasticbeanstalk.Environment("tfenvtest", {
  *     application: tftest.name,
+ *     solutionStackName: "64bit Amazon Linux 2015.03 v2.0.3 running Go 1.4",
  *     settings: [
  *         {
- *             name: "VPCId",
  *             namespace: "aws:ec2:vpc",
+ *             name: "VPCId",
  *             value: "vpc-xxxxxxxx",
  *         },
  *         {
- *             name: "Subnets",
  *             namespace: "aws:ec2:vpc",
+ *             name: "Subnets",
  *             value: "subnet-xxxxxxxx",
  *         },
  *     ],
- *     solutionStackName: "64bit Amazon Linux 2015.03 v2.0.3 running Go 1.4",
  * });
+ * ```
+ *
+ * ## Import
+ *
+ * Elastic Beanstalk Environments can be imported using the `id`, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:elasticbeanstalk/environment:Environment prodenv e-rpqsewtp2j
  * ```
  */
 export class Environment extends pulumi.CustomResource {
@@ -242,7 +245,7 @@ export class Environment extends pulumi.CustomResource {
             inputs["waitForReadyTimeout"] = state ? state.waitForReadyTimeout : undefined;
         } else {
             const args = argsOrState as EnvironmentArgs | undefined;
-            if (!args || args.application === undefined) {
+            if ((!args || args.application === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'application'");
             }
             inputs["application"] = args ? args.application : undefined;

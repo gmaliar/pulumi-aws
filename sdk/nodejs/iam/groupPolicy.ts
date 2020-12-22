@@ -15,11 +15,9 @@ import {PolicyDocument} from "./index";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const myDevelopers = new aws.iam.Group("my_developers", {
- *     path: "/users/",
- * });
- * const myDeveloperPolicy = new aws.iam.GroupPolicy("my_developer_policy", {
- *     group: myDevelopers.id,
+ * const myDevelopers = new aws.iam.Group("myDevelopers", {path: "/users/"});
+ * const myDeveloperPolicy = new aws.iam.GroupPolicy("myDeveloperPolicy", {
+ *     group: myDevelopers.name,
  *     policy: `{
  *   "Version": "2012-10-17",
  *   "Statement": [
@@ -34,6 +32,14 @@ import {PolicyDocument} from "./index";
  * }
  * `,
  * });
+ * ```
+ *
+ * ## Import
+ *
+ * IAM Group Policies can be imported using the `group_name:group_policy_name`, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:iam/groupPolicy:GroupPolicy mypolicy group_of_mypolicy_name:mypolicy_name
  * ```
  */
 export class GroupPolicy extends pulumi.CustomResource {
@@ -101,10 +107,10 @@ export class GroupPolicy extends pulumi.CustomResource {
             inputs["policy"] = state ? state.policy : undefined;
         } else {
             const args = argsOrState as GroupPolicyArgs | undefined;
-            if (!args || args.group === undefined) {
+            if ((!args || args.group === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'group'");
             }
-            if (!args || args.policy === undefined) {
+            if ((!args || args.policy === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'policy'");
             }
             inputs["group"] = args ? args.group : undefined;

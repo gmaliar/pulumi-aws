@@ -4,6 +4,7 @@
 package apigateway
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -46,21 +47,24 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/apigateway"
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/route53"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/apigateway"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/route53"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
 // func main() {
 // 	pulumi.Run(func(ctx *pulumi.Context) error {
 // 		exampleDomainName, err := apigateway.NewDomainName(ctx, "exampleDomainName", &apigateway.DomainNameArgs{
-// 			CertificateArn: pulumi.String(aws_acm_certificate_validation.Example.Certificate_arn),
+// 			CertificateArn: pulumi.Any(aws_acm_certificate_validation.Example.Certificate_arn),
 // 			DomainName:     pulumi.String("api.example.com"),
 // 		})
 // 		if err != nil {
 // 			return err
 // 		}
 // 		_, err = route53.NewRecord(ctx, "exampleRecord", &route53.RecordArgs{
+// 			Name:   exampleDomainName.DomainName,
+// 			Type:   pulumi.String("A"),
+// 			ZoneId: pulumi.Any(aws_route53_zone.Example.Id),
 // 			Aliases: route53.RecordAliasArray{
 // 				&route53.RecordAliasArgs{
 // 					EvaluateTargetHealth: pulumi.Bool(true),
@@ -68,9 +72,6 @@ import (
 // 					ZoneId:               exampleDomainName.CloudfrontZoneId,
 // 				},
 // 			},
-// 			Name:   exampleDomainName.DomainName,
-// 			Type:   pulumi.String("A"),
-// 			ZoneId: pulumi.String(aws_route53_zone.Example.Id),
 // 		})
 // 		if err != nil {
 // 			return err
@@ -85,24 +86,29 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/apigateway"
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/route53"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/apigateway"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/route53"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
 // func main() {
 // 	pulumi.Run(func(ctx *pulumi.Context) error {
 // 		exampleDomainName, err := apigateway.NewDomainName(ctx, "exampleDomainName", &apigateway.DomainNameArgs{
-// 			DomainName: pulumi.String("api.example.com"),
+// 			DomainName:             pulumi.String("api.example.com"),
+// 			RegionalCertificateArn: pulumi.Any(aws_acm_certificate_validation.Example.Certificate_arn),
 // 			EndpointConfiguration: &apigateway.DomainNameEndpointConfigurationArgs{
-// 				Types: pulumi.String("REGIONAL"),
+// 				Types: pulumi.String(pulumi.String{
+// 					pulumi.String("REGIONAL"),
+// 				}),
 // 			},
-// 			RegionalCertificateArn: pulumi.String(aws_acm_certificate_validation.Example.Certificate_arn),
 // 		})
 // 		if err != nil {
 // 			return err
 // 		}
 // 		_, err = route53.NewRecord(ctx, "exampleRecord", &route53.RecordArgs{
+// 			Name:   exampleDomainName.DomainName,
+// 			Type:   pulumi.String("A"),
+// 			ZoneId: pulumi.Any(aws_route53_zone.Example.Id),
 // 			Aliases: route53.RecordAliasArray{
 // 				&route53.RecordAliasArgs{
 // 					EvaluateTargetHealth: pulumi.Bool(true),
@@ -110,9 +116,6 @@ import (
 // 					ZoneId:               exampleDomainName.RegionalZoneId,
 // 				},
 // 			},
-// 			Name:   exampleDomainName.DomainName,
-// 			Type:   pulumi.String("A"),
-// 			ZoneId: pulumi.String(aws_route53_zone.Example.Id),
 // 		})
 // 		if err != nil {
 // 			return err
@@ -120,6 +123,14 @@ import (
 // 		return nil
 // 	})
 // }
+// ```
+//
+// ## Import
+//
+// API Gateway domain names can be imported using their `name`, e.g.
+//
+// ```sh
+//  $ pulumi import aws:apigateway/domainName:DomainName example dev.example.com
 // ```
 type DomainName struct {
 	pulumi.CustomResourceState
@@ -174,11 +185,12 @@ type DomainName struct {
 // NewDomainName registers a new resource with the given unique name, arguments, and options.
 func NewDomainName(ctx *pulumi.Context,
 	name string, args *DomainNameArgs, opts ...pulumi.ResourceOption) (*DomainName, error) {
-	if args == nil || args.DomainName == nil {
-		return nil, errors.New("missing required argument 'DomainName'")
-	}
 	if args == nil {
-		args = &DomainNameArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.DomainName == nil {
+		return nil, errors.New("invalid value for required argument 'DomainName'")
 	}
 	var resource DomainName
 	err := ctx.RegisterResource("aws:apigateway/domainName:DomainName", name, args, &resource, opts...)
@@ -372,4 +384,43 @@ type DomainNameArgs struct {
 
 func (DomainNameArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*domainNameArgs)(nil)).Elem()
+}
+
+type DomainNameInput interface {
+	pulumi.Input
+
+	ToDomainNameOutput() DomainNameOutput
+	ToDomainNameOutputWithContext(ctx context.Context) DomainNameOutput
+}
+
+func (DomainName) ElementType() reflect.Type {
+	return reflect.TypeOf((*DomainName)(nil)).Elem()
+}
+
+func (i DomainName) ToDomainNameOutput() DomainNameOutput {
+	return i.ToDomainNameOutputWithContext(context.Background())
+}
+
+func (i DomainName) ToDomainNameOutputWithContext(ctx context.Context) DomainNameOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(DomainNameOutput)
+}
+
+type DomainNameOutput struct {
+	*pulumi.OutputState
+}
+
+func (DomainNameOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*DomainNameOutput)(nil)).Elem()
+}
+
+func (o DomainNameOutput) ToDomainNameOutput() DomainNameOutput {
+	return o
+}
+
+func (o DomainNameOutput) ToDomainNameOutputWithContext(ctx context.Context) DomainNameOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(DomainNameOutput{})
 }

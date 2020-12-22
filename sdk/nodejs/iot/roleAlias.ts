@@ -13,23 +13,29 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const role = new aws.iam.Role("role", {
- *     policy: `{
+ * const role = new aws.iam.Role("role", {assumeRolePolicy: `{
  *   "Version": "2012-10-17",
  *   "Statement": [
  *     {
  *       "Effect": "Allow",
- *       "Principal": {"Service": "credentials.iot.amazonaws.com"},
+ *       "Principal": {"Service": "credentials.iot.amazonaws.com",
  *       "Action": "sts:AssumeRole"
  *     }
  *   ]
  * }
- * `,
- * });
+ * `});
  * const alias = new aws.iot.RoleAlias("alias", {
  *     alias: "Thermostat-dynamodb-access-role-alias",
  *     roleArn: role.arn,
  * });
+ * ```
+ *
+ * ## Import
+ *
+ * IOT Role Alias can be imported via the alias, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:iot/roleAlias:RoleAlias example myalias
  * ```
  */
 export class RoleAlias extends pulumi.CustomResource {
@@ -95,10 +101,10 @@ export class RoleAlias extends pulumi.CustomResource {
             inputs["roleArn"] = state ? state.roleArn : undefined;
         } else {
             const args = argsOrState as RoleAliasArgs | undefined;
-            if (!args || args.alias === undefined) {
+            if ((!args || args.alias === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'alias'");
             }
-            if (!args || args.roleArn === undefined) {
+            if ((!args || args.roleArn === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'roleArn'");
             }
             inputs["alias"] = args ? args.alias : undefined;

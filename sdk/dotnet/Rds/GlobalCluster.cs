@@ -15,6 +15,7 @@ namespace Pulumi.Aws.Rds
     /// More information about Aurora global databases can be found in the [Aurora User Guide](https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/aurora-global-database.html#aurora-global-database-creating).
     /// 
     /// ## Example Usage
+    /// ### New Global Cluster
     /// 
     /// ```csharp
     /// using Pulumi;
@@ -37,33 +38,31 @@ namespace Pulumi.Aws.Rds
     ///             GlobalClusterIdentifier = "example",
     ///         }, new CustomResourceOptions
     ///         {
-    ///             Provider = "aws.primary",
+    ///             Provider = aws.Primary,
     ///         });
     ///         var primaryCluster = new Aws.Rds.Cluster("primaryCluster", new Aws.Rds.ClusterArgs
     ///         {
-    ///             EngineMode = "global",
     ///             GlobalClusterIdentifier = example.Id,
     ///         }, new CustomResourceOptions
     ///         {
-    ///             Provider = "aws.primary",
+    ///             Provider = aws.Primary,
     ///         });
     ///         var primaryClusterInstance = new Aws.Rds.ClusterInstance("primaryClusterInstance", new Aws.Rds.ClusterInstanceArgs
     ///         {
     ///             ClusterIdentifier = primaryCluster.Id,
     ///         }, new CustomResourceOptions
     ///         {
-    ///             Provider = "aws.primary",
+    ///             Provider = aws.Primary,
     ///         });
     ///         var secondaryCluster = new Aws.Rds.Cluster("secondaryCluster", new Aws.Rds.ClusterArgs
     ///         {
-    ///             EngineMode = "global",
     ///             GlobalClusterIdentifier = example.Id,
     ///         }, new CustomResourceOptions
     ///         {
-    ///             Provider = "aws.secondary",
+    ///             Provider = aws.Secondary,
     ///             DependsOn = 
     ///             {
-    ///                 "aws_rds_cluster_instance.primary",
+    ///                 primaryClusterInstance,
     ///             },
     ///         });
     ///         var secondaryClusterInstance = new Aws.Rds.ClusterInstance("secondaryClusterInstance", new Aws.Rds.ClusterInstanceArgs
@@ -71,12 +70,56 @@ namespace Pulumi.Aws.Rds
     ///             ClusterIdentifier = secondaryCluster.Id,
     ///         }, new CustomResourceOptions
     ///         {
-    ///             Provider = "aws.secondary",
+    ///             Provider = aws.Secondary,
     ///         });
     ///     }
     /// 
     /// }
     /// ```
+    /// ### New Global Cluster From Existing DB Cluster
+    /// 
+    /// ```csharp
+    /// using Pulumi;
+    /// using Aws = Pulumi.Aws;
+    /// 
+    /// class MyStack : Stack
+    /// {
+    ///     public MyStack()
+    ///     {
+    ///         // ... other configuration ...
+    ///         var exampleCluster = new Aws.Rds.Cluster("exampleCluster", new Aws.Rds.ClusterArgs
+    ///         {
+    ///         });
+    ///         var exampleGlobalCluster = new Aws.Rds.GlobalCluster("exampleGlobalCluster", new Aws.Rds.GlobalClusterArgs
+    ///         {
+    ///             ForceDestroy = true,
+    ///             GlobalClusterIdentifier = "example",
+    ///             SourceDbClusterIdentifier = exampleCluster.Arn,
+    ///         });
+    ///     }
+    /// 
+    /// }
+    /// ```
+    /// 
+    /// ## Import
+    /// 
+    /// `aws_rds_global_cluster` can be imported by using the RDS Global Cluster identifier, e.g.
+    /// 
+    /// ```sh
+    ///  $ pulumi import aws:rds/globalCluster:GlobalCluster example example
+    /// ```
+    /// 
+    ///  Certain resource arguments, like `force_destroy`, only exist within Terraform. If the argument is set in the Terraform configuration on an imported resource, Terraform will show a difference on the first plan after import to update the state value. This change is safe to apply immediately so the state matches the desired configuration. Certain resource arguments, like `source_db_cluster_identifier`, do not have an API method for reading the information after creation. If the argument is set in the Terraform configuration on an imported resource, Terraform will always show a difference. To workaround this behavior, either omit the argument from the Terraform configuration or use [`ignore_changes`](/docs/configuration/resources.html#ignore_changes) to hide the difference, e.g. hcl resource "aws_rds_global_cluster" "example" {
+    /// 
+    /// # ... other configuration ...
+    /// 
+    /// # There is no API for reading source_db_cluster_identifier
+    /// 
+    ///  lifecycle {
+    /// 
+    ///  ignore_changes = [source_db_cluster_identifier]
+    /// 
+    ///  } }
     /// </summary>
     public partial class GlobalCluster : Pulumi.CustomResource
     {
@@ -98,11 +141,8 @@ namespace Pulumi.Aws.Rds
         [Output("deletionProtection")]
         public Output<bool?> DeletionProtection { get; private set; } = null!;
 
-        /// <summary>
-        /// Name of the database engine to be used for this DB cluster. Valid values: `aurora`, `aurora-mysql`, `aurora-postgresql`. Defaults to `aurora`.
-        /// </summary>
         [Output("engine")]
-        public Output<string?> Engine { get; private set; } = null!;
+        public Output<string> Engine { get; private set; } = null!;
 
         /// <summary>
         /// Engine version of the Aurora global database.
@@ -112,10 +152,22 @@ namespace Pulumi.Aws.Rds
         public Output<string> EngineVersion { get; private set; } = null!;
 
         /// <summary>
+        /// Enable to remove DB Cluster members from Global Cluster on destroy. Required with `source_db_cluster_identifier`.
+        /// </summary>
+        [Output("forceDestroy")]
+        public Output<bool?> ForceDestroy { get; private set; } = null!;
+
+        /// <summary>
         /// The global cluster identifier.
         /// </summary>
         [Output("globalClusterIdentifier")]
         public Output<string> GlobalClusterIdentifier { get; private set; } = null!;
+
+        /// <summary>
+        /// Set of objects containing Global Cluster members.
+        /// </summary>
+        [Output("globalClusterMembers")]
+        public Output<ImmutableArray<Outputs.GlobalClusterGlobalClusterMember>> GlobalClusterMembers { get; private set; } = null!;
 
         /// <summary>
         /// AWS Region-unique, immutable identifier for the global database cluster. This identifier is found in AWS CloudTrail log entries whenever the AWS KMS key for the DB cluster is accessed
@@ -123,11 +175,11 @@ namespace Pulumi.Aws.Rds
         [Output("globalClusterResourceId")]
         public Output<string> GlobalClusterResourceId { get; private set; } = null!;
 
-        /// <summary>
-        /// Specifies whether the DB cluster is encrypted. The default is `false`.
-        /// </summary>
+        [Output("sourceDbClusterIdentifier")]
+        public Output<string> SourceDbClusterIdentifier { get; private set; } = null!;
+
         [Output("storageEncrypted")]
-        public Output<bool?> StorageEncrypted { get; private set; } = null!;
+        public Output<bool> StorageEncrypted { get; private set; } = null!;
 
 
         /// <summary>
@@ -187,9 +239,6 @@ namespace Pulumi.Aws.Rds
         [Input("deletionProtection")]
         public Input<bool>? DeletionProtection { get; set; }
 
-        /// <summary>
-        /// Name of the database engine to be used for this DB cluster. Valid values: `aurora`, `aurora-mysql`, `aurora-postgresql`. Defaults to `aurora`.
-        /// </summary>
         [Input("engine")]
         public Input<string>? Engine { get; set; }
 
@@ -201,14 +250,20 @@ namespace Pulumi.Aws.Rds
         public Input<string>? EngineVersion { get; set; }
 
         /// <summary>
+        /// Enable to remove DB Cluster members from Global Cluster on destroy. Required with `source_db_cluster_identifier`.
+        /// </summary>
+        [Input("forceDestroy")]
+        public Input<bool>? ForceDestroy { get; set; }
+
+        /// <summary>
         /// The global cluster identifier.
         /// </summary>
         [Input("globalClusterIdentifier", required: true)]
         public Input<string> GlobalClusterIdentifier { get; set; } = null!;
 
-        /// <summary>
-        /// Specifies whether the DB cluster is encrypted. The default is `false`.
-        /// </summary>
+        [Input("sourceDbClusterIdentifier")]
+        public Input<string>? SourceDbClusterIdentifier { get; set; }
+
         [Input("storageEncrypted")]
         public Input<bool>? StorageEncrypted { get; set; }
 
@@ -237,9 +292,6 @@ namespace Pulumi.Aws.Rds
         [Input("deletionProtection")]
         public Input<bool>? DeletionProtection { get; set; }
 
-        /// <summary>
-        /// Name of the database engine to be used for this DB cluster. Valid values: `aurora`, `aurora-mysql`, `aurora-postgresql`. Defaults to `aurora`.
-        /// </summary>
         [Input("engine")]
         public Input<string>? Engine { get; set; }
 
@@ -251,10 +303,28 @@ namespace Pulumi.Aws.Rds
         public Input<string>? EngineVersion { get; set; }
 
         /// <summary>
+        /// Enable to remove DB Cluster members from Global Cluster on destroy. Required with `source_db_cluster_identifier`.
+        /// </summary>
+        [Input("forceDestroy")]
+        public Input<bool>? ForceDestroy { get; set; }
+
+        /// <summary>
         /// The global cluster identifier.
         /// </summary>
         [Input("globalClusterIdentifier")]
         public Input<string>? GlobalClusterIdentifier { get; set; }
+
+        [Input("globalClusterMembers")]
+        private InputList<Inputs.GlobalClusterGlobalClusterMemberGetArgs>? _globalClusterMembers;
+
+        /// <summary>
+        /// Set of objects containing Global Cluster members.
+        /// </summary>
+        public InputList<Inputs.GlobalClusterGlobalClusterMemberGetArgs> GlobalClusterMembers
+        {
+            get => _globalClusterMembers ?? (_globalClusterMembers = new InputList<Inputs.GlobalClusterGlobalClusterMemberGetArgs>());
+            set => _globalClusterMembers = value;
+        }
 
         /// <summary>
         /// AWS Region-unique, immutable identifier for the global database cluster. This identifier is found in AWS CloudTrail log entries whenever the AWS KMS key for the DB cluster is accessed
@@ -262,9 +332,9 @@ namespace Pulumi.Aws.Rds
         [Input("globalClusterResourceId")]
         public Input<string>? GlobalClusterResourceId { get; set; }
 
-        /// <summary>
-        /// Specifies whether the DB cluster is encrypted. The default is `false`.
-        /// </summary>
+        [Input("sourceDbClusterIdentifier")]
+        public Input<string>? SourceDbClusterIdentifier { get; set; }
+
         [Input("storageEncrypted")]
         public Input<bool>? StorageEncrypted { get; set; }
 

@@ -2,8 +2,7 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 /**
@@ -15,22 +14,30 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const ipset = new aws.wafregional.IpSet("ipset", {
- *     ipSetDescriptors: [{
- *         type: "IPV4",
- *         value: "192.0.7.0/24",
- *     }],
- * });
+ * const ipset = new aws.wafregional.IpSet("ipset", {ipSetDescriptors: [{
+ *     type: "IPV4",
+ *     value: "192.0.7.0/24",
+ * }]});
  * const wafrule = new aws.wafregional.RateBasedRule("wafrule", {
  *     metricName: "tfWAFRule",
+ *     rateKey: "IP",
+ *     rateLimit: 100,
  *     predicates: [{
  *         dataId: ipset.id,
  *         negated: false,
  *         type: "IPMatch",
  *     }],
- *     rateKey: "IP",
- *     rateLimit: 100,
- * }, { dependsOn: [ipset] });
+ * }, {
+ *     dependsOn: [ipset],
+ * });
+ * ```
+ *
+ * ## Import
+ *
+ * WAF Regional Rate Based Rule can be imported using the id, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:wafregional/rateBasedRule:RateBasedRule wafrule a1b2c3d4-d5f6-7777-8888-9999aaaabbbbcccc
  * ```
  */
 export class RateBasedRule extends pulumi.CustomResource {
@@ -111,13 +118,13 @@ export class RateBasedRule extends pulumi.CustomResource {
             inputs["tags"] = state ? state.tags : undefined;
         } else {
             const args = argsOrState as RateBasedRuleArgs | undefined;
-            if (!args || args.metricName === undefined) {
+            if ((!args || args.metricName === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'metricName'");
             }
-            if (!args || args.rateKey === undefined) {
+            if ((!args || args.rateKey === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'rateKey'");
             }
-            if (!args || args.rateLimit === undefined) {
+            if ((!args || args.rateLimit === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'rateLimit'");
             }
             inputs["metricName"] = args ? args.metricName : undefined;

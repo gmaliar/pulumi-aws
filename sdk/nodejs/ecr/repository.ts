@@ -2,8 +2,7 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 /**
@@ -21,6 +20,14 @@ import * as utilities from "../utilities";
  *     },
  *     imageTagMutability: "MUTABLE",
  * });
+ * ```
+ *
+ * ## Import
+ *
+ * ECR Repositories can be imported using the `name`, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:ecr/repository:Repository service test-service
  * ```
  */
 export class Repository extends pulumi.CustomResource {
@@ -55,6 +62,10 @@ export class Repository extends pulumi.CustomResource {
      * Full ARN of the repository.
      */
     public /*out*/ readonly arn!: pulumi.Output<string>;
+    /**
+     * Encryption configuration for the repository. See below for schema.
+     */
+    public readonly encryptionConfigurations!: pulumi.Output<outputs.ecr.RepositoryEncryptionConfiguration[] | undefined>;
     /**
      * Configuration block that defines image scanning configuration for the repository. By default, image scanning must be manually triggered. See the [ECR User Guide](https://docs.aws.amazon.com/AmazonECR/latest/userguide/image-scanning.html) for more information about image scanning.
      */
@@ -93,6 +104,7 @@ export class Repository extends pulumi.CustomResource {
         if (opts && opts.id) {
             const state = argsOrState as RepositoryState | undefined;
             inputs["arn"] = state ? state.arn : undefined;
+            inputs["encryptionConfigurations"] = state ? state.encryptionConfigurations : undefined;
             inputs["imageScanningConfiguration"] = state ? state.imageScanningConfiguration : undefined;
             inputs["imageTagMutability"] = state ? state.imageTagMutability : undefined;
             inputs["name"] = state ? state.name : undefined;
@@ -101,6 +113,7 @@ export class Repository extends pulumi.CustomResource {
             inputs["tags"] = state ? state.tags : undefined;
         } else {
             const args = argsOrState as RepositoryArgs | undefined;
+            inputs["encryptionConfigurations"] = args ? args.encryptionConfigurations : undefined;
             inputs["imageScanningConfiguration"] = args ? args.imageScanningConfiguration : undefined;
             inputs["imageTagMutability"] = args ? args.imageTagMutability : undefined;
             inputs["name"] = args ? args.name : undefined;
@@ -128,6 +141,10 @@ export interface RepositoryState {
      * Full ARN of the repository.
      */
     readonly arn?: pulumi.Input<string>;
+    /**
+     * Encryption configuration for the repository. See below for schema.
+     */
+    readonly encryptionConfigurations?: pulumi.Input<pulumi.Input<inputs.ecr.RepositoryEncryptionConfiguration>[]>;
     /**
      * Configuration block that defines image scanning configuration for the repository. By default, image scanning must be manually triggered. See the [ECR User Guide](https://docs.aws.amazon.com/AmazonECR/latest/userguide/image-scanning.html) for more information about image scanning.
      */
@@ -158,6 +175,10 @@ export interface RepositoryState {
  * The set of arguments for constructing a Repository resource.
  */
 export interface RepositoryArgs {
+    /**
+     * Encryption configuration for the repository. See below for schema.
+     */
+    readonly encryptionConfigurations?: pulumi.Input<pulumi.Input<inputs.ecr.RepositoryEncryptionConfiguration>[]>;
     /**
      * Configuration block that defines image scanning configuration for the repository. By default, image scanning must be manually triggered. See the [ECR User Guide](https://docs.aws.amazon.com/AmazonECR/latest/userguide/image-scanning.html) for more information about image scanning.
      */

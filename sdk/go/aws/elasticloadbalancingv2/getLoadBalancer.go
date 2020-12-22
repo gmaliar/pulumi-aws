@@ -21,12 +21,22 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/lb"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/lb"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
+// 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi/config"
 // )
 //
 // func main() {
 // 	pulumi.Run(func(ctx *pulumi.Context) error {
+// 		cfg := config.New(ctx, "")
+// 		lbArn := ""
+// 		if param := cfg.Get("lbArn"); param != "" {
+// 			lbArn = param
+// 		}
+// 		lbName := ""
+// 		if param := cfg.Get("lbName"); param != "" {
+// 			lbName = param
+// 		}
 // 		opt0 := lbArn
 // 		opt1 := lbName
 // 		_, err := lb.LookupLoadBalancer(ctx, &lb.LookupLoadBalancerArgs{
@@ -65,9 +75,11 @@ type LookupLoadBalancerResult struct {
 	AccessLogs               GetLoadBalancerAccessLogs `pulumi:"accessLogs"`
 	Arn                      string                    `pulumi:"arn"`
 	ArnSuffix                string                    `pulumi:"arnSuffix"`
+	CustomerOwnedIpv4Pool    string                    `pulumi:"customerOwnedIpv4Pool"`
 	DnsName                  string                    `pulumi:"dnsName"`
 	DropInvalidHeaderFields  bool                      `pulumi:"dropInvalidHeaderFields"`
 	EnableDeletionProtection bool                      `pulumi:"enableDeletionProtection"`
+	EnableHttp2              bool                      `pulumi:"enableHttp2"`
 	// The provider-assigned unique ID for this managed resource.
 	Id               string                         `pulumi:"id"`
 	IdleTimeout      int                            `pulumi:"idleTimeout"`

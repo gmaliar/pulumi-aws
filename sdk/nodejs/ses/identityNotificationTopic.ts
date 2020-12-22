@@ -14,11 +14,19 @@ import * as utilities from "../utilities";
  * import * as aws from "@pulumi/aws";
  *
  * const test = new aws.ses.IdentityNotificationTopic("test", {
- *     identity: aws_ses_domain_identity_example.domain,
- *     includeOriginalHeaders: true,
+ *     topicArn: aws_sns_topic.example.arn,
  *     notificationType: "Bounce",
- *     topicArn: aws_sns_topic_example.arn,
+ *     identity: aws_ses_domain_identity.example.domain,
+ *     includeOriginalHeaders: true,
  * });
+ * ```
+ *
+ * ## Import
+ *
+ * Identity Notification Topics can be imported using ID of the record. The ID is made up as IDENTITY|TYPE where IDENTITY is the SES Identity and TYPE is the Notification Type. e.g. example.com|Bounce In this example, `example.com` is the SES Identity and `Bounce` is the Notification Type. To import the ID above, it would look as follows
+ *
+ * ```sh
+ *  $ pulumi import aws:ses/identityNotificationTopic:IdentityNotificationTopic test 'example.com|Bounce'
  * ```
  */
 export class IdentityNotificationTopic extends pulumi.CustomResource {
@@ -84,10 +92,10 @@ export class IdentityNotificationTopic extends pulumi.CustomResource {
             inputs["topicArn"] = state ? state.topicArn : undefined;
         } else {
             const args = argsOrState as IdentityNotificationTopicArgs | undefined;
-            if (!args || args.identity === undefined) {
+            if ((!args || args.identity === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'identity'");
             }
-            if (!args || args.notificationType === undefined) {
+            if ((!args || args.notificationType === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'notificationType'");
             }
             inputs["identity"] = args ? args.identity : undefined;

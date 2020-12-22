@@ -82,7 +82,6 @@ namespace Pulumi.Aws.CloudFormation
     ///     }
     ///   }
     /// }
-    /// 
     /// ",
     ///         });
     ///         var aWSCloudFormationStackSetAdministrationRoleExecutionPolicyPolicyDocument = example.ExecutionRoleName.Apply(executionRoleName =&gt; Aws.Iam.GetPolicyDocument.InvokeAsync(new Aws.Iam.GetPolicyDocumentArgs
@@ -111,6 +110,14 @@ namespace Pulumi.Aws.CloudFormation
     ///     }
     /// 
     /// }
+    /// ```
+    /// 
+    /// ## Import
+    /// 
+    /// CloudFormation StackSets can be imported using the `name`, e.g.
+    /// 
+    /// ```sh
+    ///  $ pulumi import aws:cloudformation/stackSet:StackSet example example
     /// ```
     /// </summary>
     public partial class StackSet : Pulumi.CustomResource

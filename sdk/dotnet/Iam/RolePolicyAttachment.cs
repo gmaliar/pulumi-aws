@@ -39,7 +39,6 @@ namespace Pulumi.Aws.Iam
     ///         }
     ///       ]
     ///     }
-    /// 
     /// ",
     ///         });
     ///         var policy = new Aws.Iam.Policy("policy", new Aws.Iam.PolicyArgs
@@ -57,17 +56,24 @@ namespace Pulumi.Aws.Iam
     ///     }
     ///   ]
     /// }
-    /// 
     /// ",
     ///         });
     ///         var test_attach = new Aws.Iam.RolePolicyAttachment("test-attach", new Aws.Iam.RolePolicyAttachmentArgs
     ///         {
-    ///             PolicyArn = policy.Arn,
     ///             Role = role.Name,
+    ///             PolicyArn = policy.Arn,
     ///         });
     ///     }
     /// 
     /// }
+    /// ```
+    /// 
+    /// ## Import
+    /// 
+    /// IAM role policy attachments can be imported using the role name and policy arn separated by `/`.
+    /// 
+    /// ```sh
+    ///  $ pulumi import aws:iam/rolePolicyAttachment:RolePolicyAttachment test-attach test-role/arn:aws:iam::xxxxxxxxxxxx:policy/test-policy
     /// ```
     /// </summary>
     public partial class RolePolicyAttachment : Pulumi.CustomResource

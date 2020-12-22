@@ -2,8 +2,7 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 /**
@@ -26,6 +25,8 @@ import * as utilities from "../utilities";
  *     }],
  * });
  * const foo = new aws.elb.SslNegotiationPolicy("foo", {
+ *     loadBalancer: lb.id,
+ *     lbPort: 443,
  *     attributes: [
  *         {
  *             name: "Protocol-TLSv1",
@@ -56,8 +57,6 @@ import * as utilities from "../utilities";
  *             value: "false",
  *         },
  *     ],
- *     lbPort: 443,
- *     loadBalancer: lb.id,
  * });
  * ```
  *
@@ -133,10 +132,10 @@ export class SslNegotiationPolicy extends pulumi.CustomResource {
             inputs["name"] = state ? state.name : undefined;
         } else {
             const args = argsOrState as SslNegotiationPolicyArgs | undefined;
-            if (!args || args.lbPort === undefined) {
+            if ((!args || args.lbPort === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'lbPort'");
             }
-            if (!args || args.loadBalancer === undefined) {
+            if ((!args || args.loadBalancer === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'loadBalancer'");
             }
             inputs["attributes"] = args ? args.attributes : undefined;

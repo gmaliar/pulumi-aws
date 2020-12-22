@@ -2,8 +2,7 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 /**
@@ -15,7 +14,7 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const testGraphQLApi = new aws.appsync.GraphQLApi("test", {
+ * const testGraphQLApi = new aws.appsync.GraphQLApi("testGraphQLApi", {
  *     authenticationType: "API_KEY",
  *     schema: `type Mutation {
  * 	putPost(id: ID!, title: String!): Post
@@ -36,25 +35,20 @@ import * as utilities from "../utilities";
  * }
  * `,
  * });
- * const testDataSource = new aws.appsync.DataSource("test", {
+ * const testDataSource = new aws.appsync.DataSource("testDataSource", {
  *     apiId: testGraphQLApi.id,
+ *     name: "tf_example",
+ *     type: "HTTP",
  *     httpConfig: {
  *         endpoint: "http://example.com",
  *     },
- *     type: "HTTP",
  * });
  * // UNIT type resolver (default)
- * const testResolver = new aws.appsync.Resolver("test", {
+ * const testResolver = new aws.appsync.Resolver("testResolver", {
  *     apiId: testGraphQLApi.id,
- *     cachingConfig: {
- *         cachingKeys: [
- *             "$context.identity.sub",
- *             "$context.arguments.id",
- *         ],
- *         ttl: 60,
- *     },
- *     dataSource: testDataSource.name,
  *     field: "singlePost",
+ *     type: "Query",
+ *     dataSource: testDataSource.name,
  *     requestTemplate: `{
  *     "version": "2018-05-29",
  *     "method": "GET",
@@ -70,24 +64,38 @@ import * as utilities from "../utilities";
  *     $utils.appendError($ctx.result.body, $ctx.result.statusCode)
  * #end
  * `,
- *     type: "Query",
+ *     cachingConfig: {
+ *         cachingKeys: [
+ *             `$context.identity.sub`,
+ *             `$context.arguments.id`,
+ *         ],
+ *         ttl: 60,
+ *     },
  * });
  * // PIPELINE type resolver
- * const mutationPipelineTest = new aws.appsync.Resolver("Mutation_pipelineTest", {
+ * const mutationPipelineTest = new aws.appsync.Resolver("mutationPipelineTest", {
+ *     type: "Mutation",
  *     apiId: testGraphQLApi.id,
  *     field: "pipelineTest",
+ *     requestTemplate: "{}",
+ *     responseTemplate: `$util.toJson($ctx.result)`,
  *     kind: "PIPELINE",
  *     pipelineConfig: {
  *         functions: [
- *             aws_appsync_function_test1.functionId,
- *             aws_appsync_function_test2.functionId,
- *             aws_appsync_function_test3.functionId,
+ *             aws_appsync_function.test1.function_id,
+ *             aws_appsync_function.test2.function_id,
+ *             aws_appsync_function.test3.function_id,
  *         ],
  *     },
- *     requestTemplate: "{}",
- *     responseTemplate: "$util.toJson($ctx.result)",
- *     type: "Mutation",
  * });
+ * ```
+ *
+ * ## Import
+ *
+ * `aws_appsync_resolver` can be imported with their `api_id`, a hyphen, `type`, a hypen and `field` e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:appsync/resolver:Resolver example abcdef123456-exampleType-exampleField
  * ```
  */
 export class Resolver extends pulumi.CustomResource {
@@ -183,19 +191,19 @@ export class Resolver extends pulumi.CustomResource {
             inputs["type"] = state ? state.type : undefined;
         } else {
             const args = argsOrState as ResolverArgs | undefined;
-            if (!args || args.apiId === undefined) {
+            if ((!args || args.apiId === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'apiId'");
             }
-            if (!args || args.field === undefined) {
+            if ((!args || args.field === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'field'");
             }
-            if (!args || args.requestTemplate === undefined) {
+            if ((!args || args.requestTemplate === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'requestTemplate'");
             }
-            if (!args || args.responseTemplate === undefined) {
+            if ((!args || args.responseTemplate === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'responseTemplate'");
             }
-            if (!args || args.type === undefined) {
+            if ((!args || args.type === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'type'");
             }
             inputs["apiId"] = args ? args.apiId : undefined;

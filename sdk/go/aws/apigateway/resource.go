@@ -4,6 +4,7 @@
 package apigateway
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -18,7 +19,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/apigateway"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/apigateway"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -31,9 +32,9 @@ import (
 // 			return err
 // 		}
 // 		_, err = apigateway.NewResource(ctx, "myDemoResource", &apigateway.ResourceArgs{
+// 			RestApi:  myDemoAPI.ID(),
 // 			ParentId: myDemoAPI.RootResourceId,
 // 			PathPart: pulumi.String("mydemoresource"),
-// 			RestApi:  myDemoAPI.ID(),
 // 		})
 // 		if err != nil {
 // 			return err
@@ -41,6 +42,14 @@ import (
 // 		return nil
 // 	})
 // }
+// ```
+//
+// ## Import
+//
+// `aws_api_gateway_resource` can be imported using `REST-API-ID/RESOURCE-ID`, e.g.
+//
+// ```sh
+//  $ pulumi import aws:apigateway/resource:Resource example 12345abcde/67890fghij
 // ```
 type Resource struct {
 	pulumi.CustomResourceState
@@ -58,17 +67,18 @@ type Resource struct {
 // NewResource registers a new resource with the given unique name, arguments, and options.
 func NewResource(ctx *pulumi.Context,
 	name string, args *ResourceArgs, opts ...pulumi.ResourceOption) (*Resource, error) {
-	if args == nil || args.ParentId == nil {
-		return nil, errors.New("missing required argument 'ParentId'")
-	}
-	if args == nil || args.PathPart == nil {
-		return nil, errors.New("missing required argument 'PathPart'")
-	}
-	if args == nil || args.RestApi == nil {
-		return nil, errors.New("missing required argument 'RestApi'")
-	}
 	if args == nil {
-		args = &ResourceArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.ParentId == nil {
+		return nil, errors.New("invalid value for required argument 'ParentId'")
+	}
+	if args.PathPart == nil {
+		return nil, errors.New("invalid value for required argument 'PathPart'")
+	}
+	if args.RestApi == nil {
+		return nil, errors.New("invalid value for required argument 'RestApi'")
 	}
 	var resource Resource
 	err := ctx.RegisterResource("aws:apigateway/resource:Resource", name, args, &resource, opts...)
@@ -138,4 +148,43 @@ type ResourceArgs struct {
 
 func (ResourceArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*resourceArgs)(nil)).Elem()
+}
+
+type ResourceInput interface {
+	pulumi.Input
+
+	ToResourceOutput() ResourceOutput
+	ToResourceOutputWithContext(ctx context.Context) ResourceOutput
+}
+
+func (Resource) ElementType() reflect.Type {
+	return reflect.TypeOf((*Resource)(nil)).Elem()
+}
+
+func (i Resource) ToResourceOutput() ResourceOutput {
+	return i.ToResourceOutputWithContext(context.Background())
+}
+
+func (i Resource) ToResourceOutputWithContext(ctx context.Context) ResourceOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(ResourceOutput)
+}
+
+type ResourceOutput struct {
+	*pulumi.OutputState
+}
+
+func (ResourceOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*ResourceOutput)(nil)).Elem()
+}
+
+func (o ResourceOutput) ToResourceOutput() ResourceOutput {
+	return o
+}
+
+func (o ResourceOutput) ToResourceOutputWithContext(ctx context.Context) ResourceOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(ResourceOutput{})
 }

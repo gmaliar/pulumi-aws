@@ -10,7 +10,7 @@ using Pulumi.Serialization;
 namespace Pulumi.Aws.GuardDuty
 {
     /// <summary>
-    /// Manages a GuardDuty Organization Admin Account. The AWS account utilizing this resource must be an Organizations master account. More information about Organizations support in GuardDuty can be found in the [GuardDuty User Guide](https://docs.aws.amazon.com/guardduty/latest/ug/guardduty_organizations.html).
+    /// Manages a GuardDuty Organization Admin Account. The AWS account utilizing this resource must be an Organizations primary account. More information about Organizations support in GuardDuty can be found in the [GuardDuty User Guide](https://docs.aws.amazon.com/guardduty/latest/ug/guardduty_organizations.html).
     /// 
     /// ## Example Usage
     /// 
@@ -46,6 +46,14 @@ namespace Pulumi.Aws.GuardDuty
     ///     }
     /// 
     /// }
+    /// ```
+    /// 
+    /// ## Import
+    /// 
+    /// GuardDuty Organization Admin Account can be imported using the AWS account ID, e.g.
+    /// 
+    /// ```sh
+    ///  $ pulumi import aws:guardduty/organizationAdminAccount:OrganizationAdminAccount example 123456789012
     /// ```
     /// </summary>
     public partial class OrganizationAdminAccount : Pulumi.CustomResource

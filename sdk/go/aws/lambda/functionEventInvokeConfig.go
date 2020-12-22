@@ -4,6 +4,7 @@
 package lambda
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -21,20 +22,20 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/lambda"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/lambda"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
 // func main() {
 // 	pulumi.Run(func(ctx *pulumi.Context) error {
 // 		_, err := lambda.NewFunctionEventInvokeConfig(ctx, "example", &lambda.FunctionEventInvokeConfigArgs{
-// 			FunctionName: pulumi.String(aws_lambda_alias.Example.Function_name),
+// 			FunctionName: pulumi.Any(aws_lambda_alias.Example.Function_name),
 // 			DestinationConfig: &lambda.FunctionEventInvokeConfigDestinationConfigArgs{
 // 				OnFailure: &lambda.FunctionEventInvokeConfigDestinationConfigOnFailureArgs{
-// 					Destination: pulumi.String(aws_sqs_queue.Example.Arn),
+// 					Destination: pulumi.Any(aws_sqs_queue.Example.Arn),
 // 				},
 // 				OnSuccess: &lambda.FunctionEventInvokeConfigDestinationConfigOnSuccessArgs{
-// 					Destination: pulumi.String(aws_sns_topic.Example.Arn),
+// 					Destination: pulumi.Any(aws_sns_topic.Example.Arn),
 // 				},
 // 			},
 // 		})
@@ -51,14 +52,14 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/lambda"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/lambda"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
 // func main() {
 // 	pulumi.Run(func(ctx *pulumi.Context) error {
 // 		_, err := lambda.NewFunctionEventInvokeConfig(ctx, "example", &lambda.FunctionEventInvokeConfigArgs{
-// 			FunctionName:             pulumi.String(aws_lambda_alias.Example.Function_name),
+// 			FunctionName:             pulumi.Any(aws_lambda_alias.Example.Function_name),
 // 			MaximumEventAgeInSeconds: pulumi.Int(60),
 // 			MaximumRetryAttempts:     pulumi.Int(0),
 // 		})
@@ -75,15 +76,15 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/lambda"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/lambda"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
 // func main() {
 // 	pulumi.Run(func(ctx *pulumi.Context) error {
 // 		_, err := lambda.NewFunctionEventInvokeConfig(ctx, "example", &lambda.FunctionEventInvokeConfigArgs{
-// 			FunctionName: pulumi.String(aws_lambda_alias.Example.Function_name),
-// 			Qualifier:    pulumi.String(aws_lambda_alias.Example.Name),
+// 			FunctionName: pulumi.Any(aws_lambda_alias.Example.Function_name),
+// 			Qualifier:    pulumi.Any(aws_lambda_alias.Example.Name),
 // 		})
 // 		if err != nil {
 // 			return err
@@ -100,14 +101,14 @@ import (
 // import (
 // 	"fmt"
 //
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/lambda"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/lambda"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
 // func main() {
 // 	pulumi.Run(func(ctx *pulumi.Context) error {
 // 		_, err := lambda.NewFunctionEventInvokeConfig(ctx, "example", &lambda.FunctionEventInvokeConfigArgs{
-// 			FunctionName: pulumi.String(aws_lambda_function.Example.Function_name),
+// 			FunctionName: pulumi.Any(aws_lambda_function.Example.Function_name),
 // 			Qualifier:    pulumi.String(fmt.Sprintf("%v%v", "$", "LATEST")),
 // 		})
 // 		if err != nil {
@@ -123,15 +124,15 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/lambda"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/lambda"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
 // func main() {
 // 	pulumi.Run(func(ctx *pulumi.Context) error {
 // 		_, err := lambda.NewFunctionEventInvokeConfig(ctx, "example", &lambda.FunctionEventInvokeConfigArgs{
-// 			FunctionName: pulumi.String(aws_lambda_function.Example.Function_name),
-// 			Qualifier:    pulumi.String(aws_lambda_function.Example.Version),
+// 			FunctionName: pulumi.Any(aws_lambda_function.Example.Function_name),
+// 			Qualifier:    pulumi.Any(aws_lambda_function.Example.Version),
 // 		})
 // 		if err != nil {
 // 			return err
@@ -139,6 +140,32 @@ import (
 // 		return nil
 // 	})
 // }
+// ```
+//
+// ## Import
+//
+// Lambda Function Event Invoke Configs can be imported using the fully qualified Function name or Amazon Resource Name (ARN), e.g. ARN without qualifier (all versions and aliases)
+//
+// ```sh
+//  $ pulumi import aws:lambda/functionEventInvokeConfig:FunctionEventInvokeConfig example arn:aws:us-east-1:123456789012:function:my_function
+// ```
+//
+//  ARN with qualifier
+//
+// ```sh
+//  $ pulumi import aws:lambda/functionEventInvokeConfig:FunctionEventInvokeConfig example arn:aws:us-east-1:123456789012:function:my_function:production
+// ```
+//
+//  Name without qualifier (all versions and aliases)
+//
+// ```sh
+//  $ pulumi import aws:lambda/functionEventInvokeConfig:FunctionEventInvokeConfig example my_function
+// ```
+//
+//  Name with qualifier
+//
+// ```sh
+//  $ pulumi import aws:lambda/functionEventInvokeConfig:FunctionEventInvokeConfig example my_function:production
 // ```
 type FunctionEventInvokeConfig struct {
 	pulumi.CustomResourceState
@@ -158,11 +185,12 @@ type FunctionEventInvokeConfig struct {
 // NewFunctionEventInvokeConfig registers a new resource with the given unique name, arguments, and options.
 func NewFunctionEventInvokeConfig(ctx *pulumi.Context,
 	name string, args *FunctionEventInvokeConfigArgs, opts ...pulumi.ResourceOption) (*FunctionEventInvokeConfig, error) {
-	if args == nil || args.FunctionName == nil {
-		return nil, errors.New("missing required argument 'FunctionName'")
-	}
 	if args == nil {
-		args = &FunctionEventInvokeConfigArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.FunctionName == nil {
+		return nil, errors.New("invalid value for required argument 'FunctionName'")
 	}
 	var resource FunctionEventInvokeConfig
 	err := ctx.RegisterResource("aws:lambda/functionEventInvokeConfig:FunctionEventInvokeConfig", name, args, &resource, opts...)
@@ -244,4 +272,43 @@ type FunctionEventInvokeConfigArgs struct {
 
 func (FunctionEventInvokeConfigArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*functionEventInvokeConfigArgs)(nil)).Elem()
+}
+
+type FunctionEventInvokeConfigInput interface {
+	pulumi.Input
+
+	ToFunctionEventInvokeConfigOutput() FunctionEventInvokeConfigOutput
+	ToFunctionEventInvokeConfigOutputWithContext(ctx context.Context) FunctionEventInvokeConfigOutput
+}
+
+func (FunctionEventInvokeConfig) ElementType() reflect.Type {
+	return reflect.TypeOf((*FunctionEventInvokeConfig)(nil)).Elem()
+}
+
+func (i FunctionEventInvokeConfig) ToFunctionEventInvokeConfigOutput() FunctionEventInvokeConfigOutput {
+	return i.ToFunctionEventInvokeConfigOutputWithContext(context.Background())
+}
+
+func (i FunctionEventInvokeConfig) ToFunctionEventInvokeConfigOutputWithContext(ctx context.Context) FunctionEventInvokeConfigOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(FunctionEventInvokeConfigOutput)
+}
+
+type FunctionEventInvokeConfigOutput struct {
+	*pulumi.OutputState
+}
+
+func (FunctionEventInvokeConfigOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*FunctionEventInvokeConfigOutput)(nil)).Elem()
+}
+
+func (o FunctionEventInvokeConfigOutput) ToFunctionEventInvokeConfigOutput() FunctionEventInvokeConfigOutput {
+	return o
+}
+
+func (o FunctionEventInvokeConfigOutput) ToFunctionEventInvokeConfigOutputWithContext(ctx context.Context) FunctionEventInvokeConfigOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(FunctionEventInvokeConfigOutput{})
 }

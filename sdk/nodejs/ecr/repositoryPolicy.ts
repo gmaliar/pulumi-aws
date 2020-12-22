@@ -19,6 +19,7 @@ import {PolicyDocument} from "../iam";
  *
  * const foo = new aws.ecr.Repository("foo", {});
  * const foopolicy = new aws.ecr.RepositoryPolicy("foopolicy", {
+ *     repository: foo.name,
  *     policy: `{
  *     "Version": "2008-10-17",
  *     "Statement": [
@@ -46,8 +47,15 @@ import {PolicyDocument} from "../iam";
  *     ]
  * }
  * `,
- *     repository: foo.name,
  * });
+ * ```
+ *
+ * ## Import
+ *
+ * ECR Repository Policy can be imported using the repository name, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:ecr/repositoryPolicy:RepositoryPolicy example example
  * ```
  */
 export class RepositoryPolicy extends pulumi.CustomResource {
@@ -108,10 +116,10 @@ export class RepositoryPolicy extends pulumi.CustomResource {
             inputs["repository"] = state ? state.repository : undefined;
         } else {
             const args = argsOrState as RepositoryPolicyArgs | undefined;
-            if (!args || args.policy === undefined) {
+            if ((!args || args.policy === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'policy'");
             }
-            if (!args || args.repository === undefined) {
+            if ((!args || args.repository === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'repository'");
             }
             inputs["policy"] = args ? args.policy : undefined;

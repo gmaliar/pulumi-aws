@@ -13,30 +13,36 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const hogeBucket = new aws.s3.Bucket("hoge", {});
- * const testKey = new aws.kms.Key("test", {
+ * const hogeBucket = new aws.s3.Bucket("hogeBucket", {});
+ * const testKey = new aws.kms.Key("testKey", {
  *     deletionWindowInDays: 7,
  *     description: "Athena KMS Key",
  * });
- * const testWorkgroup = new aws.athena.Workgroup("test", {
- *     configuration: {
- *         resultConfiguration: {
- *             encryptionConfiguration: {
- *                 encryptionOption: "SSE_KMS",
- *                 kmsKeyArn: testKey.arn,
- *             },
+ * const testWorkgroup = new aws.athena.Workgroup("testWorkgroup", {configuration: {
+ *     resultConfiguration: {
+ *         encryptionConfiguration: {
+ *             encryptionOption: "SSE_KMS",
+ *             kmsKeyArn: testKey.arn,
  *         },
  *     },
- * });
- * const hogeDatabase = new aws.athena.Database("hoge", {
- *     bucket: hogeBucket.id,
+ * }});
+ * const hogeDatabase = new aws.athena.Database("hogeDatabase", {
  *     name: "users",
+ *     bucket: hogeBucket.id,
  * });
  * const foo = new aws.athena.NamedQuery("foo", {
+ *     workgroup: testWorkgroup.id,
  *     database: hogeDatabase.name,
  *     query: pulumi.interpolate`SELECT * FROM ${hogeDatabase.name} limit 10;`,
- *     workgroup: testWorkgroup.id,
  * });
+ * ```
+ *
+ * ## Import
+ *
+ * Athena Named Query can be imported using the query ID, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:athena/namedQuery:NamedQuery example 0123456789
  * ```
  */
 export class NamedQuery extends pulumi.CustomResource {
@@ -107,10 +113,10 @@ export class NamedQuery extends pulumi.CustomResource {
             inputs["workgroup"] = state ? state.workgroup : undefined;
         } else {
             const args = argsOrState as NamedQueryArgs | undefined;
-            if (!args || args.database === undefined) {
+            if ((!args || args.database === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'database'");
             }
-            if (!args || args.query === undefined) {
+            if ((!args || args.query === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'query'");
             }
             inputs["database"] = args ? args.database : undefined;

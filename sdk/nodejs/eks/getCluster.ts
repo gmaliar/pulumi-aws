@@ -2,28 +2,11 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 /**
  * Retrieve information about an EKS Cluster.
- *
- * ## Example Usage
- *
- * ```typescript
- * import * as pulumi from "@pulumi/pulumi";
- * import * as aws from "@pulumi/aws";
- *
- * const example = pulumi.output(aws.eks.getCluster({
- *     name: "example",
- * }, { async: true }));
- *
- * export const endpoint = example.endpoint;
- * export const kubeconfig_certificate_authority_data = example.certificateAuthorities.data;
- * // Only available on Kubernetes version 1.13 and 1.14 clusters created or upgraded on or after September 3, 2019.
- * export const identity_oidc_issuer = example.identities[0].oidcs[0].issuer;
- * ```
  */
 export function getCluster(args: GetClusterArgs, opts?: pulumi.InvokeOptions): Promise<GetClusterResult> {
     if (!opts) {
@@ -85,6 +68,10 @@ export interface GetClusterResult {
      * Nested attribute containing identity provider information for your cluster. Only available on Kubernetes version 1.13 and 1.14 clusters created or upgraded on or after September 3, 2019. For an example using this information to enable IAM Roles for Service Accounts, see the `aws.eks.Cluster` resource documentation.
      */
     readonly identities: outputs.eks.GetClusterIdentity[];
+    /**
+     * Nested list containing Kubernetes Network Configuration.
+     */
+    readonly kubernetesNetworkConfigs: outputs.eks.GetClusterKubernetesNetworkConfig[];
     readonly name: string;
     /**
      * The platform version for the cluster.

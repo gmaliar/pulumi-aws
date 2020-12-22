@@ -13,19 +13,29 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const exampleRestApi = new aws.apigateway.RestApi("example", {});
- * const exampleDocumentationPart = new aws.apigateway.DocumentationPart("example", {
+ * const exampleRestApi = new aws.apigateway.RestApi("exampleRestApi", {});
+ * const exampleDocumentationPart = new aws.apigateway.DocumentationPart("exampleDocumentationPart", {
  *     location: {
  *         type: "API",
  *     },
  *     properties: "{\"description\":\"Example\"}",
  *     restApiId: exampleRestApi.id,
  * });
- * const exampleDocumentationVersion = new aws.apigateway.DocumentationVersion("example", {
- *     description: "Example description",
- *     restApiId: exampleRestApi.id,
+ * const exampleDocumentationVersion = new aws.apigateway.DocumentationVersion("exampleDocumentationVersion", {
  *     version: "example_version",
- * }, { dependsOn: [exampleDocumentationPart] });
+ *     restApiId: exampleRestApi.id,
+ *     description: "Example description",
+ * }, {
+ *     dependsOn: [exampleDocumentationPart],
+ * });
+ * ```
+ *
+ * ## Import
+ *
+ * API Gateway documentation versions can be imported using `REST-API-ID/VERSION`, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:apigateway/documentationVersion:DocumentationVersion example 5i4e1ko720/example-version
  * ```
  */
 export class DocumentationVersion extends pulumi.CustomResource {
@@ -86,10 +96,10 @@ export class DocumentationVersion extends pulumi.CustomResource {
             inputs["version"] = state ? state.version : undefined;
         } else {
             const args = argsOrState as DocumentationVersionArgs | undefined;
-            if (!args || args.restApiId === undefined) {
+            if ((!args || args.restApiId === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'restApiId'");
             }
-            if (!args || args.version === undefined) {
+            if ((!args || args.version === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'version'");
             }
             inputs["description"] = args ? args.description : undefined;

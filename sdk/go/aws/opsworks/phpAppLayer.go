@@ -4,6 +4,7 @@
 package opsworks
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -18,14 +19,14 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/opsworks"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/opsworks"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
 // func main() {
 // 	pulumi.Run(func(ctx *pulumi.Context) error {
 // 		_, err := opsworks.NewPhpAppLayer(ctx, "app", &opsworks.PhpAppLayerArgs{
-// 			StackId: pulumi.String(aws_opsworks_stack.Main.Id),
+// 			StackId: pulumi.Any(aws_opsworks_stack.Main.Id),
 // 		})
 // 		if err != nil {
 // 			return err
@@ -33,6 +34,14 @@ import (
 // 		return nil
 // 	})
 // }
+// ```
+//
+// ## Import
+//
+// OpsWorks PHP Application Layers can be imported using the `id`, e.g.
+//
+// ```sh
+//  $ pulumi import aws:opsworks/phpAppLayer:PhpAppLayer bar 00000000-0000-0000-0000-000000000000
 // ```
 type PhpAppLayer struct {
 	pulumi.CustomResourceState
@@ -81,11 +90,12 @@ type PhpAppLayer struct {
 // NewPhpAppLayer registers a new resource with the given unique name, arguments, and options.
 func NewPhpAppLayer(ctx *pulumi.Context,
 	name string, args *PhpAppLayerArgs, opts ...pulumi.ResourceOption) (*PhpAppLayer, error) {
-	if args == nil || args.StackId == nil {
-		return nil, errors.New("missing required argument 'StackId'")
-	}
 	if args == nil {
-		args = &PhpAppLayerArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.StackId == nil {
+		return nil, errors.New("invalid value for required argument 'StackId'")
 	}
 	var resource PhpAppLayer
 	err := ctx.RegisterResource("aws:opsworks/phpAppLayer:PhpAppLayer", name, args, &resource, opts...)
@@ -279,4 +289,43 @@ type PhpAppLayerArgs struct {
 
 func (PhpAppLayerArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*phpAppLayerArgs)(nil)).Elem()
+}
+
+type PhpAppLayerInput interface {
+	pulumi.Input
+
+	ToPhpAppLayerOutput() PhpAppLayerOutput
+	ToPhpAppLayerOutputWithContext(ctx context.Context) PhpAppLayerOutput
+}
+
+func (PhpAppLayer) ElementType() reflect.Type {
+	return reflect.TypeOf((*PhpAppLayer)(nil)).Elem()
+}
+
+func (i PhpAppLayer) ToPhpAppLayerOutput() PhpAppLayerOutput {
+	return i.ToPhpAppLayerOutputWithContext(context.Background())
+}
+
+func (i PhpAppLayer) ToPhpAppLayerOutputWithContext(ctx context.Context) PhpAppLayerOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(PhpAppLayerOutput)
+}
+
+type PhpAppLayerOutput struct {
+	*pulumi.OutputState
+}
+
+func (PhpAppLayerOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*PhpAppLayerOutput)(nil)).Elem()
+}
+
+func (o PhpAppLayerOutput) ToPhpAppLayerOutput() PhpAppLayerOutput {
+	return o
+}
+
+func (o PhpAppLayerOutput) ToPhpAppLayerOutputWithContext(ctx context.Context) PhpAppLayerOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(PhpAppLayerOutput{})
 }

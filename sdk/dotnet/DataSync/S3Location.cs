@@ -25,15 +25,23 @@ namespace Pulumi.Aws.DataSync
     ///         var example = new Aws.DataSync.S3Location("example", new Aws.DataSync.S3LocationArgs
     ///         {
     ///             S3BucketArn = aws_s3_bucket.Example.Arn,
+    ///             Subdirectory = "/example/prefix",
     ///             S3Config = new Aws.DataSync.Inputs.S3LocationS3ConfigArgs
     ///             {
     ///                 BucketAccessRoleArn = aws_iam_role.Example.Arn,
     ///             },
-    ///             Subdirectory = "/example/prefix",
     ///         });
     ///     }
     /// 
     /// }
+    /// ```
+    /// 
+    /// ## Import
+    /// 
+    /// `aws_datasync_location_s3` can be imported by using the DataSync Task Amazon Resource Name (ARN), e.g.
+    /// 
+    /// ```sh
+    ///  $ pulumi import aws:datasync/s3Location:S3Location example arn:aws:datasync:us-east-1:123456789012:location/loc-12345678901234567
     /// ```
     /// </summary>
     public partial class S3Location : Pulumi.CustomResource

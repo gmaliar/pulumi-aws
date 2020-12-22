@@ -2,8 +2,7 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 /**
@@ -28,7 +27,7 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const test = pulumi.output(aws.ec2.getSecurityGroups({
+ * const test = aws.ec2.getSecurityGroups({
  *     filters: [
  *         {
  *             name: "group-name",
@@ -36,10 +35,10 @@ import * as utilities from "../utilities";
  *         },
  *         {
  *             name: "vpc-id",
- *             values: [var_vpc_id],
+ *             values: [_var.vpc_id],
  *         },
  *     ],
- * }, { async: true }));
+ * });
  * ```
  */
 export function getSecurityGroups(args?: GetSecurityGroupsArgs, opts?: pulumi.InvokeOptions): Promise<GetSecurityGroupsResult> {

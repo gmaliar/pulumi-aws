@@ -4,6 +4,7 @@
 package s3
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -13,13 +14,13 @@ import (
 // Provides a resource to manage an S3 Access Point.
 //
 // ## Example Usage
-// ### Basic Usage
+// ### AWS Partition Bucket
 //
 // ```go
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/s3"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/s3"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -39,20 +40,23 @@ import (
 // 	})
 // }
 // ```
-// ### Access Point Restricted to a VPC
+// ### S3 on Outposts Bucket
 //
 // ```go
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/ec2"
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/s3"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/ec2"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/s3"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/s3control"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
 // func main() {
 // 	pulumi.Run(func(ctx *pulumi.Context) error {
-// 		exampleBucket, err := s3.NewBucket(ctx, "exampleBucket", nil)
+// 		exampleBucket, err := s3control.NewBucket(ctx, "exampleBucket", &s3control.BucketArgs{
+// 			Bucket: pulumi.String("example"),
+// 		})
 // 		if err != nil {
 // 			return err
 // 		}
@@ -63,7 +67,7 @@ import (
 // 			return err
 // 		}
 // 		_, err = s3.NewAccessPoint(ctx, "exampleAccessPoint", &s3.AccessPointArgs{
-// 			Bucket: exampleBucket.ID(),
+// 			Bucket: exampleBucket.Arn,
 // 			VpcConfiguration: &s3.AccessPointVpcConfigurationArgs{
 // 				VpcId: exampleVpc.ID(),
 // 			},
@@ -75,6 +79,20 @@ import (
 // 	})
 // }
 // ```
+//
+// ## Import
+//
+// For Access Points associated with an AWS Partition S3 Bucket, this resource can be imported using the `account_id` and `name` separated by a colon (`:`), e.g.
+//
+// ```sh
+//  $ pulumi import aws:s3/accessPoint:AccessPoint example 123456789012:example
+// ```
+//
+//  For Access Points associated with an S3 on Outposts Bucket, this resource can be imported using the Amazon Resource Name (ARN), e.g.
+//
+// ```sh
+//  $ pulumi import aws:s3/accessPoint:AccessPoint example arn:aws:s3-outposts:us-east-1:123456789012:outpost/op-1234567890123456/accesspoint/example
+// ```
 type AccessPoint struct {
 	pulumi.CustomResourceState
 
@@ -82,7 +100,7 @@ type AccessPoint struct {
 	AccountId pulumi.StringOutput `pulumi:"accountId"`
 	// Amazon Resource Name (ARN) of the S3 Access Point.
 	Arn pulumi.StringOutput `pulumi:"arn"`
-	// The name of the bucket that you want to associate this access point with.
+	// The name of an AWS Partition S3 Bucket or the Amazon Resource Name (ARN) of S3 on Outposts Bucket that you want to associate this access point with.
 	Bucket pulumi.StringOutput `pulumi:"bucket"`
 	// The DNS domain name of the S3 Access Point in the format _`name`_-_`accountId`_.s3-accesspoint._region_.amazonaws.com.
 	// Note: S3 access points only support secure access by HTTPS. HTTP isn't supported.
@@ -97,18 +115,19 @@ type AccessPoint struct {
 	Policy pulumi.StringPtrOutput `pulumi:"policy"`
 	// Configuration block to manage the `PublicAccessBlock` configuration that you want to apply to this Amazon S3 bucket. You can enable the configuration options in any combination. Detailed below.
 	PublicAccessBlockConfiguration AccessPointPublicAccessBlockConfigurationPtrOutput `pulumi:"publicAccessBlockConfiguration"`
-	// Configuration block to restrict access to this access point to requests from the specified Virtual Private Cloud (VPC). Detailed below.
+	// Configuration block to restrict access to this access point to requests from the specified Virtual Private Cloud (VPC). Required for S3 on Outposts. Detailed below.
 	VpcConfiguration AccessPointVpcConfigurationPtrOutput `pulumi:"vpcConfiguration"`
 }
 
 // NewAccessPoint registers a new resource with the given unique name, arguments, and options.
 func NewAccessPoint(ctx *pulumi.Context,
 	name string, args *AccessPointArgs, opts ...pulumi.ResourceOption) (*AccessPoint, error) {
-	if args == nil || args.Bucket == nil {
-		return nil, errors.New("missing required argument 'Bucket'")
-	}
 	if args == nil {
-		args = &AccessPointArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.Bucket == nil {
+		return nil, errors.New("invalid value for required argument 'Bucket'")
 	}
 	var resource AccessPoint
 	err := ctx.RegisterResource("aws:s3/accessPoint:AccessPoint", name, args, &resource, opts...)
@@ -136,7 +155,7 @@ type accessPointState struct {
 	AccountId *string `pulumi:"accountId"`
 	// Amazon Resource Name (ARN) of the S3 Access Point.
 	Arn *string `pulumi:"arn"`
-	// The name of the bucket that you want to associate this access point with.
+	// The name of an AWS Partition S3 Bucket or the Amazon Resource Name (ARN) of S3 on Outposts Bucket that you want to associate this access point with.
 	Bucket *string `pulumi:"bucket"`
 	// The DNS domain name of the S3 Access Point in the format _`name`_-_`accountId`_.s3-accesspoint._region_.amazonaws.com.
 	// Note: S3 access points only support secure access by HTTPS. HTTP isn't supported.
@@ -151,7 +170,7 @@ type accessPointState struct {
 	Policy *string `pulumi:"policy"`
 	// Configuration block to manage the `PublicAccessBlock` configuration that you want to apply to this Amazon S3 bucket. You can enable the configuration options in any combination. Detailed below.
 	PublicAccessBlockConfiguration *AccessPointPublicAccessBlockConfiguration `pulumi:"publicAccessBlockConfiguration"`
-	// Configuration block to restrict access to this access point to requests from the specified Virtual Private Cloud (VPC). Detailed below.
+	// Configuration block to restrict access to this access point to requests from the specified Virtual Private Cloud (VPC). Required for S3 on Outposts. Detailed below.
 	VpcConfiguration *AccessPointVpcConfiguration `pulumi:"vpcConfiguration"`
 }
 
@@ -160,7 +179,7 @@ type AccessPointState struct {
 	AccountId pulumi.StringPtrInput
 	// Amazon Resource Name (ARN) of the S3 Access Point.
 	Arn pulumi.StringPtrInput
-	// The name of the bucket that you want to associate this access point with.
+	// The name of an AWS Partition S3 Bucket or the Amazon Resource Name (ARN) of S3 on Outposts Bucket that you want to associate this access point with.
 	Bucket pulumi.StringPtrInput
 	// The DNS domain name of the S3 Access Point in the format _`name`_-_`accountId`_.s3-accesspoint._region_.amazonaws.com.
 	// Note: S3 access points only support secure access by HTTPS. HTTP isn't supported.
@@ -175,7 +194,7 @@ type AccessPointState struct {
 	Policy pulumi.StringPtrInput
 	// Configuration block to manage the `PublicAccessBlock` configuration that you want to apply to this Amazon S3 bucket. You can enable the configuration options in any combination. Detailed below.
 	PublicAccessBlockConfiguration AccessPointPublicAccessBlockConfigurationPtrInput
-	// Configuration block to restrict access to this access point to requests from the specified Virtual Private Cloud (VPC). Detailed below.
+	// Configuration block to restrict access to this access point to requests from the specified Virtual Private Cloud (VPC). Required for S3 on Outposts. Detailed below.
 	VpcConfiguration AccessPointVpcConfigurationPtrInput
 }
 
@@ -186,7 +205,7 @@ func (AccessPointState) ElementType() reflect.Type {
 type accessPointArgs struct {
 	// The AWS account ID for the owner of the bucket for which you want to create an access point. Defaults to automatically determined account ID of the provider.
 	AccountId *string `pulumi:"accountId"`
-	// The name of the bucket that you want to associate this access point with.
+	// The name of an AWS Partition S3 Bucket or the Amazon Resource Name (ARN) of S3 on Outposts Bucket that you want to associate this access point with.
 	Bucket string `pulumi:"bucket"`
 	// The name you want to assign to this access point.
 	Name *string `pulumi:"name"`
@@ -194,7 +213,7 @@ type accessPointArgs struct {
 	Policy *string `pulumi:"policy"`
 	// Configuration block to manage the `PublicAccessBlock` configuration that you want to apply to this Amazon S3 bucket. You can enable the configuration options in any combination. Detailed below.
 	PublicAccessBlockConfiguration *AccessPointPublicAccessBlockConfiguration `pulumi:"publicAccessBlockConfiguration"`
-	// Configuration block to restrict access to this access point to requests from the specified Virtual Private Cloud (VPC). Detailed below.
+	// Configuration block to restrict access to this access point to requests from the specified Virtual Private Cloud (VPC). Required for S3 on Outposts. Detailed below.
 	VpcConfiguration *AccessPointVpcConfiguration `pulumi:"vpcConfiguration"`
 }
 
@@ -202,7 +221,7 @@ type accessPointArgs struct {
 type AccessPointArgs struct {
 	// The AWS account ID for the owner of the bucket for which you want to create an access point. Defaults to automatically determined account ID of the provider.
 	AccountId pulumi.StringPtrInput
-	// The name of the bucket that you want to associate this access point with.
+	// The name of an AWS Partition S3 Bucket or the Amazon Resource Name (ARN) of S3 on Outposts Bucket that you want to associate this access point with.
 	Bucket pulumi.StringInput
 	// The name you want to assign to this access point.
 	Name pulumi.StringPtrInput
@@ -210,10 +229,49 @@ type AccessPointArgs struct {
 	Policy pulumi.StringPtrInput
 	// Configuration block to manage the `PublicAccessBlock` configuration that you want to apply to this Amazon S3 bucket. You can enable the configuration options in any combination. Detailed below.
 	PublicAccessBlockConfiguration AccessPointPublicAccessBlockConfigurationPtrInput
-	// Configuration block to restrict access to this access point to requests from the specified Virtual Private Cloud (VPC). Detailed below.
+	// Configuration block to restrict access to this access point to requests from the specified Virtual Private Cloud (VPC). Required for S3 on Outposts. Detailed below.
 	VpcConfiguration AccessPointVpcConfigurationPtrInput
 }
 
 func (AccessPointArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*accessPointArgs)(nil)).Elem()
+}
+
+type AccessPointInput interface {
+	pulumi.Input
+
+	ToAccessPointOutput() AccessPointOutput
+	ToAccessPointOutputWithContext(ctx context.Context) AccessPointOutput
+}
+
+func (AccessPoint) ElementType() reflect.Type {
+	return reflect.TypeOf((*AccessPoint)(nil)).Elem()
+}
+
+func (i AccessPoint) ToAccessPointOutput() AccessPointOutput {
+	return i.ToAccessPointOutputWithContext(context.Background())
+}
+
+func (i AccessPoint) ToAccessPointOutputWithContext(ctx context.Context) AccessPointOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(AccessPointOutput)
+}
+
+type AccessPointOutput struct {
+	*pulumi.OutputState
+}
+
+func (AccessPointOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*AccessPointOutput)(nil)).Elem()
+}
+
+func (o AccessPointOutput) ToAccessPointOutput() AccessPointOutput {
+	return o
+}
+
+func (o AccessPointOutput) ToAccessPointOutputWithContext(ctx context.Context) AccessPointOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(AccessPointOutput{})
 }

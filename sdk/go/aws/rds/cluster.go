@@ -4,6 +4,7 @@
 package rds
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
@@ -35,7 +36,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/rds"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/rds"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -48,7 +49,6 @@ import (
 // 				pulumi.String("us-west-2c"),
 // 			},
 // 			BackupRetentionPeriod: pulumi.Int(5),
-// 			ClusterIdentifier:     pulumi.String("aurora-cluster-demo"),
 // 			DatabaseName:          pulumi.String("mydb"),
 // 			Engine:                pulumi.String("aurora-mysql"),
 // 			EngineVersion:         pulumi.String("5.7.mysql_aurora.2.03.2"),
@@ -69,7 +69,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/rds"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/rds"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -82,7 +82,6 @@ import (
 // 				pulumi.String("us-west-2c"),
 // 			},
 // 			BackupRetentionPeriod: pulumi.Int(5),
-// 			ClusterIdentifier:     pulumi.String("aurora-cluster-demo"),
 // 			DatabaseName:          pulumi.String("mydb"),
 // 			MasterPassword:        pulumi.String("bar"),
 // 			MasterUsername:        pulumi.String("foo"),
@@ -101,7 +100,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/rds"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/rds"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -114,7 +113,6 @@ import (
 // 				pulumi.String("us-west-2c"),
 // 			},
 // 			BackupRetentionPeriod: pulumi.Int(5),
-// 			ClusterIdentifier:     pulumi.String("aurora-cluster-demo"),
 // 			DatabaseName:          pulumi.String("mydb"),
 // 			Engine:                pulumi.String("aurora-postgresql"),
 // 			MasterPassword:        pulumi.String("bar"),
@@ -136,15 +134,14 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/rds"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/rds"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
 // func main() {
 // 	pulumi.Run(func(ctx *pulumi.Context) error {
 // 		_, err := rds.NewCluster(ctx, "example", &rds.ClusterArgs{
-// 			ClusterIdentifier: pulumi.String("example"),
-// 			DbSubnetGroupName: pulumi.String(aws_db_subnet_group.Example.Name),
+// 			DbSubnetGroupName: pulumi.Any(aws_db_subnet_group.Example.Name),
 // 			EngineMode:        pulumi.String("multimaster"),
 // 			MasterPassword:    pulumi.String("barbarbarbar"),
 // 			MasterUsername:    pulumi.String("foo"),
@@ -157,9 +154,19 @@ import (
 // 	})
 // }
 // ```
+//
+// ## Import
+//
+// RDS Clusters can be imported using the `cluster_identifier`, e.g.
+//
+// ```sh
+//  $ pulumi import aws:rds/cluster:Cluster aurora_cluster aurora-prod-cluster
+// ```
 type Cluster struct {
 	pulumi.CustomResourceState
 
+	// Enable to allow major engine version upgrades when changing engine versions. Defaults to `false`.
+	AllowMajorVersionUpgrade pulumi.BoolPtrOutput `pulumi:"allowMajorVersionUpgrade"`
 	// Specifies whether any cluster modifications are applied immediately, or during the next maintenance window. Default is `false`. See [Amazon RDS Documentation for more information.](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Overview.DBInstance.Modifying.html)
 	ApplyImmediately pulumi.BoolOutput `pulumi:"applyImmediately"`
 	// Amazon Resource Name (ARN) of cluster
@@ -190,13 +197,13 @@ type Cluster struct {
 	DeletionProtection pulumi.BoolPtrOutput `pulumi:"deletionProtection"`
 	// Enable HTTP endpoint (data API). Only valid when `engineMode` is set to `serverless`.
 	EnableHttpEndpoint pulumi.BoolPtrOutput `pulumi:"enableHttpEndpoint"`
-	// List of log types to export to cloudwatch. If omitted, no logs will be exported. The following log types are supported: `audit`, `error`, `general`, `slowquery`, `postgresql` (PostgreSQL).
+	// Set of log types to export to cloudwatch. If omitted, no logs will be exported. The following log types are supported: `audit`, `error`, `general`, `slowquery`, `postgresql` (PostgreSQL).
 	EnabledCloudwatchLogsExports pulumi.StringArrayOutput `pulumi:"enabledCloudwatchLogsExports"`
 	// The DNS address of the RDS instance
 	Endpoint pulumi.StringOutput `pulumi:"endpoint"`
 	// The name of the database engine to be used for this DB cluster. Defaults to `aurora`. Valid Values: `aurora`, `aurora-mysql`, `aurora-postgresql`
 	Engine pulumi.StringPtrOutput `pulumi:"engine"`
-	// The database engine mode. Valid values: `global`, `multimaster`, `parallelquery`, `provisioned`, `serverless`. Defaults to: `provisioned`. See the [RDS User Guide](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/aurora-serverless.html) for limitations when using `serverless`.
+	// The database engine mode. Valid values: `global` (only valid for Aurora MySQL 1.21 and earlier), `multimaster`, `parallelquery`, `provisioned`, `serverless`. Defaults to: `provisioned`. See the [RDS User Guide](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/aurora-serverless.html) for limitations when using `serverless`.
 	EngineMode pulumi.StringPtrOutput `pulumi:"engineMode"`
 	// The database engine version. Updating this argument results in an outage. See the [Aurora MySQL](https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/AuroraMySQL.Updates.html) and [Aurora Postgres](https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/AuroraPostgreSQL.Updates.html) documentation for your configured engine to determine this value. For example with Aurora MySQL 2, a potential value for this argument is `5.7.mysql_aurora.2.03.2`.
 	EngineVersion pulumi.StringOutput `pulumi:"engineVersion"`
@@ -225,9 +232,11 @@ type Cluster struct {
 	// A read-only endpoint for the Aurora cluster, automatically
 	// load-balanced across replicas
 	ReaderEndpoint pulumi.StringOutput `pulumi:"readerEndpoint"`
-	// ARN of a source DB cluster or DB instance if this DB cluster is to be created as a Read Replica.
-	ReplicationSourceIdentifier pulumi.StringPtrOutput   `pulumi:"replicationSourceIdentifier"`
-	S3Import                    ClusterS3ImportPtrOutput `pulumi:"s3Import"`
+	// ARN of the source DB cluster or DB instance if this DB cluster is created as a Read Replica.
+	ReplicationSourceIdentifier pulumi.StringPtrOutput `pulumi:"replicationSourceIdentifier"`
+	// Nested attribute for [point in time restore](https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/USER_PIT.html). More details below.
+	RestoreToPointInTime ClusterRestoreToPointInTimePtrOutput `pulumi:"restoreToPointInTime"`
+	S3Import             ClusterS3ImportPtrOutput             `pulumi:"s3Import"`
 	// Nested attribute with scaling properties. Only valid when `engineMode` is set to `serverless`. More details below.
 	ScalingConfiguration ClusterScalingConfigurationPtrOutput `pulumi:"scalingConfiguration"`
 	// Determines whether a final DB snapshot is created before the DB cluster is deleted. If true is specified, no DB snapshot is created. If false is specified, a DB snapshot is created before the DB cluster is deleted, using the value from `finalSnapshotIdentifier`. Default is `false`.
@@ -236,8 +245,8 @@ type Cluster struct {
 	SnapshotIdentifier pulumi.StringPtrOutput `pulumi:"snapshotIdentifier"`
 	// The source region for an encrypted replica DB cluster.
 	SourceRegion pulumi.StringPtrOutput `pulumi:"sourceRegion"`
-	// Specifies whether the DB cluster is encrypted. The default is `false` for `provisioned` `engineMode` and `true` for `serverless` `engineMode`.
-	StorageEncrypted pulumi.BoolPtrOutput `pulumi:"storageEncrypted"`
+	// Specifies whether the DB cluster is encrypted
+	StorageEncrypted pulumi.BoolOutput `pulumi:"storageEncrypted"`
 	// A map of tags to assign to the DB cluster.
 	Tags pulumi.StringMapOutput `pulumi:"tags"`
 	// List of VPC security groups to associate with the Cluster
@@ -250,6 +259,7 @@ func NewCluster(ctx *pulumi.Context,
 	if args == nil {
 		args = &ClusterArgs{}
 	}
+
 	var resource Cluster
 	err := ctx.RegisterResource("aws:rds/cluster:Cluster", name, args, &resource, opts...)
 	if err != nil {
@@ -272,6 +282,8 @@ func GetCluster(ctx *pulumi.Context,
 
 // Input properties used for looking up and filtering Cluster resources.
 type clusterState struct {
+	// Enable to allow major engine version upgrades when changing engine versions. Defaults to `false`.
+	AllowMajorVersionUpgrade *bool `pulumi:"allowMajorVersionUpgrade"`
 	// Specifies whether any cluster modifications are applied immediately, or during the next maintenance window. Default is `false`. See [Amazon RDS Documentation for more information.](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Overview.DBInstance.Modifying.html)
 	ApplyImmediately *bool `pulumi:"applyImmediately"`
 	// Amazon Resource Name (ARN) of cluster
@@ -302,13 +314,13 @@ type clusterState struct {
 	DeletionProtection *bool `pulumi:"deletionProtection"`
 	// Enable HTTP endpoint (data API). Only valid when `engineMode` is set to `serverless`.
 	EnableHttpEndpoint *bool `pulumi:"enableHttpEndpoint"`
-	// List of log types to export to cloudwatch. If omitted, no logs will be exported. The following log types are supported: `audit`, `error`, `general`, `slowquery`, `postgresql` (PostgreSQL).
+	// Set of log types to export to cloudwatch. If omitted, no logs will be exported. The following log types are supported: `audit`, `error`, `general`, `slowquery`, `postgresql` (PostgreSQL).
 	EnabledCloudwatchLogsExports []string `pulumi:"enabledCloudwatchLogsExports"`
 	// The DNS address of the RDS instance
 	Endpoint *string `pulumi:"endpoint"`
 	// The name of the database engine to be used for this DB cluster. Defaults to `aurora`. Valid Values: `aurora`, `aurora-mysql`, `aurora-postgresql`
 	Engine *string `pulumi:"engine"`
-	// The database engine mode. Valid values: `global`, `multimaster`, `parallelquery`, `provisioned`, `serverless`. Defaults to: `provisioned`. See the [RDS User Guide](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/aurora-serverless.html) for limitations when using `serverless`.
+	// The database engine mode. Valid values: `global` (only valid for Aurora MySQL 1.21 and earlier), `multimaster`, `parallelquery`, `provisioned`, `serverless`. Defaults to: `provisioned`. See the [RDS User Guide](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/aurora-serverless.html) for limitations when using `serverless`.
 	EngineMode *string `pulumi:"engineMode"`
 	// The database engine version. Updating this argument results in an outage. See the [Aurora MySQL](https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/AuroraMySQL.Updates.html) and [Aurora Postgres](https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/AuroraPostgreSQL.Updates.html) documentation for your configured engine to determine this value. For example with Aurora MySQL 2, a potential value for this argument is `5.7.mysql_aurora.2.03.2`.
 	EngineVersion *string `pulumi:"engineVersion"`
@@ -337,9 +349,11 @@ type clusterState struct {
 	// A read-only endpoint for the Aurora cluster, automatically
 	// load-balanced across replicas
 	ReaderEndpoint *string `pulumi:"readerEndpoint"`
-	// ARN of a source DB cluster or DB instance if this DB cluster is to be created as a Read Replica.
-	ReplicationSourceIdentifier *string          `pulumi:"replicationSourceIdentifier"`
-	S3Import                    *ClusterS3Import `pulumi:"s3Import"`
+	// ARN of the source DB cluster or DB instance if this DB cluster is created as a Read Replica.
+	ReplicationSourceIdentifier *string `pulumi:"replicationSourceIdentifier"`
+	// Nested attribute for [point in time restore](https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/USER_PIT.html). More details below.
+	RestoreToPointInTime *ClusterRestoreToPointInTime `pulumi:"restoreToPointInTime"`
+	S3Import             *ClusterS3Import             `pulumi:"s3Import"`
 	// Nested attribute with scaling properties. Only valid when `engineMode` is set to `serverless`. More details below.
 	ScalingConfiguration *ClusterScalingConfiguration `pulumi:"scalingConfiguration"`
 	// Determines whether a final DB snapshot is created before the DB cluster is deleted. If true is specified, no DB snapshot is created. If false is specified, a DB snapshot is created before the DB cluster is deleted, using the value from `finalSnapshotIdentifier`. Default is `false`.
@@ -348,7 +362,7 @@ type clusterState struct {
 	SnapshotIdentifier *string `pulumi:"snapshotIdentifier"`
 	// The source region for an encrypted replica DB cluster.
 	SourceRegion *string `pulumi:"sourceRegion"`
-	// Specifies whether the DB cluster is encrypted. The default is `false` for `provisioned` `engineMode` and `true` for `serverless` `engineMode`.
+	// Specifies whether the DB cluster is encrypted
 	StorageEncrypted *bool `pulumi:"storageEncrypted"`
 	// A map of tags to assign to the DB cluster.
 	Tags map[string]string `pulumi:"tags"`
@@ -357,6 +371,8 @@ type clusterState struct {
 }
 
 type ClusterState struct {
+	// Enable to allow major engine version upgrades when changing engine versions. Defaults to `false`.
+	AllowMajorVersionUpgrade pulumi.BoolPtrInput
 	// Specifies whether any cluster modifications are applied immediately, or during the next maintenance window. Default is `false`. See [Amazon RDS Documentation for more information.](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Overview.DBInstance.Modifying.html)
 	ApplyImmediately pulumi.BoolPtrInput
 	// Amazon Resource Name (ARN) of cluster
@@ -387,13 +403,13 @@ type ClusterState struct {
 	DeletionProtection pulumi.BoolPtrInput
 	// Enable HTTP endpoint (data API). Only valid when `engineMode` is set to `serverless`.
 	EnableHttpEndpoint pulumi.BoolPtrInput
-	// List of log types to export to cloudwatch. If omitted, no logs will be exported. The following log types are supported: `audit`, `error`, `general`, `slowquery`, `postgresql` (PostgreSQL).
+	// Set of log types to export to cloudwatch. If omitted, no logs will be exported. The following log types are supported: `audit`, `error`, `general`, `slowquery`, `postgresql` (PostgreSQL).
 	EnabledCloudwatchLogsExports pulumi.StringArrayInput
 	// The DNS address of the RDS instance
 	Endpoint pulumi.StringPtrInput
 	// The name of the database engine to be used for this DB cluster. Defaults to `aurora`. Valid Values: `aurora`, `aurora-mysql`, `aurora-postgresql`
 	Engine pulumi.StringPtrInput
-	// The database engine mode. Valid values: `global`, `multimaster`, `parallelquery`, `provisioned`, `serverless`. Defaults to: `provisioned`. See the [RDS User Guide](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/aurora-serverless.html) for limitations when using `serverless`.
+	// The database engine mode. Valid values: `global` (only valid for Aurora MySQL 1.21 and earlier), `multimaster`, `parallelquery`, `provisioned`, `serverless`. Defaults to: `provisioned`. See the [RDS User Guide](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/aurora-serverless.html) for limitations when using `serverless`.
 	EngineMode pulumi.StringPtrInput
 	// The database engine version. Updating this argument results in an outage. See the [Aurora MySQL](https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/AuroraMySQL.Updates.html) and [Aurora Postgres](https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/AuroraPostgreSQL.Updates.html) documentation for your configured engine to determine this value. For example with Aurora MySQL 2, a potential value for this argument is `5.7.mysql_aurora.2.03.2`.
 	EngineVersion pulumi.StringPtrInput
@@ -422,9 +438,11 @@ type ClusterState struct {
 	// A read-only endpoint for the Aurora cluster, automatically
 	// load-balanced across replicas
 	ReaderEndpoint pulumi.StringPtrInput
-	// ARN of a source DB cluster or DB instance if this DB cluster is to be created as a Read Replica.
+	// ARN of the source DB cluster or DB instance if this DB cluster is created as a Read Replica.
 	ReplicationSourceIdentifier pulumi.StringPtrInput
-	S3Import                    ClusterS3ImportPtrInput
+	// Nested attribute for [point in time restore](https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/USER_PIT.html). More details below.
+	RestoreToPointInTime ClusterRestoreToPointInTimePtrInput
+	S3Import             ClusterS3ImportPtrInput
 	// Nested attribute with scaling properties. Only valid when `engineMode` is set to `serverless`. More details below.
 	ScalingConfiguration ClusterScalingConfigurationPtrInput
 	// Determines whether a final DB snapshot is created before the DB cluster is deleted. If true is specified, no DB snapshot is created. If false is specified, a DB snapshot is created before the DB cluster is deleted, using the value from `finalSnapshotIdentifier`. Default is `false`.
@@ -433,7 +451,7 @@ type ClusterState struct {
 	SnapshotIdentifier pulumi.StringPtrInput
 	// The source region for an encrypted replica DB cluster.
 	SourceRegion pulumi.StringPtrInput
-	// Specifies whether the DB cluster is encrypted. The default is `false` for `provisioned` `engineMode` and `true` for `serverless` `engineMode`.
+	// Specifies whether the DB cluster is encrypted
 	StorageEncrypted pulumi.BoolPtrInput
 	// A map of tags to assign to the DB cluster.
 	Tags pulumi.StringMapInput
@@ -446,6 +464,8 @@ func (ClusterState) ElementType() reflect.Type {
 }
 
 type clusterArgs struct {
+	// Enable to allow major engine version upgrades when changing engine versions. Defaults to `false`.
+	AllowMajorVersionUpgrade *bool `pulumi:"allowMajorVersionUpgrade"`
 	// Specifies whether any cluster modifications are applied immediately, or during the next maintenance window. Default is `false`. See [Amazon RDS Documentation for more information.](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Overview.DBInstance.Modifying.html)
 	ApplyImmediately *bool `pulumi:"applyImmediately"`
 	// A list of EC2 Availability Zones for the DB cluster storage where DB cluster instances can be created. RDS automatically assigns 3 AZs if less than 3 AZs are configured, which will show as a difference requiring resource recreation next provider update. It is recommended to specify 3 AZs or use [the `ignoreChanges` argument](https://www.pulumi.com/docs/intro/concepts/programming-model/#ignorechanges) if necessary.
@@ -472,11 +492,11 @@ type clusterArgs struct {
 	DeletionProtection *bool `pulumi:"deletionProtection"`
 	// Enable HTTP endpoint (data API). Only valid when `engineMode` is set to `serverless`.
 	EnableHttpEndpoint *bool `pulumi:"enableHttpEndpoint"`
-	// List of log types to export to cloudwatch. If omitted, no logs will be exported. The following log types are supported: `audit`, `error`, `general`, `slowquery`, `postgresql` (PostgreSQL).
+	// Set of log types to export to cloudwatch. If omitted, no logs will be exported. The following log types are supported: `audit`, `error`, `general`, `slowquery`, `postgresql` (PostgreSQL).
 	EnabledCloudwatchLogsExports []string `pulumi:"enabledCloudwatchLogsExports"`
 	// The name of the database engine to be used for this DB cluster. Defaults to `aurora`. Valid Values: `aurora`, `aurora-mysql`, `aurora-postgresql`
 	Engine *string `pulumi:"engine"`
-	// The database engine mode. Valid values: `global`, `multimaster`, `parallelquery`, `provisioned`, `serverless`. Defaults to: `provisioned`. See the [RDS User Guide](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/aurora-serverless.html) for limitations when using `serverless`.
+	// The database engine mode. Valid values: `global` (only valid for Aurora MySQL 1.21 and earlier), `multimaster`, `parallelquery`, `provisioned`, `serverless`. Defaults to: `provisioned`. See the [RDS User Guide](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/aurora-serverless.html) for limitations when using `serverless`.
 	EngineMode *string `pulumi:"engineMode"`
 	// The database engine version. Updating this argument results in an outage. See the [Aurora MySQL](https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/AuroraMySQL.Updates.html) and [Aurora Postgres](https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/AuroraPostgreSQL.Updates.html) documentation for your configured engine to determine this value. For example with Aurora MySQL 2, a potential value for this argument is `5.7.mysql_aurora.2.03.2`.
 	EngineVersion *string `pulumi:"engineVersion"`
@@ -500,9 +520,11 @@ type clusterArgs struct {
 	PreferredBackupWindow *string `pulumi:"preferredBackupWindow"`
 	// The weekly time range during which system maintenance can occur, in (UTC) e.g. wed:04:00-wed:04:30
 	PreferredMaintenanceWindow *string `pulumi:"preferredMaintenanceWindow"`
-	// ARN of a source DB cluster or DB instance if this DB cluster is to be created as a Read Replica.
-	ReplicationSourceIdentifier *string          `pulumi:"replicationSourceIdentifier"`
-	S3Import                    *ClusterS3Import `pulumi:"s3Import"`
+	// ARN of the source DB cluster or DB instance if this DB cluster is created as a Read Replica.
+	ReplicationSourceIdentifier *string `pulumi:"replicationSourceIdentifier"`
+	// Nested attribute for [point in time restore](https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/USER_PIT.html). More details below.
+	RestoreToPointInTime *ClusterRestoreToPointInTime `pulumi:"restoreToPointInTime"`
+	S3Import             *ClusterS3Import             `pulumi:"s3Import"`
 	// Nested attribute with scaling properties. Only valid when `engineMode` is set to `serverless`. More details below.
 	ScalingConfiguration *ClusterScalingConfiguration `pulumi:"scalingConfiguration"`
 	// Determines whether a final DB snapshot is created before the DB cluster is deleted. If true is specified, no DB snapshot is created. If false is specified, a DB snapshot is created before the DB cluster is deleted, using the value from `finalSnapshotIdentifier`. Default is `false`.
@@ -511,7 +533,7 @@ type clusterArgs struct {
 	SnapshotIdentifier *string `pulumi:"snapshotIdentifier"`
 	// The source region for an encrypted replica DB cluster.
 	SourceRegion *string `pulumi:"sourceRegion"`
-	// Specifies whether the DB cluster is encrypted. The default is `false` for `provisioned` `engineMode` and `true` for `serverless` `engineMode`.
+	// Specifies whether the DB cluster is encrypted
 	StorageEncrypted *bool `pulumi:"storageEncrypted"`
 	// A map of tags to assign to the DB cluster.
 	Tags map[string]string `pulumi:"tags"`
@@ -521,6 +543,8 @@ type clusterArgs struct {
 
 // The set of arguments for constructing a Cluster resource.
 type ClusterArgs struct {
+	// Enable to allow major engine version upgrades when changing engine versions. Defaults to `false`.
+	AllowMajorVersionUpgrade pulumi.BoolPtrInput
 	// Specifies whether any cluster modifications are applied immediately, or during the next maintenance window. Default is `false`. See [Amazon RDS Documentation for more information.](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Overview.DBInstance.Modifying.html)
 	ApplyImmediately pulumi.BoolPtrInput
 	// A list of EC2 Availability Zones for the DB cluster storage where DB cluster instances can be created. RDS automatically assigns 3 AZs if less than 3 AZs are configured, which will show as a difference requiring resource recreation next provider update. It is recommended to specify 3 AZs or use [the `ignoreChanges` argument](https://www.pulumi.com/docs/intro/concepts/programming-model/#ignorechanges) if necessary.
@@ -547,11 +571,11 @@ type ClusterArgs struct {
 	DeletionProtection pulumi.BoolPtrInput
 	// Enable HTTP endpoint (data API). Only valid when `engineMode` is set to `serverless`.
 	EnableHttpEndpoint pulumi.BoolPtrInput
-	// List of log types to export to cloudwatch. If omitted, no logs will be exported. The following log types are supported: `audit`, `error`, `general`, `slowquery`, `postgresql` (PostgreSQL).
+	// Set of log types to export to cloudwatch. If omitted, no logs will be exported. The following log types are supported: `audit`, `error`, `general`, `slowquery`, `postgresql` (PostgreSQL).
 	EnabledCloudwatchLogsExports pulumi.StringArrayInput
 	// The name of the database engine to be used for this DB cluster. Defaults to `aurora`. Valid Values: `aurora`, `aurora-mysql`, `aurora-postgresql`
 	Engine pulumi.StringPtrInput
-	// The database engine mode. Valid values: `global`, `multimaster`, `parallelquery`, `provisioned`, `serverless`. Defaults to: `provisioned`. See the [RDS User Guide](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/aurora-serverless.html) for limitations when using `serverless`.
+	// The database engine mode. Valid values: `global` (only valid for Aurora MySQL 1.21 and earlier), `multimaster`, `parallelquery`, `provisioned`, `serverless`. Defaults to: `provisioned`. See the [RDS User Guide](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/aurora-serverless.html) for limitations when using `serverless`.
 	EngineMode pulumi.StringPtrInput
 	// The database engine version. Updating this argument results in an outage. See the [Aurora MySQL](https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/AuroraMySQL.Updates.html) and [Aurora Postgres](https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/AuroraPostgreSQL.Updates.html) documentation for your configured engine to determine this value. For example with Aurora MySQL 2, a potential value for this argument is `5.7.mysql_aurora.2.03.2`.
 	EngineVersion pulumi.StringPtrInput
@@ -575,9 +599,11 @@ type ClusterArgs struct {
 	PreferredBackupWindow pulumi.StringPtrInput
 	// The weekly time range during which system maintenance can occur, in (UTC) e.g. wed:04:00-wed:04:30
 	PreferredMaintenanceWindow pulumi.StringPtrInput
-	// ARN of a source DB cluster or DB instance if this DB cluster is to be created as a Read Replica.
+	// ARN of the source DB cluster or DB instance if this DB cluster is created as a Read Replica.
 	ReplicationSourceIdentifier pulumi.StringPtrInput
-	S3Import                    ClusterS3ImportPtrInput
+	// Nested attribute for [point in time restore](https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/USER_PIT.html). More details below.
+	RestoreToPointInTime ClusterRestoreToPointInTimePtrInput
+	S3Import             ClusterS3ImportPtrInput
 	// Nested attribute with scaling properties. Only valid when `engineMode` is set to `serverless`. More details below.
 	ScalingConfiguration ClusterScalingConfigurationPtrInput
 	// Determines whether a final DB snapshot is created before the DB cluster is deleted. If true is specified, no DB snapshot is created. If false is specified, a DB snapshot is created before the DB cluster is deleted, using the value from `finalSnapshotIdentifier`. Default is `false`.
@@ -586,7 +612,7 @@ type ClusterArgs struct {
 	SnapshotIdentifier pulumi.StringPtrInput
 	// The source region for an encrypted replica DB cluster.
 	SourceRegion pulumi.StringPtrInput
-	// Specifies whether the DB cluster is encrypted. The default is `false` for `provisioned` `engineMode` and `true` for `serverless` `engineMode`.
+	// Specifies whether the DB cluster is encrypted
 	StorageEncrypted pulumi.BoolPtrInput
 	// A map of tags to assign to the DB cluster.
 	Tags pulumi.StringMapInput
@@ -596,4 +622,43 @@ type ClusterArgs struct {
 
 func (ClusterArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*clusterArgs)(nil)).Elem()
+}
+
+type ClusterInput interface {
+	pulumi.Input
+
+	ToClusterOutput() ClusterOutput
+	ToClusterOutputWithContext(ctx context.Context) ClusterOutput
+}
+
+func (Cluster) ElementType() reflect.Type {
+	return reflect.TypeOf((*Cluster)(nil)).Elem()
+}
+
+func (i Cluster) ToClusterOutput() ClusterOutput {
+	return i.ToClusterOutputWithContext(context.Background())
+}
+
+func (i Cluster) ToClusterOutputWithContext(ctx context.Context) ClusterOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(ClusterOutput)
+}
+
+type ClusterOutput struct {
+	*pulumi.OutputState
+}
+
+func (ClusterOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*ClusterOutput)(nil)).Elem()
+}
+
+func (o ClusterOutput) ToClusterOutput() ClusterOutput {
+	return o
+}
+
+func (o ClusterOutput) ToClusterOutputWithContext(ctx context.Context) ClusterOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(ClusterOutput{})
 }

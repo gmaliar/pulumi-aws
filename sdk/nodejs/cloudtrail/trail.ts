@@ -2,8 +2,7 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 /**
@@ -23,10 +22,10 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const current = pulumi.output(aws.getCallerIdentity({ async: true }));
+ * const current = aws.getCallerIdentity({});
  * const foo = new aws.s3.Bucket("foo", {
  *     forceDestroy: true,
- *     policy: pulumi.interpolate`{
+ *     policy: current.then(current => `{
  *     "Version": "2012-10-17",
  *     "Statement": [
  *         {
@@ -54,12 +53,12 @@ import * as utilities from "../utilities";
  *         }
  *     ]
  * }
- * `,
+ * `),
  * });
  * const foobar = new aws.cloudtrail.Trail("foobar", {
- *     includeGlobalServiceEvents: false,
  *     s3BucketName: foo.id,
  *     s3KeyPrefix: "prefix",
+ *     includeGlobalServiceEvents: false,
  * });
  * ```
  * ### Data Event Logging
@@ -121,6 +120,25 @@ import * as utilities from "../utilities";
  *     }],
  * });
  * ```
+ * ### Sending Events to CloudWatch Logs
+ *
+ * ```typescript
+ * import * as pulumi from "@pulumi/pulumi";
+ * import * as aws from "@pulumi/aws";
+ *
+ * const exampleLogGroup = new aws.cloudwatch.LogGroup("example", {});
+ * const exampleTrail = new aws.cloudtrail.Trail("example", {
+ *     cloudWatchLogsGroupArn: pulumi.interpolate`${exampleLogGroup.arn}:*`,
+ * });
+ * ```
+ *
+ * ## Import
+ *
+ * Cloudtrails can be imported using the `name`, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:cloudtrail/trail:Trail sample my-sample-trail
+ * ```
  */
 export class Trail extends pulumi.CustomResource {
     /**
@@ -156,7 +174,7 @@ export class Trail extends pulumi.CustomResource {
     public /*out*/ readonly arn!: pulumi.Output<string>;
     /**
      * Specifies a log group name using an Amazon Resource Name (ARN),
-     * that represents the log group to which CloudTrail logs will be delivered.
+     * that represents the log group to which CloudTrail logs will be delivered. Note that CloudTrail requires the Log Stream wildcard.
      */
     public readonly cloudWatchLogsGroupArn!: pulumi.Output<string | undefined>;
     /**
@@ -187,6 +205,10 @@ export class Trail extends pulumi.CustomResource {
      * from global services such as IAM to the log files. Defaults to `true`.
      */
     public readonly includeGlobalServiceEvents!: pulumi.Output<boolean | undefined>;
+    /**
+     * Specifies an insight selector for identifying unusual operational activity. Fields documented below.
+     */
+    public readonly insightSelectors!: pulumi.Output<outputs.cloudtrail.TrailInsightSelector[] | undefined>;
     /**
      * Specifies whether the trail is created in the current
      * region or in all regions. Defaults to `false`.
@@ -243,6 +265,7 @@ export class Trail extends pulumi.CustomResource {
             inputs["eventSelectors"] = state ? state.eventSelectors : undefined;
             inputs["homeRegion"] = state ? state.homeRegion : undefined;
             inputs["includeGlobalServiceEvents"] = state ? state.includeGlobalServiceEvents : undefined;
+            inputs["insightSelectors"] = state ? state.insightSelectors : undefined;
             inputs["isMultiRegionTrail"] = state ? state.isMultiRegionTrail : undefined;
             inputs["isOrganizationTrail"] = state ? state.isOrganizationTrail : undefined;
             inputs["kmsKeyId"] = state ? state.kmsKeyId : undefined;
@@ -253,7 +276,7 @@ export class Trail extends pulumi.CustomResource {
             inputs["tags"] = state ? state.tags : undefined;
         } else {
             const args = argsOrState as TrailArgs | undefined;
-            if (!args || args.s3BucketName === undefined) {
+            if ((!args || args.s3BucketName === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 's3BucketName'");
             }
             inputs["cloudWatchLogsGroupArn"] = args ? args.cloudWatchLogsGroupArn : undefined;
@@ -262,6 +285,7 @@ export class Trail extends pulumi.CustomResource {
             inputs["enableLogging"] = args ? args.enableLogging : undefined;
             inputs["eventSelectors"] = args ? args.eventSelectors : undefined;
             inputs["includeGlobalServiceEvents"] = args ? args.includeGlobalServiceEvents : undefined;
+            inputs["insightSelectors"] = args ? args.insightSelectors : undefined;
             inputs["isMultiRegionTrail"] = args ? args.isMultiRegionTrail : undefined;
             inputs["isOrganizationTrail"] = args ? args.isOrganizationTrail : undefined;
             inputs["kmsKeyId"] = args ? args.kmsKeyId : undefined;
@@ -294,7 +318,7 @@ export interface TrailState {
     readonly arn?: pulumi.Input<string>;
     /**
      * Specifies a log group name using an Amazon Resource Name (ARN),
-     * that represents the log group to which CloudTrail logs will be delivered.
+     * that represents the log group to which CloudTrail logs will be delivered. Note that CloudTrail requires the Log Stream wildcard.
      */
     readonly cloudWatchLogsGroupArn?: pulumi.Input<string>;
     /**
@@ -325,6 +349,10 @@ export interface TrailState {
      * from global services such as IAM to the log files. Defaults to `true`.
      */
     readonly includeGlobalServiceEvents?: pulumi.Input<boolean>;
+    /**
+     * Specifies an insight selector for identifying unusual operational activity. Fields documented below.
+     */
+    readonly insightSelectors?: pulumi.Input<pulumi.Input<inputs.cloudtrail.TrailInsightSelector>[]>;
     /**
      * Specifies whether the trail is created in the current
      * region or in all regions. Defaults to `false`.
@@ -368,7 +396,7 @@ export interface TrailState {
 export interface TrailArgs {
     /**
      * Specifies a log group name using an Amazon Resource Name (ARN),
-     * that represents the log group to which CloudTrail logs will be delivered.
+     * that represents the log group to which CloudTrail logs will be delivered. Note that CloudTrail requires the Log Stream wildcard.
      */
     readonly cloudWatchLogsGroupArn?: pulumi.Input<string>;
     /**
@@ -395,6 +423,10 @@ export interface TrailArgs {
      * from global services such as IAM to the log files. Defaults to `true`.
      */
     readonly includeGlobalServiceEvents?: pulumi.Input<boolean>;
+    /**
+     * Specifies an insight selector for identifying unusual operational activity. Fields documented below.
+     */
+    readonly insightSelectors?: pulumi.Input<pulumi.Input<inputs.cloudtrail.TrailInsightSelector>[]>;
     /**
      * Specifies whether the trail is created in the current
      * region or in all regions. Defaults to `false`.

@@ -4,6 +4,7 @@
 package iam
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -18,7 +19,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/iam"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/iam"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -31,9 +32,9 @@ import (
 // 			return err
 // 		}
 // 		_, err = iam.NewSshKey(ctx, "userSshKey", &iam.SshKeyArgs{
+// 			Username:  userUser.Name,
 // 			Encoding:  pulumi.String("SSH"),
 // 			PublicKey: pulumi.String("ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQD3F6tyPEFEzV0LX3X8BsXdMsQz1x2cEikKDEY0aIj41qgxMCP/iteneqXSIFZBp5vizPvaoIR3Um9xK7PGoW8giupGn+EPuxIA4cDM4vzOqOkiMPhz5XK0whEjkVzTo4+S0puvDZuwIsdiW9mxhJc7tgBNL0cYlWSYVkz4G/fslNfRPW5mYAM49f4fhtxPb5ok4Q2Lg9dPKVHO/Bgeu5woMc7RY0p1ej6D4CKFE6lymSDJpW0YHX/wqE9+cfEauh7xZcG0q9t2ta6F6fmX0agvpFyZo8aFbXeUBr7osSCJNgvavWbM/06niWrOvYX2xwWdhXmXSrbX8ZbabVohBK41 mytest@mydomain.com"),
-// 			Username:  userUser.Name,
 // 		})
 // 		if err != nil {
 // 			return err
@@ -41,6 +42,14 @@ import (
 // 		return nil
 // 	})
 // }
+// ```
+//
+// ## Import
+//
+// SSH public keys can be imported using the `username`, `ssh_public_key_id`, and `encoding` e.g.
+//
+// ```sh
+//  $ pulumi import aws:iam/sshKey:SshKey user user:APKAJNCNNJICVN7CFKCA:SSH
 // ```
 type SshKey struct {
 	pulumi.CustomResourceState
@@ -62,17 +71,18 @@ type SshKey struct {
 // NewSshKey registers a new resource with the given unique name, arguments, and options.
 func NewSshKey(ctx *pulumi.Context,
 	name string, args *SshKeyArgs, opts ...pulumi.ResourceOption) (*SshKey, error) {
-	if args == nil || args.Encoding == nil {
-		return nil, errors.New("missing required argument 'Encoding'")
-	}
-	if args == nil || args.PublicKey == nil {
-		return nil, errors.New("missing required argument 'PublicKey'")
-	}
-	if args == nil || args.Username == nil {
-		return nil, errors.New("missing required argument 'Username'")
-	}
 	if args == nil {
-		args = &SshKeyArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.Encoding == nil {
+		return nil, errors.New("invalid value for required argument 'Encoding'")
+	}
+	if args.PublicKey == nil {
+		return nil, errors.New("invalid value for required argument 'PublicKey'")
+	}
+	if args.Username == nil {
+		return nil, errors.New("invalid value for required argument 'Username'")
 	}
 	var resource SshKey
 	err := ctx.RegisterResource("aws:iam/sshKey:SshKey", name, args, &resource, opts...)
@@ -154,4 +164,43 @@ type SshKeyArgs struct {
 
 func (SshKeyArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*sshKeyArgs)(nil)).Elem()
+}
+
+type SshKeyInput interface {
+	pulumi.Input
+
+	ToSshKeyOutput() SshKeyOutput
+	ToSshKeyOutputWithContext(ctx context.Context) SshKeyOutput
+}
+
+func (SshKey) ElementType() reflect.Type {
+	return reflect.TypeOf((*SshKey)(nil)).Elem()
+}
+
+func (i SshKey) ToSshKeyOutput() SshKeyOutput {
+	return i.ToSshKeyOutputWithContext(context.Background())
+}
+
+func (i SshKey) ToSshKeyOutputWithContext(ctx context.Context) SshKeyOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(SshKeyOutput)
+}
+
+type SshKeyOutput struct {
+	*pulumi.OutputState
+}
+
+func (SshKeyOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*SshKeyOutput)(nil)).Elem()
+}
+
+func (o SshKeyOutput) ToSshKeyOutput() SshKeyOutput {
+	return o
+}
+
+func (o SshKeyOutput) ToSshKeyOutputWithContext(ctx context.Context) SshKeyOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(SshKeyOutput{})
 }

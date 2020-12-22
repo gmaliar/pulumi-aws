@@ -16,16 +16,24 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const exampleVpc = new aws.ec2.Vpc("example", {
- *     assignGeneratedIpv6CidrBlock: true,
+ * const exampleVpc = new aws.ec2.Vpc("exampleVpc", {
  *     cidrBlock: "10.1.0.0/16",
+ *     assignGeneratedIpv6CidrBlock: true,
  * });
- * const exampleEgressOnlyInternetGateway = new aws.ec2.EgressOnlyInternetGateway("example", {
+ * const exampleEgressOnlyInternetGateway = new aws.ec2.EgressOnlyInternetGateway("exampleEgressOnlyInternetGateway", {
+ *     vpcId: exampleVpc.id,
  *     tags: {
  *         Name: "main",
  *     },
- *     vpcId: exampleVpc.id,
  * });
+ * ```
+ *
+ * ## Import
+ *
+ * Egress-only Internet gateways can be imported using the `id`, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:ec2/egressOnlyInternetGateway:EgressOnlyInternetGateway example eigw-015e0e244e24dfe8a
  * ```
  */
 export class EgressOnlyInternetGateway extends pulumi.CustomResource {
@@ -81,7 +89,7 @@ export class EgressOnlyInternetGateway extends pulumi.CustomResource {
             inputs["vpcId"] = state ? state.vpcId : undefined;
         } else {
             const args = argsOrState as EgressOnlyInternetGatewayArgs | undefined;
-            if (!args || args.vpcId === undefined) {
+            if ((!args || args.vpcId === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'vpcId'");
             }
             inputs["tags"] = args ? args.tags : undefined;

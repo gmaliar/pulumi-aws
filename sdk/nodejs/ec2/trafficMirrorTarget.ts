@@ -18,12 +18,20 @@ import * as utilities from "../utilities";
  *
  * const nlb = new aws.ec2.TrafficMirrorTarget("nlb", {
  *     description: "NLB target",
- *     networkLoadBalancerArn: aws_lb_lb.arn,
+ *     networkLoadBalancerArn: aws_lb.lb.arn,
  * });
  * const eni = new aws.ec2.TrafficMirrorTarget("eni", {
  *     description: "ENI target",
- *     networkInterfaceId: aws_instance_test.primaryNetworkInterfaceId,
+ *     networkInterfaceId: aws_instance.test.primary_network_interface_id,
  * });
+ * ```
+ *
+ * ## Import
+ *
+ * Traffic mirror targets can be imported using the `id`, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:ec2/trafficMirrorTarget:TrafficMirrorTarget target tmt-0c13a005422b86606
  * ```
  */
 export class TrafficMirrorTarget extends pulumi.CustomResource {

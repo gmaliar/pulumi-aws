@@ -15,13 +15,21 @@ import {LogGroup} from "./index";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const testLambdafunctionLogfilter = new aws.cloudwatch.LogSubscriptionFilter("test_lambdafunction_logfilter", {
- *     destinationArn: aws_kinesis_stream_test_logstream.arn,
- *     distribution: "Random",
- *     filterPattern: "logtype test",
+ * const testLambdafunctionLogfilter = new aws.cloudwatch.LogSubscriptionFilter("testLambdafunctionLogfilter", {
+ *     roleArn: aws_iam_role.iam_for_lambda.arn,
  *     logGroup: "/aws/lambda/example_lambda_name",
- *     roleArn: aws_iam_role_iam_for_lambda.arn,
+ *     filterPattern: "logtype test",
+ *     destinationArn: aws_kinesis_stream.test_logstream.arn,
+ *     distribution: "Random",
  * });
+ * ```
+ *
+ * ## Import
+ *
+ * CloudWatch Logs subscription filter can be imported using the log group name and subscription filter name separated by `|`.
+ *
+ * ```sh
+ *  $ pulumi import aws:cloudwatch/logSubscriptionFilter:LogSubscriptionFilter test_lambdafunction_logfilter /aws/lambda/example_lambda_name|test_lambdafunction_logfilter
  * ```
  */
 export class LogSubscriptionFilter extends pulumi.CustomResource {
@@ -97,13 +105,13 @@ export class LogSubscriptionFilter extends pulumi.CustomResource {
             inputs["roleArn"] = state ? state.roleArn : undefined;
         } else {
             const args = argsOrState as LogSubscriptionFilterArgs | undefined;
-            if (!args || args.destinationArn === undefined) {
+            if ((!args || args.destinationArn === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'destinationArn'");
             }
-            if (!args || args.filterPattern === undefined) {
+            if ((!args || args.filterPattern === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'filterPattern'");
             }
-            if (!args || args.logGroup === undefined) {
+            if ((!args || args.logGroup === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'logGroup'");
             }
             inputs["destinationArn"] = args ? args.destinationArn : undefined;

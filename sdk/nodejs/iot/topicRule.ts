@@ -2,8 +2,7 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 /**
@@ -15,8 +14,7 @@ import * as utilities from "../utilities";
  *
  * const mytopic = new aws.sns.Topic("mytopic", {});
  * const myerrortopic = new aws.sns.Topic("myerrortopic", {});
- * const role = new aws.iam.Role("role", {
- *     assumeRolePolicy: `{
+ * const role = new aws.iam.Role("role", {assumeRolePolicy: `{
  *   "Version": "2012-10-17",
  *   "Statement": [
  *     {
@@ -28,11 +26,17 @@ import * as utilities from "../utilities";
  *     }
  *   ]
  * }
- * `,
- * });
+ * `});
  * const rule = new aws.iot.TopicRule("rule", {
  *     description: "Example rule",
  *     enabled: true,
+ *     sql: "SELECT * FROM 'topic/test'",
+ *     sqlVersion: "2016-03-23",
+ *     sns: {
+ *         messageFormat: "RAW",
+ *         roleArn: role.arn,
+ *         targetArn: mytopic.arn,
+ *     },
  *     errorAction: {
  *         sns: {
  *             messageFormat: "RAW",
@@ -40,15 +44,9 @@ import * as utilities from "../utilities";
  *             targetArn: myerrortopic.arn,
  *         },
  *     },
- *     sns: {
- *         messageFormat: "RAW",
- *         roleArn: role.arn,
- *         targetArn: mytopic.arn,
- *     },
- *     sql: "SELECT * FROM 'topic/test'",
- *     sqlVersion: "2016-03-23",
  * });
- * const iamPolicyForLambda = new aws.iam.RolePolicy("iam_policy_for_lambda", {
+ * const iamPolicyForLambda = new aws.iam.RolePolicy("iamPolicyForLambda", {
+ *     role: role.id,
  *     policy: pulumi.interpolate`{
  *   "Version": "2012-10-17",
  *   "Statement": [
@@ -62,8 +60,15 @@ import * as utilities from "../utilities";
  *   ]
  * }
  * `,
- *     role: role.id,
  * });
+ * ```
+ *
+ * ## Import
+ *
+ * IoT Topic Rules can be imported using the `name`, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:iot/topicRule:TopicRule rule <name>
  * ```
  */
 export class TopicRule extends pulumi.CustomResource {
@@ -179,13 +184,13 @@ export class TopicRule extends pulumi.CustomResource {
             inputs["tags"] = state ? state.tags : undefined;
         } else {
             const args = argsOrState as TopicRuleArgs | undefined;
-            if (!args || args.enabled === undefined) {
+            if ((!args || args.enabled === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'enabled'");
             }
-            if (!args || args.sql === undefined) {
+            if ((!args || args.sql === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'sql'");
             }
-            if (!args || args.sqlVersion === undefined) {
+            if ((!args || args.sqlVersion === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'sqlVersion'");
             }
             inputs["cloudwatchAlarm"] = args ? args.cloudwatchAlarm : undefined;

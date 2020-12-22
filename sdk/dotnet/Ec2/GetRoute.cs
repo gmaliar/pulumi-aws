@@ -41,13 +41,13 @@ namespace Pulumi.Aws.Ec2
         ///         }));
         ///         var route = Output.Create(Aws.Ec2.GetRoute.InvokeAsync(new Aws.Ec2.GetRouteArgs
         ///         {
-        ///             DestinationCidrBlock = "10.0.1.0/24",
         ///             RouteTableId = aws_route_table.Selected.Id,
+        ///             DestinationCidrBlock = "10.0.1.0/24",
         ///         }));
-        ///         var @interface = Output.Create(Aws.Ec2.GetNetworkInterface.InvokeAsync(new Aws.Ec2.GetNetworkInterfaceArgs
+        ///         var @interface = route.Apply(route =&gt; Output.Create(Aws.Ec2.GetNetworkInterface.InvokeAsync(new Aws.Ec2.GetNetworkInterfaceArgs
         ///         {
-        ///             NetworkInterfaceId = route.Apply(route =&gt; route.NetworkInterfaceId),
-        ///         }));
+        ///             Id = route.NetworkInterfaceId,
+        ///         })));
         ///     }
         /// 
         /// }
@@ -91,6 +91,12 @@ namespace Pulumi.Aws.Ec2
         /// </summary>
         [Input("instanceId")]
         public string? InstanceId { get; set; }
+
+        /// <summary>
+        /// The Local Gateway ID of the Route belonging to the Route Table.
+        /// </summary>
+        [Input("localGatewayId")]
+        public string? LocalGatewayId { get; set; }
 
         /// <summary>
         /// The NAT Gateway ID of the Route belonging to the Route Table.
@@ -140,6 +146,7 @@ namespace Pulumi.Aws.Ec2
         /// </summary>
         public readonly string Id;
         public readonly string InstanceId;
+        public readonly string LocalGatewayId;
         public readonly string NatGatewayId;
         public readonly string NetworkInterfaceId;
         public readonly string RouteTableId;
@@ -160,6 +167,8 @@ namespace Pulumi.Aws.Ec2
 
             string instanceId,
 
+            string localGatewayId,
+
             string natGatewayId,
 
             string networkInterfaceId,
@@ -176,6 +185,7 @@ namespace Pulumi.Aws.Ec2
             GatewayId = gatewayId;
             Id = id;
             InstanceId = instanceId;
+            LocalGatewayId = localGatewayId;
             NatGatewayId = natGatewayId;
             NetworkInterfaceId = networkInterfaceId;
             RouteTableId = routeTableId;

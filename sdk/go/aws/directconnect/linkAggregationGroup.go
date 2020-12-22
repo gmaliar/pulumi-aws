@@ -4,6 +4,7 @@
 package directconnect
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -20,7 +21,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/directconnect"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/directconnect"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -37,6 +38,14 @@ import (
 // 		return nil
 // 	})
 // }
+// ```
+//
+// ## Import
+//
+// Direct Connect LAGs can be imported using the `lag id`, e.g.
+//
+// ```sh
+//  $ pulumi import aws:directconnect/linkAggregationGroup:LinkAggregationGroup test_lag dxlag-fgnsp5rq
 // ```
 type LinkAggregationGroup struct {
 	pulumi.CustomResourceState
@@ -62,14 +71,15 @@ type LinkAggregationGroup struct {
 // NewLinkAggregationGroup registers a new resource with the given unique name, arguments, and options.
 func NewLinkAggregationGroup(ctx *pulumi.Context,
 	name string, args *LinkAggregationGroupArgs, opts ...pulumi.ResourceOption) (*LinkAggregationGroup, error) {
-	if args == nil || args.ConnectionsBandwidth == nil {
-		return nil, errors.New("missing required argument 'ConnectionsBandwidth'")
-	}
-	if args == nil || args.Location == nil {
-		return nil, errors.New("missing required argument 'Location'")
-	}
 	if args == nil {
-		args = &LinkAggregationGroupArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.ConnectionsBandwidth == nil {
+		return nil, errors.New("invalid value for required argument 'ConnectionsBandwidth'")
+	}
+	if args.Location == nil {
+		return nil, errors.New("invalid value for required argument 'Location'")
 	}
 	var resource LinkAggregationGroup
 	err := ctx.RegisterResource("aws:directconnect/linkAggregationGroup:LinkAggregationGroup", name, args, &resource, opts...)
@@ -163,4 +173,43 @@ type LinkAggregationGroupArgs struct {
 
 func (LinkAggregationGroupArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*linkAggregationGroupArgs)(nil)).Elem()
+}
+
+type LinkAggregationGroupInput interface {
+	pulumi.Input
+
+	ToLinkAggregationGroupOutput() LinkAggregationGroupOutput
+	ToLinkAggregationGroupOutputWithContext(ctx context.Context) LinkAggregationGroupOutput
+}
+
+func (LinkAggregationGroup) ElementType() reflect.Type {
+	return reflect.TypeOf((*LinkAggregationGroup)(nil)).Elem()
+}
+
+func (i LinkAggregationGroup) ToLinkAggregationGroupOutput() LinkAggregationGroupOutput {
+	return i.ToLinkAggregationGroupOutputWithContext(context.Background())
+}
+
+func (i LinkAggregationGroup) ToLinkAggregationGroupOutputWithContext(ctx context.Context) LinkAggregationGroupOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(LinkAggregationGroupOutput)
+}
+
+type LinkAggregationGroupOutput struct {
+	*pulumi.OutputState
+}
+
+func (LinkAggregationGroupOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*LinkAggregationGroupOutput)(nil)).Elem()
+}
+
+func (o LinkAggregationGroupOutput) ToLinkAggregationGroupOutput() LinkAggregationGroupOutput {
+	return o
+}
+
+func (o LinkAggregationGroupOutput) ToLinkAggregationGroupOutputWithContext(ctx context.Context) LinkAggregationGroupOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(LinkAggregationGroupOutput{})
 }

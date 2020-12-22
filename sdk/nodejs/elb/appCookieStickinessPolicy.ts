@@ -23,10 +23,18 @@ import * as utilities from "../utilities";
  *     }],
  * });
  * const foo = new aws.elb.AppCookieStickinessPolicy("foo", {
- *     cookieName: "MyAppCookie",
- *     lbPort: 80,
  *     loadBalancer: lb.name,
+ *     lbPort: 80,
+ *     cookieName: "MyAppCookie",
  * });
+ * ```
+ *
+ * ## Import
+ *
+ * Application cookie stickiness policies can be imported using the ELB name, port, and policy name separated by colons (`:`), e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:elb/appCookieStickinessPolicy:AppCookieStickinessPolicy example my-elb:80:my-policy
  * ```
  */
 export class AppCookieStickinessPolicy extends pulumi.CustomResource {
@@ -95,13 +103,13 @@ export class AppCookieStickinessPolicy extends pulumi.CustomResource {
             inputs["name"] = state ? state.name : undefined;
         } else {
             const args = argsOrState as AppCookieStickinessPolicyArgs | undefined;
-            if (!args || args.cookieName === undefined) {
+            if ((!args || args.cookieName === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'cookieName'");
             }
-            if (!args || args.lbPort === undefined) {
+            if ((!args || args.lbPort === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'lbPort'");
             }
-            if (!args || args.loadBalancer === undefined) {
+            if ((!args || args.loadBalancer === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'loadBalancer'");
             }
             inputs["cookieName"] = args ? args.cookieName : undefined;

@@ -4,6 +4,7 @@
 package rds
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -43,7 +44,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/rds"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/rds"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -75,7 +76,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/rds"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/rds"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -91,6 +92,14 @@ import (
 // 		return nil
 // 	})
 // }
+// ```
+//
+// ## Import
+//
+// DB Instances can be imported using the `identifier`, e.g.
+//
+// ```sh
+//  $ pulumi import aws:rds/instance:Instance default mydb-rds-instance
 // ```
 type Instance struct {
 	pulumi.CustomResourceState
@@ -148,7 +157,7 @@ type Instance struct {
 	Domain pulumi.StringPtrOutput `pulumi:"domain"`
 	// The name of the IAM role to be used when making API calls to the Directory Service.
 	DomainIamRoleName pulumi.StringPtrOutput `pulumi:"domainIamRoleName"`
-	// List of log types to enable for exporting to CloudWatch logs. If omitted, no logs will be exported. Valid values (depending on `engine`). MySQL and MariaDB: `audit`, `error`, `general`, `slowquery`. PostgreSQL: `postgresql`, `upgrade`. MSSQL: `agent` , `error`. Oracle: `alert`, `audit`, `listener`, `trace`.
+	// Set of log types to enable for exporting to CloudWatch logs. If omitted, no logs will be exported. Valid values (depending on `engine`). MySQL and MariaDB: `audit`, `error`, `general`, `slowquery`. PostgreSQL: `postgresql`, `upgrade`. MSSQL: `agent` , `error`. Oracle: `alert`, `audit`, `listener`, `trace`.
 	EnabledCloudwatchLogsExports pulumi.StringArrayOutput `pulumi:"enabledCloudwatchLogsExports"`
 	// The connection endpoint in `address:port` format.
 	Endpoint pulumi.StringOutput `pulumi:"endpoint"`
@@ -190,6 +199,8 @@ type Instance struct {
 	// The ARN for the KMS encryption key. If creating an
 	// encrypted replica, set this to the destination KMS ARN.
 	KmsKeyId pulumi.StringOutput `pulumi:"kmsKeyId"`
+	// The latest time, in UTC [RFC3339 format](https://tools.ietf.org/html/rfc3339#section-5.8), to which a database can be restored with point-in-time restore.
+	LatestRestorableTime pulumi.StringOutput `pulumi:"latestRestorableTime"`
 	// (Optional, but required for some DB engines, i.e. Oracle
 	// SE1) License model information for this DB instance.
 	LicenseModel pulumi.StringOutput `pulumi:"licenseModel"`
@@ -249,6 +260,8 @@ type Instance struct {
 	ReplicateSourceDb pulumi.StringPtrOutput `pulumi:"replicateSourceDb"`
 	// The RDS Resource ID of this instance.
 	ResourceId pulumi.StringOutput `pulumi:"resourceId"`
+	// A configuration block for restoring a DB instance to an arbitrary point in time. Requires the `identifier` argument to be set with the name of the new DB instance to be created. See Restore To Point In Time below for details.
+	RestoreToPointInTime InstanceRestoreToPointInTimePtrOutput `pulumi:"restoreToPointInTime"`
 	// Restore from a Percona Xtrabackup in S3.  See [Importing Data into an Amazon RDS MySQL DB Instance](http://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/MySQL.Procedural.Importing.html)
 	S3Import InstanceS3ImportPtrOutput `pulumi:"s3Import"`
 	// List of DB Security Groups to
@@ -295,11 +308,12 @@ type Instance struct {
 // NewInstance registers a new resource with the given unique name, arguments, and options.
 func NewInstance(ctx *pulumi.Context,
 	name string, args *InstanceArgs, opts ...pulumi.ResourceOption) (*Instance, error) {
-	if args == nil || args.InstanceClass == nil {
-		return nil, errors.New("missing required argument 'InstanceClass'")
-	}
 	if args == nil {
-		args = &InstanceArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.InstanceClass == nil {
+		return nil, errors.New("invalid value for required argument 'InstanceClass'")
 	}
 	var resource Instance
 	err := ctx.RegisterResource("aws:rds/instance:Instance", name, args, &resource, opts...)
@@ -376,7 +390,7 @@ type instanceState struct {
 	Domain *string `pulumi:"domain"`
 	// The name of the IAM role to be used when making API calls to the Directory Service.
 	DomainIamRoleName *string `pulumi:"domainIamRoleName"`
-	// List of log types to enable for exporting to CloudWatch logs. If omitted, no logs will be exported. Valid values (depending on `engine`). MySQL and MariaDB: `audit`, `error`, `general`, `slowquery`. PostgreSQL: `postgresql`, `upgrade`. MSSQL: `agent` , `error`. Oracle: `alert`, `audit`, `listener`, `trace`.
+	// Set of log types to enable for exporting to CloudWatch logs. If omitted, no logs will be exported. Valid values (depending on `engine`). MySQL and MariaDB: `audit`, `error`, `general`, `slowquery`. PostgreSQL: `postgresql`, `upgrade`. MSSQL: `agent` , `error`. Oracle: `alert`, `audit`, `listener`, `trace`.
 	EnabledCloudwatchLogsExports []string `pulumi:"enabledCloudwatchLogsExports"`
 	// The connection endpoint in `address:port` format.
 	Endpoint *string `pulumi:"endpoint"`
@@ -418,6 +432,8 @@ type instanceState struct {
 	// The ARN for the KMS encryption key. If creating an
 	// encrypted replica, set this to the destination KMS ARN.
 	KmsKeyId *string `pulumi:"kmsKeyId"`
+	// The latest time, in UTC [RFC3339 format](https://tools.ietf.org/html/rfc3339#section-5.8), to which a database can be restored with point-in-time restore.
+	LatestRestorableTime *string `pulumi:"latestRestorableTime"`
 	// (Optional, but required for some DB engines, i.e. Oracle
 	// SE1) License model information for this DB instance.
 	LicenseModel *string `pulumi:"licenseModel"`
@@ -477,6 +493,8 @@ type instanceState struct {
 	ReplicateSourceDb *string `pulumi:"replicateSourceDb"`
 	// The RDS Resource ID of this instance.
 	ResourceId *string `pulumi:"resourceId"`
+	// A configuration block for restoring a DB instance to an arbitrary point in time. Requires the `identifier` argument to be set with the name of the new DB instance to be created. See Restore To Point In Time below for details.
+	RestoreToPointInTime *InstanceRestoreToPointInTime `pulumi:"restoreToPointInTime"`
 	// Restore from a Percona Xtrabackup in S3.  See [Importing Data into an Amazon RDS MySQL DB Instance](http://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/MySQL.Procedural.Importing.html)
 	S3Import *InstanceS3Import `pulumi:"s3Import"`
 	// List of DB Security Groups to
@@ -574,7 +592,7 @@ type InstanceState struct {
 	Domain pulumi.StringPtrInput
 	// The name of the IAM role to be used when making API calls to the Directory Service.
 	DomainIamRoleName pulumi.StringPtrInput
-	// List of log types to enable for exporting to CloudWatch logs. If omitted, no logs will be exported. Valid values (depending on `engine`). MySQL and MariaDB: `audit`, `error`, `general`, `slowquery`. PostgreSQL: `postgresql`, `upgrade`. MSSQL: `agent` , `error`. Oracle: `alert`, `audit`, `listener`, `trace`.
+	// Set of log types to enable for exporting to CloudWatch logs. If omitted, no logs will be exported. Valid values (depending on `engine`). MySQL and MariaDB: `audit`, `error`, `general`, `slowquery`. PostgreSQL: `postgresql`, `upgrade`. MSSQL: `agent` , `error`. Oracle: `alert`, `audit`, `listener`, `trace`.
 	EnabledCloudwatchLogsExports pulumi.StringArrayInput
 	// The connection endpoint in `address:port` format.
 	Endpoint pulumi.StringPtrInput
@@ -616,6 +634,8 @@ type InstanceState struct {
 	// The ARN for the KMS encryption key. If creating an
 	// encrypted replica, set this to the destination KMS ARN.
 	KmsKeyId pulumi.StringPtrInput
+	// The latest time, in UTC [RFC3339 format](https://tools.ietf.org/html/rfc3339#section-5.8), to which a database can be restored with point-in-time restore.
+	LatestRestorableTime pulumi.StringPtrInput
 	// (Optional, but required for some DB engines, i.e. Oracle
 	// SE1) License model information for this DB instance.
 	LicenseModel pulumi.StringPtrInput
@@ -675,6 +695,8 @@ type InstanceState struct {
 	ReplicateSourceDb pulumi.StringPtrInput
 	// The RDS Resource ID of this instance.
 	ResourceId pulumi.StringPtrInput
+	// A configuration block for restoring a DB instance to an arbitrary point in time. Requires the `identifier` argument to be set with the name of the new DB instance to be created. See Restore To Point In Time below for details.
+	RestoreToPointInTime InstanceRestoreToPointInTimePtrInput
 	// Restore from a Percona Xtrabackup in S3.  See [Importing Data into an Amazon RDS MySQL DB Instance](http://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/MySQL.Procedural.Importing.html)
 	S3Import InstanceS3ImportPtrInput
 	// List of DB Security Groups to
@@ -772,7 +794,7 @@ type instanceArgs struct {
 	Domain *string `pulumi:"domain"`
 	// The name of the IAM role to be used when making API calls to the Directory Service.
 	DomainIamRoleName *string `pulumi:"domainIamRoleName"`
-	// List of log types to enable for exporting to CloudWatch logs. If omitted, no logs will be exported. Valid values (depending on `engine`). MySQL and MariaDB: `audit`, `error`, `general`, `slowquery`. PostgreSQL: `postgresql`, `upgrade`. MSSQL: `agent` , `error`. Oracle: `alert`, `audit`, `listener`, `trace`.
+	// Set of log types to enable for exporting to CloudWatch logs. If omitted, no logs will be exported. Valid values (depending on `engine`). MySQL and MariaDB: `audit`, `error`, `general`, `slowquery`. PostgreSQL: `postgresql`, `upgrade`. MSSQL: `agent` , `error`. Oracle: `alert`, `audit`, `listener`, `trace`.
 	EnabledCloudwatchLogsExports []string `pulumi:"enabledCloudwatchLogsExports"`
 	// (Required unless a `snapshotIdentifier` or `replicateSourceDb`
 	// is provided) The database engine to use.  For supported values, see the Engine parameter in [API action CreateDBInstance](https://docs.aws.amazon.com/AmazonRDS/latest/APIReference/API_CreateDBInstance.html).
@@ -802,7 +824,7 @@ type instanceArgs struct {
 	// identifier beginning with the specified prefix. Conflicts with `identifier`.
 	IdentifierPrefix *string `pulumi:"identifierPrefix"`
 	// The instance type of the RDS instance.
-	InstanceClass interface{} `pulumi:"instanceClass"`
+	InstanceClass string `pulumi:"instanceClass"`
 	// The amount of provisioned IOPS. Setting this implies a
 	// storageType of "io1".
 	Iops *int `pulumi:"iops"`
@@ -865,6 +887,8 @@ type instanceArgs struct {
 	// PostgreSQL and MySQL Read Replicas](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_ReadRepl.html)
 	// for more information on using Replication.
 	ReplicateSourceDb *string `pulumi:"replicateSourceDb"`
+	// A configuration block for restoring a DB instance to an arbitrary point in time. Requires the `identifier` argument to be set with the name of the new DB instance to be created. See Restore To Point In Time below for details.
+	RestoreToPointInTime *InstanceRestoreToPointInTime `pulumi:"restoreToPointInTime"`
 	// Restore from a Percona Xtrabackup in S3.  See [Importing Data into an Amazon RDS MySQL DB Instance](http://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/MySQL.Procedural.Importing.html)
 	S3Import *InstanceS3Import `pulumi:"s3Import"`
 	// List of DB Security Groups to
@@ -889,7 +913,7 @@ type instanceArgs struct {
 	// One of "standard" (magnetic), "gp2" (general
 	// purpose SSD), or "io1" (provisioned IOPS SSD). The default is "io1" if `iops` is
 	// specified, "gp2" if not.
-	StorageType interface{} `pulumi:"storageType"`
+	StorageType *string `pulumi:"storageType"`
 	// A map of tags to assign to the resource.
 	Tags map[string]string `pulumi:"tags"`
 	// Time zone of the DB instance. `timezone` is currently
@@ -957,7 +981,7 @@ type InstanceArgs struct {
 	Domain pulumi.StringPtrInput
 	// The name of the IAM role to be used when making API calls to the Directory Service.
 	DomainIamRoleName pulumi.StringPtrInput
-	// List of log types to enable for exporting to CloudWatch logs. If omitted, no logs will be exported. Valid values (depending on `engine`). MySQL and MariaDB: `audit`, `error`, `general`, `slowquery`. PostgreSQL: `postgresql`, `upgrade`. MSSQL: `agent` , `error`. Oracle: `alert`, `audit`, `listener`, `trace`.
+	// Set of log types to enable for exporting to CloudWatch logs. If omitted, no logs will be exported. Valid values (depending on `engine`). MySQL and MariaDB: `audit`, `error`, `general`, `slowquery`. PostgreSQL: `postgresql`, `upgrade`. MSSQL: `agent` , `error`. Oracle: `alert`, `audit`, `listener`, `trace`.
 	EnabledCloudwatchLogsExports pulumi.StringArrayInput
 	// (Required unless a `snapshotIdentifier` or `replicateSourceDb`
 	// is provided) The database engine to use.  For supported values, see the Engine parameter in [API action CreateDBInstance](https://docs.aws.amazon.com/AmazonRDS/latest/APIReference/API_CreateDBInstance.html).
@@ -987,7 +1011,7 @@ type InstanceArgs struct {
 	// identifier beginning with the specified prefix. Conflicts with `identifier`.
 	IdentifierPrefix pulumi.StringPtrInput
 	// The instance type of the RDS instance.
-	InstanceClass pulumi.Input
+	InstanceClass pulumi.StringInput
 	// The amount of provisioned IOPS. Setting this implies a
 	// storageType of "io1".
 	Iops pulumi.IntPtrInput
@@ -1050,6 +1074,8 @@ type InstanceArgs struct {
 	// PostgreSQL and MySQL Read Replicas](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_ReadRepl.html)
 	// for more information on using Replication.
 	ReplicateSourceDb pulumi.StringPtrInput
+	// A configuration block for restoring a DB instance to an arbitrary point in time. Requires the `identifier` argument to be set with the name of the new DB instance to be created. See Restore To Point In Time below for details.
+	RestoreToPointInTime InstanceRestoreToPointInTimePtrInput
 	// Restore from a Percona Xtrabackup in S3.  See [Importing Data into an Amazon RDS MySQL DB Instance](http://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/MySQL.Procedural.Importing.html)
 	S3Import InstanceS3ImportPtrInput
 	// List of DB Security Groups to
@@ -1074,7 +1100,7 @@ type InstanceArgs struct {
 	// One of "standard" (magnetic), "gp2" (general
 	// purpose SSD), or "io1" (provisioned IOPS SSD). The default is "io1" if `iops` is
 	// specified, "gp2" if not.
-	StorageType pulumi.Input
+	StorageType pulumi.StringPtrInput
 	// A map of tags to assign to the resource.
 	Tags pulumi.StringMapInput
 	// Time zone of the DB instance. `timezone` is currently
@@ -1093,4 +1119,43 @@ type InstanceArgs struct {
 
 func (InstanceArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*instanceArgs)(nil)).Elem()
+}
+
+type InstanceInput interface {
+	pulumi.Input
+
+	ToInstanceOutput() InstanceOutput
+	ToInstanceOutputWithContext(ctx context.Context) InstanceOutput
+}
+
+func (Instance) ElementType() reflect.Type {
+	return reflect.TypeOf((*Instance)(nil)).Elem()
+}
+
+func (i Instance) ToInstanceOutput() InstanceOutput {
+	return i.ToInstanceOutputWithContext(context.Background())
+}
+
+func (i Instance) ToInstanceOutputWithContext(ctx context.Context) InstanceOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(InstanceOutput)
+}
+
+type InstanceOutput struct {
+	*pulumi.OutputState
+}
+
+func (InstanceOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*InstanceOutput)(nil)).Elem()
+}
+
+func (o InstanceOutput) ToInstanceOutput() InstanceOutput {
+	return o
+}
+
+func (o InstanceOutput) ToInstanceOutputWithContext(ctx context.Context) InstanceOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(InstanceOutput{})
 }

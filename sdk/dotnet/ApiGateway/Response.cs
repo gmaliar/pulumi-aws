@@ -27,21 +27,29 @@ namespace Pulumi.Aws.ApiGateway
     ///         });
     ///         var test = new Aws.ApiGateway.Response("test", new Aws.ApiGateway.ResponseArgs
     ///         {
-    ///             ResponseParameters = 
-    ///             {
-    ///                 { "gatewayresponse.header.Authorization", "'Basic'" },
-    ///             },
+    ///             RestApiId = main.Id,
+    ///             StatusCode = "401",
+    ///             ResponseType = "UNAUTHORIZED",
     ///             ResponseTemplates = 
     ///             {
     ///                 { "application/json", "{'message':$context.error.messageString}" },
     ///             },
-    ///             ResponseType = "UNAUTHORIZED",
-    ///             RestApiId = main.Id,
-    ///             StatusCode = "401",
+    ///             ResponseParameters = 
+    ///             {
+    ///                 { "gatewayresponse.header.Authorization", "'Basic'" },
+    ///             },
     ///         });
     ///     }
     /// 
     /// }
+    /// ```
+    /// 
+    /// ## Import
+    /// 
+    /// `aws_api_gateway_gateway_response` can be imported using `REST-API-ID/RESPONSE-TYPE`, e.g.
+    /// 
+    /// ```sh
+    ///  $ pulumi import aws:apigateway/response:Response example 12345abcde/UNAUTHORIZED
     /// ```
     /// </summary>
     public partial class Response : Pulumi.CustomResource

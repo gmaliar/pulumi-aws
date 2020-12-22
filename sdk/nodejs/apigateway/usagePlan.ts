@@ -2,8 +2,7 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 /**
@@ -16,6 +15,7 @@ import * as utilities from "../utilities";
  * import * as aws from "@pulumi/aws";
  *
  * const myapi = new aws.apigateway.RestApi("myapi", {});
+ * // ...
  * const dev = new aws.apigateway.Deployment("dev", {
  *     restApi: myapi.id,
  *     stageName: "dev",
@@ -24,7 +24,9 @@ import * as utilities from "../utilities";
  *     restApi: myapi.id,
  *     stageName: "prod",
  * });
- * const myUsagePlan = new aws.apigateway.UsagePlan("MyUsagePlan", {
+ * const myUsagePlan = new aws.apigateway.UsagePlan("myUsagePlan", {
+ *     description: "my description",
+ *     productCode: "MYCODE",
  *     apiStages: [
  *         {
  *             apiId: myapi.id,
@@ -35,8 +37,6 @@ import * as utilities from "../utilities";
  *             stage: prod.stageName,
  *         },
  *     ],
- *     description: "my description",
- *     productCode: "MYCODE",
  *     quotaSettings: {
  *         limit: 20,
  *         offset: 2,
@@ -47,6 +47,14 @@ import * as utilities from "../utilities";
  *         rateLimit: 10,
  *     },
  * });
+ * ```
+ *
+ * ## Import
+ *
+ * AWS API Gateway Usage Plan can be imported using the `id`, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:apigateway/usagePlan:UsagePlan myusageplan <usage_plan_id>
  * ```
  */
 export class UsagePlan extends pulumi.CustomResource {
@@ -94,7 +102,7 @@ export class UsagePlan extends pulumi.CustomResource {
      */
     public readonly name!: pulumi.Output<string>;
     /**
-     * The AWS Markeplace product identifier to associate with the usage plan as a SaaS product on AWS Marketplace.
+     * The AWS Marketplace product identifier to associate with the usage plan as a SaaS product on AWS Marketplace.
      */
     public readonly productCode!: pulumi.Output<string | undefined>;
     /**
@@ -173,7 +181,7 @@ export interface UsagePlanState {
      */
     readonly name?: pulumi.Input<string>;
     /**
-     * The AWS Markeplace product identifier to associate with the usage plan as a SaaS product on AWS Marketplace.
+     * The AWS Marketplace product identifier to associate with the usage plan as a SaaS product on AWS Marketplace.
      */
     readonly productCode?: pulumi.Input<string>;
     /**
@@ -207,7 +215,7 @@ export interface UsagePlanArgs {
      */
     readonly name?: pulumi.Input<string>;
     /**
-     * The AWS Markeplace product identifier to associate with the usage plan as a SaaS product on AWS Marketplace.
+     * The AWS Marketplace product identifier to associate with the usage plan as a SaaS product on AWS Marketplace.
      */
     readonly productCode?: pulumi.Input<string>;
     /**

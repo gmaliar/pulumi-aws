@@ -4,6 +4,7 @@
 package waf
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
@@ -17,7 +18,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/waf"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/waf"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -42,6 +43,14 @@ import (
 // 	})
 // }
 // ```
+//
+// ## Import
+//
+// WAF Geo Match Set can be imported using their ID, e.g.
+//
+// ```sh
+//  $ pulumi import aws:waf/geoMatchSet:GeoMatchSet example a1b2c3d4-d5f6-7777-8888-9999aaaabbbbcccc
+// ```
 type GeoMatchSet struct {
 	pulumi.CustomResourceState
 
@@ -59,6 +68,7 @@ func NewGeoMatchSet(ctx *pulumi.Context,
 	if args == nil {
 		args = &GeoMatchSetArgs{}
 	}
+
 	var resource GeoMatchSet
 	err := ctx.RegisterResource("aws:waf/geoMatchSet:GeoMatchSet", name, args, &resource, opts...)
 	if err != nil {
@@ -119,4 +129,43 @@ type GeoMatchSetArgs struct {
 
 func (GeoMatchSetArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*geoMatchSetArgs)(nil)).Elem()
+}
+
+type GeoMatchSetInput interface {
+	pulumi.Input
+
+	ToGeoMatchSetOutput() GeoMatchSetOutput
+	ToGeoMatchSetOutputWithContext(ctx context.Context) GeoMatchSetOutput
+}
+
+func (GeoMatchSet) ElementType() reflect.Type {
+	return reflect.TypeOf((*GeoMatchSet)(nil)).Elem()
+}
+
+func (i GeoMatchSet) ToGeoMatchSetOutput() GeoMatchSetOutput {
+	return i.ToGeoMatchSetOutputWithContext(context.Background())
+}
+
+func (i GeoMatchSet) ToGeoMatchSetOutputWithContext(ctx context.Context) GeoMatchSetOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(GeoMatchSetOutput)
+}
+
+type GeoMatchSetOutput struct {
+	*pulumi.OutputState
+}
+
+func (GeoMatchSetOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*GeoMatchSetOutput)(nil)).Elem()
+}
+
+func (o GeoMatchSetOutput) ToGeoMatchSetOutput() GeoMatchSetOutput {
+	return o
+}
+
+func (o GeoMatchSetOutput) ToGeoMatchSetOutputWithContext(ctx context.Context) GeoMatchSetOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(GeoMatchSetOutput{})
 }

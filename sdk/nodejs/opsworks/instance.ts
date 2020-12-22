@@ -2,8 +2,7 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 /**
@@ -16,10 +15,10 @@ import * as utilities from "../utilities";
  * import * as aws from "@pulumi/aws";
  *
  * const my_instance = new aws.opsworks.Instance("my-instance", {
+ *     stackId: aws_opsworks_stack.main.id,
+ *     layerIds: [aws_opsworks_custom_layer["my-layer"].id],
  *     instanceType: "t2.micro",
- *     layerIds: [aws_opsworks_custom_layer_my_layer.id],
  *     os: "Amazon Linux 2015.09",
- *     stackId: aws_opsworks_stack_main.id,
  *     state: "stopped",
  * });
  * ```
@@ -76,6 +75,14 @@ import * as utilities from "../utilities";
  * resources cannot be automatically detected by this provider. After making updates
  * to block device configuration, resource recreation can be manually triggered by
  * using the [`up` command with the --replace argument](https://www.pulumi.com/docs/reference/cli/pulumi_up/).
+ *
+ * ## Import
+ *
+ * Opsworks Instances can be imported using the `instance id`, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:opsworks/instance:Instance my_instance 4d6d1710-ded9-42a1-b08e-b043ad7af1e2
+ * ```
  */
 export class Instance extends pulumi.CustomResource {
     /**
@@ -299,10 +306,10 @@ export class Instance extends pulumi.CustomResource {
             inputs["virtualizationType"] = state ? state.virtualizationType : undefined;
         } else {
             const args = argsOrState as InstanceArgs | undefined;
-            if (!args || args.layerIds === undefined) {
+            if ((!args || args.layerIds === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'layerIds'");
             }
-            if (!args || args.stackId === undefined) {
+            if ((!args || args.stackId === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'stackId'");
             }
             inputs["agentVersion"] = args ? args.agentVersion : undefined;

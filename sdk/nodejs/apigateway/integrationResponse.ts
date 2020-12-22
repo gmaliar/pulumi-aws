@@ -18,36 +18,35 @@ import {RestApi} from "./index";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const myDemoAPI = new aws.apigateway.RestApi("MyDemoAPI", {
- *     description: "This is my API for demonstration purposes",
- * });
- * const myDemoResource = new aws.apigateway.Resource("MyDemoResource", {
+ * const myDemoAPI = new aws.apigateway.RestApi("myDemoAPI", {description: "This is my API for demonstration purposes"});
+ * const myDemoResource = new aws.apigateway.Resource("myDemoResource", {
+ *     restApi: myDemoAPI.id,
  *     parentId: myDemoAPI.rootResourceId,
  *     pathPart: "mydemoresource",
- *     restApi: myDemoAPI.id,
  * });
- * const myDemoMethod = new aws.apigateway.Method("MyDemoMethod", {
- *     authorization: "NONE",
+ * const myDemoMethod = new aws.apigateway.Method("myDemoMethod", {
+ *     restApi: myDemoAPI.id,
+ *     resourceId: myDemoResource.id,
  *     httpMethod: "GET",
- *     resourceId: myDemoResource.id,
- *     restApi: myDemoAPI.id,
+ *     authorization: "NONE",
  * });
- * const myDemoIntegration = new aws.apigateway.Integration("MyDemoIntegration", {
- *     httpMethod: myDemoMethod.httpMethod,
- *     resourceId: myDemoResource.id,
+ * const myDemoIntegration = new aws.apigateway.Integration("myDemoIntegration", {
  *     restApi: myDemoAPI.id,
+ *     resourceId: myDemoResource.id,
+ *     httpMethod: myDemoMethod.httpMethod,
  *     type: "MOCK",
  * });
- * const response200 = new aws.apigateway.MethodResponse("response_200", {
- *     httpMethod: myDemoMethod.httpMethod,
- *     resourceId: myDemoResource.id,
+ * const response200 = new aws.apigateway.MethodResponse("response200", {
  *     restApi: myDemoAPI.id,
+ *     resourceId: myDemoResource.id,
+ *     httpMethod: myDemoMethod.httpMethod,
  *     statusCode: "200",
  * });
- * const myDemoIntegrationResponse = new aws.apigateway.IntegrationResponse("MyDemoIntegrationResponse", {
- *     httpMethod: myDemoMethod.httpMethod,
+ * const myDemoIntegrationResponse = new aws.apigateway.IntegrationResponse("myDemoIntegrationResponse", {
+ *     restApi: myDemoAPI.id,
  *     resourceId: myDemoResource.id,
- *     // Transforms the backend JSON response to XML
+ *     httpMethod: myDemoMethod.httpMethod,
+ *     statusCode: response200.statusCode,
  *     responseTemplates: {
  *         "application/xml": `#set($inputRoot = $input.path('$'))
  * <?xml version="1.0" encoding="UTF-8"?>
@@ -56,9 +55,15 @@ import {RestApi} from "./index";
  * </message>
  * `,
  *     },
- *     restApi: myDemoAPI.id,
- *     statusCode: response200.statusCode,
  * });
+ * ```
+ *
+ * ## Import
+ *
+ * `aws_api_gateway_integration_response` can be imported using `REST-API-ID/RESOURCE-ID/HTTP-METHOD/STATUS-CODE`, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:apigateway/integrationResponse:IntegrationResponse example 12345abcde/67890fghij/GET/200
  * ```
  */
 export class IntegrationResponse extends pulumi.CustomResource {
@@ -148,16 +153,16 @@ export class IntegrationResponse extends pulumi.CustomResource {
             inputs["statusCode"] = state ? state.statusCode : undefined;
         } else {
             const args = argsOrState as IntegrationResponseArgs | undefined;
-            if (!args || args.httpMethod === undefined) {
+            if ((!args || args.httpMethod === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'httpMethod'");
             }
-            if (!args || args.resourceId === undefined) {
+            if ((!args || args.resourceId === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'resourceId'");
             }
-            if (!args || args.restApi === undefined) {
+            if ((!args || args.restApi === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'restApi'");
             }
-            if (!args || args.statusCode === undefined) {
+            if ((!args || args.statusCode === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'statusCode'");
             }
             inputs["contentHandling"] = args ? args.contentHandling : undefined;

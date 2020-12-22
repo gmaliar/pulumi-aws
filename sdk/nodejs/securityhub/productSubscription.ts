@@ -13,11 +13,19 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const exampleAccount = new aws.securityhub.Account("example", {});
- * const current = pulumi.output(aws.getRegion({ async: true }));
- * const exampleProductSubscription = new aws.securityhub.ProductSubscription("example", {
- *     productArn: pulumi.interpolate`arn:aws:securityhub:${current.name!}:733251395267:product/alertlogic/althreatmanagement`,
- * }, { dependsOn: [exampleAccount] });
+ * const exampleAccount = new aws.securityhub.Account("exampleAccount", {});
+ * const current = aws.getRegion({});
+ * const exampleProductSubscription = new aws.securityhub.ProductSubscription("exampleProductSubscription", {productArn: current.then(current => `arn:aws:securityhub:${current.name}:733251395267:product/alertlogic/althreatmanagement`)}, {
+ *     dependsOn: [exampleAccount],
+ * });
+ * ```
+ *
+ * ## Import
+ *
+ * Security Hub product subscriptions can be imported in the form `product_arn,arn`, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:securityhub/productSubscription:ProductSubscription example arn:aws:securityhub:eu-west-1:733251395267:product/alertlogic/althreatmanagement,arn:aws:securityhub:eu-west-1:123456789012:product-subscription/alertlogic/althreatmanagement
  * ```
  */
 export class ProductSubscription extends pulumi.CustomResource {
@@ -73,7 +81,7 @@ export class ProductSubscription extends pulumi.CustomResource {
             inputs["productArn"] = state ? state.productArn : undefined;
         } else {
             const args = argsOrState as ProductSubscriptionArgs | undefined;
-            if (!args || args.productArn === undefined) {
+            if ((!args || args.productArn === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'productArn'");
             }
             inputs["productArn"] = args ? args.productArn : undefined;

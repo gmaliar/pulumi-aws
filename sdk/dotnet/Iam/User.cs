@@ -38,6 +38,7 @@ namespace Pulumi.Aws.Iam
     ///         });
     ///         var lbRo = new Aws.Iam.UserPolicy("lbRo", new Aws.Iam.UserPolicyArgs
     ///         {
+    ///             User = lbUser.Name,
     ///             Policy = @"{
     ///   ""Version"": ""2012-10-17"",
     ///   ""Statement"": [
@@ -50,13 +51,19 @@ namespace Pulumi.Aws.Iam
     ///     }
     ///   ]
     /// }
-    /// 
     /// ",
-    ///             User = lbUser.Name,
     ///         });
     ///     }
     /// 
     /// }
+    /// ```
+    /// 
+    /// ## Import
+    /// 
+    /// IAM Users can be imported using the `name`, e.g.
+    /// 
+    /// ```sh
+    ///  $ pulumi import aws:iam/user:User lb loadbalancer
     /// ```
     /// </summary>
     public partial class User : Pulumi.CustomResource

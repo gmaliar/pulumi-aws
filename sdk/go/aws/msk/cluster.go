@@ -4,6 +4,7 @@
 package msk
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -20,14 +21,14 @@ import (
 // import (
 // 	"fmt"
 //
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws"
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/cloudwatch"
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/ec2"
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/iam"
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/kinesis"
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/kms"
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/msk"
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/s3"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/cloudwatch"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/ec2"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/iam"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/kinesis"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/kms"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/msk"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/s3"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -112,8 +113,7 @@ import (
 // 			return err
 // 		}
 // 		example, err := msk.NewCluster(ctx, "example", &msk.ClusterArgs{
-// 			ClusterName:         pulumi.String("example"),
-// 			KafkaVersion:        pulumi.String("2.1.0"),
+// 			KafkaVersion:        pulumi.String("2.4.1"),
 // 			NumberOfBrokerNodes: pulumi.Int(3),
 // 			BrokerNodeGroupInfo: &msk.ClusterBrokerNodeGroupInfoArgs{
 // 				InstanceType:  pulumi.String("kafka.m5.large"),
@@ -165,11 +165,18 @@ import (
 // 			return err
 // 		}
 // 		ctx.Export("zookeeperConnectString", example.ZookeeperConnectString)
-// 		ctx.Export("bootstrapBrokers", example.BootstrapBrokers)
 // 		ctx.Export("bootstrapBrokersTls", example.BootstrapBrokersTls)
 // 		return nil
 // 	})
 // }
+// ```
+//
+// ## Import
+//
+// MSK clusters can be imported using the cluster `arn`, e.g.
+//
+// ```sh
+//  $ pulumi import aws:msk/cluster:Cluster example arn:aws:kafka:us-west-2:123456789012:cluster/example/279c0212-d057-4dba-9aa9-1c4e5a25bfc7-3
 // ```
 type Cluster struct {
 	pulumi.CustomResourceState
@@ -178,6 +185,8 @@ type Cluster struct {
 	Arn pulumi.StringOutput `pulumi:"arn"`
 	// A comma separated list of one or more hostname:port pairs of kafka brokers suitable to boostrap connectivity to the kafka cluster. Only contains value if `clientBroker` encryption in transit is set to `PLAINTEXT` or `TLS_PLAINTEXT`.
 	BootstrapBrokers pulumi.StringOutput `pulumi:"bootstrapBrokers"`
+	// A comma separated list of one or more DNS names (or IPs) and TLS port pairs kafka brokers suitable to boostrap connectivity using SASL/SCRAM to the kafka cluster. Only contains value if `clientBroker` encryption in transit is set to `TLS_PLAINTEXT` or `TLS` and `clientAuthentication` is set to `sasl`.
+	BootstrapBrokersSaslScram pulumi.StringOutput `pulumi:"bootstrapBrokersSaslScram"`
 	// A comma separated list of one or more DNS names (or IPs) and TLS port pairs kafka brokers suitable to boostrap connectivity to the kafka cluster. Only contains value if `clientBroker` encryption in transit is set to `TLS_PLAINTEXT` or `TLS`.
 	BootstrapBrokersTls pulumi.StringOutput `pulumi:"bootstrapBrokersTls"`
 	// Configuration block for the broker nodes of the Kafka cluster.
@@ -212,20 +221,18 @@ type Cluster struct {
 // NewCluster registers a new resource with the given unique name, arguments, and options.
 func NewCluster(ctx *pulumi.Context,
 	name string, args *ClusterArgs, opts ...pulumi.ResourceOption) (*Cluster, error) {
-	if args == nil || args.BrokerNodeGroupInfo == nil {
-		return nil, errors.New("missing required argument 'BrokerNodeGroupInfo'")
-	}
-	if args == nil || args.ClusterName == nil {
-		return nil, errors.New("missing required argument 'ClusterName'")
-	}
-	if args == nil || args.KafkaVersion == nil {
-		return nil, errors.New("missing required argument 'KafkaVersion'")
-	}
-	if args == nil || args.NumberOfBrokerNodes == nil {
-		return nil, errors.New("missing required argument 'NumberOfBrokerNodes'")
-	}
 	if args == nil {
-		args = &ClusterArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.BrokerNodeGroupInfo == nil {
+		return nil, errors.New("invalid value for required argument 'BrokerNodeGroupInfo'")
+	}
+	if args.KafkaVersion == nil {
+		return nil, errors.New("invalid value for required argument 'KafkaVersion'")
+	}
+	if args.NumberOfBrokerNodes == nil {
+		return nil, errors.New("invalid value for required argument 'NumberOfBrokerNodes'")
 	}
 	var resource Cluster
 	err := ctx.RegisterResource("aws:msk/cluster:Cluster", name, args, &resource, opts...)
@@ -253,6 +260,8 @@ type clusterState struct {
 	Arn *string `pulumi:"arn"`
 	// A comma separated list of one or more hostname:port pairs of kafka brokers suitable to boostrap connectivity to the kafka cluster. Only contains value if `clientBroker` encryption in transit is set to `PLAINTEXT` or `TLS_PLAINTEXT`.
 	BootstrapBrokers *string `pulumi:"bootstrapBrokers"`
+	// A comma separated list of one or more DNS names (or IPs) and TLS port pairs kafka brokers suitable to boostrap connectivity using SASL/SCRAM to the kafka cluster. Only contains value if `clientBroker` encryption in transit is set to `TLS_PLAINTEXT` or `TLS` and `clientAuthentication` is set to `sasl`.
+	BootstrapBrokersSaslScram *string `pulumi:"bootstrapBrokersSaslScram"`
 	// A comma separated list of one or more DNS names (or IPs) and TLS port pairs kafka brokers suitable to boostrap connectivity to the kafka cluster. Only contains value if `clientBroker` encryption in transit is set to `TLS_PLAINTEXT` or `TLS`.
 	BootstrapBrokersTls *string `pulumi:"bootstrapBrokersTls"`
 	// Configuration block for the broker nodes of the Kafka cluster.
@@ -289,6 +298,8 @@ type ClusterState struct {
 	Arn pulumi.StringPtrInput
 	// A comma separated list of one or more hostname:port pairs of kafka brokers suitable to boostrap connectivity to the kafka cluster. Only contains value if `clientBroker` encryption in transit is set to `PLAINTEXT` or `TLS_PLAINTEXT`.
 	BootstrapBrokers pulumi.StringPtrInput
+	// A comma separated list of one or more DNS names (or IPs) and TLS port pairs kafka brokers suitable to boostrap connectivity using SASL/SCRAM to the kafka cluster. Only contains value if `clientBroker` encryption in transit is set to `TLS_PLAINTEXT` or `TLS` and `clientAuthentication` is set to `sasl`.
+	BootstrapBrokersSaslScram pulumi.StringPtrInput
 	// A comma separated list of one or more DNS names (or IPs) and TLS port pairs kafka brokers suitable to boostrap connectivity to the kafka cluster. Only contains value if `clientBroker` encryption in transit is set to `TLS_PLAINTEXT` or `TLS`.
 	BootstrapBrokersTls pulumi.StringPtrInput
 	// Configuration block for the broker nodes of the Kafka cluster.
@@ -330,7 +341,7 @@ type clusterArgs struct {
 	// Configuration block for specifying a client authentication. See below.
 	ClientAuthentication *ClusterClientAuthentication `pulumi:"clientAuthentication"`
 	// Name of the MSK cluster.
-	ClusterName string `pulumi:"clusterName"`
+	ClusterName *string `pulumi:"clusterName"`
 	// Configuration block for specifying a MSK Configuration to attach to Kafka brokers. See below.
 	ConfigurationInfo *ClusterConfigurationInfo `pulumi:"configurationInfo"`
 	// Configuration block for specifying encryption. See below.
@@ -356,7 +367,7 @@ type ClusterArgs struct {
 	// Configuration block for specifying a client authentication. See below.
 	ClientAuthentication ClusterClientAuthenticationPtrInput
 	// Name of the MSK cluster.
-	ClusterName pulumi.StringInput
+	ClusterName pulumi.StringPtrInput
 	// Configuration block for specifying a MSK Configuration to attach to Kafka brokers. See below.
 	ConfigurationInfo ClusterConfigurationInfoPtrInput
 	// Configuration block for specifying encryption. See below.
@@ -377,4 +388,43 @@ type ClusterArgs struct {
 
 func (ClusterArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*clusterArgs)(nil)).Elem()
+}
+
+type ClusterInput interface {
+	pulumi.Input
+
+	ToClusterOutput() ClusterOutput
+	ToClusterOutputWithContext(ctx context.Context) ClusterOutput
+}
+
+func (Cluster) ElementType() reflect.Type {
+	return reflect.TypeOf((*Cluster)(nil)).Elem()
+}
+
+func (i Cluster) ToClusterOutput() ClusterOutput {
+	return i.ToClusterOutputWithContext(context.Background())
+}
+
+func (i Cluster) ToClusterOutputWithContext(ctx context.Context) ClusterOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(ClusterOutput)
+}
+
+type ClusterOutput struct {
+	*pulumi.OutputState
+}
+
+func (ClusterOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*ClusterOutput)(nil)).Elem()
+}
+
+func (o ClusterOutput) ToClusterOutput() ClusterOutput {
+	return o
+}
+
+func (o ClusterOutput) ToClusterOutputWithContext(ctx context.Context) ClusterOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(ClusterOutput{})
 }

@@ -14,9 +14,17 @@ import * as utilities from "../utilities";
  * import * as aws from "@pulumi/aws";
  *
  * const example = new aws.ec2.VpcEndpointRouteTableAssociation("example", {
- *     routeTableId: aws_route_table_example.id,
- *     vpcEndpointId: aws_vpc_endpoint_example.id,
+ *     routeTableId: aws_route_table.example.id,
+ *     vpcEndpointId: aws_vpc_endpoint.example.id,
  * });
+ * ```
+ *
+ * ## Import
+ *
+ * VPC Endpoint Route Table Associations can be imported using `vpc_endpoint_id` together with `route_table_id`, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:ec2/vpcEndpointRouteTableAssociation:VpcEndpointRouteTableAssociation example vpce-aaaaaaaa/rt-bbbbbbbb
  * ```
  */
 export class VpcEndpointRouteTableAssociation extends pulumi.CustomResource {
@@ -72,10 +80,10 @@ export class VpcEndpointRouteTableAssociation extends pulumi.CustomResource {
             inputs["vpcEndpointId"] = state ? state.vpcEndpointId : undefined;
         } else {
             const args = argsOrState as VpcEndpointRouteTableAssociationArgs | undefined;
-            if (!args || args.routeTableId === undefined) {
+            if ((!args || args.routeTableId === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'routeTableId'");
             }
-            if (!args || args.vpcEndpointId === undefined) {
+            if ((!args || args.vpcEndpointId === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'vpcEndpointId'");
             }
             inputs["routeTableId"] = args ? args.routeTableId : undefined;

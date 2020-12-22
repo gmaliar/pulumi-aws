@@ -4,6 +4,7 @@
 package ec2
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -18,7 +19,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/ec2"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/ec2"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -35,6 +36,14 @@ import (
 // 	})
 // }
 // ```
+//
+// ## Import
+//
+// AWS AMI Launch Permission can be imported using the `ACCOUNT-ID/IMAGE-ID`, e.g.
+//
+// ```sh
+//  $ pulumi import aws:ec2/amiLaunchPermission:AmiLaunchPermission example 123456789012/ami-12345678
+// ```
 type AmiLaunchPermission struct {
 	pulumi.CustomResourceState
 
@@ -47,14 +56,15 @@ type AmiLaunchPermission struct {
 // NewAmiLaunchPermission registers a new resource with the given unique name, arguments, and options.
 func NewAmiLaunchPermission(ctx *pulumi.Context,
 	name string, args *AmiLaunchPermissionArgs, opts ...pulumi.ResourceOption) (*AmiLaunchPermission, error) {
-	if args == nil || args.AccountId == nil {
-		return nil, errors.New("missing required argument 'AccountId'")
-	}
-	if args == nil || args.ImageId == nil {
-		return nil, errors.New("missing required argument 'ImageId'")
-	}
 	if args == nil {
-		args = &AmiLaunchPermissionArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.AccountId == nil {
+		return nil, errors.New("invalid value for required argument 'AccountId'")
+	}
+	if args.ImageId == nil {
+		return nil, errors.New("invalid value for required argument 'ImageId'")
 	}
 	var resource AmiLaunchPermission
 	err := ctx.RegisterResource("aws:ec2/amiLaunchPermission:AmiLaunchPermission", name, args, &resource, opts...)
@@ -112,4 +122,43 @@ type AmiLaunchPermissionArgs struct {
 
 func (AmiLaunchPermissionArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*amiLaunchPermissionArgs)(nil)).Elem()
+}
+
+type AmiLaunchPermissionInput interface {
+	pulumi.Input
+
+	ToAmiLaunchPermissionOutput() AmiLaunchPermissionOutput
+	ToAmiLaunchPermissionOutputWithContext(ctx context.Context) AmiLaunchPermissionOutput
+}
+
+func (AmiLaunchPermission) ElementType() reflect.Type {
+	return reflect.TypeOf((*AmiLaunchPermission)(nil)).Elem()
+}
+
+func (i AmiLaunchPermission) ToAmiLaunchPermissionOutput() AmiLaunchPermissionOutput {
+	return i.ToAmiLaunchPermissionOutputWithContext(context.Background())
+}
+
+func (i AmiLaunchPermission) ToAmiLaunchPermissionOutputWithContext(ctx context.Context) AmiLaunchPermissionOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(AmiLaunchPermissionOutput)
+}
+
+type AmiLaunchPermissionOutput struct {
+	*pulumi.OutputState
+}
+
+func (AmiLaunchPermissionOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*AmiLaunchPermissionOutput)(nil)).Elem()
+}
+
+func (o AmiLaunchPermissionOutput) ToAmiLaunchPermissionOutput() AmiLaunchPermissionOutput {
+	return o
+}
+
+func (o AmiLaunchPermissionOutput) ToAmiLaunchPermissionOutputWithContext(ctx context.Context) AmiLaunchPermissionOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(AmiLaunchPermissionOutput{})
 }

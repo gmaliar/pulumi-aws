@@ -15,17 +15,42 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const exampleUser = new aws.iam.User("example", {
- *     forceDestroy: true,
+ * const exampleUser = new aws.iam.User("exampleUser", {
  *     path: "/",
+ *     forceDestroy: true,
  * });
- * const exampleUserLoginProfile = new aws.iam.UserLoginProfile("example", {
- *     pgpKey: "keybase:some_person_that_exists",
+ * const exampleUserLoginProfile = new aws.iam.UserLoginProfile("exampleUserLoginProfile", {
  *     user: exampleUser.name,
+ *     pgpKey: "keybase:some_person_that_exists",
  * });
- *
  * export const password = exampleUserLoginProfile.encryptedPassword;
  * ```
+ *
+ * ## Import
+ *
+ * IAM User Login Profiles can be imported without password information support via the IAM User name, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:iam/userLoginProfile:UserLoginProfile example myusername
+ * ```
+ *
+ *  Since this provider has no method to read the PGP or password information during import, use [`ignore_changes` argument](https://www.pulumi.com/docs/intro/concepts/programming-model/#ignorechanges) to ignore them unless password recreation is desired. e.g. hcl resource "aws_iam_user_login_profile" "example" {
+ *
+ * # ... other configuration ...
+ *
+ *  lifecycle {
+ *
+ *  ignore_changes = [
+ *
+ *  password_length,
+ *
+ *  password_reset_required,
+ *
+ *  pgp_key,
+ *
+ *  ]
+ *
+ *  } }
  */
 export class UserLoginProfile extends pulumi.CustomResource {
     /**
@@ -100,10 +125,10 @@ export class UserLoginProfile extends pulumi.CustomResource {
             inputs["user"] = state ? state.user : undefined;
         } else {
             const args = argsOrState as UserLoginProfileArgs | undefined;
-            if (!args || args.pgpKey === undefined) {
+            if ((!args || args.pgpKey === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'pgpKey'");
             }
-            if (!args || args.user === undefined) {
+            if ((!args || args.user === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'user'");
             }
             inputs["passwordLength"] = args ? args.passwordLength : undefined;

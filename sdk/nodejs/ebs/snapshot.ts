@@ -20,12 +20,20 @@ import * as utilities from "../utilities";
  *         Name: "HelloWorld",
  *     },
  * });
- * const exampleSnapshot = new aws.ebs.Snapshot("example_snapshot", {
+ * const exampleSnapshot = new aws.ebs.Snapshot("exampleSnapshot", {
+ *     volumeId: example.id,
  *     tags: {
  *         Name: "HelloWorld_snap",
  *     },
- *     volumeId: example.id,
  * });
+ * ```
+ *
+ * ## Import
+ *
+ * EBS Snapshot can be imported using the `id`, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:ebs/snapshot:Snapshot id snap-049df61146c4d7901
  * ```
  */
 export class Snapshot extends pulumi.CustomResource {
@@ -121,7 +129,7 @@ export class Snapshot extends pulumi.CustomResource {
             inputs["volumeSize"] = state ? state.volumeSize : undefined;
         } else {
             const args = argsOrState as SnapshotArgs | undefined;
-            if (!args || args.volumeId === undefined) {
+            if ((!args || args.volumeId === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'volumeId'");
             }
             inputs["description"] = args ? args.description : undefined;

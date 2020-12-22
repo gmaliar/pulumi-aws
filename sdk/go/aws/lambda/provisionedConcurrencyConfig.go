@@ -4,6 +4,7 @@
 package lambda
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -19,16 +20,16 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/lambda"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/lambda"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
 // func main() {
 // 	pulumi.Run(func(ctx *pulumi.Context) error {
 // 		_, err := lambda.NewProvisionedConcurrencyConfig(ctx, "example", &lambda.ProvisionedConcurrencyConfigArgs{
-// 			FunctionName:                    pulumi.String(aws_lambda_alias.Example.Function_name),
+// 			FunctionName:                    pulumi.Any(aws_lambda_alias.Example.Function_name),
 // 			ProvisionedConcurrentExecutions: pulumi.Int(1),
-// 			Qualifier:                       pulumi.String(aws_lambda_alias.Example.Name),
+// 			Qualifier:                       pulumi.Any(aws_lambda_alias.Example.Name),
 // 		})
 // 		if err != nil {
 // 			return err
@@ -43,16 +44,16 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/lambda"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/lambda"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
 // func main() {
 // 	pulumi.Run(func(ctx *pulumi.Context) error {
 // 		_, err := lambda.NewProvisionedConcurrencyConfig(ctx, "example", &lambda.ProvisionedConcurrencyConfigArgs{
-// 			FunctionName:                    pulumi.String(aws_lambda_function.Example.Function_name),
+// 			FunctionName:                    pulumi.Any(aws_lambda_function.Example.Function_name),
 // 			ProvisionedConcurrentExecutions: pulumi.Int(1),
-// 			Qualifier:                       pulumi.String(aws_lambda_function.Example.Version),
+// 			Qualifier:                       pulumi.Any(aws_lambda_function.Example.Version),
 // 		})
 // 		if err != nil {
 // 			return err
@@ -60,6 +61,14 @@ import (
 // 		return nil
 // 	})
 // }
+// ```
+//
+// ## Import
+//
+// Lambda Provisioned Concurrency Configs can be imported using the `function_name` and `qualifier` separated by a colon (`:`), e.g.
+//
+// ```sh
+//  $ pulumi import aws:lambda/provisionedConcurrencyConfig:ProvisionedConcurrencyConfig example my_function:production
 // ```
 type ProvisionedConcurrencyConfig struct {
 	pulumi.CustomResourceState
@@ -75,17 +84,18 @@ type ProvisionedConcurrencyConfig struct {
 // NewProvisionedConcurrencyConfig registers a new resource with the given unique name, arguments, and options.
 func NewProvisionedConcurrencyConfig(ctx *pulumi.Context,
 	name string, args *ProvisionedConcurrencyConfigArgs, opts ...pulumi.ResourceOption) (*ProvisionedConcurrencyConfig, error) {
-	if args == nil || args.FunctionName == nil {
-		return nil, errors.New("missing required argument 'FunctionName'")
-	}
-	if args == nil || args.ProvisionedConcurrentExecutions == nil {
-		return nil, errors.New("missing required argument 'ProvisionedConcurrentExecutions'")
-	}
-	if args == nil || args.Qualifier == nil {
-		return nil, errors.New("missing required argument 'Qualifier'")
-	}
 	if args == nil {
-		args = &ProvisionedConcurrencyConfigArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.FunctionName == nil {
+		return nil, errors.New("invalid value for required argument 'FunctionName'")
+	}
+	if args.ProvisionedConcurrentExecutions == nil {
+		return nil, errors.New("invalid value for required argument 'ProvisionedConcurrentExecutions'")
+	}
+	if args.Qualifier == nil {
+		return nil, errors.New("invalid value for required argument 'Qualifier'")
 	}
 	var resource ProvisionedConcurrencyConfig
 	err := ctx.RegisterResource("aws:lambda/provisionedConcurrencyConfig:ProvisionedConcurrencyConfig", name, args, &resource, opts...)
@@ -151,4 +161,43 @@ type ProvisionedConcurrencyConfigArgs struct {
 
 func (ProvisionedConcurrencyConfigArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*provisionedConcurrencyConfigArgs)(nil)).Elem()
+}
+
+type ProvisionedConcurrencyConfigInput interface {
+	pulumi.Input
+
+	ToProvisionedConcurrencyConfigOutput() ProvisionedConcurrencyConfigOutput
+	ToProvisionedConcurrencyConfigOutputWithContext(ctx context.Context) ProvisionedConcurrencyConfigOutput
+}
+
+func (ProvisionedConcurrencyConfig) ElementType() reflect.Type {
+	return reflect.TypeOf((*ProvisionedConcurrencyConfig)(nil)).Elem()
+}
+
+func (i ProvisionedConcurrencyConfig) ToProvisionedConcurrencyConfigOutput() ProvisionedConcurrencyConfigOutput {
+	return i.ToProvisionedConcurrencyConfigOutputWithContext(context.Background())
+}
+
+func (i ProvisionedConcurrencyConfig) ToProvisionedConcurrencyConfigOutputWithContext(ctx context.Context) ProvisionedConcurrencyConfigOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(ProvisionedConcurrencyConfigOutput)
+}
+
+type ProvisionedConcurrencyConfigOutput struct {
+	*pulumi.OutputState
+}
+
+func (ProvisionedConcurrencyConfigOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*ProvisionedConcurrencyConfigOutput)(nil)).Elem()
+}
+
+func (o ProvisionedConcurrencyConfigOutput) ToProvisionedConcurrencyConfigOutput() ProvisionedConcurrencyConfigOutput {
+	return o
+}
+
+func (o ProvisionedConcurrencyConfigOutput) ToProvisionedConcurrencyConfigOutputWithContext(ctx context.Context) ProvisionedConcurrencyConfigOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(ProvisionedConcurrencyConfigOutput{})
 }

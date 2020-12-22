@@ -97,10 +97,14 @@ namespace Pulumi.Aws
 
              public class AssumeRole
              {
+                public int? DurationSeconds { get; set; }
                 public string? ExternalId { get; set; } = null!;
                 public string? Policy { get; set; } = null!;
+                public ImmutableArray<string> PolicyArns { get; set; }
                 public string? RoleArn { get; set; } = null!;
                 public string? SessionName { get; set; } = null!;
+                public ImmutableDictionary<string, string>? Tags { get; set; } = null!;
+                public ImmutableArray<string> TransitiveTagKeys { get; set; }
             }
 
              public class Endpoints
@@ -135,6 +139,7 @@ namespace Pulumi.Aws
                 public string? Codecommit { get; set; } = null!;
                 public string? Codedeploy { get; set; } = null!;
                 public string? Codepipeline { get; set; } = null!;
+                public string? Codestarconnections { get; set; } = null!;
                 public string? Cognitoidentity { get; set; } = null!;
                 public string? Cognitoidp { get; set; } = null!;
                 public string? Configservice { get; set; } = null!;
@@ -152,6 +157,7 @@ namespace Pulumi.Aws
                 public string? Dynamodb { get; set; } = null!;
                 public string? Ec2 { get; set; } = null!;
                 public string? Ecr { get; set; } = null!;
+                public string? Ecrpublic { get; set; } = null!;
                 public string? Ecs { get; set; } = null!;
                 public string? Efs { get; set; } = null!;
                 public string? Eks { get; set; } = null!;
@@ -172,6 +178,7 @@ namespace Pulumi.Aws
                 public string? Greengrass { get; set; } = null!;
                 public string? Guardduty { get; set; } = null!;
                 public string? Iam { get; set; } = null!;
+                public string? Identitystore { get; set; } = null!;
                 public string? Imagebuilder { get; set; } = null!;
                 public string? Inspector { get; set; } = null!;
                 public string? Iot { get; set; } = null!;
@@ -179,7 +186,6 @@ namespace Pulumi.Aws
                 public string? Iotevents { get; set; } = null!;
                 public string? Kafka { get; set; } = null!;
                 public string? Kinesis { get; set; } = null!;
-                public string? KinesisAnalytics { get; set; } = null!;
                 public string? Kinesisanalytics { get; set; } = null!;
                 public string? Kinesisanalyticsv2 { get; set; } = null!;
                 public string? Kinesisvideo { get; set; } = null!;
@@ -190,6 +196,7 @@ namespace Pulumi.Aws
                 public string? Licensemanager { get; set; } = null!;
                 public string? Lightsail { get; set; } = null!;
                 public string? Macie { get; set; } = null!;
+                public string? Macie2 { get; set; } = null!;
                 public string? Managedblockchain { get; set; } = null!;
                 public string? Marketplacecatalog { get; set; } = null!;
                 public string? Mediaconnect { get; set; } = null!;
@@ -199,7 +206,9 @@ namespace Pulumi.Aws
                 public string? Mediastore { get; set; } = null!;
                 public string? Mediastoredata { get; set; } = null!;
                 public string? Mq { get; set; } = null!;
+                public string? Mwaa { get; set; } = null!;
                 public string? Neptune { get; set; } = null!;
+                public string? Networkfirewall { get; set; } = null!;
                 public string? Networkmanager { get; set; } = null!;
                 public string? Opsworks { get; set; } = null!;
                 public string? Organizations { get; set; } = null!;
@@ -209,7 +218,6 @@ namespace Pulumi.Aws
                 public string? Pricing { get; set; } = null!;
                 public string? Qldb { get; set; } = null!;
                 public string? Quicksight { get; set; } = null!;
-                public string? R53 { get; set; } = null!;
                 public string? Ram { get; set; } = null!;
                 public string? Rds { get; set; } = null!;
                 public string? Redshift { get; set; } = null!;
@@ -220,6 +228,7 @@ namespace Pulumi.Aws
                 public string? Route53resolver { get; set; } = null!;
                 public string? S3 { get; set; } = null!;
                 public string? S3control { get; set; } = null!;
+                public string? S3outposts { get; set; } = null!;
                 public string? Sagemaker { get; set; } = null!;
                 public string? Sdb { get; set; } = null!;
                 public string? Secretsmanager { get; set; } = null!;
@@ -230,14 +239,17 @@ namespace Pulumi.Aws
                 public string? Servicequotas { get; set; } = null!;
                 public string? Ses { get; set; } = null!;
                 public string? Shield { get; set; } = null!;
+                public string? Signer { get; set; } = null!;
                 public string? Sns { get; set; } = null!;
                 public string? Sqs { get; set; } = null!;
                 public string? Ssm { get; set; } = null!;
+                public string? Ssoadmin { get; set; } = null!;
                 public string? Stepfunctions { get; set; } = null!;
                 public string? Storagegateway { get; set; } = null!;
                 public string? Sts { get; set; } = null!;
                 public string? Swf { get; set; } = null!;
                 public string? Synthetics { get; set; } = null!;
+                public string? Timestreamwrite { get; set; } = null!;
                 public string? Transfer { get; set; } = null!;
                 public string? Waf { get; set; } = null!;
                 public string? Wafregional { get; set; } = null!;

@@ -13,19 +13,22 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const defaultInstance = new aws.rds.Instance("default", {
+ * const defaultInstance = new aws.rds.Instance("defaultInstance", {
  *     allocatedStorage: 10,
- *     dbSubnetGroupName: "my_database_subnet_group",
  *     engine: "mysql",
  *     engineVersion: "5.6.17",
  *     instanceClass: "db.t2.micro",
  *     name: "mydb",
- *     parameterGroupName: "default.mysql5.6",
- *     password: "bar",
  *     username: "foo",
+ *     password: "bar",
+ *     dbSubnetGroupName: "my_database_subnet_group",
+ *     parameterGroupName: "default.mysql5.6",
  * });
- * const defaultTopic = new aws.sns.Topic("default", {});
- * const defaultEventSubscription = new aws.rds.EventSubscription("default", {
+ * const defaultTopic = new aws.sns.Topic("defaultTopic", {});
+ * const defaultEventSubscription = new aws.rds.EventSubscription("defaultEventSubscription", {
+ *     snsTopic: defaultTopic.arn,
+ *     sourceType: "db-instance",
+ *     sourceIds: [defaultInstance.id],
  *     eventCategories: [
  *         "availability",
  *         "deletion",
@@ -38,9 +41,6 @@ import * as utilities from "../utilities";
  *         "recovery",
  *         "restoration",
  *     ],
- *     snsTopic: defaultTopic.arn,
- *     sourceIds: [defaultInstance.id],
- *     sourceType: "db-instance",
  * });
  * ```
  * ## Attributes
@@ -50,6 +50,14 @@ import * as utilities from "../utilities";
  * * `id` - The name of the RDS event notification subscription
  * * `arn` - The Amazon Resource Name of the RDS event notification subscription
  * * `customerAwsId` - The AWS customer account associated with the RDS event notification subscription
+ *
+ * ## Import
+ *
+ * DB Event Subscriptions can be imported using the `name`, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:rds/eventSubscription:EventSubscription default rds-event-sub
+ * ```
  */
 export class EventSubscription extends pulumi.CustomResource {
     /**
@@ -138,7 +146,7 @@ export class EventSubscription extends pulumi.CustomResource {
             inputs["tags"] = state ? state.tags : undefined;
         } else {
             const args = argsOrState as EventSubscriptionArgs | undefined;
-            if (!args || args.snsTopic === undefined) {
+            if ((!args || args.snsTopic === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'snsTopic'");
             }
             inputs["enabled"] = args ? args.enabled : undefined;

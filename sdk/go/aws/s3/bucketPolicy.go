@@ -4,6 +4,7 @@
 package s3
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -21,7 +22,7 @@ import (
 // import (
 // 	"fmt"
 //
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/s3"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/s3"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -33,7 +34,7 @@ import (
 // 		}
 // 		_, err = s3.NewBucketPolicy(ctx, "bucketPolicy", &s3.BucketPolicyArgs{
 // 			Bucket: bucket.ID(),
-// 			Policy: pulumi.String(fmt.Sprintf("%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v", "{\n", "  \"Version\": \"2012-10-17\",\n", "  \"Id\": \"MYBUCKETPOLICY\",\n", "  \"Statement\": [\n", "    {\n", "      \"Sid\": \"IPAllow\",\n", "      \"Effect\": \"Deny\",\n", "      \"Principal\": \"*\",\n", "      \"Action\": \"s3:*\",\n", "      \"Resource\": \"arn:aws:s3:::my_tf_test_bucket/*\",\n", "      \"Condition\": {\n", "         \"IpAddress\": {\"aws:SourceIp\": \"8.8.8.8/32\"}\n", "      }\n", "    }\n", "  ]\n", "}\n", "\n")),
+// 			Policy: pulumi.String(fmt.Sprintf("%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v", "{\n", "  \"Version\": \"2012-10-17\",\n", "  \"Id\": \"MYBUCKETPOLICY\",\n", "  \"Statement\": [\n", "    {\n", "      \"Sid\": \"IPAllow\",\n", "      \"Effect\": \"Deny\",\n", "      \"Principal\": \"*\",\n", "      \"Action\": \"s3:*\",\n", "      \"Resource\": \"arn:aws:s3:::my_tf_test_bucket/*\",\n", "      \"Condition\": {\n", "         \"IpAddress\": {\"aws:SourceIp\": \"8.8.8.8/32\"}\n", "      }\n", "    }\n", "  ]\n", "}\n")),
 // 		})
 // 		if err != nil {
 // 			return err
@@ -41,6 +42,14 @@ import (
 // 		return nil
 // 	})
 // }
+// ```
+//
+// ## Import
+//
+// S3 bucket policies can be imported using the bucket name, e.g.
+//
+// ```sh
+//  $ pulumi import aws:s3/bucketPolicy:BucketPolicy example my-bucket-name
 // ```
 type BucketPolicy struct {
 	pulumi.CustomResourceState
@@ -54,14 +63,15 @@ type BucketPolicy struct {
 // NewBucketPolicy registers a new resource with the given unique name, arguments, and options.
 func NewBucketPolicy(ctx *pulumi.Context,
 	name string, args *BucketPolicyArgs, opts ...pulumi.ResourceOption) (*BucketPolicy, error) {
-	if args == nil || args.Bucket == nil {
-		return nil, errors.New("missing required argument 'Bucket'")
-	}
-	if args == nil || args.Policy == nil {
-		return nil, errors.New("missing required argument 'Policy'")
-	}
 	if args == nil {
-		args = &BucketPolicyArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.Bucket == nil {
+		return nil, errors.New("invalid value for required argument 'Bucket'")
+	}
+	if args.Policy == nil {
+		return nil, errors.New("invalid value for required argument 'Policy'")
 	}
 	var resource BucketPolicy
 	err := ctx.RegisterResource("aws:s3/bucketPolicy:BucketPolicy", name, args, &resource, opts...)
@@ -119,4 +129,43 @@ type BucketPolicyArgs struct {
 
 func (BucketPolicyArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*bucketPolicyArgs)(nil)).Elem()
+}
+
+type BucketPolicyInput interface {
+	pulumi.Input
+
+	ToBucketPolicyOutput() BucketPolicyOutput
+	ToBucketPolicyOutputWithContext(ctx context.Context) BucketPolicyOutput
+}
+
+func (BucketPolicy) ElementType() reflect.Type {
+	return reflect.TypeOf((*BucketPolicy)(nil)).Elem()
+}
+
+func (i BucketPolicy) ToBucketPolicyOutput() BucketPolicyOutput {
+	return i.ToBucketPolicyOutputWithContext(context.Background())
+}
+
+func (i BucketPolicy) ToBucketPolicyOutputWithContext(ctx context.Context) BucketPolicyOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(BucketPolicyOutput)
+}
+
+type BucketPolicyOutput struct {
+	*pulumi.OutputState
+}
+
+func (BucketPolicyOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*BucketPolicyOutput)(nil)).Elem()
+}
+
+func (o BucketPolicyOutput) ToBucketPolicyOutput() BucketPolicyOutput {
+	return o
+}
+
+func (o BucketPolicyOutput) ToBucketPolicyOutputWithContext(ctx context.Context) BucketPolicyOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(BucketPolicyOutput{})
 }

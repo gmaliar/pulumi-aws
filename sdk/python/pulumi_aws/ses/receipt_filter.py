@@ -5,28 +5,22 @@
 import warnings
 import pulumi
 import pulumi.runtime
-from typing import Union
-from .. import utilities, tables
+from typing import Any, Mapping, Optional, Sequence, Union
+from .. import _utilities, _tables
+
+__all__ = ['ReceiptFilter']
 
 
 class ReceiptFilter(pulumi.CustomResource):
-    arn: pulumi.Output[str]
-    """
-    The SES receipt filter ARN.
-    """
-    cidr: pulumi.Output[str]
-    """
-    The IP address or address range to filter, in CIDR notation
-    """
-    name: pulumi.Output[str]
-    """
-    The name of the filter
-    """
-    policy: pulumi.Output[str]
-    """
-    Block or Allow
-    """
-    def __init__(__self__, resource_name, opts=None, cidr=None, name=None, policy=None, __props__=None, __name__=None, __opts__=None):
+    def __init__(__self__,
+                 resource_name: str,
+                 opts: Optional[pulumi.ResourceOptions] = None,
+                 cidr: Optional[pulumi.Input[str]] = None,
+                 name: Optional[pulumi.Input[str]] = None,
+                 policy: Optional[pulumi.Input[str]] = None,
+                 __props__=None,
+                 __name__=None,
+                 __opts__=None):
         """
         Provides an SES receipt filter resource
 
@@ -39,6 +33,14 @@ class ReceiptFilter(pulumi.CustomResource):
         filter = aws.ses.ReceiptFilter("filter",
             cidr="10.10.10.10",
             policy="Block")
+        ```
+
+        ## Import
+
+        SES Receipt Filter can be imported using their `name`, e.g.
+
+        ```sh
+         $ pulumi import aws:ses/receiptFilter:ReceiptFilter test some-filter
         ```
 
         :param str resource_name: The name of the resource.
@@ -58,17 +60,17 @@ class ReceiptFilter(pulumi.CustomResource):
         if not isinstance(opts, pulumi.ResourceOptions):
             raise TypeError('Expected resource options to be a ResourceOptions instance')
         if opts.version is None:
-            opts.version = utilities.get_version()
+            opts.version = _utilities.get_version()
         if opts.id is None:
             if __props__ is not None:
                 raise TypeError('__props__ is only valid when passed in combination with a valid opts.id to get an existing resource')
             __props__ = dict()
 
-            if cidr is None:
+            if cidr is None and not opts.urn:
                 raise TypeError("Missing required property 'cidr'")
             __props__['cidr'] = cidr
             __props__['name'] = name
-            if policy is None:
+            if policy is None and not opts.urn:
                 raise TypeError("Missing required property 'policy'")
             __props__['policy'] = policy
             __props__['arn'] = None
@@ -79,13 +81,19 @@ class ReceiptFilter(pulumi.CustomResource):
             opts)
 
     @staticmethod
-    def get(resource_name, id, opts=None, arn=None, cidr=None, name=None, policy=None):
+    def get(resource_name: str,
+            id: pulumi.Input[str],
+            opts: Optional[pulumi.ResourceOptions] = None,
+            arn: Optional[pulumi.Input[str]] = None,
+            cidr: Optional[pulumi.Input[str]] = None,
+            name: Optional[pulumi.Input[str]] = None,
+            policy: Optional[pulumi.Input[str]] = None) -> 'ReceiptFilter':
         """
         Get an existing ReceiptFilter resource's state with the given name, id, and optional extra
         properties used to qualify the lookup.
 
         :param str resource_name: The unique name of the resulting resource.
-        :param str id: The unique provider ID of the resource to lookup.
+        :param pulumi.Input[str] id: The unique provider ID of the resource to lookup.
         :param pulumi.ResourceOptions opts: Options for the resource.
         :param pulumi.Input[str] arn: The SES receipt filter ARN.
         :param pulumi.Input[str] cidr: The IP address or address range to filter, in CIDR notation
@@ -102,8 +110,41 @@ class ReceiptFilter(pulumi.CustomResource):
         __props__["policy"] = policy
         return ReceiptFilter(resource_name, opts=opts, __props__=__props__)
 
+    @property
+    @pulumi.getter
+    def arn(self) -> pulumi.Output[str]:
+        """
+        The SES receipt filter ARN.
+        """
+        return pulumi.get(self, "arn")
+
+    @property
+    @pulumi.getter
+    def cidr(self) -> pulumi.Output[str]:
+        """
+        The IP address or address range to filter, in CIDR notation
+        """
+        return pulumi.get(self, "cidr")
+
+    @property
+    @pulumi.getter
+    def name(self) -> pulumi.Output[str]:
+        """
+        The name of the filter
+        """
+        return pulumi.get(self, "name")
+
+    @property
+    @pulumi.getter
+    def policy(self) -> pulumi.Output[str]:
+        """
+        Block or Allow
+        """
+        return pulumi.get(self, "policy")
+
     def translate_output_property(self, prop):
-        return tables._CAMEL_TO_SNAKE_CASE_TABLE.get(prop) or prop
+        return _tables.CAMEL_TO_SNAKE_CASE_TABLE.get(prop) or prop
 
     def translate_input_property(self, prop):
-        return tables._SNAKE_TO_CAMEL_CASE_TABLE.get(prop) or prop
+        return _tables.SNAKE_TO_CAMEL_CASE_TABLE.get(prop) or prop
+

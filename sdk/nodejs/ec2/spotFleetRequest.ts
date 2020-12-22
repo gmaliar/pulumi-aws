@@ -2,8 +2,7 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 /**
@@ -18,38 +17,38 @@ import * as utilities from "../utilities";
  * import * as aws from "@pulumi/aws";
  *
  * // Request a Spot fleet
- * const cheapCompute = new aws.ec2.SpotFleetRequest("cheap_compute", {
- *     allocationStrategy: "diversified",
+ * const cheapCompute = new aws.ec2.SpotFleetRequest("cheapCompute", {
  *     iamFleetRole: "arn:aws:iam::12345678:role/spot-fleet",
+ *     spotPrice: "0.03",
+ *     allocationStrategy: "diversified",
+ *     targetCapacity: 6,
+ *     validUntil: "2019-11-04T20:44:20Z",
  *     launchSpecifications: [
  *         {
- *             ami: "ami-1234",
- *             iamInstanceProfileArn: aws_iam_instance_profile_example.arn,
  *             instanceType: "m4.10xlarge",
- *             placementTenancy: "dedicated",
+ *             ami: "ami-1234",
  *             spotPrice: "2.793",
+ *             placementTenancy: "dedicated",
+ *             iamInstanceProfileArn: aws_iam_instance_profile.example.arn,
  *         },
  *         {
- *             ami: "ami-5678",
- *             availabilityZone: "us-west-1a",
- *             iamInstanceProfileArn: aws_iam_instance_profile_example.arn,
  *             instanceType: "m4.4xlarge",
+ *             ami: "ami-5678",
  *             keyName: "my-key",
+ *             spotPrice: "1.117",
+ *             iamInstanceProfileArn: aws_iam_instance_profile.example.arn,
+ *             availabilityZone: "us-west-1a",
+ *             subnetId: "subnet-1234",
+ *             weightedCapacity: 35,
  *             rootBlockDevices: [{
- *                 volumeSize: 300,
+ *                 volumeSize: "300",
  *                 volumeType: "gp2",
  *             }],
- *             spotPrice: "1.117",
- *             subnetId: "subnet-1234",
  *             tags: {
  *                 Name: "spot-fleet-example",
  *             },
- *             weightedCapacity: "35",
  *         },
  *     ],
- *     spotPrice: "0.03",
- *     targetCapacity: 6,
- *     validUntil: "2019-11-04T20:44:20Z",
  * });
  * ```
  * ### Using launch templates
@@ -62,7 +61,6 @@ import * as utilities from "../utilities";
  *     imageId: "ami-516b9131",
  *     instanceType: "m1.small",
  *     keyName: "some-key",
- *     spotPrice: "0.05",
  * });
  * const fooSpotFleetRequest = new aws.ec2.SpotFleetRequest("fooSpotFleetRequest", {
  *     iamFleetRole: "arn:aws:iam::12345678:role/spot-fleet",
@@ -76,7 +74,7 @@ import * as utilities from "../utilities";
  *         },
  *     }],
  * }, {
- *     dependsOn: ["aws_iam_policy_attachment.test-attach"],
+ *     dependsOn: [aws_iam_policy_attachment["test-attach"]],
  * });
  * ```
  *
@@ -122,7 +120,6 @@ import * as utilities from "../utilities";
  *     imageId: "ami-516b9131",
  *     instanceType: "m1.small",
  *     keyName: "some-key",
- *     spotPrice: "0.05",
  * });
  * const fooSpotFleetRequest = new aws.ec2.SpotFleetRequest("fooSpotFleetRequest", {
  *     iamFleetRole: "arn:aws:iam::12345678:role/spot-fleet",
@@ -147,8 +144,16 @@ import * as utilities from "../utilities";
  *         ],
  *     }],
  * }, {
- *     dependsOn: ["aws_iam_policy_attachment.test-attach"],
+ *     dependsOn: [aws_iam_policy_attachment["test-attach"]],
  * });
+ * ```
+ *
+ * ## Import
+ *
+ * Spot Fleet Requests can be imported using `id`, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:ec2/spotFleetRequest:SpotFleetRequest fleet sfr-005e9ec8-5546-4c31-b317-31a62325411e
  * ```
  */
 export class SpotFleetRequest extends pulumi.CustomResource {
@@ -236,6 +241,10 @@ export class SpotFleetRequest extends pulumi.CustomResource {
      */
     public readonly replaceUnhealthyInstances!: pulumi.Output<boolean | undefined>;
     /**
+     * Nested argument containing maintenance strategies for managing your Spot Instances that are at an elevated risk of being interrupted. Defined below.
+     */
+    public readonly spotMaintenanceStrategies!: pulumi.Output<outputs.ec2.SpotFleetRequestSpotMaintenanceStrategies | undefined>;
+    /**
      * The maximum spot bid for this override request.
      */
     public readonly spotPrice!: pulumi.Output<string | undefined>;
@@ -267,7 +276,7 @@ export class SpotFleetRequest extends pulumi.CustomResource {
      */
     public readonly validFrom!: pulumi.Output<string | undefined>;
     /**
-     * The end date and time of the request, in UTC [RFC3339](https://tools.ietf.org/html/rfc3339#section-5.8) format(for example, YYYY-MM-DDTHH:MM:SSZ). At this point, no new Spot instance requests are placed or enabled to fulfill the request. Defaults to 24 hours.
+     * The end date and time of the request, in UTC [RFC3339](https://tools.ietf.org/html/rfc3339#section-5.8) format(for example, YYYY-MM-DDTHH:MM:SSZ). At this point, no new Spot instance requests are placed or enabled to fulfill the request.
      */
     public readonly validUntil!: pulumi.Output<string | undefined>;
     /**
@@ -300,6 +309,7 @@ export class SpotFleetRequest extends pulumi.CustomResource {
             inputs["launchTemplateConfigs"] = state ? state.launchTemplateConfigs : undefined;
             inputs["loadBalancers"] = state ? state.loadBalancers : undefined;
             inputs["replaceUnhealthyInstances"] = state ? state.replaceUnhealthyInstances : undefined;
+            inputs["spotMaintenanceStrategies"] = state ? state.spotMaintenanceStrategies : undefined;
             inputs["spotPrice"] = state ? state.spotPrice : undefined;
             inputs["spotRequestState"] = state ? state.spotRequestState : undefined;
             inputs["tags"] = state ? state.tags : undefined;
@@ -311,10 +321,10 @@ export class SpotFleetRequest extends pulumi.CustomResource {
             inputs["waitForFulfillment"] = state ? state.waitForFulfillment : undefined;
         } else {
             const args = argsOrState as SpotFleetRequestArgs | undefined;
-            if (!args || args.iamFleetRole === undefined) {
+            if ((!args || args.iamFleetRole === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'iamFleetRole'");
             }
-            if (!args || args.targetCapacity === undefined) {
+            if ((!args || args.targetCapacity === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'targetCapacity'");
             }
             inputs["allocationStrategy"] = args ? args.allocationStrategy : undefined;
@@ -327,6 +337,7 @@ export class SpotFleetRequest extends pulumi.CustomResource {
             inputs["launchTemplateConfigs"] = args ? args.launchTemplateConfigs : undefined;
             inputs["loadBalancers"] = args ? args.loadBalancers : undefined;
             inputs["replaceUnhealthyInstances"] = args ? args.replaceUnhealthyInstances : undefined;
+            inputs["spotMaintenanceStrategies"] = args ? args.spotMaintenanceStrategies : undefined;
             inputs["spotPrice"] = args ? args.spotPrice : undefined;
             inputs["tags"] = args ? args.tags : undefined;
             inputs["targetCapacity"] = args ? args.targetCapacity : undefined;
@@ -410,6 +421,10 @@ export interface SpotFleetRequestState {
      */
     readonly replaceUnhealthyInstances?: pulumi.Input<boolean>;
     /**
+     * Nested argument containing maintenance strategies for managing your Spot Instances that are at an elevated risk of being interrupted. Defined below.
+     */
+    readonly spotMaintenanceStrategies?: pulumi.Input<inputs.ec2.SpotFleetRequestSpotMaintenanceStrategies>;
+    /**
      * The maximum spot bid for this override request.
      */
     readonly spotPrice?: pulumi.Input<string>;
@@ -441,7 +456,7 @@ export interface SpotFleetRequestState {
      */
     readonly validFrom?: pulumi.Input<string>;
     /**
-     * The end date and time of the request, in UTC [RFC3339](https://tools.ietf.org/html/rfc3339#section-5.8) format(for example, YYYY-MM-DDTHH:MM:SSZ). At this point, no new Spot instance requests are placed or enabled to fulfill the request. Defaults to 24 hours.
+     * The end date and time of the request, in UTC [RFC3339](https://tools.ietf.org/html/rfc3339#section-5.8) format(for example, YYYY-MM-DDTHH:MM:SSZ). At this point, no new Spot instance requests are placed or enabled to fulfill the request.
      */
     readonly validUntil?: pulumi.Input<string>;
     /**
@@ -512,6 +527,10 @@ export interface SpotFleetRequestArgs {
      */
     readonly replaceUnhealthyInstances?: pulumi.Input<boolean>;
     /**
+     * Nested argument containing maintenance strategies for managing your Spot Instances that are at an elevated risk of being interrupted. Defined below.
+     */
+    readonly spotMaintenanceStrategies?: pulumi.Input<inputs.ec2.SpotFleetRequestSpotMaintenanceStrategies>;
+    /**
      * The maximum spot bid for this override request.
      */
     readonly spotPrice?: pulumi.Input<string>;
@@ -539,7 +558,7 @@ export interface SpotFleetRequestArgs {
      */
     readonly validFrom?: pulumi.Input<string>;
     /**
-     * The end date and time of the request, in UTC [RFC3339](https://tools.ietf.org/html/rfc3339#section-5.8) format(for example, YYYY-MM-DDTHH:MM:SSZ). At this point, no new Spot instance requests are placed or enabled to fulfill the request. Defaults to 24 hours.
+     * The end date and time of the request, in UTC [RFC3339](https://tools.ietf.org/html/rfc3339#section-5.8) format(for example, YYYY-MM-DDTHH:MM:SSZ). At this point, no new Spot instance requests are placed or enabled to fulfill the request.
      */
     readonly validUntil?: pulumi.Input<string>;
     /**

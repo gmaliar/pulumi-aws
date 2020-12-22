@@ -2,8 +2,7 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 /**
@@ -17,10 +16,9 @@ import * as utilities from "../utilities";
  *
  * const config = new pulumi.Config();
  * const layerName = config.require("layerName");
- *
- * const existing = pulumi.output(aws.lambda.getLayerVersion({
+ * const existing = aws.lambda.getLayerVersion({
  *     layerName: layerName,
- * }, { async: true }));
+ * });
  * ```
  */
 export function getLayerVersion(args: GetLayerVersionArgs, opts?: pulumi.InvokeOptions): Promise<GetLayerVersionResult> {
@@ -90,6 +88,14 @@ export interface GetLayerVersionResult {
      * License info associated with the specific Lambda Layer version.
      */
     readonly licenseInfo: string;
+    /**
+     * The Amazon Resource Name (ARN) of a signing job.
+     */
+    readonly signingJobArn: string;
+    /**
+     * The Amazon Resource Name (ARN) for a signing profile version.
+     */
+    readonly signingProfileVersionArn: string;
     /**
      * Base64-encoded representation of raw SHA-256 sum of the zip file.
      */

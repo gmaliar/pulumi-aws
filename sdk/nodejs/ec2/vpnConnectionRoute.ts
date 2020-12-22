@@ -13,22 +13,18 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const vpc = new aws.ec2.Vpc("vpc", {
- *     cidrBlock: "10.0.0.0/16",
- * });
- * const vpnGateway = new aws.ec2.VpnGateway("vpn_gateway", {
- *     vpcId: vpc.id,
- * });
- * const customerGateway = new aws.ec2.CustomerGateway("customer_gateway", {
- *     bgpAsn: "65000",
+ * const vpc = new aws.ec2.Vpc("vpc", {cidrBlock: "10.0.0.0/16"});
+ * const vpnGateway = new aws.ec2.VpnGateway("vpnGateway", {vpcId: vpc.id});
+ * const customerGateway = new aws.ec2.CustomerGateway("customerGateway", {
+ *     bgpAsn: 65000,
  *     ipAddress: "172.0.0.1",
  *     type: "ipsec.1",
  * });
  * const main = new aws.ec2.VpnConnection("main", {
- *     customerGatewayId: customerGateway.id,
- *     staticRoutesOnly: true,
- *     type: "ipsec.1",
  *     vpnGatewayId: vpnGateway.id,
+ *     customerGatewayId: customerGateway.id,
+ *     type: "ipsec.1",
+ *     staticRoutesOnly: true,
  * });
  * const office = new aws.ec2.VpnConnectionRoute("office", {
  *     destinationCidrBlock: "192.168.10.0/24",
@@ -89,10 +85,10 @@ export class VpnConnectionRoute extends pulumi.CustomResource {
             inputs["vpnConnectionId"] = state ? state.vpnConnectionId : undefined;
         } else {
             const args = argsOrState as VpnConnectionRouteArgs | undefined;
-            if (!args || args.destinationCidrBlock === undefined) {
+            if ((!args || args.destinationCidrBlock === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'destinationCidrBlock'");
             }
-            if (!args || args.vpnConnectionId === undefined) {
+            if ((!args || args.vpnConnectionId === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'vpnConnectionId'");
             }
             inputs["destinationCidrBlock"] = args ? args.destinationCidrBlock : undefined;

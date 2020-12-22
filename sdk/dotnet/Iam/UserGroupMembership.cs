@@ -38,27 +38,35 @@ namespace Pulumi.Aws.Iam
     ///         });
     ///         var example1 = new Aws.Iam.UserGroupMembership("example1", new Aws.Iam.UserGroupMembershipArgs
     ///         {
+    ///             User = user1.Name,
     ///             Groups = 
     ///             {
     ///                 group1.Name,
     ///                 group2.Name,
     ///             },
-    ///             User = user1.Name,
     ///         });
     ///         var group3 = new Aws.Iam.Group("group3", new Aws.Iam.GroupArgs
     ///         {
     ///         });
     ///         var example2 = new Aws.Iam.UserGroupMembership("example2", new Aws.Iam.UserGroupMembershipArgs
     ///         {
+    ///             User = user1.Name,
     ///             Groups = 
     ///             {
     ///                 group3.Name,
     ///             },
-    ///             User = user1.Name,
     ///         });
     ///     }
     /// 
     /// }
+    /// ```
+    /// 
+    /// ## Import
+    /// 
+    /// IAM user group membership can be imported using the user name and group names separated by `/`.
+    /// 
+    /// ```sh
+    ///  $ pulumi import aws:iam/userGroupMembership:UserGroupMembership example1 user1/group1/group2
     /// ```
     /// </summary>
     public partial class UserGroupMembership : Pulumi.CustomResource

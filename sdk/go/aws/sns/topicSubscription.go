@@ -4,6 +4,7 @@
 package sns
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -31,7 +32,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/sns"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/sns"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -56,8 +57,8 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/sns"
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/sqs"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/sns"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/sqs"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -92,15 +93,37 @@ import (
 // import (
 // 	"fmt"
 //
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/iam"
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/providers"
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/sns"
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/sqs"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/config"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/iam"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/providers"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/sns"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/sqs"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
+// 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi/config"
 // )
 //
 // func main() {
 // 	pulumi.Run(func(ctx *pulumi.Context) error {
+// 		cfg := config.New(ctx, "")
+// 		sns := map[string]interface{}{
+// 			"account-id":   "111111111111",
+// 			"role-name":    "service/service",
+// 			"name":         "example-sns-topic",
+// 			"display_name": "example",
+// 			"region":       "us-west-1",
+// 		}
+// 		if param := cfg.GetBool("sns"); param != nil {
+// 			sns = param
+// 		}
+// 		sqs := map[string]interface{}{
+// 			"account-id": "222222222222",
+// 			"role-name":  "service/service",
+// 			"name":       "example-sqs-queue",
+// 			"region":     "us-east-1",
+// 		}
+// 		if param := cfg.GetBool("sqs"); param != nil {
+// 			sqs = param
+// 		}
 // 		opt0 := "__default_policy_ID"
 // 		sns_topic_policy, err := iam.GetPolicyDocument(ctx, &iam.GetPolicyDocumentArgs{
 // 			PolicyId: &opt0,
@@ -264,6 +287,14 @@ import (
 // 	})
 // }
 // ```
+//
+// ## Import
+//
+// SNS Topic Subscriptions can be imported using the `subscription arn`, e.g.
+//
+// ```sh
+//  $ pulumi import aws:sns/topicSubscription:TopicSubscription user_updates_sqs_target arn:aws:sns:us-west-2:0123456789012:my-topic:8a21d249-4329-4871-acc6-7be709c6ea7f
+// ```
 type TopicSubscription struct {
 	pulumi.CustomResourceState
 
@@ -290,17 +321,18 @@ type TopicSubscription struct {
 // NewTopicSubscription registers a new resource with the given unique name, arguments, and options.
 func NewTopicSubscription(ctx *pulumi.Context,
 	name string, args *TopicSubscriptionArgs, opts ...pulumi.ResourceOption) (*TopicSubscription, error) {
-	if args == nil || args.Endpoint == nil {
-		return nil, errors.New("missing required argument 'Endpoint'")
-	}
-	if args == nil || args.Protocol == nil {
-		return nil, errors.New("missing required argument 'Protocol'")
-	}
-	if args == nil || args.Topic == nil {
-		return nil, errors.New("missing required argument 'Topic'")
-	}
 	if args == nil {
-		args = &TopicSubscriptionArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.Endpoint == nil {
+		return nil, errors.New("invalid value for required argument 'Endpoint'")
+	}
+	if args.Protocol == nil {
+		return nil, errors.New("invalid value for required argument 'Protocol'")
+	}
+	if args.Topic == nil {
+		return nil, errors.New("invalid value for required argument 'Topic'")
 	}
 	var resource TopicSubscription
 	err := ctx.RegisterResource("aws:sns/topicSubscription:TopicSubscription", name, args, &resource, opts...)
@@ -410,4 +442,43 @@ type TopicSubscriptionArgs struct {
 
 func (TopicSubscriptionArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*topicSubscriptionArgs)(nil)).Elem()
+}
+
+type TopicSubscriptionInput interface {
+	pulumi.Input
+
+	ToTopicSubscriptionOutput() TopicSubscriptionOutput
+	ToTopicSubscriptionOutputWithContext(ctx context.Context) TopicSubscriptionOutput
+}
+
+func (TopicSubscription) ElementType() reflect.Type {
+	return reflect.TypeOf((*TopicSubscription)(nil)).Elem()
+}
+
+func (i TopicSubscription) ToTopicSubscriptionOutput() TopicSubscriptionOutput {
+	return i.ToTopicSubscriptionOutputWithContext(context.Background())
+}
+
+func (i TopicSubscription) ToTopicSubscriptionOutputWithContext(ctx context.Context) TopicSubscriptionOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(TopicSubscriptionOutput)
+}
+
+type TopicSubscriptionOutput struct {
+	*pulumi.OutputState
+}
+
+func (TopicSubscriptionOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*TopicSubscriptionOutput)(nil)).Elem()
+}
+
+func (o TopicSubscriptionOutput) ToTopicSubscriptionOutput() TopicSubscriptionOutput {
+	return o
+}
+
+func (o TopicSubscriptionOutput) ToTopicSubscriptionOutputWithContext(ctx context.Context) TopicSubscriptionOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(TopicSubscriptionOutput{})
 }

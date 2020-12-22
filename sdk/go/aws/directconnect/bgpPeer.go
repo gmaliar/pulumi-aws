@@ -4,6 +4,7 @@
 package directconnect
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -18,16 +19,16 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/directconnect"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/directconnect"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
 // func main() {
 // 	pulumi.Run(func(ctx *pulumi.Context) error {
 // 		_, err := directconnect.NewBgpPeer(ctx, "peer", &directconnect.BgpPeerArgs{
+// 			VirtualInterfaceId: pulumi.Any(aws_dx_private_virtual_interface.Foo.Id),
 // 			AddressFamily:      pulumi.String("ipv6"),
 // 			BgpAsn:             pulumi.Int(65351),
-// 			VirtualInterfaceId: pulumi.String(aws_dx_private_virtual_interface.Foo.Id),
 // 		})
 // 		if err != nil {
 // 			return err
@@ -64,17 +65,18 @@ type BgpPeer struct {
 // NewBgpPeer registers a new resource with the given unique name, arguments, and options.
 func NewBgpPeer(ctx *pulumi.Context,
 	name string, args *BgpPeerArgs, opts ...pulumi.ResourceOption) (*BgpPeer, error) {
-	if args == nil || args.AddressFamily == nil {
-		return nil, errors.New("missing required argument 'AddressFamily'")
-	}
-	if args == nil || args.BgpAsn == nil {
-		return nil, errors.New("missing required argument 'BgpAsn'")
-	}
-	if args == nil || args.VirtualInterfaceId == nil {
-		return nil, errors.New("missing required argument 'VirtualInterfaceId'")
-	}
 	if args == nil {
-		args = &BgpPeerArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.AddressFamily == nil {
+		return nil, errors.New("invalid value for required argument 'AddressFamily'")
+	}
+	if args.BgpAsn == nil {
+		return nil, errors.New("invalid value for required argument 'BgpAsn'")
+	}
+	if args.VirtualInterfaceId == nil {
+		return nil, errors.New("invalid value for required argument 'VirtualInterfaceId'")
 	}
 	var resource BgpPeer
 	err := ctx.RegisterResource("aws:directconnect/bgpPeer:BgpPeer", name, args, &resource, opts...)
@@ -184,4 +186,43 @@ type BgpPeerArgs struct {
 
 func (BgpPeerArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*bgpPeerArgs)(nil)).Elem()
+}
+
+type BgpPeerInput interface {
+	pulumi.Input
+
+	ToBgpPeerOutput() BgpPeerOutput
+	ToBgpPeerOutputWithContext(ctx context.Context) BgpPeerOutput
+}
+
+func (BgpPeer) ElementType() reflect.Type {
+	return reflect.TypeOf((*BgpPeer)(nil)).Elem()
+}
+
+func (i BgpPeer) ToBgpPeerOutput() BgpPeerOutput {
+	return i.ToBgpPeerOutputWithContext(context.Background())
+}
+
+func (i BgpPeer) ToBgpPeerOutputWithContext(ctx context.Context) BgpPeerOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(BgpPeerOutput)
+}
+
+type BgpPeerOutput struct {
+	*pulumi.OutputState
+}
+
+func (BgpPeerOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*BgpPeerOutput)(nil)).Elem()
+}
+
+func (o BgpPeerOutput) ToBgpPeerOutput() BgpPeerOutput {
+	return o
+}
+
+func (o BgpPeerOutput) ToBgpPeerOutputWithContext(ctx context.Context) BgpPeerOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(BgpPeerOutput{})
 }

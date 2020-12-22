@@ -2,8 +2,7 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 /**
@@ -23,9 +22,13 @@ import * as utilities from "../utilities";
  *         roleArn: aws_iam_role.test.arn,
  *     },
  * }, {
- *     dependsOn: ["aws_iam_role_policy.test"],
+ *     dependsOn: [aws_iam_role_policy.test],
  * });
  * ```
+ *
+ * ## Import
+ *
+ * Gamelift Builds cannot be imported at this time.
  */
 export class Build extends pulumi.CustomResource {
     /**
@@ -100,10 +103,10 @@ export class Build extends pulumi.CustomResource {
             inputs["version"] = state ? state.version : undefined;
         } else {
             const args = argsOrState as BuildArgs | undefined;
-            if (!args || args.operatingSystem === undefined) {
+            if ((!args || args.operatingSystem === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'operatingSystem'");
             }
-            if (!args || args.storageLocation === undefined) {
+            if ((!args || args.storageLocation === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'storageLocation'");
             }
             inputs["name"] = args ? args.name : undefined;

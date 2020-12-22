@@ -5,40 +5,22 @@
 import warnings
 import pulumi
 import pulumi.runtime
-from typing import Union
-from .. import utilities, tables
+from typing import Any, Mapping, Optional, Sequence, Union
+from .. import _utilities, _tables
+
+__all__ = ['UserPoolDomain']
 
 
 class UserPoolDomain(pulumi.CustomResource):
-    aws_account_id: pulumi.Output[str]
-    """
-    The AWS account ID for the user pool owner.
-    """
-    certificate_arn: pulumi.Output[str]
-    """
-    The ARN of an ISSUED ACM certificate in us-east-1 for a custom domain.
-    """
-    cloudfront_distribution_arn: pulumi.Output[str]
-    """
-    The URL of the CloudFront distribution. This is required to generate the ALIAS `route53.Record`
-    """
-    domain: pulumi.Output[str]
-    """
-    The domain string.
-    """
-    s3_bucket: pulumi.Output[str]
-    """
-    The S3 bucket where the static files for this domain are stored.
-    """
-    user_pool_id: pulumi.Output[str]
-    """
-    The user pool ID.
-    """
-    version: pulumi.Output[str]
-    """
-    The app version.
-    """
-    def __init__(__self__, resource_name, opts=None, certificate_arn=None, domain=None, user_pool_id=None, __props__=None, __name__=None, __opts__=None):
+    def __init__(__self__,
+                 resource_name: str,
+                 opts: Optional[pulumi.ResourceOptions] = None,
+                 certificate_arn: Optional[pulumi.Input[str]] = None,
+                 domain: Optional[pulumi.Input[str]] = None,
+                 user_pool_id: Optional[pulumi.Input[str]] = None,
+                 __props__=None,
+                 __name__=None,
+                 __opts__=None):
         """
         Provides a Cognito User Pool Domain resource.
 
@@ -62,19 +44,27 @@ class UserPoolDomain(pulumi.CustomResource):
 
         example_user_pool = aws.cognito.UserPool("exampleUserPool")
         main = aws.cognito.UserPoolDomain("main",
-            certificate_arn=aws_acm_certificate["cert"]["arn"],
             domain="example-domain.example.com",
+            certificate_arn=aws_acm_certificate["cert"]["arn"],
             user_pool_id=example_user_pool.id)
         example_zone = aws.route53.get_zone(name="example.com")
         auth_cognito__a = aws.route53.Record("auth-cognito-A",
-            aliases=[{
-                "evaluateTargetHealth": False,
-                "name": main.cloudfront_distribution_arn,
-                "zone_id": "Z2FDTNDATAQYW2",
-            }],
             name=main.domain,
             type="A",
-            zone_id=example_zone.zone_id)
+            zone_id=example_zone.zone_id,
+            aliases=[aws.route53.RecordAliasArgs(
+                evaluate_target_health=False,
+                name=main.cloudfront_distribution_arn,
+                zone_id="Z2FDTNDATAQYW2",
+            )])
+        ```
+
+        ## Import
+
+        Cognito User Pool Domains can be imported using the `domain`, e.g.
+
+        ```sh
+         $ pulumi import aws:cognito/userPoolDomain:UserPoolDomain main <domain>
         ```
 
         :param str resource_name: The name of the resource.
@@ -94,17 +84,17 @@ class UserPoolDomain(pulumi.CustomResource):
         if not isinstance(opts, pulumi.ResourceOptions):
             raise TypeError('Expected resource options to be a ResourceOptions instance')
         if opts.version is None:
-            opts.version = utilities.get_version()
+            opts.version = _utilities.get_version()
         if opts.id is None:
             if __props__ is not None:
                 raise TypeError('__props__ is only valid when passed in combination with a valid opts.id to get an existing resource')
             __props__ = dict()
 
             __props__['certificate_arn'] = certificate_arn
-            if domain is None:
+            if domain is None and not opts.urn:
                 raise TypeError("Missing required property 'domain'")
             __props__['domain'] = domain
-            if user_pool_id is None:
+            if user_pool_id is None and not opts.urn:
                 raise TypeError("Missing required property 'user_pool_id'")
             __props__['user_pool_id'] = user_pool_id
             __props__['aws_account_id'] = None
@@ -118,13 +108,22 @@ class UserPoolDomain(pulumi.CustomResource):
             opts)
 
     @staticmethod
-    def get(resource_name, id, opts=None, aws_account_id=None, certificate_arn=None, cloudfront_distribution_arn=None, domain=None, s3_bucket=None, user_pool_id=None, version=None):
+    def get(resource_name: str,
+            id: pulumi.Input[str],
+            opts: Optional[pulumi.ResourceOptions] = None,
+            aws_account_id: Optional[pulumi.Input[str]] = None,
+            certificate_arn: Optional[pulumi.Input[str]] = None,
+            cloudfront_distribution_arn: Optional[pulumi.Input[str]] = None,
+            domain: Optional[pulumi.Input[str]] = None,
+            s3_bucket: Optional[pulumi.Input[str]] = None,
+            user_pool_id: Optional[pulumi.Input[str]] = None,
+            version: Optional[pulumi.Input[str]] = None) -> 'UserPoolDomain':
         """
         Get an existing UserPoolDomain resource's state with the given name, id, and optional extra
         properties used to qualify the lookup.
 
         :param str resource_name: The unique name of the resulting resource.
-        :param str id: The unique provider ID of the resource to lookup.
+        :param pulumi.Input[str] id: The unique provider ID of the resource to lookup.
         :param pulumi.ResourceOptions opts: Options for the resource.
         :param pulumi.Input[str] aws_account_id: The AWS account ID for the user pool owner.
         :param pulumi.Input[str] certificate_arn: The ARN of an ISSUED ACM certificate in us-east-1 for a custom domain.
@@ -147,8 +146,65 @@ class UserPoolDomain(pulumi.CustomResource):
         __props__["version"] = version
         return UserPoolDomain(resource_name, opts=opts, __props__=__props__)
 
+    @property
+    @pulumi.getter(name="awsAccountId")
+    def aws_account_id(self) -> pulumi.Output[str]:
+        """
+        The AWS account ID for the user pool owner.
+        """
+        return pulumi.get(self, "aws_account_id")
+
+    @property
+    @pulumi.getter(name="certificateArn")
+    def certificate_arn(self) -> pulumi.Output[Optional[str]]:
+        """
+        The ARN of an ISSUED ACM certificate in us-east-1 for a custom domain.
+        """
+        return pulumi.get(self, "certificate_arn")
+
+    @property
+    @pulumi.getter(name="cloudfrontDistributionArn")
+    def cloudfront_distribution_arn(self) -> pulumi.Output[str]:
+        """
+        The URL of the CloudFront distribution. This is required to generate the ALIAS `route53.Record`
+        """
+        return pulumi.get(self, "cloudfront_distribution_arn")
+
+    @property
+    @pulumi.getter
+    def domain(self) -> pulumi.Output[str]:
+        """
+        The domain string.
+        """
+        return pulumi.get(self, "domain")
+
+    @property
+    @pulumi.getter(name="s3Bucket")
+    def s3_bucket(self) -> pulumi.Output[str]:
+        """
+        The S3 bucket where the static files for this domain are stored.
+        """
+        return pulumi.get(self, "s3_bucket")
+
+    @property
+    @pulumi.getter(name="userPoolId")
+    def user_pool_id(self) -> pulumi.Output[str]:
+        """
+        The user pool ID.
+        """
+        return pulumi.get(self, "user_pool_id")
+
+    @property
+    @pulumi.getter
+    def version(self) -> pulumi.Output[str]:
+        """
+        The app version.
+        """
+        return pulumi.get(self, "version")
+
     def translate_output_property(self, prop):
-        return tables._CAMEL_TO_SNAKE_CASE_TABLE.get(prop) or prop
+        return _tables.CAMEL_TO_SNAKE_CASE_TABLE.get(prop) or prop
 
     def translate_input_property(self, prop):
-        return tables._SNAKE_TO_CAMEL_CASE_TABLE.get(prop) or prop
+        return _tables.SNAKE_TO_CAMEL_CASE_TABLE.get(prop) or prop
+

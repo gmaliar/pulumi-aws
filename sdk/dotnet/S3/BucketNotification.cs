@@ -42,7 +42,6 @@ namespace Pulumi.Aws.S3
     ///         }}
     ///     }}]
     /// }}
-    /// 
     /// "),
     ///         });
     ///         var bucketNotification = new Aws.S3.BucketNotification("bucketNotification", new Aws.S3.BucketNotificationArgs
@@ -52,12 +51,12 @@ namespace Pulumi.Aws.S3
     ///             {
     ///                 new Aws.S3.Inputs.BucketNotificationTopicArgs
     ///                 {
+    ///                     TopicArn = topic.Arn,
     ///                     Events = 
     ///                     {
     ///                         "s3:ObjectCreated:*",
     ///                     },
     ///                     FilterSuffix = ".log",
-    ///                     TopicArn = topic.Arn,
     ///                 },
     ///             },
     ///         });
@@ -94,7 +93,6 @@ namespace Pulumi.Aws.S3
     ///     }}
     ///   ]
     /// }}
-    /// 
     /// "),
     ///         });
     ///         var bucketNotification = new Aws.S3.BucketNotification("bucketNotification", new Aws.S3.BucketNotificationArgs
@@ -104,12 +102,12 @@ namespace Pulumi.Aws.S3
     ///             {
     ///                 new Aws.S3.Inputs.BucketNotificationQueueArgs
     ///                 {
+    ///                     QueueArn = queue.Arn,
     ///                     Events = 
     ///                     {
     ///                         "s3:ObjectCreated:*",
     ///                     },
     ///                     FilterSuffix = ".log",
-    ///                     QueueArn = queue.Arn,
     ///                 },
     ///             },
     ///         });
@@ -310,7 +308,6 @@ namespace Pulumi.Aws.S3
     ///     }}
     ///   ]
     /// }}
-    /// 
     /// "),
     ///         });
     ///         var bucketNotification = new Aws.S3.BucketNotification("bucketNotification", new Aws.S3.BucketNotificationArgs
@@ -320,29 +317,37 @@ namespace Pulumi.Aws.S3
     ///             {
     ///                 new Aws.S3.Inputs.BucketNotificationQueueArgs
     ///                 {
+    ///                     Id = "image-upload-event",
+    ///                     QueueArn = queue.Arn,
     ///                     Events = 
     ///                     {
     ///                         "s3:ObjectCreated:*",
     ///                     },
     ///                     FilterPrefix = "images/",
-    ///                     Id = "image-upload-event",
-    ///                     QueueArn = queue.Arn,
     ///                 },
     ///                 new Aws.S3.Inputs.BucketNotificationQueueArgs
     ///                 {
+    ///                     Id = "video-upload-event",
+    ///                     QueueArn = queue.Arn,
     ///                     Events = 
     ///                     {
     ///                         "s3:ObjectCreated:*",
     ///                     },
     ///                     FilterPrefix = "videos/",
-    ///                     Id = "video-upload-event",
-    ///                     QueueArn = queue.Arn,
     ///                 },
     ///             },
     ///         });
     ///     }
     /// 
     /// }
+    /// ```
+    /// 
+    /// ## Import
+    /// 
+    /// S3 bucket notification can be imported using the `bucket`, e.g.
+    /// 
+    /// ```sh
+    ///  $ pulumi import aws:s3/bucketNotification:BucketNotification bucket_notification bucket-name
     /// ```
     /// </summary>
     public partial class BucketNotification : Pulumi.CustomResource

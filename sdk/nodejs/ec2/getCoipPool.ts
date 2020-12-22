@@ -2,8 +2,7 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 /**
@@ -22,11 +21,10 @@ import * as utilities from "../utilities";
  * import * as aws from "@pulumi/aws";
  *
  * const config = new pulumi.Config();
- * const coipPoolId = config.require("coipPoolId");
- *
- * const selected = pulumi.output(aws.ec2.getCoipPool({
+ * const coipPoolId = config.requireObject("coipPoolId");
+ * const selected = aws.ec2.getCoipPool({
  *     id: coipPoolId,
- * }, { async: true }));
+ * });
  * ```
  */
 export function getCoipPool(args?: GetCoipPoolArgs, opts?: pulumi.InvokeOptions): Promise<GetCoipPoolResult> {

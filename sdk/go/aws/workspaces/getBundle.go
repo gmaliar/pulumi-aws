@@ -7,15 +7,39 @@ import (
 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 )
 
-// Use this data source to get information about a WorkSpaces Bundle.
+// Retrieve information about an AWS WorkSpaces bundle.
 //
 // ## Example Usage
+// ### By ID
 //
 // ```go
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/workspaces"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/workspaces"
+// 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
+// )
+//
+// func main() {
+// 	pulumi.Run(func(ctx *pulumi.Context) error {
+// 		opt0 := "wsb-b0s22j3d7"
+// 		_, err := workspaces.GetBundle(ctx, &workspaces.GetBundleArgs{
+// 			BundleId: &opt0,
+// 		}, nil)
+// 		if err != nil {
+// 			return err
+// 		}
+// 		return nil
+// 	})
+// }
+// ```
+// ### By Owner & Name
+//
+// ```go
+// package main
+//
+// import (
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/workspaces"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //

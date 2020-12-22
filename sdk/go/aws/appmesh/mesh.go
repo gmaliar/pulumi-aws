@@ -4,6 +4,7 @@
 package appmesh
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
@@ -18,7 +19,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/appmesh"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/appmesh"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -38,7 +39,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/appmesh"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/appmesh"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -58,6 +59,14 @@ import (
 // 	})
 // }
 // ```
+//
+// ## Import
+//
+// App Mesh service meshes can be imported using the `name`, e.g.
+//
+// ```sh
+//  $ pulumi import aws:appmesh/mesh:Mesh simple simpleapp
+// ```
 type Mesh struct {
 	pulumi.CustomResourceState
 
@@ -67,8 +76,12 @@ type Mesh struct {
 	CreatedDate pulumi.StringOutput `pulumi:"createdDate"`
 	// The last update date of the service mesh.
 	LastUpdatedDate pulumi.StringOutput `pulumi:"lastUpdatedDate"`
-	// The name to use for the service mesh.
+	// The AWS account ID of the service mesh's owner.
+	MeshOwner pulumi.StringOutput `pulumi:"meshOwner"`
+	// The name to use for the service mesh. Must be between 1 and 255 characters in length.
 	Name pulumi.StringOutput `pulumi:"name"`
+	// The resource owner's AWS account ID.
+	ResourceOwner pulumi.StringOutput `pulumi:"resourceOwner"`
 	// The service mesh specification to apply.
 	Spec MeshSpecPtrOutput `pulumi:"spec"`
 	// A map of tags to assign to the resource.
@@ -81,6 +94,7 @@ func NewMesh(ctx *pulumi.Context,
 	if args == nil {
 		args = &MeshArgs{}
 	}
+
 	var resource Mesh
 	err := ctx.RegisterResource("aws:appmesh/mesh:Mesh", name, args, &resource, opts...)
 	if err != nil {
@@ -109,8 +123,12 @@ type meshState struct {
 	CreatedDate *string `pulumi:"createdDate"`
 	// The last update date of the service mesh.
 	LastUpdatedDate *string `pulumi:"lastUpdatedDate"`
-	// The name to use for the service mesh.
+	// The AWS account ID of the service mesh's owner.
+	MeshOwner *string `pulumi:"meshOwner"`
+	// The name to use for the service mesh. Must be between 1 and 255 characters in length.
 	Name *string `pulumi:"name"`
+	// The resource owner's AWS account ID.
+	ResourceOwner *string `pulumi:"resourceOwner"`
 	// The service mesh specification to apply.
 	Spec *MeshSpec `pulumi:"spec"`
 	// A map of tags to assign to the resource.
@@ -124,8 +142,12 @@ type MeshState struct {
 	CreatedDate pulumi.StringPtrInput
 	// The last update date of the service mesh.
 	LastUpdatedDate pulumi.StringPtrInput
-	// The name to use for the service mesh.
+	// The AWS account ID of the service mesh's owner.
+	MeshOwner pulumi.StringPtrInput
+	// The name to use for the service mesh. Must be between 1 and 255 characters in length.
 	Name pulumi.StringPtrInput
+	// The resource owner's AWS account ID.
+	ResourceOwner pulumi.StringPtrInput
 	// The service mesh specification to apply.
 	Spec MeshSpecPtrInput
 	// A map of tags to assign to the resource.
@@ -137,7 +159,7 @@ func (MeshState) ElementType() reflect.Type {
 }
 
 type meshArgs struct {
-	// The name to use for the service mesh.
+	// The name to use for the service mesh. Must be between 1 and 255 characters in length.
 	Name *string `pulumi:"name"`
 	// The service mesh specification to apply.
 	Spec *MeshSpec `pulumi:"spec"`
@@ -147,7 +169,7 @@ type meshArgs struct {
 
 // The set of arguments for constructing a Mesh resource.
 type MeshArgs struct {
-	// The name to use for the service mesh.
+	// The name to use for the service mesh. Must be between 1 and 255 characters in length.
 	Name pulumi.StringPtrInput
 	// The service mesh specification to apply.
 	Spec MeshSpecPtrInput
@@ -157,4 +179,43 @@ type MeshArgs struct {
 
 func (MeshArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*meshArgs)(nil)).Elem()
+}
+
+type MeshInput interface {
+	pulumi.Input
+
+	ToMeshOutput() MeshOutput
+	ToMeshOutputWithContext(ctx context.Context) MeshOutput
+}
+
+func (Mesh) ElementType() reflect.Type {
+	return reflect.TypeOf((*Mesh)(nil)).Elem()
+}
+
+func (i Mesh) ToMeshOutput() MeshOutput {
+	return i.ToMeshOutputWithContext(context.Background())
+}
+
+func (i Mesh) ToMeshOutputWithContext(ctx context.Context) MeshOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(MeshOutput)
+}
+
+type MeshOutput struct {
+	*pulumi.OutputState
+}
+
+func (MeshOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*MeshOutput)(nil)).Elem()
+}
+
+func (o MeshOutput) ToMeshOutput() MeshOutput {
+	return o
+}
+
+func (o MeshOutput) ToMeshOutputWithContext(ctx context.Context) MeshOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(MeshOutput{})
 }

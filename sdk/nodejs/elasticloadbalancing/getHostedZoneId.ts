@@ -2,8 +2,7 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 /**
@@ -16,16 +15,16 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const main = pulumi.output(aws.elb.getHostedZoneId({ async: true }));
+ * const main = aws.elb.getHostedZoneId({});
  * const www = new aws.route53.Record("www", {
- *     aliases: [{
- *         evaluateTargetHealth: true,
- *         name: aws_elb_main.dnsName,
- *         zoneId: main.id,
- *     }],
+ *     zoneId: aws_route53_zone.primary.zone_id,
  *     name: "example.com",
  *     type: "A",
- *     zoneId: aws_route53_zone_primary.zoneId,
+ *     aliases: [{
+ *         name: aws_elb.main.dns_name,
+ *         zoneId: main.then(main => main.id),
+ *         evaluateTargetHealth: true,
+ *     }],
  * });
  * ```
  */

@@ -2,8 +2,7 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "./types/input";
-import * as outputs from "./types/output";
+import { input as inputs, output as outputs, enums } from "./types";
 import * as utilities from "./utilities";
 
 /**
@@ -16,7 +15,7 @@ import * as utilities from "./utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const groups = pulumi.output(aws.getAutoscalingGroups({
+ * const groups = aws.getAutoscalingGroups({
  *     filters: [
  *         {
  *             name: "key",
@@ -27,9 +26,9 @@ import * as utilities from "./utilities";
  *             values: ["Pets"],
  *         },
  *     ],
- * }, { async: true }));
- * const slackNotifications = new aws.autoscaling.Notification("slack_notifications", {
- *     groupNames: groups.names,
+ * });
+ * const slackNotifications = new aws.autoscaling.Notification("slackNotifications", {
+ *     groupNames: groups.then(groups => groups.names),
  *     notifications: [
  *         "autoscaling:EC2_INSTANCE_LAUNCH",
  *         "autoscaling:EC2_INSTANCE_TERMINATE",

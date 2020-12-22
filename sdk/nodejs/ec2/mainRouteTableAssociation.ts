@@ -13,9 +13,9 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const mainRouteTableAssociation = new aws.ec2.MainRouteTableAssociation("a", {
- *     routeTableId: aws_route_table_bar.id,
- *     vpcId: aws_vpc_foo.id,
+ * const mainRouteTableAssociation = new aws.ec2.MainRouteTableAssociation("mainRouteTableAssociation", {
+ *     vpcId: aws_vpc.foo.id,
+ *     routeTableId: aws_route_table.bar.id,
  * });
  * ```
  * ## Notes
@@ -86,10 +86,10 @@ export class MainRouteTableAssociation extends pulumi.CustomResource {
             inputs["vpcId"] = state ? state.vpcId : undefined;
         } else {
             const args = argsOrState as MainRouteTableAssociationArgs | undefined;
-            if (!args || args.routeTableId === undefined) {
+            if ((!args || args.routeTableId === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'routeTableId'");
             }
-            if (!args || args.vpcId === undefined) {
+            if ((!args || args.vpcId === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'vpcId'");
             }
             inputs["routeTableId"] = args ? args.routeTableId : undefined;

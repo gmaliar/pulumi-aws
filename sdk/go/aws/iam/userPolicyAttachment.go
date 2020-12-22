@@ -4,6 +4,7 @@
 package iam
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -20,7 +21,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/iam"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/iam"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -32,14 +33,14 @@ import (
 // 		}
 // 		policy, err := iam.NewPolicy(ctx, "policy", &iam.PolicyArgs{
 // 			Description: pulumi.String("A test policy"),
-// 			Policy:      pulumi.String(""),
+// 			Policy:      pulumi.String("{ ... policy JSON ... }"),
 // 		})
 // 		if err != nil {
 // 			return err
 // 		}
 // 		_, err = iam.NewUserPolicyAttachment(ctx, "test_attach", &iam.UserPolicyAttachmentArgs{
-// 			PolicyArn: policy.Arn,
 // 			User:      user.Name,
+// 			PolicyArn: policy.Arn,
 // 		})
 // 		if err != nil {
 // 			return err
@@ -47,6 +48,14 @@ import (
 // 		return nil
 // 	})
 // }
+// ```
+//
+// ## Import
+//
+// IAM user policy attachments can be imported using the user name and policy arn separated by `/`.
+//
+// ```sh
+//  $ pulumi import aws:iam/userPolicyAttachment:UserPolicyAttachment test-attach test-user/arn:aws:iam::xxxxxxxxxxxx:policy/test-policy
 // ```
 type UserPolicyAttachment struct {
 	pulumi.CustomResourceState
@@ -60,14 +69,15 @@ type UserPolicyAttachment struct {
 // NewUserPolicyAttachment registers a new resource with the given unique name, arguments, and options.
 func NewUserPolicyAttachment(ctx *pulumi.Context,
 	name string, args *UserPolicyAttachmentArgs, opts ...pulumi.ResourceOption) (*UserPolicyAttachment, error) {
-	if args == nil || args.PolicyArn == nil {
-		return nil, errors.New("missing required argument 'PolicyArn'")
-	}
-	if args == nil || args.User == nil {
-		return nil, errors.New("missing required argument 'User'")
-	}
 	if args == nil {
-		args = &UserPolicyAttachmentArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.PolicyArn == nil {
+		return nil, errors.New("invalid value for required argument 'PolicyArn'")
+	}
+	if args.User == nil {
+		return nil, errors.New("invalid value for required argument 'User'")
 	}
 	var resource UserPolicyAttachment
 	err := ctx.RegisterResource("aws:iam/userPolicyAttachment:UserPolicyAttachment", name, args, &resource, opts...)
@@ -125,4 +135,43 @@ type UserPolicyAttachmentArgs struct {
 
 func (UserPolicyAttachmentArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*userPolicyAttachmentArgs)(nil)).Elem()
+}
+
+type UserPolicyAttachmentInput interface {
+	pulumi.Input
+
+	ToUserPolicyAttachmentOutput() UserPolicyAttachmentOutput
+	ToUserPolicyAttachmentOutputWithContext(ctx context.Context) UserPolicyAttachmentOutput
+}
+
+func (UserPolicyAttachment) ElementType() reflect.Type {
+	return reflect.TypeOf((*UserPolicyAttachment)(nil)).Elem()
+}
+
+func (i UserPolicyAttachment) ToUserPolicyAttachmentOutput() UserPolicyAttachmentOutput {
+	return i.ToUserPolicyAttachmentOutputWithContext(context.Background())
+}
+
+func (i UserPolicyAttachment) ToUserPolicyAttachmentOutputWithContext(ctx context.Context) UserPolicyAttachmentOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(UserPolicyAttachmentOutput)
+}
+
+type UserPolicyAttachmentOutput struct {
+	*pulumi.OutputState
+}
+
+func (UserPolicyAttachmentOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*UserPolicyAttachmentOutput)(nil)).Elem()
+}
+
+func (o UserPolicyAttachmentOutput) ToUserPolicyAttachmentOutput() UserPolicyAttachmentOutput {
+	return o
+}
+
+func (o UserPolicyAttachmentOutput) ToUserPolicyAttachmentOutputWithContext(ctx context.Context) UserPolicyAttachmentOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(UserPolicyAttachmentOutput{})
 }

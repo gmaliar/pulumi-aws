@@ -24,13 +24,13 @@ namespace Pulumi.Aws.ElasticTranscoder
     ///     {
     ///         var bar = new Aws.ElasticTranscoder.Pipeline("bar", new Aws.ElasticTranscoder.PipelineArgs
     ///         {
+    ///             InputBucket = aws_s3_bucket.Input_bucket.Bucket,
+    ///             Role = aws_iam_role.Test_role.Arn,
     ///             ContentConfig = new Aws.ElasticTranscoder.Inputs.PipelineContentConfigArgs
     ///             {
     ///                 Bucket = aws_s3_bucket.Content_bucket.Bucket,
     ///                 StorageClass = "Standard",
     ///             },
-    ///             InputBucket = aws_s3_bucket.Input_bucket.Bucket,
-    ///             Role = aws_iam_role.Test_role.Arn,
     ///             ThumbnailConfig = new Aws.ElasticTranscoder.Inputs.PipelineThumbnailConfigArgs
     ///             {
     ///                 Bucket = aws_s3_bucket.Thumb_bucket.Bucket,
@@ -40,6 +40,14 @@ namespace Pulumi.Aws.ElasticTranscoder
     ///     }
     /// 
     /// }
+    /// ```
+    /// 
+    /// ## Import
+    /// 
+    /// Elastic Transcoder pipelines can be imported using the `id`, e.g.
+    /// 
+    /// ```sh
+    ///  $ pulumi import aws:elastictranscoder/pipeline:Pipeline basic_pipeline 1407981661351-cttk8b
     /// ```
     /// </summary>
     public partial class Pipeline : Pulumi.CustomResource

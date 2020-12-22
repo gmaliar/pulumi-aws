@@ -5,28 +5,22 @@
 import warnings
 import pulumi
 import pulumi.runtime
-from typing import Union
-from .. import utilities, tables
+from typing import Any, Mapping, Optional, Sequence, Union
+from .. import _utilities, _tables
+
+__all__ = ['Resource']
 
 
 class Resource(pulumi.CustomResource):
-    parent_id: pulumi.Output[str]
-    """
-    The ID of the parent API resource
-    """
-    path: pulumi.Output[str]
-    """
-    The complete path for this API resource, including all parent paths.
-    """
-    path_part: pulumi.Output[str]
-    """
-    The last path segment of this API resource.
-    """
-    rest_api: pulumi.Output[str]
-    """
-    The ID of the associated REST API
-    """
-    def __init__(__self__, resource_name, opts=None, parent_id=None, path_part=None, rest_api=None, __props__=None, __name__=None, __opts__=None):
+    def __init__(__self__,
+                 resource_name: str,
+                 opts: Optional[pulumi.ResourceOptions] = None,
+                 parent_id: Optional[pulumi.Input[str]] = None,
+                 path_part: Optional[pulumi.Input[str]] = None,
+                 rest_api: Optional[pulumi.Input[str]] = None,
+                 __props__=None,
+                 __name__=None,
+                 __opts__=None):
         """
         Provides an API Gateway Resource.
 
@@ -38,16 +32,24 @@ class Resource(pulumi.CustomResource):
 
         my_demo_api = aws.apigateway.RestApi("myDemoAPI", description="This is my API for demonstration purposes")
         my_demo_resource = aws.apigateway.Resource("myDemoResource",
+            rest_api=my_demo_api.id,
             parent_id=my_demo_api.root_resource_id,
-            path_part="mydemoresource",
-            rest_api=my_demo_api.id)
+            path_part="mydemoresource")
+        ```
+
+        ## Import
+
+        `aws_api_gateway_resource` can be imported using `REST-API-ID/RESOURCE-ID`, e.g.
+
+        ```sh
+         $ pulumi import aws:apigateway/resource:Resource example 12345abcde/67890fghij
         ```
 
         :param str resource_name: The name of the resource.
         :param pulumi.ResourceOptions opts: Options for the resource.
         :param pulumi.Input[str] parent_id: The ID of the parent API resource
         :param pulumi.Input[str] path_part: The last path segment of this API resource.
-        :param pulumi.Input[dict] rest_api: The ID of the associated REST API
+        :param pulumi.Input[str] rest_api: The ID of the associated REST API
         """
         if __name__ is not None:
             warnings.warn("explicit use of __name__ is deprecated", DeprecationWarning)
@@ -60,19 +62,19 @@ class Resource(pulumi.CustomResource):
         if not isinstance(opts, pulumi.ResourceOptions):
             raise TypeError('Expected resource options to be a ResourceOptions instance')
         if opts.version is None:
-            opts.version = utilities.get_version()
+            opts.version = _utilities.get_version()
         if opts.id is None:
             if __props__ is not None:
                 raise TypeError('__props__ is only valid when passed in combination with a valid opts.id to get an existing resource')
             __props__ = dict()
 
-            if parent_id is None:
+            if parent_id is None and not opts.urn:
                 raise TypeError("Missing required property 'parent_id'")
             __props__['parent_id'] = parent_id
-            if path_part is None:
+            if path_part is None and not opts.urn:
                 raise TypeError("Missing required property 'path_part'")
             __props__['path_part'] = path_part
-            if rest_api is None:
+            if rest_api is None and not opts.urn:
                 raise TypeError("Missing required property 'rest_api'")
             __props__['rest_api'] = rest_api
             __props__['path'] = None
@@ -83,18 +85,24 @@ class Resource(pulumi.CustomResource):
             opts)
 
     @staticmethod
-    def get(resource_name, id, opts=None, parent_id=None, path=None, path_part=None, rest_api=None):
+    def get(resource_name: str,
+            id: pulumi.Input[str],
+            opts: Optional[pulumi.ResourceOptions] = None,
+            parent_id: Optional[pulumi.Input[str]] = None,
+            path: Optional[pulumi.Input[str]] = None,
+            path_part: Optional[pulumi.Input[str]] = None,
+            rest_api: Optional[pulumi.Input[str]] = None) -> 'Resource':
         """
         Get an existing Resource resource's state with the given name, id, and optional extra
         properties used to qualify the lookup.
 
         :param str resource_name: The unique name of the resulting resource.
-        :param str id: The unique provider ID of the resource to lookup.
+        :param pulumi.Input[str] id: The unique provider ID of the resource to lookup.
         :param pulumi.ResourceOptions opts: Options for the resource.
         :param pulumi.Input[str] parent_id: The ID of the parent API resource
         :param pulumi.Input[str] path: The complete path for this API resource, including all parent paths.
         :param pulumi.Input[str] path_part: The last path segment of this API resource.
-        :param pulumi.Input[dict] rest_api: The ID of the associated REST API
+        :param pulumi.Input[str] rest_api: The ID of the associated REST API
         """
         opts = pulumi.ResourceOptions.merge(opts, pulumi.ResourceOptions(id=id))
 
@@ -106,8 +114,41 @@ class Resource(pulumi.CustomResource):
         __props__["rest_api"] = rest_api
         return Resource(resource_name, opts=opts, __props__=__props__)
 
+    @property
+    @pulumi.getter(name="parentId")
+    def parent_id(self) -> pulumi.Output[str]:
+        """
+        The ID of the parent API resource
+        """
+        return pulumi.get(self, "parent_id")
+
+    @property
+    @pulumi.getter
+    def path(self) -> pulumi.Output[str]:
+        """
+        The complete path for this API resource, including all parent paths.
+        """
+        return pulumi.get(self, "path")
+
+    @property
+    @pulumi.getter(name="pathPart")
+    def path_part(self) -> pulumi.Output[str]:
+        """
+        The last path segment of this API resource.
+        """
+        return pulumi.get(self, "path_part")
+
+    @property
+    @pulumi.getter(name="restApi")
+    def rest_api(self) -> pulumi.Output[str]:
+        """
+        The ID of the associated REST API
+        """
+        return pulumi.get(self, "rest_api")
+
     def translate_output_property(self, prop):
-        return tables._CAMEL_TO_SNAKE_CASE_TABLE.get(prop) or prop
+        return _tables.CAMEL_TO_SNAKE_CASE_TABLE.get(prop) or prop
 
     def translate_input_property(self, prop):
-        return tables._SNAKE_TO_CAMEL_CASE_TABLE.get(prop) or prop
+        return _tables.SNAKE_TO_CAMEL_CASE_TABLE.get(prop) or prop
+

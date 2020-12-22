@@ -4,6 +4,7 @@
 package cloudfront
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
@@ -24,7 +25,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/cloudfront"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/cloudfront"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -52,14 +53,35 @@ import (
 // package main
 //
 // import (
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/cloudfront"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
 // func main() {
 // 	pulumi.Run(func(ctx *pulumi.Context) error {
+// 		_, err := cloudfront.NewDistribution(ctx, "example", &cloudfront.DistributionArgs{
+// 			Origins: cloudfront.DistributionOriginArray{
+// 				&cloudfront.DistributionOriginArgs{
+// 					S3OriginConfig: &cloudfront.DistributionOriginS3OriginConfigArgs{
+// 						OriginAccessIdentity: pulumi.Any(aws_cloudfront_origin_access_identity.Example.Cloudfront_access_identity_path),
+// 					},
+// 				},
+// 			},
+// 		})
+// 		if err != nil {
+// 			return err
+// 		}
 // 		return nil
 // 	})
 // }
+// ```
+//
+// ## Import
+//
+// Cloudfront Origin Access Identities can be imported using the `id`, e.g.
+//
+// ```sh
+//  $ pulumi import aws:cloudfront/originAccessIdentity:OriginAccessIdentity origin_access E74FTE3AEXAMPLE
 // ```
 type OriginAccessIdentity struct {
 	pulumi.CustomResourceState
@@ -91,6 +113,7 @@ func NewOriginAccessIdentity(ctx *pulumi.Context,
 	if args == nil {
 		args = &OriginAccessIdentityArgs{}
 	}
+
 	var resource OriginAccessIdentity
 	err := ctx.RegisterResource("aws:cloudfront/originAccessIdentity:OriginAccessIdentity", name, args, &resource, opts...)
 	if err != nil {
@@ -173,4 +196,43 @@ type OriginAccessIdentityArgs struct {
 
 func (OriginAccessIdentityArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*originAccessIdentityArgs)(nil)).Elem()
+}
+
+type OriginAccessIdentityInput interface {
+	pulumi.Input
+
+	ToOriginAccessIdentityOutput() OriginAccessIdentityOutput
+	ToOriginAccessIdentityOutputWithContext(ctx context.Context) OriginAccessIdentityOutput
+}
+
+func (OriginAccessIdentity) ElementType() reflect.Type {
+	return reflect.TypeOf((*OriginAccessIdentity)(nil)).Elem()
+}
+
+func (i OriginAccessIdentity) ToOriginAccessIdentityOutput() OriginAccessIdentityOutput {
+	return i.ToOriginAccessIdentityOutputWithContext(context.Background())
+}
+
+func (i OriginAccessIdentity) ToOriginAccessIdentityOutputWithContext(ctx context.Context) OriginAccessIdentityOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(OriginAccessIdentityOutput)
+}
+
+type OriginAccessIdentityOutput struct {
+	*pulumi.OutputState
+}
+
+func (OriginAccessIdentityOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*OriginAccessIdentityOutput)(nil)).Elem()
+}
+
+func (o OriginAccessIdentityOutput) ToOriginAccessIdentityOutput() OriginAccessIdentityOutput {
+	return o
+}
+
+func (o OriginAccessIdentityOutput) ToOriginAccessIdentityOutputWithContext(ctx context.Context) OriginAccessIdentityOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(OriginAccessIdentityOutput{})
 }

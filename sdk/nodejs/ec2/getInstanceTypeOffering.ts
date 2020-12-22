@@ -2,8 +2,7 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 /**
@@ -19,7 +18,6 @@ import * as utilities from "../utilities";
  *     filters: [{
  *         name: "instance-type",
  *         values: [
- *             "t1.micro",
  *             "t2.micro",
  *             "t3.micro",
  *         ],
@@ -27,7 +25,6 @@ import * as utilities from "../utilities";
  *     preferredInstanceTypes: [
  *         "t3.micro",
  *         "t2.micro",
- *         "t1.micro",
  *     ],
  * }, { async: true }));
  * ```

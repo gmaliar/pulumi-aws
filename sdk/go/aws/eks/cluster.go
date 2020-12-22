@@ -4,6 +4,7 @@
 package eks
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -21,14 +22,14 @@ import (
 // import (
 // 	"fmt"
 //
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/iam"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/iam"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
 // func main() {
 // 	pulumi.Run(func(ctx *pulumi.Context) error {
 // 		example, err := iam.NewRole(ctx, "example", &iam.RoleArgs{
-// 			AssumeRolePolicy: pulumi.String(fmt.Sprintf("%v%v%v%v%v%v%v%v%v%v%v%v%v", "{\n", "  \"Version\": \"2012-10-17\",\n", "  \"Statement\": [\n", "    {\n", "      \"Effect\": \"Allow\",\n", "      \"Principal\": {\n", "        \"Service\": \"eks.amazonaws.com\"\n", "      },\n", "      \"Action\": \"sts:AssumeRole\"\n", "    }\n", "  ]\n", "}\n", "\n")),
+// 			AssumeRolePolicy: pulumi.String(fmt.Sprintf("%v%v%v%v%v%v%v%v%v%v%v%v", "{\n", "  \"Version\": \"2012-10-17\",\n", "  \"Statement\": [\n", "    {\n", "      \"Effect\": \"Allow\",\n", "      \"Principal\": {\n", "        \"Service\": \"eks.amazonaws.com\"\n", "      },\n", "      \"Action\": \"sts:AssumeRole\"\n", "    }\n", "  ]\n", "}\n")),
 // 		})
 // 		if err != nil {
 // 			return err
@@ -40,8 +41,8 @@ import (
 // 		if err != nil {
 // 			return err
 // 		}
-// 		_, err = iam.NewRolePolicyAttachment(ctx, "example_AmazonEKSServicePolicy", &iam.RolePolicyAttachmentArgs{
-// 			PolicyArn: pulumi.String("arn:aws:iam::aws:policy/AmazonEKSServicePolicy"),
+// 		_, err = iam.NewRolePolicyAttachment(ctx, "example_AmazonEKSVPCResourceController", &iam.RolePolicyAttachmentArgs{
+// 			PolicyArn: pulumi.String("arn:aws:iam::aws:policy/AmazonEKSVPCResourceController"),
 // 			Role:      example.Name,
 // 		})
 // 		if err != nil {
@@ -61,33 +62,47 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/cloudwatch"
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/eks"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/cloudwatch"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/eks"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
+// 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi/config"
 // )
 //
 // func main() {
 // 	pulumi.Run(func(ctx *pulumi.Context) error {
-// 		_, err := eks.NewCluster(ctx, "exampleCluster", &eks.ClusterArgs{
+// 		cfg := config.New(ctx, "")
+// 		clusterName := "example"
+// 		if param := cfg.Get("clusterName"); param != "" {
+// 			clusterName = param
+// 		}
+// 		exampleLogGroup, err := cloudwatch.NewLogGroup(ctx, "exampleLogGroup", &cloudwatch.LogGroupArgs{
+// 			RetentionInDays: pulumi.Int(7),
+// 		})
+// 		if err != nil {
+// 			return err
+// 		}
+// 		_, err = eks.NewCluster(ctx, "exampleCluster", &eks.ClusterArgs{
 // 			EnabledClusterLogTypes: pulumi.StringArray{
 // 				pulumi.String("api"),
 // 				pulumi.String("audit"),
 // 			},
 // 		}, pulumi.DependsOn([]pulumi.Resource{
-// 			"aws_cloudwatch_log_group.example",
+// 			exampleLogGroup,
 // 		}))
-// 		if err != nil {
-// 			return err
-// 		}
-// 		_, err = cloudwatch.NewLogGroup(ctx, "exampleLogGroup", &cloudwatch.LogGroupArgs{
-// 			RetentionInDays: pulumi.Int(7),
-// 		})
 // 		if err != nil {
 // 			return err
 // 		}
 // 		return nil
 // 	})
 // }
+// ```
+//
+// ## Import
+//
+// EKS Clusters can be imported using the `name`, e.g.
+//
+// ```sh
+//  $ pulumi import aws:eks/cluster:Cluster my_cluster my_cluster
 // ```
 type Cluster struct {
 	pulumi.CustomResourceState
@@ -104,7 +119,8 @@ type Cluster struct {
 	// The endpoint for your Kubernetes API server.
 	Endpoint pulumi.StringOutput `pulumi:"endpoint"`
 	// Nested attribute containing identity provider information for your cluster. Only available on Kubernetes version 1.13 and 1.14 clusters created or upgraded on or after September 3, 2019.
-	Identities ClusterIdentityArrayOutput `pulumi:"identities"`
+	Identities              ClusterIdentityArrayOutput           `pulumi:"identities"`
+	KubernetesNetworkConfig ClusterKubernetesNetworkConfigOutput `pulumi:"kubernetesNetworkConfig"`
 	// Name of the cluster.
 	Name pulumi.StringOutput `pulumi:"name"`
 	// The platform version for the cluster.
@@ -124,14 +140,15 @@ type Cluster struct {
 // NewCluster registers a new resource with the given unique name, arguments, and options.
 func NewCluster(ctx *pulumi.Context,
 	name string, args *ClusterArgs, opts ...pulumi.ResourceOption) (*Cluster, error) {
-	if args == nil || args.RoleArn == nil {
-		return nil, errors.New("missing required argument 'RoleArn'")
-	}
-	if args == nil || args.VpcConfig == nil {
-		return nil, errors.New("missing required argument 'VpcConfig'")
-	}
 	if args == nil {
-		args = &ClusterArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.RoleArn == nil {
+		return nil, errors.New("invalid value for required argument 'RoleArn'")
+	}
+	if args.VpcConfig == nil {
+		return nil, errors.New("invalid value for required argument 'VpcConfig'")
 	}
 	var resource Cluster
 	err := ctx.RegisterResource("aws:eks/cluster:Cluster", name, args, &resource, opts...)
@@ -167,7 +184,8 @@ type clusterState struct {
 	// The endpoint for your Kubernetes API server.
 	Endpoint *string `pulumi:"endpoint"`
 	// Nested attribute containing identity provider information for your cluster. Only available on Kubernetes version 1.13 and 1.14 clusters created or upgraded on or after September 3, 2019.
-	Identities []ClusterIdentity `pulumi:"identities"`
+	Identities              []ClusterIdentity               `pulumi:"identities"`
+	KubernetesNetworkConfig *ClusterKubernetesNetworkConfig `pulumi:"kubernetesNetworkConfig"`
 	// Name of the cluster.
 	Name *string `pulumi:"name"`
 	// The platform version for the cluster.
@@ -197,7 +215,8 @@ type ClusterState struct {
 	// The endpoint for your Kubernetes API server.
 	Endpoint pulumi.StringPtrInput
 	// Nested attribute containing identity provider information for your cluster. Only available on Kubernetes version 1.13 and 1.14 clusters created or upgraded on or after September 3, 2019.
-	Identities ClusterIdentityArrayInput
+	Identities              ClusterIdentityArrayInput
+	KubernetesNetworkConfig ClusterKubernetesNetworkConfigPtrInput
 	// Name of the cluster.
 	Name pulumi.StringPtrInput
 	// The platform version for the cluster.
@@ -222,7 +241,8 @@ type clusterArgs struct {
 	// A list of the desired control plane logging to enable. For more information, see [Amazon EKS Control Plane Logging](https://docs.aws.amazon.com/eks/latest/userguide/control-plane-logs.html)
 	EnabledClusterLogTypes []string `pulumi:"enabledClusterLogTypes"`
 	// Configuration block with encryption configuration for the cluster. Only available on Kubernetes 1.13 and above clusters created after March 6, 2020. Detailed below.
-	EncryptionConfig *ClusterEncryptionConfig `pulumi:"encryptionConfig"`
+	EncryptionConfig        *ClusterEncryptionConfig        `pulumi:"encryptionConfig"`
+	KubernetesNetworkConfig *ClusterKubernetesNetworkConfig `pulumi:"kubernetesNetworkConfig"`
 	// Name of the cluster.
 	Name *string `pulumi:"name"`
 	// The Amazon Resource Name (ARN) of the IAM role that provides permissions for the Kubernetes control plane to make calls to AWS API operations on your behalf. Ensure the resource configuration includes explicit dependencies on the IAM Role permissions by adding [`dependsOn`](https://www.pulumi.com/docs/intro/concepts/programming-model/#dependson) if using the `iam.RolePolicy` resource) or `iam.RolePolicyAttachment` resource, otherwise EKS cannot delete EKS managed EC2 infrastructure such as Security Groups on EKS Cluster deletion.
@@ -240,7 +260,8 @@ type ClusterArgs struct {
 	// A list of the desired control plane logging to enable. For more information, see [Amazon EKS Control Plane Logging](https://docs.aws.amazon.com/eks/latest/userguide/control-plane-logs.html)
 	EnabledClusterLogTypes pulumi.StringArrayInput
 	// Configuration block with encryption configuration for the cluster. Only available on Kubernetes 1.13 and above clusters created after March 6, 2020. Detailed below.
-	EncryptionConfig ClusterEncryptionConfigPtrInput
+	EncryptionConfig        ClusterEncryptionConfigPtrInput
+	KubernetesNetworkConfig ClusterKubernetesNetworkConfigPtrInput
 	// Name of the cluster.
 	Name pulumi.StringPtrInput
 	// The Amazon Resource Name (ARN) of the IAM role that provides permissions for the Kubernetes control plane to make calls to AWS API operations on your behalf. Ensure the resource configuration includes explicit dependencies on the IAM Role permissions by adding [`dependsOn`](https://www.pulumi.com/docs/intro/concepts/programming-model/#dependson) if using the `iam.RolePolicy` resource) or `iam.RolePolicyAttachment` resource, otherwise EKS cannot delete EKS managed EC2 infrastructure such as Security Groups on EKS Cluster deletion.
@@ -255,4 +276,43 @@ type ClusterArgs struct {
 
 func (ClusterArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*clusterArgs)(nil)).Elem()
+}
+
+type ClusterInput interface {
+	pulumi.Input
+
+	ToClusterOutput() ClusterOutput
+	ToClusterOutputWithContext(ctx context.Context) ClusterOutput
+}
+
+func (Cluster) ElementType() reflect.Type {
+	return reflect.TypeOf((*Cluster)(nil)).Elem()
+}
+
+func (i Cluster) ToClusterOutput() ClusterOutput {
+	return i.ToClusterOutputWithContext(context.Background())
+}
+
+func (i Cluster) ToClusterOutputWithContext(ctx context.Context) ClusterOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(ClusterOutput)
+}
+
+type ClusterOutput struct {
+	*pulumi.OutputState
+}
+
+func (ClusterOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*ClusterOutput)(nil)).Elem()
+}
+
+func (o ClusterOutput) ToClusterOutput() ClusterOutput {
+	return o
+}
+
+func (o ClusterOutput) ToClusterOutputWithContext(ctx context.Context) ClusterOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(ClusterOutput{})
 }

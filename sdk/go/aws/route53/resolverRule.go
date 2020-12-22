@@ -4,6 +4,7 @@
 package route53
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -19,7 +20,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/route53"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/route53"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -42,7 +43,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/route53"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/route53"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -50,15 +51,15 @@ import (
 // 	pulumi.Run(func(ctx *pulumi.Context) error {
 // 		_, err := route53.NewResolverRule(ctx, "fwd", &route53.ResolverRuleArgs{
 // 			DomainName:         pulumi.String("example.com"),
-// 			ResolverEndpointId: pulumi.String(aws_route53_resolver_endpoint.Foo.Id),
 // 			RuleType:           pulumi.String("FORWARD"),
-// 			Tags: pulumi.StringMap{
-// 				"Environment": pulumi.String("Prod"),
-// 			},
+// 			ResolverEndpointId: pulumi.Any(aws_route53_resolver_endpoint.Foo.Id),
 // 			TargetIps: route53.ResolverRuleTargetIpArray{
 // 				&route53.ResolverRuleTargetIpArgs{
 // 					Ip: pulumi.String("123.45.67.89"),
 // 				},
+// 			},
+// 			Tags: pulumi.StringMap{
+// 				"Environment": pulumi.String("Prod"),
 // 			},
 // 		})
 // 		if err != nil {
@@ -67,6 +68,14 @@ import (
 // 		return nil
 // 	})
 // }
+// ```
+//
+// ## Import
+//
+// Route53 Resolver rules can be imported using the `id`, e.g.
+//
+// ```sh
+//  $ pulumi import aws:route53/resolverRule:ResolverRule sys rslvr-rr-0123456789abcdef0
 // ```
 type ResolverRule struct {
 	pulumi.CustomResourceState
@@ -97,14 +106,15 @@ type ResolverRule struct {
 // NewResolverRule registers a new resource with the given unique name, arguments, and options.
 func NewResolverRule(ctx *pulumi.Context,
 	name string, args *ResolverRuleArgs, opts ...pulumi.ResourceOption) (*ResolverRule, error) {
-	if args == nil || args.DomainName == nil {
-		return nil, errors.New("missing required argument 'DomainName'")
-	}
-	if args == nil || args.RuleType == nil {
-		return nil, errors.New("missing required argument 'RuleType'")
-	}
 	if args == nil {
-		args = &ResolverRuleArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.DomainName == nil {
+		return nil, errors.New("invalid value for required argument 'DomainName'")
+	}
+	if args.RuleType == nil {
+		return nil, errors.New("invalid value for required argument 'RuleType'")
 	}
 	var resource ResolverRule
 	err := ctx.RegisterResource("aws:route53/resolverRule:ResolverRule", name, args, &resource, opts...)
@@ -216,4 +226,43 @@ type ResolverRuleArgs struct {
 
 func (ResolverRuleArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*resolverRuleArgs)(nil)).Elem()
+}
+
+type ResolverRuleInput interface {
+	pulumi.Input
+
+	ToResolverRuleOutput() ResolverRuleOutput
+	ToResolverRuleOutputWithContext(ctx context.Context) ResolverRuleOutput
+}
+
+func (ResolverRule) ElementType() reflect.Type {
+	return reflect.TypeOf((*ResolverRule)(nil)).Elem()
+}
+
+func (i ResolverRule) ToResolverRuleOutput() ResolverRuleOutput {
+	return i.ToResolverRuleOutputWithContext(context.Background())
+}
+
+func (i ResolverRule) ToResolverRuleOutputWithContext(ctx context.Context) ResolverRuleOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(ResolverRuleOutput)
+}
+
+type ResolverRuleOutput struct {
+	*pulumi.OutputState
+}
+
+func (ResolverRuleOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*ResolverRuleOutput)(nil)).Elem()
+}
+
+func (o ResolverRuleOutput) ToResolverRuleOutput() ResolverRuleOutput {
+	return o
+}
+
+func (o ResolverRuleOutput) ToResolverRuleOutputWithContext(ctx context.Context) ResolverRuleOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(ResolverRuleOutput{})
 }

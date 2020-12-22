@@ -27,6 +27,7 @@ namespace Pulumi.Aws.CloudWatch
     ///         });
     ///         var yada = new Aws.CloudWatch.LogMetricFilter("yada", new Aws.CloudWatch.LogMetricFilterArgs
     ///         {
+    ///             Pattern = "",
     ///             LogGroupName = dada.Name,
     ///             MetricTransformation = new Aws.CloudWatch.Inputs.LogMetricFilterMetricTransformationArgs
     ///             {
@@ -34,11 +35,18 @@ namespace Pulumi.Aws.CloudWatch
     ///                 Namespace = "YourNamespace",
     ///                 Value = "1",
     ///             },
-    ///             Pattern = "",
     ///         });
     ///     }
     /// 
     /// }
+    /// ```
+    /// 
+    /// ## Import
+    /// 
+    /// CloudWatch Log Metric Filter can be imported using the `log_group_name:name`, e.g.
+    /// 
+    /// ```sh
+    ///  $ pulumi import aws:cloudwatch/logMetricFilter:LogMetricFilter test /aws/lambda/function:test
     /// ```
     /// </summary>
     public partial class LogMetricFilter : Pulumi.CustomResource
@@ -50,8 +58,7 @@ namespace Pulumi.Aws.CloudWatch
         public Output<string> LogGroupName { get; private set; } = null!;
 
         /// <summary>
-        /// A block defining collection of information
-        /// needed to define how metric data gets emitted. See below.
+        /// A block defining collection of information needed to define how metric data gets emitted. See below.
         /// </summary>
         [Output("metricTransformation")]
         public Output<Outputs.LogMetricFilterMetricTransformation> MetricTransformation { get; private set; } = null!;
@@ -122,8 +129,7 @@ namespace Pulumi.Aws.CloudWatch
         public Input<string> LogGroupName { get; set; } = null!;
 
         /// <summary>
-        /// A block defining collection of information
-        /// needed to define how metric data gets emitted. See below.
+        /// A block defining collection of information needed to define how metric data gets emitted. See below.
         /// </summary>
         [Input("metricTransformation", required: true)]
         public Input<Inputs.LogMetricFilterMetricTransformationArgs> MetricTransformation { get; set; } = null!;
@@ -155,8 +161,7 @@ namespace Pulumi.Aws.CloudWatch
         public Input<string>? LogGroupName { get; set; }
 
         /// <summary>
-        /// A block defining collection of information
-        /// needed to define how metric data gets emitted. See below.
+        /// A block defining collection of information needed to define how metric data gets emitted. See below.
         /// </summary>
         [Input("metricTransformation")]
         public Input<Inputs.LogMetricFilterMetricTransformationGetArgs>? MetricTransformation { get; set; }

@@ -2,8 +2,7 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 /**
@@ -17,17 +16,17 @@ import * as utilities from "../utilities";
  * import * as aws from "@pulumi/aws";
  *
  * const cloudwatch = new aws.ses.EventDestination("cloudwatch", {
- *     cloudwatchDestinations: [{
- *         defaultValue: "default",
- *         dimensionName: "dimension",
- *         valueSource: "emailHeader",
- *     }],
- *     configurationSetName: aws_ses_configuration_set_example.name,
+ *     configurationSetName: aws_ses_configuration_set.example.name,
  *     enabled: true,
  *     matchingTypes: [
  *         "bounce",
  *         "send",
  *     ],
+ *     cloudwatchDestinations: [{
+ *         defaultValue: "default",
+ *         dimensionName: "dimension",
+ *         valueSource: "emailHeader",
+ *     }],
  * });
  * ```
  * ### Kinesis Destination
@@ -37,16 +36,16 @@ import * as utilities from "../utilities";
  * import * as aws from "@pulumi/aws";
  *
  * const kinesis = new aws.ses.EventDestination("kinesis", {
- *     configurationSetName: aws_ses_configuration_set_example.name,
+ *     configurationSetName: aws_ses_configuration_set.example.name,
  *     enabled: true,
- *     kinesisDestination: {
- *         roleArn: aws_iam_role_example.arn,
- *         streamArn: aws_kinesis_firehose_delivery_stream_example.arn,
- *     },
  *     matchingTypes: [
  *         "bounce",
  *         "send",
  *     ],
+ *     kinesisDestination: {
+ *         streamArn: aws_kinesis_firehose_delivery_stream.example.arn,
+ *         roleArn: aws_iam_role.example.arn,
+ *     },
  * });
  * ```
  * ### SNS Destination
@@ -56,16 +55,24 @@ import * as utilities from "../utilities";
  * import * as aws from "@pulumi/aws";
  *
  * const sns = new aws.ses.EventDestination("sns", {
- *     configurationSetName: aws_ses_configuration_set_example.name,
+ *     configurationSetName: aws_ses_configuration_set.example.name,
  *     enabled: true,
  *     matchingTypes: [
  *         "bounce",
  *         "send",
  *     ],
  *     snsDestination: {
- *         topicArn: aws_sns_topic_example.arn,
+ *         topicArn: aws_sns_topic.example.arn,
  *     },
  * });
+ * ```
+ *
+ * ## Import
+ *
+ * SES event destinations can be imported using `configuration_set_name` together with the event destination's `name`, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:ses/eventDestination:EventDestination sns some-configuration-set-test/event-destination-sns
  * ```
  */
 export class EventDestination extends pulumi.CustomResource {
@@ -146,10 +153,10 @@ export class EventDestination extends pulumi.CustomResource {
             inputs["snsDestination"] = state ? state.snsDestination : undefined;
         } else {
             const args = argsOrState as EventDestinationArgs | undefined;
-            if (!args || args.configurationSetName === undefined) {
+            if ((!args || args.configurationSetName === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'configurationSetName'");
             }
-            if (!args || args.matchingTypes === undefined) {
+            if ((!args || args.matchingTypes === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'matchingTypes'");
             }
             inputs["cloudwatchDestinations"] = args ? args.cloudwatchDestinations : undefined;

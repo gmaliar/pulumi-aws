@@ -4,6 +4,7 @@
 package apigateway
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -18,7 +19,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/apigateway"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/apigateway"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -28,17 +29,7 @@ import (
 // 		if err != nil {
 // 			return err
 // 		}
-// 		_, err = apigateway.NewDocumentationVersion(ctx, "exampleDocumentationVersion", &apigateway.DocumentationVersionArgs{
-// 			Description: pulumi.String("Example description"),
-// 			RestApiId:   exampleRestApi.ID(),
-// 			Version:     pulumi.String("example_version"),
-// 		}, pulumi.DependsOn([]pulumi.Resource{
-// 			"aws_api_gateway_documentation_part.example",
-// 		}))
-// 		if err != nil {
-// 			return err
-// 		}
-// 		_, err = apigateway.NewDocumentationPart(ctx, "exampleDocumentationPart", &apigateway.DocumentationPartArgs{
+// 		exampleDocumentationPart, err := apigateway.NewDocumentationPart(ctx, "exampleDocumentationPart", &apigateway.DocumentationPartArgs{
 // 			Location: &apigateway.DocumentationPartLocationArgs{
 // 				Type: pulumi.String("API"),
 // 			},
@@ -48,9 +39,27 @@ import (
 // 		if err != nil {
 // 			return err
 // 		}
+// 		_, err = apigateway.NewDocumentationVersion(ctx, "exampleDocumentationVersion", &apigateway.DocumentationVersionArgs{
+// 			Version:     pulumi.String("example_version"),
+// 			RestApiId:   exampleRestApi.ID(),
+// 			Description: pulumi.String("Example description"),
+// 		}, pulumi.DependsOn([]pulumi.Resource{
+// 			exampleDocumentationPart,
+// 		}))
+// 		if err != nil {
+// 			return err
+// 		}
 // 		return nil
 // 	})
 // }
+// ```
+//
+// ## Import
+//
+// API Gateway documentation versions can be imported using `REST-API-ID/VERSION`, e.g.
+//
+// ```sh
+//  $ pulumi import aws:apigateway/documentationVersion:DocumentationVersion example 5i4e1ko720/example-version
 // ```
 type DocumentationVersion struct {
 	pulumi.CustomResourceState
@@ -66,14 +75,15 @@ type DocumentationVersion struct {
 // NewDocumentationVersion registers a new resource with the given unique name, arguments, and options.
 func NewDocumentationVersion(ctx *pulumi.Context,
 	name string, args *DocumentationVersionArgs, opts ...pulumi.ResourceOption) (*DocumentationVersion, error) {
-	if args == nil || args.RestApiId == nil {
-		return nil, errors.New("missing required argument 'RestApiId'")
-	}
-	if args == nil || args.Version == nil {
-		return nil, errors.New("missing required argument 'Version'")
-	}
 	if args == nil {
-		args = &DocumentationVersionArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.RestApiId == nil {
+		return nil, errors.New("invalid value for required argument 'RestApiId'")
+	}
+	if args.Version == nil {
+		return nil, errors.New("invalid value for required argument 'Version'")
 	}
 	var resource DocumentationVersion
 	err := ctx.RegisterResource("aws:apigateway/documentationVersion:DocumentationVersion", name, args, &resource, opts...)
@@ -139,4 +149,43 @@ type DocumentationVersionArgs struct {
 
 func (DocumentationVersionArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*documentationVersionArgs)(nil)).Elem()
+}
+
+type DocumentationVersionInput interface {
+	pulumi.Input
+
+	ToDocumentationVersionOutput() DocumentationVersionOutput
+	ToDocumentationVersionOutputWithContext(ctx context.Context) DocumentationVersionOutput
+}
+
+func (DocumentationVersion) ElementType() reflect.Type {
+	return reflect.TypeOf((*DocumentationVersion)(nil)).Elem()
+}
+
+func (i DocumentationVersion) ToDocumentationVersionOutput() DocumentationVersionOutput {
+	return i.ToDocumentationVersionOutputWithContext(context.Background())
+}
+
+func (i DocumentationVersion) ToDocumentationVersionOutputWithContext(ctx context.Context) DocumentationVersionOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(DocumentationVersionOutput)
+}
+
+type DocumentationVersionOutput struct {
+	*pulumi.OutputState
+}
+
+func (DocumentationVersionOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*DocumentationVersionOutput)(nil)).Elem()
+}
+
+func (o DocumentationVersionOutput) ToDocumentationVersionOutput() DocumentationVersionOutput {
+	return o
+}
+
+func (o DocumentationVersionOutput) ToDocumentationVersionOutputWithContext(ctx context.Context) DocumentationVersionOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(DocumentationVersionOutput{})
 }

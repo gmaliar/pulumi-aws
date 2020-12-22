@@ -25,18 +25,6 @@ namespace Pulumi.Aws.ApiGateway
     ///         var exampleRestApi = new Aws.ApiGateway.RestApi("exampleRestApi", new Aws.ApiGateway.RestApiArgs
     ///         {
     ///         });
-    ///         var exampleDocumentationVersion = new Aws.ApiGateway.DocumentationVersion("exampleDocumentationVersion", new Aws.ApiGateway.DocumentationVersionArgs
-    ///         {
-    ///             Description = "Example description",
-    ///             RestApiId = exampleRestApi.Id,
-    ///             Version = "example_version",
-    ///         }, new CustomResourceOptions
-    ///         {
-    ///             DependsOn = 
-    ///             {
-    ///                 "aws_api_gateway_documentation_part.example",
-    ///             },
-    ///         });
     ///         var exampleDocumentationPart = new Aws.ApiGateway.DocumentationPart("exampleDocumentationPart", new Aws.ApiGateway.DocumentationPartArgs
     ///         {
     ///             Location = new Aws.ApiGateway.Inputs.DocumentationPartLocationArgs
@@ -46,9 +34,29 @@ namespace Pulumi.Aws.ApiGateway
     ///             Properties = "{\"description\":\"Example\"}",
     ///             RestApiId = exampleRestApi.Id,
     ///         });
+    ///         var exampleDocumentationVersion = new Aws.ApiGateway.DocumentationVersion("exampleDocumentationVersion", new Aws.ApiGateway.DocumentationVersionArgs
+    ///         {
+    ///             Version = "example_version",
+    ///             RestApiId = exampleRestApi.Id,
+    ///             Description = "Example description",
+    ///         }, new CustomResourceOptions
+    ///         {
+    ///             DependsOn = 
+    ///             {
+    ///                 exampleDocumentationPart,
+    ///             },
+    ///         });
     ///     }
     /// 
     /// }
+    /// ```
+    /// 
+    /// ## Import
+    /// 
+    /// API Gateway documentation versions can be imported using `REST-API-ID/VERSION`, e.g.
+    /// 
+    /// ```sh
+    ///  $ pulumi import aws:apigateway/documentationVersion:DocumentationVersion example 5i4e1ko720/example-version
     /// ```
     /// </summary>
     public partial class DocumentationVersion : Pulumi.CustomResource

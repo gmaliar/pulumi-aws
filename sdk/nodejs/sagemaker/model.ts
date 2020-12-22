@@ -2,8 +2,7 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 /**
@@ -17,24 +16,30 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const model = new aws.sagemaker.Model("m", {
- *     executionRoleArn: aws_iam_role_foo.arn,
+ * const assumeRole = aws.iam.getPolicyDocument({
+ *     statements: [{
+ *         actions: ["sts:AssumeRole"],
+ *         principals: [{
+ *             type: "Service",
+ *             identifiers: ["sagemaker.amazonaws.com"],
+ *         }],
+ *     }],
+ * });
+ * const exampleRole = new aws.iam.Role("exampleRole", {assumeRolePolicy: assumeRole.then(assumeRole => assumeRole.json)});
+ * const exampleModel = new aws.sagemaker.Model("exampleModel", {
+ *     executionRoleArn: exampleRole.arn,
  *     primaryContainer: {
  *         image: "174872318107.dkr.ecr.us-west-2.amazonaws.com/kmeans:1",
  *     },
  * });
- * const assumeRole = pulumi.output(aws.iam.getPolicyDocument({
- *     statements: [{
- *         actions: ["sts:AssumeRole"],
- *         principals: [{
- *             identifiers: ["sagemaker.amazonaws.com"],
- *             type: "Service",
- *         }],
- *     }],
- * }, { async: true }));
- * const role = new aws.iam.Role("r", {
- *     assumeRolePolicy: assumeRole.json,
- * });
+ * ```
+ *
+ * ## Import
+ *
+ * Models can be imported using the `name`, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:sagemaker/model:Model test_model model-foo
  * ```
  */
 export class Model extends pulumi.CustomResource {
@@ -120,7 +125,7 @@ export class Model extends pulumi.CustomResource {
             inputs["vpcConfig"] = state ? state.vpcConfig : undefined;
         } else {
             const args = argsOrState as ModelArgs | undefined;
-            if (!args || args.executionRoleArn === undefined) {
+            if ((!args || args.executionRoleArn === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'executionRoleArn'");
             }
             inputs["containers"] = args ? args.containers : undefined;

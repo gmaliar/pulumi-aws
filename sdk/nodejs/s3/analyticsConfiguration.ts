@@ -2,8 +2,7 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 /**
@@ -48,6 +47,14 @@ import * as utilities from "../utilities";
  *         },
  *     },
  * });
+ * ```
+ *
+ * ## Import
+ *
+ * S3 bucket analytics configurations can be imported using `bucket:analytics`, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:s3/analyticsConfiguration:AnalyticsConfiguration my-bucket-entire-bucket my-bucket:EntireBucket
  * ```
  */
 export class AnalyticsConfiguration extends pulumi.CustomResource {
@@ -113,7 +120,7 @@ export class AnalyticsConfiguration extends pulumi.CustomResource {
             inputs["storageClassAnalysis"] = state ? state.storageClassAnalysis : undefined;
         } else {
             const args = argsOrState as AnalyticsConfigurationArgs | undefined;
-            if (!args || args.bucket === undefined) {
+            if ((!args || args.bucket === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'bucket'");
             }
             inputs["bucket"] = args ? args.bucket : undefined;

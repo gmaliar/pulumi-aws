@@ -59,14 +59,40 @@ namespace Pulumi.Aws.StorageGateway
     /// 
     /// }
     /// ```
+    /// 
+    /// ## Import
+    /// 
+    /// `aws_storagegateway_smb_file_share` can be imported by using the SMB File Share Amazon Resource Name (ARN), e.g.
+    /// 
+    /// ```sh
+    ///  $ pulumi import aws:storagegateway/smbFileShare:SmbFileShare example arn:aws:storagegateway:us-east-1:123456789012:share/share-12345678
+    /// ```
     /// </summary>
     public partial class SmbFileShare : Pulumi.CustomResource
     {
+        /// <summary>
+        /// The files and folders on this share will only be visible to users with read access. Default value is `false`.
+        /// </summary>
+        [Output("accessBasedEnumeration")]
+        public Output<bool?> AccessBasedEnumeration { get; private set; } = null!;
+
+        /// <summary>
+        /// A list of users in the Active Directory that have admin access to the file share. Only valid if `authentication` is set to `ActiveDirectory`.
+        /// </summary>
+        [Output("adminUserLists")]
+        public Output<ImmutableArray<string>> AdminUserLists { get; private set; } = null!;
+
         /// <summary>
         /// Amazon Resource Name (ARN) of the SMB File Share.
         /// </summary>
         [Output("arn")]
         public Output<string> Arn { get; private set; } = null!;
+
+        /// <summary>
+        /// The Amazon Resource Name (ARN) of the CloudWatch Log Group used for the audit logs.
+        /// </summary>
+        [Output("auditDestinationArn")]
+        public Output<string?> AuditDestinationArn { get; private set; } = null!;
 
         /// <summary>
         /// The authentication method that users use to access the file share. Defaults to `ActiveDirectory`. Valid values: `ActiveDirectory`, `GuestAccess`.
@@ -75,10 +101,28 @@ namespace Pulumi.Aws.StorageGateway
         public Output<string?> Authentication { get; private set; } = null!;
 
         /// <summary>
+        /// Refresh cache information. see Cache Attributes for more details.
+        /// </summary>
+        [Output("cacheAttributes")]
+        public Output<Outputs.SmbFileShareCacheAttributes?> CacheAttributes { get; private set; } = null!;
+
+        /// <summary>
+        /// The case of an object name in an Amazon S3 bucket. For `ClientSpecified`, the client determines the case sensitivity. For `CaseSensitive`, the gateway determines the case sensitivity. The default value is `ClientSpecified`.
+        /// </summary>
+        [Output("caseSensitivity")]
+        public Output<string?> CaseSensitivity { get; private set; } = null!;
+
+        /// <summary>
         /// The default storage class for objects put into an Amazon S3 bucket by the file gateway. Defaults to `S3_STANDARD`. Valid values: `S3_STANDARD`, `S3_STANDARD_IA`, `S3_ONEZONE_IA`.
         /// </summary>
         [Output("defaultStorageClass")]
         public Output<string?> DefaultStorageClass { get; private set; } = null!;
+
+        /// <summary>
+        /// The name of the file share. Must be set if an S3 prefix name is set in `location_arn`.
+        /// </summary>
+        [Output("fileShareName")]
+        public Output<string> FileShareName { get; private set; } = null!;
 
         /// <summary>
         /// ID of the SMB File Share.
@@ -123,6 +167,12 @@ namespace Pulumi.Aws.StorageGateway
         public Output<string> LocationArn { get; private set; } = null!;
 
         /// <summary>
+        /// The notification policy of the file share. For more information see the [AWS Documentation](https://docs.aws.amazon.com/storagegateway/latest/APIReference/API_CreateNFSFileShare.html#StorageGateway-CreateNFSFileShare-request-NotificationPolicy). Default value is `{}`.
+        /// </summary>
+        [Output("notificationPolicy")]
+        public Output<string?> NotificationPolicy { get; private set; } = null!;
+
+        /// <summary>
         /// Access Control List permission for S3 bucket objects. Defaults to `private`.
         /// </summary>
         [Output("objectAcl")]
@@ -151,6 +201,12 @@ namespace Pulumi.Aws.StorageGateway
         /// </summary>
         [Output("roleArn")]
         public Output<string> RoleArn { get; private set; } = null!;
+
+        /// <summary>
+        /// Set this value to `true` to enable ACL (access control list) on the SMB fileshare. Set it to `false` to map file and directory permissions to the POSIX permissions. This setting applies only to `ActiveDirectory` authentication type.
+        /// </summary>
+        [Output("smbAclEnabled")]
+        public Output<bool?> SmbAclEnabled { get; private set; } = null!;
 
         /// <summary>
         /// Key-value map of resource tags
@@ -211,16 +267,58 @@ namespace Pulumi.Aws.StorageGateway
     public sealed class SmbFileShareArgs : Pulumi.ResourceArgs
     {
         /// <summary>
+        /// The files and folders on this share will only be visible to users with read access. Default value is `false`.
+        /// </summary>
+        [Input("accessBasedEnumeration")]
+        public Input<bool>? AccessBasedEnumeration { get; set; }
+
+        [Input("adminUserLists")]
+        private InputList<string>? _adminUserLists;
+
+        /// <summary>
+        /// A list of users in the Active Directory that have admin access to the file share. Only valid if `authentication` is set to `ActiveDirectory`.
+        /// </summary>
+        public InputList<string> AdminUserLists
+        {
+            get => _adminUserLists ?? (_adminUserLists = new InputList<string>());
+            set => _adminUserLists = value;
+        }
+
+        /// <summary>
+        /// The Amazon Resource Name (ARN) of the CloudWatch Log Group used for the audit logs.
+        /// </summary>
+        [Input("auditDestinationArn")]
+        public Input<string>? AuditDestinationArn { get; set; }
+
+        /// <summary>
         /// The authentication method that users use to access the file share. Defaults to `ActiveDirectory`. Valid values: `ActiveDirectory`, `GuestAccess`.
         /// </summary>
         [Input("authentication")]
         public Input<string>? Authentication { get; set; }
 
         /// <summary>
+        /// Refresh cache information. see Cache Attributes for more details.
+        /// </summary>
+        [Input("cacheAttributes")]
+        public Input<Inputs.SmbFileShareCacheAttributesArgs>? CacheAttributes { get; set; }
+
+        /// <summary>
+        /// The case of an object name in an Amazon S3 bucket. For `ClientSpecified`, the client determines the case sensitivity. For `CaseSensitive`, the gateway determines the case sensitivity. The default value is `ClientSpecified`.
+        /// </summary>
+        [Input("caseSensitivity")]
+        public Input<string>? CaseSensitivity { get; set; }
+
+        /// <summary>
         /// The default storage class for objects put into an Amazon S3 bucket by the file gateway. Defaults to `S3_STANDARD`. Valid values: `S3_STANDARD`, `S3_STANDARD_IA`, `S3_ONEZONE_IA`.
         /// </summary>
         [Input("defaultStorageClass")]
         public Input<string>? DefaultStorageClass { get; set; }
+
+        /// <summary>
+        /// The name of the file share. Must be set if an S3 prefix name is set in `location_arn`.
+        /// </summary>
+        [Input("fileShareName")]
+        public Input<string>? FileShareName { get; set; }
 
         /// <summary>
         /// Amazon Resource Name (ARN) of the file gateway.
@@ -265,6 +363,12 @@ namespace Pulumi.Aws.StorageGateway
         public Input<string> LocationArn { get; set; } = null!;
 
         /// <summary>
+        /// The notification policy of the file share. For more information see the [AWS Documentation](https://docs.aws.amazon.com/storagegateway/latest/APIReference/API_CreateNFSFileShare.html#StorageGateway-CreateNFSFileShare-request-NotificationPolicy). Default value is `{}`.
+        /// </summary>
+        [Input("notificationPolicy")]
+        public Input<string>? NotificationPolicy { get; set; }
+
+        /// <summary>
         /// Access Control List permission for S3 bucket objects. Defaults to `private`.
         /// </summary>
         [Input("objectAcl")]
@@ -287,6 +391,12 @@ namespace Pulumi.Aws.StorageGateway
         /// </summary>
         [Input("roleArn", required: true)]
         public Input<string> RoleArn { get; set; } = null!;
+
+        /// <summary>
+        /// Set this value to `true` to enable ACL (access control list) on the SMB fileshare. Set it to `false` to map file and directory permissions to the POSIX permissions. This setting applies only to `ActiveDirectory` authentication type.
+        /// </summary>
+        [Input("smbAclEnabled")]
+        public Input<bool>? SmbAclEnabled { get; set; }
 
         [Input("tags")]
         private InputMap<string>? _tags;
@@ -320,10 +430,34 @@ namespace Pulumi.Aws.StorageGateway
     public sealed class SmbFileShareState : Pulumi.ResourceArgs
     {
         /// <summary>
+        /// The files and folders on this share will only be visible to users with read access. Default value is `false`.
+        /// </summary>
+        [Input("accessBasedEnumeration")]
+        public Input<bool>? AccessBasedEnumeration { get; set; }
+
+        [Input("adminUserLists")]
+        private InputList<string>? _adminUserLists;
+
+        /// <summary>
+        /// A list of users in the Active Directory that have admin access to the file share. Only valid if `authentication` is set to `ActiveDirectory`.
+        /// </summary>
+        public InputList<string> AdminUserLists
+        {
+            get => _adminUserLists ?? (_adminUserLists = new InputList<string>());
+            set => _adminUserLists = value;
+        }
+
+        /// <summary>
         /// Amazon Resource Name (ARN) of the SMB File Share.
         /// </summary>
         [Input("arn")]
         public Input<string>? Arn { get; set; }
+
+        /// <summary>
+        /// The Amazon Resource Name (ARN) of the CloudWatch Log Group used for the audit logs.
+        /// </summary>
+        [Input("auditDestinationArn")]
+        public Input<string>? AuditDestinationArn { get; set; }
 
         /// <summary>
         /// The authentication method that users use to access the file share. Defaults to `ActiveDirectory`. Valid values: `ActiveDirectory`, `GuestAccess`.
@@ -332,10 +466,28 @@ namespace Pulumi.Aws.StorageGateway
         public Input<string>? Authentication { get; set; }
 
         /// <summary>
+        /// Refresh cache information. see Cache Attributes for more details.
+        /// </summary>
+        [Input("cacheAttributes")]
+        public Input<Inputs.SmbFileShareCacheAttributesGetArgs>? CacheAttributes { get; set; }
+
+        /// <summary>
+        /// The case of an object name in an Amazon S3 bucket. For `ClientSpecified`, the client determines the case sensitivity. For `CaseSensitive`, the gateway determines the case sensitivity. The default value is `ClientSpecified`.
+        /// </summary>
+        [Input("caseSensitivity")]
+        public Input<string>? CaseSensitivity { get; set; }
+
+        /// <summary>
         /// The default storage class for objects put into an Amazon S3 bucket by the file gateway. Defaults to `S3_STANDARD`. Valid values: `S3_STANDARD`, `S3_STANDARD_IA`, `S3_ONEZONE_IA`.
         /// </summary>
         [Input("defaultStorageClass")]
         public Input<string>? DefaultStorageClass { get; set; }
+
+        /// <summary>
+        /// The name of the file share. Must be set if an S3 prefix name is set in `location_arn`.
+        /// </summary>
+        [Input("fileShareName")]
+        public Input<string>? FileShareName { get; set; }
 
         /// <summary>
         /// ID of the SMB File Share.
@@ -386,6 +538,12 @@ namespace Pulumi.Aws.StorageGateway
         public Input<string>? LocationArn { get; set; }
 
         /// <summary>
+        /// The notification policy of the file share. For more information see the [AWS Documentation](https://docs.aws.amazon.com/storagegateway/latest/APIReference/API_CreateNFSFileShare.html#StorageGateway-CreateNFSFileShare-request-NotificationPolicy). Default value is `{}`.
+        /// </summary>
+        [Input("notificationPolicy")]
+        public Input<string>? NotificationPolicy { get; set; }
+
+        /// <summary>
         /// Access Control List permission for S3 bucket objects. Defaults to `private`.
         /// </summary>
         [Input("objectAcl")]
@@ -414,6 +572,12 @@ namespace Pulumi.Aws.StorageGateway
         /// </summary>
         [Input("roleArn")]
         public Input<string>? RoleArn { get; set; }
+
+        /// <summary>
+        /// Set this value to `true` to enable ACL (access control list) on the SMB fileshare. Set it to `false` to map file and directory permissions to the POSIX permissions. This setting applies only to `ActiveDirectory` authentication type.
+        /// </summary>
+        [Input("smbAclEnabled")]
+        public Input<bool>? SmbAclEnabled { get; set; }
 
         [Input("tags")]
         private InputMap<string>? _tags;

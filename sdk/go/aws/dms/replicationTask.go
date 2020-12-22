@@ -4,6 +4,7 @@
 package dms
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -20,7 +21,7 @@ import (
 // import (
 // 	"fmt"
 //
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/dms"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/dms"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -29,15 +30,15 @@ import (
 // 		_, err := dms.NewReplicationTask(ctx, "test", &dms.ReplicationTaskArgs{
 // 			CdcStartTime:            pulumi.String("1484346880"),
 // 			MigrationType:           pulumi.String("full-load"),
-// 			ReplicationInstanceArn:  pulumi.String(aws_dms_replication_instance.Test - dms - replication - instance - tf.Replication_instance_arn),
+// 			ReplicationInstanceArn:  pulumi.Any(aws_dms_replication_instance.Test - dms - replication - instance - tf.Replication_instance_arn),
 // 			ReplicationTaskId:       pulumi.String("test-dms-replication-task-tf"),
 // 			ReplicationTaskSettings: pulumi.String("..."),
-// 			SourceEndpointArn:       pulumi.String(aws_dms_endpoint.Test - dms - source - endpoint - tf.Endpoint_arn),
+// 			SourceEndpointArn:       pulumi.Any(aws_dms_endpoint.Test - dms - source - endpoint - tf.Endpoint_arn),
 // 			TableMappings:           pulumi.String(fmt.Sprintf("%v%v%v%v%v", "{\"rules\":[{\"rule-type\":\"selection\",\"rule-id\":\"1\",\"rule-name\":\"1\",\"object-locator\":{\"schema-name\":\"", "%", "\",\"table-name\":\"", "%", "\"},\"rule-action\":\"include\"}]}")),
 // 			Tags: pulumi.StringMap{
 // 				"Name": pulumi.String("test"),
 // 			},
-// 			TargetEndpointArn: pulumi.String(aws_dms_endpoint.Test - dms - target - endpoint - tf.Endpoint_arn),
+// 			TargetEndpointArn: pulumi.Any(aws_dms_endpoint.Test - dms - target - endpoint - tf.Endpoint_arn),
 // 		})
 // 		if err != nil {
 // 			return err
@@ -45,6 +46,14 @@ import (
 // 		return nil
 // 	})
 // }
+// ```
+//
+// ## Import
+//
+// Replication tasks can be imported using the `replication_task_id`, e.g.
+//
+// ```sh
+//  $ pulumi import aws:dms/replicationTask:ReplicationTask test test-dms-replication-task-tf
 // ```
 type ReplicationTask struct {
 	pulumi.CustomResourceState
@@ -74,26 +83,27 @@ type ReplicationTask struct {
 // NewReplicationTask registers a new resource with the given unique name, arguments, and options.
 func NewReplicationTask(ctx *pulumi.Context,
 	name string, args *ReplicationTaskArgs, opts ...pulumi.ResourceOption) (*ReplicationTask, error) {
-	if args == nil || args.MigrationType == nil {
-		return nil, errors.New("missing required argument 'MigrationType'")
-	}
-	if args == nil || args.ReplicationInstanceArn == nil {
-		return nil, errors.New("missing required argument 'ReplicationInstanceArn'")
-	}
-	if args == nil || args.ReplicationTaskId == nil {
-		return nil, errors.New("missing required argument 'ReplicationTaskId'")
-	}
-	if args == nil || args.SourceEndpointArn == nil {
-		return nil, errors.New("missing required argument 'SourceEndpointArn'")
-	}
-	if args == nil || args.TableMappings == nil {
-		return nil, errors.New("missing required argument 'TableMappings'")
-	}
-	if args == nil || args.TargetEndpointArn == nil {
-		return nil, errors.New("missing required argument 'TargetEndpointArn'")
-	}
 	if args == nil {
-		args = &ReplicationTaskArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.MigrationType == nil {
+		return nil, errors.New("invalid value for required argument 'MigrationType'")
+	}
+	if args.ReplicationInstanceArn == nil {
+		return nil, errors.New("invalid value for required argument 'ReplicationInstanceArn'")
+	}
+	if args.ReplicationTaskId == nil {
+		return nil, errors.New("invalid value for required argument 'ReplicationTaskId'")
+	}
+	if args.SourceEndpointArn == nil {
+		return nil, errors.New("invalid value for required argument 'SourceEndpointArn'")
+	}
+	if args.TableMappings == nil {
+		return nil, errors.New("invalid value for required argument 'TableMappings'")
+	}
+	if args.TargetEndpointArn == nil {
+		return nil, errors.New("invalid value for required argument 'TargetEndpointArn'")
 	}
 	var resource ReplicationTask
 	err := ctx.RegisterResource("aws:dms/replicationTask:ReplicationTask", name, args, &resource, opts...)
@@ -211,4 +221,43 @@ type ReplicationTaskArgs struct {
 
 func (ReplicationTaskArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*replicationTaskArgs)(nil)).Elem()
+}
+
+type ReplicationTaskInput interface {
+	pulumi.Input
+
+	ToReplicationTaskOutput() ReplicationTaskOutput
+	ToReplicationTaskOutputWithContext(ctx context.Context) ReplicationTaskOutput
+}
+
+func (ReplicationTask) ElementType() reflect.Type {
+	return reflect.TypeOf((*ReplicationTask)(nil)).Elem()
+}
+
+func (i ReplicationTask) ToReplicationTaskOutput() ReplicationTaskOutput {
+	return i.ToReplicationTaskOutputWithContext(context.Background())
+}
+
+func (i ReplicationTask) ToReplicationTaskOutputWithContext(ctx context.Context) ReplicationTaskOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(ReplicationTaskOutput)
+}
+
+type ReplicationTaskOutput struct {
+	*pulumi.OutputState
+}
+
+func (ReplicationTaskOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*ReplicationTaskOutput)(nil)).Elem()
+}
+
+func (o ReplicationTaskOutput) ToReplicationTaskOutput() ReplicationTaskOutput {
+	return o
+}
+
+func (o ReplicationTaskOutput) ToReplicationTaskOutputWithContext(ctx context.Context) ReplicationTaskOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(ReplicationTaskOutput{})
 }

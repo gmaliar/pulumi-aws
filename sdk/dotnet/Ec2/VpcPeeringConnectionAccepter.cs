@@ -33,6 +33,7 @@ namespace Pulumi.Aws.Ec2
     ///         {
     ///             Region = "us-west-2",
     ///         });
+    ///         // Accepter's credentials.
     ///         var main = new Aws.Ec2.Vpc("main", new Aws.Ec2.VpcArgs
     ///         {
     ///             CidrBlock = "10.0.0.0/16",
@@ -42,39 +43,59 @@ namespace Pulumi.Aws.Ec2
     ///             CidrBlock = "10.1.0.0/16",
     ///         }, new CustomResourceOptions
     ///         {
-    ///             Provider = "aws.peer",
+    ///             Provider = aws.Peer,
     ///         });
     ///         var peerCallerIdentity = Output.Create(Aws.GetCallerIdentity.InvokeAsync());
     ///         // Requester's side of the connection.
     ///         var peerVpcPeeringConnection = new Aws.Ec2.VpcPeeringConnection("peerVpcPeeringConnection", new Aws.Ec2.VpcPeeringConnectionArgs
     ///         {
-    ///             AutoAccept = false,
+    ///             VpcId = main.Id,
+    ///             PeerVpcId = peerVpc.Id,
     ///             PeerOwnerId = peerCallerIdentity.Apply(peerCallerIdentity =&gt; peerCallerIdentity.AccountId),
     ///             PeerRegion = "us-west-2",
-    ///             PeerVpcId = peerVpc.Id,
+    ///             AutoAccept = false,
     ///             Tags = 
     ///             {
     ///                 { "Side", "Requester" },
     ///             },
-    ///             VpcId = main.Id,
     ///         });
     ///         // Accepter's side of the connection.
     ///         var peerVpcPeeringConnectionAccepter = new Aws.Ec2.VpcPeeringConnectionAccepter("peerVpcPeeringConnectionAccepter", new Aws.Ec2.VpcPeeringConnectionAccepterArgs
     ///         {
+    ///             VpcPeeringConnectionId = peerVpcPeeringConnection.Id,
     ///             AutoAccept = true,
     ///             Tags = 
     ///             {
     ///                 { "Side", "Accepter" },
     ///             },
-    ///             VpcPeeringConnectionId = peerVpcPeeringConnection.Id,
     ///         }, new CustomResourceOptions
     ///         {
-    ///             Provider = "aws.peer",
+    ///             Provider = aws.Peer,
     ///         });
     ///     }
     /// 
     /// }
     /// ```
+    /// 
+    /// ## Import
+    /// 
+    /// VPC Peering Connection Accepters can be imported by using the Peering Connection ID, e.g.
+    /// 
+    /// ```sh
+    ///  $ pulumi import aws:ec2/vpcPeeringConnectionAccepter:VpcPeeringConnectionAccepter example pcx-12345678
+    /// ```
+    /// 
+    ///  Certain resource arguments, like `auto_accept`, do not have an EC2 API method for reading the information after peering connection creation. If the argument is set in the provider configuration on an imported resource, this provder will always show a difference. To workaround this behavior, either omit the argument from the configuration or use [`ignoreChanges`](https://www.pulumi.com/docs/intro/concepts/programming-model/#ignorechanges) to hide the difference, e.g. hcl resource "aws_vpc_peering_connection_accepter" "example" {
+    /// 
+    /// # ... other configuration ...
+    /// 
+    /// # There is no AWS EC2 API for reading auto_accept
+    /// 
+    ///  lifecycle {
+    /// 
+    ///  ignore_changes = [auto_accept]
+    /// 
+    ///  } }
     /// </summary>
     public partial class VpcPeeringConnectionAccepter : Pulumi.CustomResource
     {

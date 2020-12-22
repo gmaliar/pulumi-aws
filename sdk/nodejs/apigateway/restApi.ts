@@ -2,8 +2,7 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 /**
@@ -33,6 +32,14 @@ import * as utilities from "../utilities";
  *         types: "REGIONAL",
  *     },
  * });
+ * ```
+ *
+ * ## Import
+ *
+ * `aws_api_gateway_rest_api` can be imported by using the REST API ID, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:apigateway/restApi:RestApi example 12345abcde
  * ```
  */
 export class RestApi extends pulumi.CustomResource {
@@ -106,9 +113,9 @@ export class RestApi extends pulumi.CustomResource {
      */
     public readonly name!: pulumi.Output<string>;
     /**
-     * JSON formatted policy document that controls access to the API Gateway.
+     * JSON formatted policy document that controls access to the API Gateway. This provider will only perform drift detection of its value when present in a configuration. It is recommended to use the `aws.apigateway.RestApiPolicy` resource instead.
      */
-    public readonly policy!: pulumi.Output<string | undefined>;
+    public readonly policy!: pulumi.Output<string>;
     /**
      * The resource ID of the REST API's root
      */
@@ -217,7 +224,7 @@ export interface RestApiState {
      */
     readonly name?: pulumi.Input<string>;
     /**
-     * JSON formatted policy document that controls access to the API Gateway.
+     * JSON formatted policy document that controls access to the API Gateway. This provider will only perform drift detection of its value when present in a configuration. It is recommended to use the `aws.apigateway.RestApiPolicy` resource instead.
      */
     readonly policy?: pulumi.Input<string>;
     /**
@@ -263,7 +270,7 @@ export interface RestApiArgs {
      */
     readonly name?: pulumi.Input<string>;
     /**
-     * JSON formatted policy document that controls access to the API Gateway.
+     * JSON formatted policy document that controls access to the API Gateway. This provider will only perform drift detection of its value when present in a configuration. It is recommended to use the `aws.apigateway.RestApiPolicy` resource instead.
      */
     readonly policy?: pulumi.Input<string>;
     /**

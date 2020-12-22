@@ -4,6 +4,7 @@
 package lambda
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -21,7 +22,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/lambda"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/lambda"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -29,7 +30,7 @@ import (
 // 	pulumi.Run(func(ctx *pulumi.Context) error {
 // 		_, err := lambda.NewAlias(ctx, "testLambdaAlias", &lambda.AliasArgs{
 // 			Description:     pulumi.String("a sample description"),
-// 			FunctionName:    pulumi.String(aws_lambda_function.Lambda_function_test.Arn),
+// 			FunctionName:    pulumi.Any(aws_lambda_function.Lambda_function_test.Arn),
 // 			FunctionVersion: pulumi.String("1"),
 // 			RoutingConfig: &lambda.AliasRoutingConfigArgs{
 // 				AdditionalVersionWeights: pulumi.Float64Map{
@@ -44,6 +45,14 @@ import (
 // 	})
 // }
 // ```
+//
+// ## Import
+//
+// Lambda Function Aliases can be imported using the `function_name/alias`, e.g.
+//
+// ```sh
+//  $ pulumi import aws:lambda/alias:Alias test_lambda_alias my_test_lambda_function/my_alias
+// ```
 type Alias struct {
 	pulumi.CustomResourceState
 
@@ -51,7 +60,7 @@ type Alias struct {
 	Arn pulumi.StringOutput `pulumi:"arn"`
 	// Description of the alias.
 	Description pulumi.StringPtrOutput `pulumi:"description"`
-	// The function ARN of the Lambda function for which you want to create an alias.
+	// Lambda Function name or ARN.
 	FunctionName pulumi.StringOutput `pulumi:"functionName"`
 	// Lambda function version for which you are creating the alias. Pattern: `(\$LATEST|[0-9]+)`.
 	FunctionVersion pulumi.StringOutput `pulumi:"functionVersion"`
@@ -66,14 +75,15 @@ type Alias struct {
 // NewAlias registers a new resource with the given unique name, arguments, and options.
 func NewAlias(ctx *pulumi.Context,
 	name string, args *AliasArgs, opts ...pulumi.ResourceOption) (*Alias, error) {
-	if args == nil || args.FunctionName == nil {
-		return nil, errors.New("missing required argument 'FunctionName'")
-	}
-	if args == nil || args.FunctionVersion == nil {
-		return nil, errors.New("missing required argument 'FunctionVersion'")
-	}
 	if args == nil {
-		args = &AliasArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.FunctionName == nil {
+		return nil, errors.New("invalid value for required argument 'FunctionName'")
+	}
+	if args.FunctionVersion == nil {
+		return nil, errors.New("invalid value for required argument 'FunctionVersion'")
 	}
 	var resource Alias
 	err := ctx.RegisterResource("aws:lambda/alias:Alias", name, args, &resource, opts...)
@@ -101,7 +111,7 @@ type aliasState struct {
 	Arn *string `pulumi:"arn"`
 	// Description of the alias.
 	Description *string `pulumi:"description"`
-	// The function ARN of the Lambda function for which you want to create an alias.
+	// Lambda Function name or ARN.
 	FunctionName *string `pulumi:"functionName"`
 	// Lambda function version for which you are creating the alias. Pattern: `(\$LATEST|[0-9]+)`.
 	FunctionVersion *string `pulumi:"functionVersion"`
@@ -118,7 +128,7 @@ type AliasState struct {
 	Arn pulumi.StringPtrInput
 	// Description of the alias.
 	Description pulumi.StringPtrInput
-	// The function ARN of the Lambda function for which you want to create an alias.
+	// Lambda Function name or ARN.
 	FunctionName pulumi.StringPtrInput
 	// Lambda function version for which you are creating the alias. Pattern: `(\$LATEST|[0-9]+)`.
 	FunctionVersion pulumi.StringPtrInput
@@ -137,7 +147,7 @@ func (AliasState) ElementType() reflect.Type {
 type aliasArgs struct {
 	// Description of the alias.
 	Description *string `pulumi:"description"`
-	// The function ARN of the Lambda function for which you want to create an alias.
+	// Lambda Function name or ARN.
 	FunctionName string `pulumi:"functionName"`
 	// Lambda function version for which you are creating the alias. Pattern: `(\$LATEST|[0-9]+)`.
 	FunctionVersion string `pulumi:"functionVersion"`
@@ -151,7 +161,7 @@ type aliasArgs struct {
 type AliasArgs struct {
 	// Description of the alias.
 	Description pulumi.StringPtrInput
-	// The function ARN of the Lambda function for which you want to create an alias.
+	// Lambda Function name or ARN.
 	FunctionName pulumi.StringInput
 	// Lambda function version for which you are creating the alias. Pattern: `(\$LATEST|[0-9]+)`.
 	FunctionVersion pulumi.StringInput
@@ -163,4 +173,43 @@ type AliasArgs struct {
 
 func (AliasArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*aliasArgs)(nil)).Elem()
+}
+
+type AliasInput interface {
+	pulumi.Input
+
+	ToAliasOutput() AliasOutput
+	ToAliasOutputWithContext(ctx context.Context) AliasOutput
+}
+
+func (Alias) ElementType() reflect.Type {
+	return reflect.TypeOf((*Alias)(nil)).Elem()
+}
+
+func (i Alias) ToAliasOutput() AliasOutput {
+	return i.ToAliasOutputWithContext(context.Background())
+}
+
+func (i Alias) ToAliasOutputWithContext(ctx context.Context) AliasOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(AliasOutput)
+}
+
+type AliasOutput struct {
+	*pulumi.OutputState
+}
+
+func (AliasOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*AliasOutput)(nil)).Elem()
+}
+
+func (o AliasOutput) ToAliasOutput() AliasOutput {
+	return o
+}
+
+func (o AliasOutput) ToAliasOutputWithContext(ctx context.Context) AliasOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(AliasOutput{})
 }

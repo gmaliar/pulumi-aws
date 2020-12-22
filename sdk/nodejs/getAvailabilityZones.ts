@@ -2,8 +2,7 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "./types/input";
-import * as outputs from "./types/output";
+import { input as inputs, output as outputs, enums } from "./types";
 import * as utilities from "./utilities";
 
 /**
@@ -76,12 +75,9 @@ export function getAvailabilityZones(args?: GetAvailabilityZonesArgs, opts?: pul
     }
     return pulumi.runtime.invoke("aws:index/getAvailabilityZones:getAvailabilityZones", {
         "allAvailabilityZones": args.allAvailabilityZones,
-        "blacklistedNames": args.blacklistedNames,
-        "blacklistedZoneIds": args.blacklistedZoneIds,
         "excludeNames": args.excludeNames,
         "excludeZoneIds": args.excludeZoneIds,
         "filters": args.filters,
-        "groupNames": args.groupNames,
         "state": args.state,
     }, opts);
 }
@@ -95,18 +91,6 @@ export interface GetAvailabilityZonesArgs {
      */
     readonly allAvailabilityZones?: boolean;
     /**
-     * List of Availability Zone names to exclude. Use `excludeNames` instead.
-     *
-     * @deprecated use `exclude_names` instead
-     */
-    readonly blacklistedNames?: string[];
-    /**
-     * List of Availability Zone IDs to exclude. Use `excludeZoneIds` instead.
-     *
-     * @deprecated use `exclude_zone_ids` instead
-     */
-    readonly blacklistedZoneIds?: string[];
-    /**
      * List of Availability Zone names to exclude.
      */
     readonly excludeNames?: string[];
@@ -118,7 +102,6 @@ export interface GetAvailabilityZonesArgs {
      * Configuration block(s) for filtering. Detailed below.
      */
     readonly filters?: inputs.GetAvailabilityZonesFilter[];
-    readonly groupNames?: string[];
     /**
      * Allows to filter list of Availability Zones based on their
      * current state. Can be either `"available"`, `"information"`, `"impaired"` or
@@ -133,18 +116,10 @@ export interface GetAvailabilityZonesArgs {
  */
 export interface GetAvailabilityZonesResult {
     readonly allAvailabilityZones?: boolean;
-    /**
-     * @deprecated use `exclude_names` instead
-     */
-    readonly blacklistedNames?: string[];
-    /**
-     * @deprecated use `exclude_zone_ids` instead
-     */
-    readonly blacklistedZoneIds?: string[];
     readonly excludeNames?: string[];
     readonly excludeZoneIds?: string[];
     readonly filters?: outputs.GetAvailabilityZonesFilter[];
-    readonly groupNames?: string[];
+    readonly groupNames: string[];
     /**
      * The provider-assigned unique ID for this managed resource.
      */

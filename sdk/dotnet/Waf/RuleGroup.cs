@@ -28,6 +28,7 @@ namespace Pulumi.Aws.Waf
     ///         });
     ///         var exampleRuleGroup = new Aws.Waf.RuleGroup("exampleRuleGroup", new Aws.Waf.RuleGroupArgs
     ///         {
+    ///             MetricName = "example",
     ///             ActivatedRules = 
     ///             {
     ///                 new Aws.Waf.Inputs.RuleGroupActivatedRuleArgs
@@ -40,11 +41,18 @@ namespace Pulumi.Aws.Waf
     ///                     RuleId = exampleRule.Id,
     ///                 },
     ///             },
-    ///             MetricName = "example",
     ///         });
     ///     }
     /// 
     /// }
+    /// ```
+    /// 
+    /// ## Import
+    /// 
+    /// WAF Rule Group can be imported using the id, e.g.
+    /// 
+    /// ```sh
+    ///  $ pulumi import aws:waf/ruleGroup:RuleGroup example a1b2c3d4-d5f6-7777-8888-9999aaaabbbbcccc
     /// ```
     /// </summary>
     public partial class RuleGroup : Pulumi.CustomResource

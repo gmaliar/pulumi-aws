@@ -4,6 +4,7 @@
 package rds
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -19,7 +20,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/rds"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/rds"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -31,11 +32,10 @@ import (
 // 				pulumi.String("us-west-2b"),
 // 				pulumi.String("us-west-2c"),
 // 			},
-// 			BackupRetentionPeriod: pulumi.Int(5),
-// 			ClusterIdentifier:     pulumi.String("aurora-cluster-demo"),
 // 			DatabaseName:          pulumi.String("mydb"),
-// 			MasterPassword:        pulumi.String("bar"),
 // 			MasterUsername:        pulumi.String("foo"),
+// 			MasterPassword:        pulumi.String("bar"),
+// 			BackupRetentionPeriod: pulumi.Int(5),
 // 			PreferredBackupWindow: pulumi.String("07:00-09:00"),
 // 		})
 // 		if err != nil {
@@ -44,10 +44,10 @@ import (
 // 		test1, err := rds.NewClusterInstance(ctx, "test1", &rds.ClusterInstanceArgs{
 // 			ApplyImmediately:  pulumi.Bool(true),
 // 			ClusterIdentifier: _default.ID(),
-// 			Engine:            _default.Engine,
-// 			EngineVersion:     _default.EngineVersion,
 // 			Identifier:        pulumi.String("test1"),
 // 			InstanceClass:     pulumi.String("db.t2.small"),
+// 			Engine:            _default.Engine,
+// 			EngineVersion:     _default.EngineVersion,
 // 		})
 // 		if err != nil {
 // 			return err
@@ -55,10 +55,10 @@ import (
 // 		test2, err := rds.NewClusterInstance(ctx, "test2", &rds.ClusterInstanceArgs{
 // 			ApplyImmediately:  pulumi.Bool(true),
 // 			ClusterIdentifier: _default.ID(),
-// 			Engine:            _default.Engine,
-// 			EngineVersion:     _default.EngineVersion,
 // 			Identifier:        pulumi.String("test2"),
 // 			InstanceClass:     pulumi.String("db.t2.small"),
+// 			Engine:            _default.Engine,
+// 			EngineVersion:     _default.EngineVersion,
 // 		})
 // 		if err != nil {
 // 			return err
@@ -66,17 +66,17 @@ import (
 // 		test3, err := rds.NewClusterInstance(ctx, "test3", &rds.ClusterInstanceArgs{
 // 			ApplyImmediately:  pulumi.Bool(true),
 // 			ClusterIdentifier: _default.ID(),
-// 			Engine:            _default.Engine,
-// 			EngineVersion:     _default.EngineVersion,
 // 			Identifier:        pulumi.String("test3"),
 // 			InstanceClass:     pulumi.String("db.t2.small"),
+// 			Engine:            _default.Engine,
+// 			EngineVersion:     _default.EngineVersion,
 // 		})
 // 		if err != nil {
 // 			return err
 // 		}
 // 		_, err = rds.NewClusterEndpoint(ctx, "eligible", &rds.ClusterEndpointArgs{
-// 			ClusterEndpointIdentifier: pulumi.String("reader"),
 // 			ClusterIdentifier:         _default.ID(),
+// 			ClusterEndpointIdentifier: pulumi.String("reader"),
 // 			CustomEndpointType:        pulumi.String("READER"),
 // 			ExcludedMembers: pulumi.StringArray{
 // 				test1.ID(),
@@ -87,8 +87,8 @@ import (
 // 			return err
 // 		}
 // 		_, err = rds.NewClusterEndpoint(ctx, "static", &rds.ClusterEndpointArgs{
-// 			ClusterEndpointIdentifier: pulumi.String("static"),
 // 			ClusterIdentifier:         _default.ID(),
+// 			ClusterEndpointIdentifier: pulumi.String("static"),
 // 			CustomEndpointType:        pulumi.String("READER"),
 // 			StaticMembers: pulumi.StringArray{
 // 				test1.ID(),
@@ -102,6 +102,16 @@ import (
 // 	})
 // }
 // ```
+//
+// ## Import
+//
+// RDS Clusters Endpoint can be imported using the `cluster_endpoint_identifier`, e.g.
+//
+// ```sh
+//  $ pulumi import aws:rds/clusterEndpoint:ClusterEndpoint custom_reader aurora-prod-cluster-custom-reader
+// ```
+//
+//  [1]https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/Aurora.Overview.Endpoints.html#Aurora.Endpoints.Cluster
 type ClusterEndpoint struct {
 	pulumi.CustomResourceState
 
@@ -126,17 +136,18 @@ type ClusterEndpoint struct {
 // NewClusterEndpoint registers a new resource with the given unique name, arguments, and options.
 func NewClusterEndpoint(ctx *pulumi.Context,
 	name string, args *ClusterEndpointArgs, opts ...pulumi.ResourceOption) (*ClusterEndpoint, error) {
-	if args == nil || args.ClusterEndpointIdentifier == nil {
-		return nil, errors.New("missing required argument 'ClusterEndpointIdentifier'")
-	}
-	if args == nil || args.ClusterIdentifier == nil {
-		return nil, errors.New("missing required argument 'ClusterIdentifier'")
-	}
-	if args == nil || args.CustomEndpointType == nil {
-		return nil, errors.New("missing required argument 'CustomEndpointType'")
-	}
 	if args == nil {
-		args = &ClusterEndpointArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.ClusterEndpointIdentifier == nil {
+		return nil, errors.New("invalid value for required argument 'ClusterEndpointIdentifier'")
+	}
+	if args.ClusterIdentifier == nil {
+		return nil, errors.New("invalid value for required argument 'ClusterIdentifier'")
+	}
+	if args.CustomEndpointType == nil {
+		return nil, errors.New("invalid value for required argument 'CustomEndpointType'")
 	}
 	var resource ClusterEndpoint
 	err := ctx.RegisterResource("aws:rds/clusterEndpoint:ClusterEndpoint", name, args, &resource, opts...)
@@ -234,4 +245,43 @@ type ClusterEndpointArgs struct {
 
 func (ClusterEndpointArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*clusterEndpointArgs)(nil)).Elem()
+}
+
+type ClusterEndpointInput interface {
+	pulumi.Input
+
+	ToClusterEndpointOutput() ClusterEndpointOutput
+	ToClusterEndpointOutputWithContext(ctx context.Context) ClusterEndpointOutput
+}
+
+func (ClusterEndpoint) ElementType() reflect.Type {
+	return reflect.TypeOf((*ClusterEndpoint)(nil)).Elem()
+}
+
+func (i ClusterEndpoint) ToClusterEndpointOutput() ClusterEndpointOutput {
+	return i.ToClusterEndpointOutputWithContext(context.Background())
+}
+
+func (i ClusterEndpoint) ToClusterEndpointOutputWithContext(ctx context.Context) ClusterEndpointOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(ClusterEndpointOutput)
+}
+
+type ClusterEndpointOutput struct {
+	*pulumi.OutputState
+}
+
+func (ClusterEndpointOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*ClusterEndpointOutput)(nil)).Elem()
+}
+
+func (o ClusterEndpointOutput) ToClusterEndpointOutput() ClusterEndpointOutput {
+	return o
+}
+
+func (o ClusterEndpointOutput) ToClusterEndpointOutputWithContext(ctx context.Context) ClusterEndpointOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(ClusterEndpointOutput{})
 }

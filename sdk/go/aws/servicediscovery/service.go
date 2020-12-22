@@ -4,6 +4,7 @@
 package servicediscovery
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
@@ -17,8 +18,8 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/ec2"
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/servicediscovery"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/ec2"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/servicediscovery"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -26,8 +27,8 @@ import (
 // 	pulumi.Run(func(ctx *pulumi.Context) error {
 // 		exampleVpc, err := ec2.NewVpc(ctx, "exampleVpc", &ec2.VpcArgs{
 // 			CidrBlock:          pulumi.String("10.0.0.0/16"),
-// 			EnableDnsHostnames: pulumi.Bool(true),
 // 			EnableDnsSupport:   pulumi.Bool(true),
+// 			EnableDnsHostnames: pulumi.Bool(true),
 // 		})
 // 		if err != nil {
 // 			return err
@@ -41,13 +42,13 @@ import (
 // 		}
 // 		_, err = servicediscovery.NewService(ctx, "exampleService", &servicediscovery.ServiceArgs{
 // 			DnsConfig: &servicediscovery.ServiceDnsConfigArgs{
+// 				NamespaceId: examplePrivateDnsNamespace.ID(),
 // 				DnsRecords: servicediscovery.ServiceDnsConfigDnsRecordArray{
 // 					&servicediscovery.ServiceDnsConfigDnsRecordArgs{
 // 						Ttl:  pulumi.Int(10),
 // 						Type: pulumi.String("A"),
 // 					},
 // 				},
-// 				NamespaceId:   examplePrivateDnsNamespace.ID(),
 // 				RoutingPolicy: pulumi.String("MULTIVALUE"),
 // 			},
 // 			HealthCheckCustomConfig: &servicediscovery.ServiceHealthCheckCustomConfigArgs{
@@ -66,7 +67,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/servicediscovery"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/servicediscovery"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -80,13 +81,13 @@ import (
 // 		}
 // 		_, err = servicediscovery.NewService(ctx, "exampleService", &servicediscovery.ServiceArgs{
 // 			DnsConfig: &servicediscovery.ServiceDnsConfigArgs{
+// 				NamespaceId: examplePublicDnsNamespace.ID(),
 // 				DnsRecords: servicediscovery.ServiceDnsConfigDnsRecordArray{
 // 					&servicediscovery.ServiceDnsConfigDnsRecordArgs{
 // 						Ttl:  pulumi.Int(10),
 // 						Type: pulumi.String("A"),
 // 					},
 // 				},
-// 				NamespaceId: examplePublicDnsNamespace.ID(),
 // 			},
 // 			HealthCheckConfig: &servicediscovery.ServiceHealthCheckConfigArgs{
 // 				FailureThreshold: pulumi.Int(10),
@@ -100,6 +101,14 @@ import (
 // 		return nil
 // 	})
 // }
+// ```
+//
+// ## Import
+//
+// Service Discovery Service can be imported using the service ID, e.g.
+//
+// ```sh
+//  $ pulumi import aws:servicediscovery/service:Service example 0123456789
 // ```
 type Service struct {
 	pulumi.CustomResourceState
@@ -128,6 +137,7 @@ func NewService(ctx *pulumi.Context,
 	if args == nil {
 		args = &ServiceArgs{}
 	}
+
 	var resource Service
 	err := ctx.RegisterResource("aws:servicediscovery/service:Service", name, args, &resource, opts...)
 	if err != nil {
@@ -228,4 +238,43 @@ type ServiceArgs struct {
 
 func (ServiceArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*serviceArgs)(nil)).Elem()
+}
+
+type ServiceInput interface {
+	pulumi.Input
+
+	ToServiceOutput() ServiceOutput
+	ToServiceOutputWithContext(ctx context.Context) ServiceOutput
+}
+
+func (Service) ElementType() reflect.Type {
+	return reflect.TypeOf((*Service)(nil)).Elem()
+}
+
+func (i Service) ToServiceOutput() ServiceOutput {
+	return i.ToServiceOutputWithContext(context.Background())
+}
+
+func (i Service) ToServiceOutputWithContext(ctx context.Context) ServiceOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(ServiceOutput)
+}
+
+type ServiceOutput struct {
+	*pulumi.OutputState
+}
+
+func (ServiceOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*ServiceOutput)(nil)).Elem()
+}
+
+func (o ServiceOutput) ToServiceOutput() ServiceOutput {
+	return o
+}
+
+func (o ServiceOutput) ToServiceOutputWithContext(ctx context.Context) ServiceOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(ServiceOutput{})
 }

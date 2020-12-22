@@ -2,8 +2,7 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 /**
@@ -63,8 +62,7 @@ import * as utilities from "../utilities";
  *     },
  * });
  * const example = new aws.msk.Cluster("example", {
- *     clusterName: "example",
- *     kafkaVersion: "2.1.0",
+ *     kafkaVersion: "2.4.1",
  *     numberOfBrokerNodes: 3,
  *     brokerNodeGroupInfo: {
  *         instanceType: "kafka.m5.large",
@@ -111,8 +109,15 @@ import * as utilities from "../utilities";
  *     },
  * });
  * export const zookeeperConnectString = example.zookeeperConnectString;
- * export const bootstrapBrokers = example.bootstrapBrokers;
  * export const bootstrapBrokersTls = example.bootstrapBrokersTls;
+ * ```
+ *
+ * ## Import
+ *
+ * MSK clusters can be imported using the cluster `arn`, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:msk/cluster:Cluster example arn:aws:kafka:us-west-2:123456789012:cluster/example/279c0212-d057-4dba-9aa9-1c4e5a25bfc7-3
  * ```
  */
 export class Cluster extends pulumi.CustomResource {
@@ -151,6 +156,10 @@ export class Cluster extends pulumi.CustomResource {
      * A comma separated list of one or more hostname:port pairs of kafka brokers suitable to boostrap connectivity to the kafka cluster. Only contains value if `clientBroker` encryption in transit is set to `PLAINTEXT` or `TLS_PLAINTEXT`.
      */
     public /*out*/ readonly bootstrapBrokers!: pulumi.Output<string>;
+    /**
+     * A comma separated list of one or more DNS names (or IPs) and TLS port pairs kafka brokers suitable to boostrap connectivity using SASL/SCRAM to the kafka cluster. Only contains value if `clientBroker` encryption in transit is set to `TLS_PLAINTEXT` or `TLS` and `clientAuthentication` is set to `sasl`.
+     */
+    public /*out*/ readonly bootstrapBrokersSaslScram!: pulumi.Output<string>;
     /**
      * A comma separated list of one or more DNS names (or IPs) and TLS port pairs kafka brokers suitable to boostrap connectivity to the kafka cluster. Only contains value if `clientBroker` encryption in transit is set to `TLS_PLAINTEXT` or `TLS`.
      */
@@ -223,6 +232,7 @@ export class Cluster extends pulumi.CustomResource {
             const state = argsOrState as ClusterState | undefined;
             inputs["arn"] = state ? state.arn : undefined;
             inputs["bootstrapBrokers"] = state ? state.bootstrapBrokers : undefined;
+            inputs["bootstrapBrokersSaslScram"] = state ? state.bootstrapBrokersSaslScram : undefined;
             inputs["bootstrapBrokersTls"] = state ? state.bootstrapBrokersTls : undefined;
             inputs["brokerNodeGroupInfo"] = state ? state.brokerNodeGroupInfo : undefined;
             inputs["clientAuthentication"] = state ? state.clientAuthentication : undefined;
@@ -239,16 +249,13 @@ export class Cluster extends pulumi.CustomResource {
             inputs["zookeeperConnectString"] = state ? state.zookeeperConnectString : undefined;
         } else {
             const args = argsOrState as ClusterArgs | undefined;
-            if (!args || args.brokerNodeGroupInfo === undefined) {
+            if ((!args || args.brokerNodeGroupInfo === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'brokerNodeGroupInfo'");
             }
-            if (!args || args.clusterName === undefined) {
-                throw new Error("Missing required property 'clusterName'");
-            }
-            if (!args || args.kafkaVersion === undefined) {
+            if ((!args || args.kafkaVersion === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'kafkaVersion'");
             }
-            if (!args || args.numberOfBrokerNodes === undefined) {
+            if ((!args || args.numberOfBrokerNodes === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'numberOfBrokerNodes'");
             }
             inputs["brokerNodeGroupInfo"] = args ? args.brokerNodeGroupInfo : undefined;
@@ -264,6 +271,7 @@ export class Cluster extends pulumi.CustomResource {
             inputs["tags"] = args ? args.tags : undefined;
             inputs["arn"] = undefined /*out*/;
             inputs["bootstrapBrokers"] = undefined /*out*/;
+            inputs["bootstrapBrokersSaslScram"] = undefined /*out*/;
             inputs["bootstrapBrokersTls"] = undefined /*out*/;
             inputs["currentVersion"] = undefined /*out*/;
             inputs["zookeeperConnectString"] = undefined /*out*/;
@@ -291,6 +299,10 @@ export interface ClusterState {
      * A comma separated list of one or more hostname:port pairs of kafka brokers suitable to boostrap connectivity to the kafka cluster. Only contains value if `clientBroker` encryption in transit is set to `PLAINTEXT` or `TLS_PLAINTEXT`.
      */
     readonly bootstrapBrokers?: pulumi.Input<string>;
+    /**
+     * A comma separated list of one or more DNS names (or IPs) and TLS port pairs kafka brokers suitable to boostrap connectivity using SASL/SCRAM to the kafka cluster. Only contains value if `clientBroker` encryption in transit is set to `TLS_PLAINTEXT` or `TLS` and `clientAuthentication` is set to `sasl`.
+     */
+    readonly bootstrapBrokersSaslScram?: pulumi.Input<string>;
     /**
      * A comma separated list of one or more DNS names (or IPs) and TLS port pairs kafka brokers suitable to boostrap connectivity to the kafka cluster. Only contains value if `clientBroker` encryption in transit is set to `TLS_PLAINTEXT` or `TLS`.
      */
@@ -365,7 +377,7 @@ export interface ClusterArgs {
     /**
      * Name of the MSK cluster.
      */
-    readonly clusterName: pulumi.Input<string>;
+    readonly clusterName?: pulumi.Input<string>;
     /**
      * Configuration block for specifying a MSK Configuration to attach to Kafka brokers. See below.
      */

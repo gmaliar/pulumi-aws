@@ -4,6 +4,7 @@
 package ec2transitgateway
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
@@ -17,7 +18,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/ec2transitgateway"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/ec2transitgateway"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -32,6 +33,14 @@ import (
 // 		return nil
 // 	})
 // }
+// ```
+//
+// ## Import
+//
+// `aws_ec2_transit_gateway` can be imported by using the EC2 Transit Gateway identifier, e.g.
+//
+// ```sh
+//  $ pulumi import aws:ec2transitgateway/transitGateway:TransitGateway example tgw-12345678
 // ```
 type TransitGateway struct {
 	pulumi.CustomResourceState
@@ -68,6 +77,7 @@ func NewTransitGateway(ctx *pulumi.Context,
 	if args == nil {
 		args = &TransitGatewayArgs{}
 	}
+
 	var resource TransitGateway
 	err := ctx.RegisterResource("aws:ec2transitgateway/transitGateway:TransitGateway", name, args, &resource, opts...)
 	if err != nil {
@@ -188,4 +198,43 @@ type TransitGatewayArgs struct {
 
 func (TransitGatewayArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*transitGatewayArgs)(nil)).Elem()
+}
+
+type TransitGatewayInput interface {
+	pulumi.Input
+
+	ToTransitGatewayOutput() TransitGatewayOutput
+	ToTransitGatewayOutputWithContext(ctx context.Context) TransitGatewayOutput
+}
+
+func (TransitGateway) ElementType() reflect.Type {
+	return reflect.TypeOf((*TransitGateway)(nil)).Elem()
+}
+
+func (i TransitGateway) ToTransitGatewayOutput() TransitGatewayOutput {
+	return i.ToTransitGatewayOutputWithContext(context.Background())
+}
+
+func (i TransitGateway) ToTransitGatewayOutputWithContext(ctx context.Context) TransitGatewayOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(TransitGatewayOutput)
+}
+
+type TransitGatewayOutput struct {
+	*pulumi.OutputState
+}
+
+func (TransitGatewayOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*TransitGatewayOutput)(nil)).Elem()
+}
+
+func (o TransitGatewayOutput) ToTransitGatewayOutput() TransitGatewayOutput {
+	return o
+}
+
+func (o TransitGatewayOutput) ToTransitGatewayOutputWithContext(ctx context.Context) TransitGatewayOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(TransitGatewayOutput{})
 }

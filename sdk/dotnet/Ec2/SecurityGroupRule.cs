@@ -42,7 +42,10 @@ namespace Pulumi.Aws.Ec2
     ///             FromPort = 0,
     ///             ToPort = 65535,
     ///             Protocol = "tcp",
-    ///             CidrBlocks = aws_vpc.Example.Cidr_block,
+    ///             CidrBlocks = 
+    ///             {
+    ///                 aws_vpc.Example.Cidr_block,
+    ///             },
     ///             SecurityGroupId = "sg-123456",
     ///         });
     ///     }
@@ -51,7 +54,7 @@ namespace Pulumi.Aws.Ec2
     /// ```
     /// ## Usage with prefix list IDs
     /// 
-    /// Prefix list IDs are manged by AWS internally. Prefix list IDs
+    /// Prefix list IDs are managed by AWS internally. Prefix list IDs
     /// are associated with a prefix list name, or service name, that is linked to a specific region.
     /// Prefix list IDs are exported on VPC Endpoints, so you can use this format:
     /// 
@@ -67,21 +70,60 @@ namespace Pulumi.Aws.Ec2
     ///         var myEndpoint = new Aws.Ec2.VpcEndpoint("myEndpoint", new Aws.Ec2.VpcEndpointArgs
     ///         {
     ///         });
+    ///         // ...
     ///         var allowAll = new Aws.Ec2.SecurityGroupRule("allowAll", new Aws.Ec2.SecurityGroupRuleArgs
     ///         {
-    ///             FromPort = 0,
+    ///             Type = "egress",
+    ///             ToPort = 0,
+    ///             Protocol = "-1",
     ///             PrefixListIds = 
     ///             {
     ///                 myEndpoint.PrefixListId,
     ///             },
-    ///             Protocol = "-1",
+    ///             FromPort = 0,
     ///             SecurityGroupId = "sg-123456",
-    ///             ToPort = 0,
-    ///             Type = "egress",
     ///         });
     ///     }
     /// 
     /// }
+    /// ```
+    /// 
+    /// ## Import
+    /// 
+    /// ### Examples Import an ingress rule in security group `sg-6e616f6d69` for TCP port 8000 with an IPv4 destination CIDR of `10.0.3.0/24`console
+    /// 
+    /// ```sh
+    ///  $ pulumi import aws:ec2/securityGroupRule:SecurityGroupRule ingress sg-6e616f6d69_ingress_tcp_8000_8000_10.0.3.0/24
+    /// ```
+    /// 
+    ///  Import a rule with various IPv4 and IPv6 source CIDR blocksconsole
+    /// 
+    /// ```sh
+    ///  $ pulumi import aws:ec2/securityGroupRule:SecurityGroupRule ingress sg-4973616163_ingress_tcp_100_121_10.1.0.0/16_2001:db8::/48_10.2.0.0/16_2002:db8::/48
+    /// ```
+    /// 
+    ///  Import a rule, applicable to all ports, with a protocol other than TCP/UDP/ICMP/ALL, e.g., Multicast Transport Protocol (MTP), using the IANA protocol number, e.g., 92. console
+    /// 
+    /// ```sh
+    ///  $ pulumi import aws:ec2/securityGroupRule:SecurityGroupRule ingress sg-6777656e646f6c796e_ingress_92_0_65536_10.0.3.0/24_10.0.4.0/24
+    /// ```
+    /// 
+    ///  Import an egress rule with a prefix list ID destinationconsole
+    /// 
+    /// ```sh
+    ///  $ pulumi import aws:ec2/securityGroupRule:SecurityGroupRule egress sg-62726f6479_egress_tcp_8000_8000_pl-6469726b
+    /// ```
+    /// 
+    ///  Import a rule applicable to all protocols and ports with a security group sourceconsole
+    /// 
+    /// ```sh
+    ///  $ pulumi import aws:ec2/securityGroupRule:SecurityGroupRule ingress_rule sg-7472697374616e_ingress_all_0_65536_sg-6176657279
+    /// ```
+    /// 
+    ///  Import a rule that has itself and an IPv6 CIDR block as sourcesconsole
+    /// 
+    /// ```sh
+    ///  $ pulumi import aws:ec2/securityGroupRule:SecurityGroupRule rule_name sg-656c65616e6f72_ingress_tcp_80_80_self_2001:db8::/48
     /// ```
     /// </summary>
     public partial class SecurityGroupRule : Pulumi.CustomResource
@@ -255,7 +297,7 @@ namespace Pulumi.Aws.Ec2
         /// The protocol. If not icmp, icmpv6, tcp, udp, or all use the [protocol number](https://www.iana.org/assignments/protocol-numbers/protocol-numbers.xhtml)
         /// </summary>
         [Input("protocol", required: true)]
-        public Input<string> Protocol { get; set; } = null!;
+        public InputUnion<string, Pulumi.Aws.Ec2.ProtocolType> Protocol { get; set; } = null!;
 
         /// <summary>
         /// The security group to apply this rule to.
@@ -350,7 +392,7 @@ namespace Pulumi.Aws.Ec2
         /// The protocol. If not icmp, icmpv6, tcp, udp, or all use the [protocol number](https://www.iana.org/assignments/protocol-numbers/protocol-numbers.xhtml)
         /// </summary>
         [Input("protocol")]
-        public Input<string>? Protocol { get; set; }
+        public InputUnion<string, Pulumi.Aws.Ec2.ProtocolType>? Protocol { get; set; }
 
         /// <summary>
         /// The security group to apply this rule to.

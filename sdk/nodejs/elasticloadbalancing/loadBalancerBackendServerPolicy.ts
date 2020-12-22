@@ -12,7 +12,7 @@ import * as utilities from "../utilities";
  * ```typescript
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
- * import * as fs from "fs";
+ * import * from "fs";
  *
  * const wu_tang = new aws.elb.LoadBalancer("wu-tang", {
  *     availabilityZones: ["us-east-1a"],
@@ -29,25 +29,25 @@ import * as utilities from "../utilities";
  * });
  * const wu_tang_ca_pubkey_policy = new aws.elb.LoadBalancerPolicy("wu-tang-ca-pubkey-policy", {
  *     loadBalancerName: wu_tang.name,
- *     policyAttributes: [{
- *         name: "PublicKey",
- *         value: fs.readFileSync("wu-tang-pubkey", "utf-8"),
- *     }],
  *     policyName: "wu-tang-ca-pubkey-policy",
  *     policyTypeName: "PublicKeyPolicyType",
+ *     policyAttributes: [{
+ *         name: "PublicKey",
+ *         value: fs.readFileSync("wu-tang-pubkey"),
+ *     }],
  * });
  * const wu_tang_root_ca_backend_auth_policy = new aws.elb.LoadBalancerPolicy("wu-tang-root-ca-backend-auth-policy", {
  *     loadBalancerName: wu_tang.name,
- *     policyAttributes: [{
- *         name: "PublicKeyPolicyName",
- *         value: aws_load_balancer_policy_wu_tang_root_ca_pubkey_policy.policyName,
- *     }],
  *     policyName: "wu-tang-root-ca-backend-auth-policy",
  *     policyTypeName: "BackendServerAuthenticationPolicyType",
+ *     policyAttributes: [{
+ *         name: "PublicKeyPolicyName",
+ *         value: aws_load_balancer_policy["wu-tang-root-ca-pubkey-policy"].policy_name,
+ *     }],
  * });
  * const wu_tang_backend_auth_policies_443 = new aws.elb.LoadBalancerBackendServerPolicy("wu-tang-backend-auth-policies-443", {
- *     instancePort: 443,
  *     loadBalancerName: wu_tang.name,
+ *     instancePort: 443,
  *     policyNames: [wu_tang_root_ca_backend_auth_policy.policyName],
  * });
  * ```
@@ -124,10 +124,10 @@ export class LoadBalancerBackendServerPolicy extends pulumi.CustomResource {
             inputs["policyNames"] = state ? state.policyNames : undefined;
         } else {
             const args = argsOrState as LoadBalancerBackendServerPolicyArgs | undefined;
-            if (!args || args.instancePort === undefined) {
+            if ((!args || args.instancePort === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'instancePort'");
             }
-            if (!args || args.loadBalancerName === undefined) {
+            if ((!args || args.loadBalancerName === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'loadBalancerName'");
             }
             inputs["instancePort"] = args ? args.instancePort : undefined;

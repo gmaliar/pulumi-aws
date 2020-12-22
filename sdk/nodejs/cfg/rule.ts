@@ -2,8 +2,7 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 /**
@@ -20,8 +19,7 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const role = new aws.iam.Role("r", {
- *     assumeRolePolicy: `{
+ * const role = new aws.iam.Role("role", {assumeRolePolicy: `{
  *   "Version": "2012-10-17",
  *   "Statement": [
  *     {
@@ -34,18 +32,16 @@ import * as utilities from "../utilities";
  *     }
  *   ]
  * }
- * `,
+ * `});
+ * const foo = new aws.cfg.Recorder("foo", {roleArn: role.arn});
+ * const rule = new aws.cfg.Rule("rule", {source: {
+ *     owner: "AWS",
+ *     sourceIdentifier: "S3_BUCKET_VERSIONING_ENABLED",
+ * }}, {
+ *     dependsOn: [foo],
  * });
- * const foo = new aws.cfg.Recorder("foo", {
- *     roleArn: role.arn,
- * });
- * const rule = new aws.cfg.Rule("r", {
- *     source: {
- *         owner: "AWS",
- *         sourceIdentifier: "S3_BUCKET_VERSIONING_ENABLED",
- *     },
- * }, { dependsOn: [foo] });
- * const rolePolicy = new aws.iam.RolePolicy("p", {
+ * const rolePolicy = new aws.iam.RolePolicy("rolePolicy", {
+ *     role: role.id,
  *     policy: `{
  *   "Version": "2012-10-17",
  *   "Statement": [
@@ -58,7 +54,6 @@ import * as utilities from "../utilities";
  *   ]
  * }
  * `,
- *     role: role.id,
  * });
  * ```
  * ### Custom Rules
@@ -69,19 +64,33 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const exampleRecorder = new aws.cfg.Recorder("example", {});
- * const exampleFunction = new aws.lambda.Function("example", {});
- * const examplePermission = new aws.lambda.Permission("example", {
+ * const exampleRecorder = new aws.cfg.Recorder("exampleRecorder", {});
+ * // ... other configuration ...
+ * const exampleFunction = new aws.lambda.Function("exampleFunction", {});
+ * // ... other configuration ...
+ * const examplePermission = new aws.lambda.Permission("examplePermission", {
  *     action: "lambda:InvokeFunction",
- *     function: exampleFunction.arn,
+ *     "function": exampleFunction.arn,
  *     principal: "config.amazonaws.com",
  * });
- * const exampleRule = new aws.cfg.Rule("example", {
- *     source: {
- *         owner: "CUSTOM_LAMBDA",
- *         sourceIdentifier: exampleFunction.arn,
- *     },
- * }, { dependsOn: [exampleRecorder, examplePermission] });
+ * // ... other configuration ...
+ * const exampleRule = new aws.cfg.Rule("exampleRule", {source: {
+ *     owner: "CUSTOM_LAMBDA",
+ *     sourceIdentifier: exampleFunction.arn,
+ * }}, {
+ *     dependsOn: [
+ *         exampleRecorder,
+ *         examplePermission,
+ *     ],
+ * });
+ * ```
+ *
+ * ## Import
+ *
+ * Config Rule can be imported using the name, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:cfg/rule:Rule foo example
  * ```
  */
 export class Rule extends pulumi.CustomResource {
@@ -125,8 +134,7 @@ export class Rule extends pulumi.CustomResource {
      */
     public readonly inputParameters!: pulumi.Output<string | undefined>;
     /**
-     * The frequency that you want AWS Config to run evaluations for a rule that
-     * is triggered periodically. If specified, requires `messageType` to be `ScheduledNotification`.
+     * The frequency that you want AWS Config to run evaluations for a rule that is triggered periodically. If specified, requires `messageType` to be `ScheduledNotification`.
      */
     public readonly maximumExecutionFrequency!: pulumi.Output<string | undefined>;
     /**
@@ -142,8 +150,7 @@ export class Rule extends pulumi.CustomResource {
      */
     public readonly scope!: pulumi.Output<outputs.cfg.RuleScope | undefined>;
     /**
-     * Source specifies the rule owner, the rule identifier, and the notifications that cause
-     * the function to evaluate your AWS resources as documented below.
+     * Source specifies the rule owner, the rule identifier, and the notifications that cause the function to evaluate your AWS resources as documented below.
      */
     public readonly source!: pulumi.Output<outputs.cfg.RuleSource>;
     /**
@@ -174,7 +181,7 @@ export class Rule extends pulumi.CustomResource {
             inputs["tags"] = state ? state.tags : undefined;
         } else {
             const args = argsOrState as RuleArgs | undefined;
-            if (!args || args.source === undefined) {
+            if ((!args || args.source === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'source'");
             }
             inputs["description"] = args ? args.description : undefined;
@@ -215,8 +222,7 @@ export interface RuleState {
      */
     readonly inputParameters?: pulumi.Input<string>;
     /**
-     * The frequency that you want AWS Config to run evaluations for a rule that
-     * is triggered periodically. If specified, requires `messageType` to be `ScheduledNotification`.
+     * The frequency that you want AWS Config to run evaluations for a rule that is triggered periodically. If specified, requires `messageType` to be `ScheduledNotification`.
      */
     readonly maximumExecutionFrequency?: pulumi.Input<string>;
     /**
@@ -232,8 +238,7 @@ export interface RuleState {
      */
     readonly scope?: pulumi.Input<inputs.cfg.RuleScope>;
     /**
-     * Source specifies the rule owner, the rule identifier, and the notifications that cause
-     * the function to evaluate your AWS resources as documented below.
+     * Source specifies the rule owner, the rule identifier, and the notifications that cause the function to evaluate your AWS resources as documented below.
      */
     readonly source?: pulumi.Input<inputs.cfg.RuleSource>;
     /**
@@ -255,8 +260,7 @@ export interface RuleArgs {
      */
     readonly inputParameters?: pulumi.Input<string>;
     /**
-     * The frequency that you want AWS Config to run evaluations for a rule that
-     * is triggered periodically. If specified, requires `messageType` to be `ScheduledNotification`.
+     * The frequency that you want AWS Config to run evaluations for a rule that is triggered periodically. If specified, requires `messageType` to be `ScheduledNotification`.
      */
     readonly maximumExecutionFrequency?: pulumi.Input<string>;
     /**
@@ -268,8 +272,7 @@ export interface RuleArgs {
      */
     readonly scope?: pulumi.Input<inputs.cfg.RuleScope>;
     /**
-     * Source specifies the rule owner, the rule identifier, and the notifications that cause
-     * the function to evaluate your AWS resources as documented below.
+     * Source specifies the rule owner, the rule identifier, and the notifications that cause the function to evaluate your AWS resources as documented below.
      */
     readonly source: pulumi.Input<inputs.cfg.RuleSource>;
     /**

@@ -4,6 +4,7 @@
 package cognito
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -20,8 +21,8 @@ import (
 // import (
 // 	"fmt"
 //
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/cognito"
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/iam"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/cognito"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/iam"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -32,16 +33,16 @@ import (
 // 			return err
 // 		}
 // 		groupRole, err := iam.NewRole(ctx, "groupRole", &iam.RoleArgs{
-// 			AssumeRolePolicy: pulumi.String(fmt.Sprintf("%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v", "{\n", "  \"Version\": \"2012-10-17\",\n", "  \"Statement\": [\n", "    {\n", "      \"Sid\": \"\",\n", "      \"Effect\": \"Allow\",\n", "      \"Principal\": {\n", "        \"Federated\": \"cognito-identity.amazonaws.com\"\n", "      },\n", "      \"Action\": \"sts:AssumeRoleWithWebIdentity\",\n", "      \"Condition\": {\n", "        \"StringEquals\": {\n", "          \"cognito-identity.amazonaws.com:aud\": \"us-east-1:12345678-dead-beef-cafe-123456790ab\"\n", "        },\n", "        \"ForAnyValue:StringLike\": {\n", "          \"cognito-identity.amazonaws.com:amr\": \"authenticated\"\n", "        }\n", "      }\n", "    }\n", "  ]\n", "}\n", "\n")),
+// 			AssumeRolePolicy: pulumi.String(fmt.Sprintf("%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v", "{\n", "  \"Version\": \"2012-10-17\",\n", "  \"Statement\": [\n", "    {\n", "      \"Sid\": \"\",\n", "      \"Effect\": \"Allow\",\n", "      \"Principal\": {\n", "        \"Federated\": \"cognito-identity.amazonaws.com\"\n", "      },\n", "      \"Action\": \"sts:AssumeRoleWithWebIdentity\",\n", "      \"Condition\": {\n", "        \"StringEquals\": {\n", "          \"cognito-identity.amazonaws.com:aud\": \"us-east-1:12345678-dead-beef-cafe-123456790ab\"\n", "        },\n", "        \"ForAnyValue:StringLike\": {\n", "          \"cognito-identity.amazonaws.com:amr\": \"authenticated\"\n", "        }\n", "      }\n", "    }\n", "  ]\n", "}\n")),
 // 		})
 // 		if err != nil {
 // 			return err
 // 		}
 // 		_, err = cognito.NewUserGroup(ctx, "mainUserGroup", &cognito.UserGroupArgs{
+// 			UserPoolId:  mainUserPool.ID(),
 // 			Description: pulumi.String("Managed by Pulumi"),
 // 			Precedence:  pulumi.Int(42),
 // 			RoleArn:     groupRole.Arn,
-// 			UserPoolId:  mainUserPool.ID(),
 // 		})
 // 		if err != nil {
 // 			return err
@@ -49,6 +50,14 @@ import (
 // 		return nil
 // 	})
 // }
+// ```
+//
+// ## Import
+//
+// Cognito User Groups can be imported using the `user_pool_id`/`name` attributes concatenated, e.g.
+//
+// ```sh
+//  $ pulumi import aws:cognito/userGroup:UserGroup group us-east-1_vG78M4goG/user-group
 // ```
 type UserGroup struct {
 	pulumi.CustomResourceState
@@ -68,11 +77,12 @@ type UserGroup struct {
 // NewUserGroup registers a new resource with the given unique name, arguments, and options.
 func NewUserGroup(ctx *pulumi.Context,
 	name string, args *UserGroupArgs, opts ...pulumi.ResourceOption) (*UserGroup, error) {
-	if args == nil || args.UserPoolId == nil {
-		return nil, errors.New("missing required argument 'UserPoolId'")
-	}
 	if args == nil {
-		args = &UserGroupArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.UserPoolId == nil {
+		return nil, errors.New("invalid value for required argument 'UserPoolId'")
 	}
 	var resource UserGroup
 	err := ctx.RegisterResource("aws:cognito/userGroup:UserGroup", name, args, &resource, opts...)
@@ -154,4 +164,43 @@ type UserGroupArgs struct {
 
 func (UserGroupArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*userGroupArgs)(nil)).Elem()
+}
+
+type UserGroupInput interface {
+	pulumi.Input
+
+	ToUserGroupOutput() UserGroupOutput
+	ToUserGroupOutputWithContext(ctx context.Context) UserGroupOutput
+}
+
+func (UserGroup) ElementType() reflect.Type {
+	return reflect.TypeOf((*UserGroup)(nil)).Elem()
+}
+
+func (i UserGroup) ToUserGroupOutput() UserGroupOutput {
+	return i.ToUserGroupOutputWithContext(context.Background())
+}
+
+func (i UserGroup) ToUserGroupOutputWithContext(ctx context.Context) UserGroupOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(UserGroupOutput)
+}
+
+type UserGroupOutput struct {
+	*pulumi.OutputState
+}
+
+func (UserGroupOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*UserGroupOutput)(nil)).Elem()
+}
+
+func (o UserGroupOutput) ToUserGroupOutput() UserGroupOutput {
+	return o
+}
+
+func (o UserGroupOutput) ToUserGroupOutputWithContext(ctx context.Context) UserGroupOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(UserGroupOutput{})
 }

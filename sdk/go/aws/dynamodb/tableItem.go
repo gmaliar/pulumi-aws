@@ -4,6 +4,7 @@
 package dynamodb
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -23,30 +24,30 @@ import (
 // import (
 // 	"fmt"
 //
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/dynamodb"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/dynamodb"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
 // func main() {
 // 	pulumi.Run(func(ctx *pulumi.Context) error {
 // 		exampleTable, err := dynamodb.NewTable(ctx, "exampleTable", &dynamodb.TableArgs{
+// 			ReadCapacity:  pulumi.Int(10),
+// 			WriteCapacity: pulumi.Int(10),
+// 			HashKey:       pulumi.String("exampleHashKey"),
 // 			Attributes: dynamodb.TableAttributeArray{
 // 				&dynamodb.TableAttributeArgs{
 // 					Name: pulumi.String("exampleHashKey"),
 // 					Type: pulumi.String("S"),
 // 				},
 // 			},
-// 			HashKey:       pulumi.String("exampleHashKey"),
-// 			ReadCapacity:  pulumi.Int(10),
-// 			WriteCapacity: pulumi.Int(10),
 // 		})
 // 		if err != nil {
 // 			return err
 // 		}
 // 		_, err = dynamodb.NewTableItem(ctx, "exampleTableItem", &dynamodb.TableItemArgs{
-// 			HashKey:   exampleTable.HashKey,
-// 			Item:      pulumi.String(fmt.Sprintf("%v%v%v%v%v%v%v%v", "{\n", "  \"exampleHashKey\": {\"S\": \"something\"},\n", "  \"one\": {\"N\": \"11111\"},\n", "  \"two\": {\"N\": \"22222\"},\n", "  \"three\": {\"N\": \"33333\"},\n", "  \"four\": {\"N\": \"44444\"}\n", "}\n", "\n")),
 // 			TableName: exampleTable.Name,
+// 			HashKey:   exampleTable.HashKey,
+// 			Item:      pulumi.String(fmt.Sprintf("%v%v%v%v%v%v%v", "{\n", "  \"exampleHashKey\": {\"S\": \"something\"},\n", "  \"one\": {\"N\": \"11111\"},\n", "  \"two\": {\"N\": \"22222\"},\n", "  \"three\": {\"N\": \"33333\"},\n", "  \"four\": {\"N\": \"44444\"}\n", "}\n")),
 // 		})
 // 		if err != nil {
 // 			return err
@@ -55,6 +56,10 @@ import (
 // 	})
 // }
 // ```
+//
+// ## Import
+//
+// DynamoDB table items cannot be imported.
 type TableItem struct {
 	pulumi.CustomResourceState
 
@@ -72,17 +77,18 @@ type TableItem struct {
 // NewTableItem registers a new resource with the given unique name, arguments, and options.
 func NewTableItem(ctx *pulumi.Context,
 	name string, args *TableItemArgs, opts ...pulumi.ResourceOption) (*TableItem, error) {
-	if args == nil || args.HashKey == nil {
-		return nil, errors.New("missing required argument 'HashKey'")
-	}
-	if args == nil || args.Item == nil {
-		return nil, errors.New("missing required argument 'Item'")
-	}
-	if args == nil || args.TableName == nil {
-		return nil, errors.New("missing required argument 'TableName'")
-	}
 	if args == nil {
-		args = &TableItemArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.HashKey == nil {
+		return nil, errors.New("invalid value for required argument 'HashKey'")
+	}
+	if args.Item == nil {
+		return nil, errors.New("invalid value for required argument 'Item'")
+	}
+	if args.TableName == nil {
+		return nil, errors.New("invalid value for required argument 'TableName'")
 	}
 	var resource TableItem
 	err := ctx.RegisterResource("aws:dynamodb/tableItem:TableItem", name, args, &resource, opts...)
@@ -160,4 +166,43 @@ type TableItemArgs struct {
 
 func (TableItemArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*tableItemArgs)(nil)).Elem()
+}
+
+type TableItemInput interface {
+	pulumi.Input
+
+	ToTableItemOutput() TableItemOutput
+	ToTableItemOutputWithContext(ctx context.Context) TableItemOutput
+}
+
+func (TableItem) ElementType() reflect.Type {
+	return reflect.TypeOf((*TableItem)(nil)).Elem()
+}
+
+func (i TableItem) ToTableItemOutput() TableItemOutput {
+	return i.ToTableItemOutputWithContext(context.Background())
+}
+
+func (i TableItem) ToTableItemOutputWithContext(ctx context.Context) TableItemOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(TableItemOutput)
+}
+
+type TableItemOutput struct {
+	*pulumi.OutputState
+}
+
+func (TableItemOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*TableItemOutput)(nil)).Elem()
+}
+
+func (o TableItemOutput) ToTableItemOutput() TableItemOutput {
+	return o
+}
+
+func (o TableItemOutput) ToTableItemOutputWithContext(ctx context.Context) TableItemOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(TableItemOutput{})
 }

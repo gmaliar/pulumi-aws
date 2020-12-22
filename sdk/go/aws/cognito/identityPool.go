@@ -4,6 +4,7 @@
 package cognito
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -11,6 +12,14 @@ import (
 )
 
 // Provides an AWS Cognito Identity Pool.
+//
+// ## Import
+//
+// Cognito Identity Pool can be imported using the name, e.g.
+//
+// ```sh
+//  $ pulumi import aws:cognito/identityPool:IdentityPool mypool <identity-pool-id>
+// ```
 type IdentityPool struct {
 	pulumi.CustomResourceState
 
@@ -25,7 +34,7 @@ type IdentityPool struct {
 	DeveloperProviderName pulumi.StringPtrOutput `pulumi:"developerProviderName"`
 	// The Cognito Identity Pool name.
 	IdentityPoolName pulumi.StringOutput `pulumi:"identityPoolName"`
-	// A list of OpendID Connect provider ARNs.
+	// Set of OpendID Connect provider ARNs.
 	OpenidConnectProviderArns pulumi.StringArrayOutput `pulumi:"openidConnectProviderArns"`
 	// An array of Amazon Resource Names (ARNs) of the SAML provider for your identity.
 	SamlProviderArns pulumi.StringArrayOutput `pulumi:"samlProviderArns"`
@@ -38,11 +47,12 @@ type IdentityPool struct {
 // NewIdentityPool registers a new resource with the given unique name, arguments, and options.
 func NewIdentityPool(ctx *pulumi.Context,
 	name string, args *IdentityPoolArgs, opts ...pulumi.ResourceOption) (*IdentityPool, error) {
-	if args == nil || args.IdentityPoolName == nil {
-		return nil, errors.New("missing required argument 'IdentityPoolName'")
-	}
 	if args == nil {
-		args = &IdentityPoolArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.IdentityPoolName == nil {
+		return nil, errors.New("invalid value for required argument 'IdentityPoolName'")
 	}
 	var resource IdentityPool
 	err := ctx.RegisterResource("aws:cognito/identityPool:IdentityPool", name, args, &resource, opts...)
@@ -77,7 +87,7 @@ type identityPoolState struct {
 	DeveloperProviderName *string `pulumi:"developerProviderName"`
 	// The Cognito Identity Pool name.
 	IdentityPoolName *string `pulumi:"identityPoolName"`
-	// A list of OpendID Connect provider ARNs.
+	// Set of OpendID Connect provider ARNs.
 	OpenidConnectProviderArns []string `pulumi:"openidConnectProviderArns"`
 	// An array of Amazon Resource Names (ARNs) of the SAML provider for your identity.
 	SamlProviderArns []string `pulumi:"samlProviderArns"`
@@ -99,7 +109,7 @@ type IdentityPoolState struct {
 	DeveloperProviderName pulumi.StringPtrInput
 	// The Cognito Identity Pool name.
 	IdentityPoolName pulumi.StringPtrInput
-	// A list of OpendID Connect provider ARNs.
+	// Set of OpendID Connect provider ARNs.
 	OpenidConnectProviderArns pulumi.StringArrayInput
 	// An array of Amazon Resource Names (ARNs) of the SAML provider for your identity.
 	SamlProviderArns pulumi.StringArrayInput
@@ -123,7 +133,7 @@ type identityPoolArgs struct {
 	DeveloperProviderName *string `pulumi:"developerProviderName"`
 	// The Cognito Identity Pool name.
 	IdentityPoolName string `pulumi:"identityPoolName"`
-	// A list of OpendID Connect provider ARNs.
+	// Set of OpendID Connect provider ARNs.
 	OpenidConnectProviderArns []string `pulumi:"openidConnectProviderArns"`
 	// An array of Amazon Resource Names (ARNs) of the SAML provider for your identity.
 	SamlProviderArns []string `pulumi:"samlProviderArns"`
@@ -144,7 +154,7 @@ type IdentityPoolArgs struct {
 	DeveloperProviderName pulumi.StringPtrInput
 	// The Cognito Identity Pool name.
 	IdentityPoolName pulumi.StringInput
-	// A list of OpendID Connect provider ARNs.
+	// Set of OpendID Connect provider ARNs.
 	OpenidConnectProviderArns pulumi.StringArrayInput
 	// An array of Amazon Resource Names (ARNs) of the SAML provider for your identity.
 	SamlProviderArns pulumi.StringArrayInput
@@ -156,4 +166,43 @@ type IdentityPoolArgs struct {
 
 func (IdentityPoolArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*identityPoolArgs)(nil)).Elem()
+}
+
+type IdentityPoolInput interface {
+	pulumi.Input
+
+	ToIdentityPoolOutput() IdentityPoolOutput
+	ToIdentityPoolOutputWithContext(ctx context.Context) IdentityPoolOutput
+}
+
+func (IdentityPool) ElementType() reflect.Type {
+	return reflect.TypeOf((*IdentityPool)(nil)).Elem()
+}
+
+func (i IdentityPool) ToIdentityPoolOutput() IdentityPoolOutput {
+	return i.ToIdentityPoolOutputWithContext(context.Background())
+}
+
+func (i IdentityPool) ToIdentityPoolOutputWithContext(ctx context.Context) IdentityPoolOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(IdentityPoolOutput)
+}
+
+type IdentityPoolOutput struct {
+	*pulumi.OutputState
+}
+
+func (IdentityPoolOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*IdentityPoolOutput)(nil)).Elem()
+}
+
+func (o IdentityPoolOutput) ToIdentityPoolOutput() IdentityPoolOutput {
+	return o
+}
+
+func (o IdentityPoolOutput) ToIdentityPoolOutputWithContext(ctx context.Context) IdentityPoolOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(IdentityPoolOutput{})
 }

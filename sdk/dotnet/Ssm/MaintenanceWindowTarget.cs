@@ -24,12 +24,13 @@ namespace Pulumi.Aws.Ssm
     ///     {
     ///         var window = new Aws.Ssm.MaintenanceWindow("window", new Aws.Ssm.MaintenanceWindowArgs
     ///         {
-    ///             Cutoff = 1,
-    ///             Duration = 3,
     ///             Schedule = "cron(0 16 ? * TUE *)",
+    ///             Duration = 3,
+    ///             Cutoff = 1,
     ///         });
     ///         var target1 = new Aws.Ssm.MaintenanceWindowTarget("target1", new Aws.Ssm.MaintenanceWindowTargetArgs
     ///         {
+    ///             WindowId = window.Id,
     ///             Description = "This is a maintenance window target",
     ///             ResourceType = "INSTANCE",
     ///             Targets = 
@@ -43,7 +44,6 @@ namespace Pulumi.Aws.Ssm
     ///                     },
     ///                 },
     ///             },
-    ///             WindowId = window.Id,
     ///         });
     ///     }
     /// 
@@ -62,12 +62,13 @@ namespace Pulumi.Aws.Ssm
     ///     {
     ///         var window = new Aws.Ssm.MaintenanceWindow("window", new Aws.Ssm.MaintenanceWindowArgs
     ///         {
-    ///             Cutoff = 1,
-    ///             Duration = 3,
     ///             Schedule = "cron(0 16 ? * TUE *)",
+    ///             Duration = 3,
+    ///             Cutoff = 1,
     ///         });
     ///         var target1 = new Aws.Ssm.MaintenanceWindowTarget("target1", new Aws.Ssm.MaintenanceWindowTargetArgs
     ///         {
+    ///             WindowId = window.Id,
     ///             Description = "This is a maintenance window target",
     ///             ResourceType = "RESOURCE_GROUP",
     ///             Targets = 
@@ -77,16 +78,22 @@ namespace Pulumi.Aws.Ssm
     ///                     Key = "resource-groups:ResourceTypeFilters",
     ///                     Values = 
     ///                     {
-    ///                         "AWS::EC2::INSTANCE",
-    ///                         "AWS::EC2::VPC",
+    ///                         "AWS::EC2::Instance",
     ///                     },
     ///                 },
     ///             },
-    ///             WindowId = window.Id,
     ///         });
     ///     }
     /// 
     /// }
+    /// ```
+    /// 
+    /// ## Import
+    /// 
+    /// SSM Maintenance Window targets can be imported using `WINDOW_ID/WINDOW_TARGET_ID`, e.g.
+    /// 
+    /// ```sh
+    ///  $ pulumi import aws:ssm/maintenanceWindowTarget:MaintenanceWindowTarget example mw-0c50858d01EXAMPLE/23639a0b-ddbc-4bca-9e72-78d96EXAMPLE
     /// ```
     /// </summary>
     public partial class MaintenanceWindowTarget : Pulumi.CustomResource

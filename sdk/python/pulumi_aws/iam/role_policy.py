@@ -5,30 +5,23 @@
 import warnings
 import pulumi
 import pulumi.runtime
-from typing import Union
-from .. import utilities, tables
+from typing import Any, Mapping, Optional, Sequence, Union
+from .. import _utilities, _tables
+
+__all__ = ['RolePolicy']
 
 
 class RolePolicy(pulumi.CustomResource):
-    name: pulumi.Output[str]
-    """
-    The name of the role policy. If omitted, this provider will
-    assign a random, unique name.
-    """
-    name_prefix: pulumi.Output[str]
-    """
-    Creates a unique name beginning with the specified
-    prefix. Conflicts with `name`.
-    """
-    policy: pulumi.Output[str]
-    """
-    The policy document. This is a JSON formatted string.
-    """
-    role: pulumi.Output[str]
-    """
-    The IAM role to attach to the policy.
-    """
-    def __init__(__self__, resource_name, opts=None, name=None, name_prefix=None, policy=None, role=None, __props__=None, __name__=None, __opts__=None):
+    def __init__(__self__,
+                 resource_name: str,
+                 opts: Optional[pulumi.ResourceOptions] = None,
+                 name: Optional[pulumi.Input[str]] = None,
+                 name_prefix: Optional[pulumi.Input[str]] = None,
+                 policy: Optional[pulumi.Input[str]] = None,
+                 role: Optional[pulumi.Input[str]] = None,
+                 __props__=None,
+                 __name__=None,
+                 __opts__=None):
         """
         Provides an IAM role inline policy.
 
@@ -69,14 +62,22 @@ class RolePolicy(pulumi.CustomResource):
         \"\"\")
         ```
 
+        ## Import
+
+        IAM Role Policies can be imported using the `role_name:role_policy_name`, e.g.
+
+        ```sh
+         $ pulumi import aws:iam/rolePolicy:RolePolicy mypolicy role_of_mypolicy_name:mypolicy_name
+        ```
+
         :param str resource_name: The name of the resource.
         :param pulumi.ResourceOptions opts: Options for the resource.
         :param pulumi.Input[str] name: The name of the role policy. If omitted, this provider will
                assign a random, unique name.
         :param pulumi.Input[str] name_prefix: Creates a unique name beginning with the specified
                prefix. Conflicts with `name`.
-        :param pulumi.Input[dict] policy: The policy document. This is a JSON formatted string.
-        :param pulumi.Input[dict] role: The IAM role to attach to the policy.
+        :param pulumi.Input[str] policy: The policy document. This is a JSON formatted string.
+        :param pulumi.Input[str] role: The IAM role to attach to the policy.
         """
         if __name__ is not None:
             warnings.warn("explicit use of __name__ is deprecated", DeprecationWarning)
@@ -89,7 +90,7 @@ class RolePolicy(pulumi.CustomResource):
         if not isinstance(opts, pulumi.ResourceOptions):
             raise TypeError('Expected resource options to be a ResourceOptions instance')
         if opts.version is None:
-            opts.version = utilities.get_version()
+            opts.version = _utilities.get_version()
         if opts.id is None:
             if __props__ is not None:
                 raise TypeError('__props__ is only valid when passed in combination with a valid opts.id to get an existing resource')
@@ -97,10 +98,10 @@ class RolePolicy(pulumi.CustomResource):
 
             __props__['name'] = name
             __props__['name_prefix'] = name_prefix
-            if policy is None:
+            if policy is None and not opts.urn:
                 raise TypeError("Missing required property 'policy'")
             __props__['policy'] = policy
-            if role is None:
+            if role is None and not opts.urn:
                 raise TypeError("Missing required property 'role'")
             __props__['role'] = role
         super(RolePolicy, __self__).__init__(
@@ -110,20 +111,26 @@ class RolePolicy(pulumi.CustomResource):
             opts)
 
     @staticmethod
-    def get(resource_name, id, opts=None, name=None, name_prefix=None, policy=None, role=None):
+    def get(resource_name: str,
+            id: pulumi.Input[str],
+            opts: Optional[pulumi.ResourceOptions] = None,
+            name: Optional[pulumi.Input[str]] = None,
+            name_prefix: Optional[pulumi.Input[str]] = None,
+            policy: Optional[pulumi.Input[str]] = None,
+            role: Optional[pulumi.Input[str]] = None) -> 'RolePolicy':
         """
         Get an existing RolePolicy resource's state with the given name, id, and optional extra
         properties used to qualify the lookup.
 
         :param str resource_name: The unique name of the resulting resource.
-        :param str id: The unique provider ID of the resource to lookup.
+        :param pulumi.Input[str] id: The unique provider ID of the resource to lookup.
         :param pulumi.ResourceOptions opts: Options for the resource.
         :param pulumi.Input[str] name: The name of the role policy. If omitted, this provider will
                assign a random, unique name.
         :param pulumi.Input[str] name_prefix: Creates a unique name beginning with the specified
                prefix. Conflicts with `name`.
-        :param pulumi.Input[dict] policy: The policy document. This is a JSON formatted string.
-        :param pulumi.Input[dict] role: The IAM role to attach to the policy.
+        :param pulumi.Input[str] policy: The policy document. This is a JSON formatted string.
+        :param pulumi.Input[str] role: The IAM role to attach to the policy.
         """
         opts = pulumi.ResourceOptions.merge(opts, pulumi.ResourceOptions(id=id))
 
@@ -135,8 +142,43 @@ class RolePolicy(pulumi.CustomResource):
         __props__["role"] = role
         return RolePolicy(resource_name, opts=opts, __props__=__props__)
 
+    @property
+    @pulumi.getter
+    def name(self) -> pulumi.Output[str]:
+        """
+        The name of the role policy. If omitted, this provider will
+        assign a random, unique name.
+        """
+        return pulumi.get(self, "name")
+
+    @property
+    @pulumi.getter(name="namePrefix")
+    def name_prefix(self) -> pulumi.Output[Optional[str]]:
+        """
+        Creates a unique name beginning with the specified
+        prefix. Conflicts with `name`.
+        """
+        return pulumi.get(self, "name_prefix")
+
+    @property
+    @pulumi.getter
+    def policy(self) -> pulumi.Output[str]:
+        """
+        The policy document. This is a JSON formatted string.
+        """
+        return pulumi.get(self, "policy")
+
+    @property
+    @pulumi.getter
+    def role(self) -> pulumi.Output[str]:
+        """
+        The IAM role to attach to the policy.
+        """
+        return pulumi.get(self, "role")
+
     def translate_output_property(self, prop):
-        return tables._CAMEL_TO_SNAKE_CASE_TABLE.get(prop) or prop
+        return _tables.CAMEL_TO_SNAKE_CASE_TABLE.get(prop) or prop
 
     def translate_input_property(self, prop):
-        return tables._SNAKE_TO_CAMEL_CASE_TABLE.get(prop) or prop
+        return _tables.SNAKE_TO_CAMEL_CASE_TABLE.get(prop) or prop
+

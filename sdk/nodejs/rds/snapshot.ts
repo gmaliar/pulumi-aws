@@ -15,20 +15,28 @@ import * as utilities from "../utilities";
  *
  * const bar = new aws.rds.Instance("bar", {
  *     allocatedStorage: 10,
- *     backupRetentionPeriod: 0,
  *     engine: "MySQL",
  *     engineVersion: "5.6.21",
  *     instanceClass: "db.t2.micro",
- *     maintenanceWindow: "Fri:09:00-Fri:09:30",
  *     name: "baz",
- *     parameterGroupName: "default.mysql5.6",
  *     password: "barbarbarbar",
  *     username: "foo",
+ *     maintenanceWindow: "Fri:09:00-Fri:09:30",
+ *     backupRetentionPeriod: 0,
+ *     parameterGroupName: "default.mysql5.6",
  * });
  * const test = new aws.rds.Snapshot("test", {
  *     dbInstanceIdentifier: bar.id,
  *     dbSnapshotIdentifier: "testsnapshot1234",
  * });
+ * ```
+ *
+ * ## Import
+ *
+ * `aws_db_snapshot` can be imported by using the snapshot identifier, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:rds/snapshot:Snapshot example my-snapshot
  * ```
  */
 export class Snapshot extends pulumi.CustomResource {
@@ -168,10 +176,10 @@ export class Snapshot extends pulumi.CustomResource {
             inputs["vpcId"] = state ? state.vpcId : undefined;
         } else {
             const args = argsOrState as SnapshotArgs | undefined;
-            if (!args || args.dbInstanceIdentifier === undefined) {
+            if ((!args || args.dbInstanceIdentifier === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'dbInstanceIdentifier'");
             }
-            if (!args || args.dbSnapshotIdentifier === undefined) {
+            if ((!args || args.dbSnapshotIdentifier === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'dbSnapshotIdentifier'");
             }
             inputs["dbInstanceIdentifier"] = args ? args.dbInstanceIdentifier : undefined;

@@ -13,13 +13,19 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const exampleVpc = new aws.ec2.Vpc("example", {
- *     cidrBlock: "10.0.0.0/16",
- * });
- * const examplePrivateDnsNamespace = new aws.servicediscovery.PrivateDnsNamespace("example", {
+ * const exampleVpc = new aws.ec2.Vpc("exampleVpc", {cidrBlock: "10.0.0.0/16"});
+ * const examplePrivateDnsNamespace = new aws.servicediscovery.PrivateDnsNamespace("examplePrivateDnsNamespace", {
  *     description: "example",
  *     vpc: exampleVpc.id,
  * });
+ * ```
+ *
+ * ## Import
+ *
+ * Service Discovery Private DNS Namespace can be imported using the namespace ID and VPC ID, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:servicediscovery/privateDnsNamespace:PrivateDnsNamespace example 0123456789:vpc-123345
  * ```
  */
 export class PrivateDnsNamespace extends pulumi.CustomResource {
@@ -95,7 +101,7 @@ export class PrivateDnsNamespace extends pulumi.CustomResource {
             inputs["vpc"] = state ? state.vpc : undefined;
         } else {
             const args = argsOrState as PrivateDnsNamespaceArgs | undefined;
-            if (!args || args.vpc === undefined) {
+            if ((!args || args.vpc === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'vpc'");
             }
             inputs["description"] = args ? args.description : undefined;

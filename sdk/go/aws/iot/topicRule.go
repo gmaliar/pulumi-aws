@@ -4,6 +4,7 @@
 package iot
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -18,9 +19,9 @@ import (
 // import (
 // 	"fmt"
 //
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/iam"
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/iot"
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/sns"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/iam"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/iot"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/sns"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -35,7 +36,7 @@ import (
 // 			return err
 // 		}
 // 		role, err := iam.NewRole(ctx, "role", &iam.RoleArgs{
-// 			AssumeRolePolicy: pulumi.String(fmt.Sprintf("%v%v%v%v%v%v%v%v%v%v%v%v%v", "{\n", "  \"Version\": \"2012-10-17\",\n", "  \"Statement\": [\n", "    {\n", "      \"Effect\": \"Allow\",\n", "      \"Principal\": {\n", "        \"Service\": \"iot.amazonaws.com\"\n", "      },\n", "      \"Action\": \"sts:AssumeRole\"\n", "    }\n", "  ]\n", "}\n", "\n")),
+// 			AssumeRolePolicy: pulumi.String(fmt.Sprintf("%v%v%v%v%v%v%v%v%v%v%v%v", "{\n", "  \"Version\": \"2012-10-17\",\n", "  \"Statement\": [\n", "    {\n", "      \"Effect\": \"Allow\",\n", "      \"Principal\": {\n", "        \"Service\": \"iot.amazonaws.com\"\n", "      },\n", "      \"Action\": \"sts:AssumeRole\"\n", "    }\n", "  ]\n", "}\n")),
 // 		})
 // 		if err != nil {
 // 			return err
@@ -43,6 +44,13 @@ import (
 // 		_, err = iot.NewTopicRule(ctx, "rule", &iot.TopicRuleArgs{
 // 			Description: pulumi.String("Example rule"),
 // 			Enabled:     pulumi.Bool(true),
+// 			Sql:         pulumi.String("SELECT * FROM 'topic/test'"),
+// 			SqlVersion:  pulumi.String("2016-03-23"),
+// 			Sns: &iot.TopicRuleSnsArgs{
+// 				MessageFormat: pulumi.String("RAW"),
+// 				RoleArn:       role.Arn,
+// 				TargetArn:     mytopic.Arn,
+// 			},
 // 			ErrorAction: &iot.TopicRuleErrorActionArgs{
 // 				Sns: &iot.TopicRuleErrorActionSnsArgs{
 // 					MessageFormat: pulumi.String("RAW"),
@@ -50,22 +58,15 @@ import (
 // 					TargetArn:     myerrortopic.Arn,
 // 				},
 // 			},
-// 			Sns: &iot.TopicRuleSnsArgs{
-// 				MessageFormat: pulumi.String("RAW"),
-// 				RoleArn:       role.Arn,
-// 				TargetArn:     mytopic.Arn,
-// 			},
-// 			Sql:        pulumi.String("SELECT * FROM 'topic/test'"),
-// 			SqlVersion: pulumi.String("2016-03-23"),
 // 		})
 // 		if err != nil {
 // 			return err
 // 		}
 // 		_, err = iam.NewRolePolicy(ctx, "iamPolicyForLambda", &iam.RolePolicyArgs{
-// 			Policy: mytopic.Arn.ApplyT(func(arn string) (string, error) {
-// 				return fmt.Sprintf("%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v", "{\n", "  \"Version\": \"2012-10-17\",\n", "  \"Statement\": [\n", "    {\n", "        \"Effect\": \"Allow\",\n", "        \"Action\": [\n", "            \"sns:Publish\"\n", "        ],\n", "        \"Resource\": \"", arn, "\"\n", "    }\n", "  ]\n", "}\n", "\n"), nil
-// 			}).(pulumi.StringOutput),
 // 			Role: role.ID(),
+// 			Policy: mytopic.Arn.ApplyT(func(arn string) (string, error) {
+// 				return fmt.Sprintf("%v%v%v%v%v%v%v%v%v%v%v%v%v%v", "{\n", "  \"Version\": \"2012-10-17\",\n", "  \"Statement\": [\n", "    {\n", "        \"Effect\": \"Allow\",\n", "        \"Action\": [\n", "            \"sns:Publish\"\n", "        ],\n", "        \"Resource\": \"", arn, "\"\n", "    }\n", "  ]\n", "}\n"), nil
+// 			}).(pulumi.StringOutput),
 // 		})
 // 		if err != nil {
 // 			return err
@@ -73,6 +74,14 @@ import (
 // 		return nil
 // 	})
 // }
+// ```
+//
+// ## Import
+//
+// IoT Topic Rules can be imported using the `name`, e.g.
+//
+// ```sh
+//  $ pulumi import aws:iot/topicRule:TopicRule rule <name>
 // ```
 type TopicRule struct {
 	pulumi.CustomResourceState
@@ -113,17 +122,18 @@ type TopicRule struct {
 // NewTopicRule registers a new resource with the given unique name, arguments, and options.
 func NewTopicRule(ctx *pulumi.Context,
 	name string, args *TopicRuleArgs, opts ...pulumi.ResourceOption) (*TopicRule, error) {
-	if args == nil || args.Enabled == nil {
-		return nil, errors.New("missing required argument 'Enabled'")
-	}
-	if args == nil || args.Sql == nil {
-		return nil, errors.New("missing required argument 'Sql'")
-	}
-	if args == nil || args.SqlVersion == nil {
-		return nil, errors.New("missing required argument 'SqlVersion'")
-	}
 	if args == nil {
-		args = &TopicRuleArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.Enabled == nil {
+		return nil, errors.New("invalid value for required argument 'Enabled'")
+	}
+	if args.Sql == nil {
+		return nil, errors.New("invalid value for required argument 'Sql'")
+	}
+	if args.SqlVersion == nil {
+		return nil, errors.New("invalid value for required argument 'SqlVersion'")
 	}
 	var resource TopicRule
 	err := ctx.RegisterResource("aws:iot/topicRule:TopicRule", name, args, &resource, opts...)
@@ -285,4 +295,43 @@ type TopicRuleArgs struct {
 
 func (TopicRuleArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*topicRuleArgs)(nil)).Elem()
+}
+
+type TopicRuleInput interface {
+	pulumi.Input
+
+	ToTopicRuleOutput() TopicRuleOutput
+	ToTopicRuleOutputWithContext(ctx context.Context) TopicRuleOutput
+}
+
+func (TopicRule) ElementType() reflect.Type {
+	return reflect.TypeOf((*TopicRule)(nil)).Elem()
+}
+
+func (i TopicRule) ToTopicRuleOutput() TopicRuleOutput {
+	return i.ToTopicRuleOutputWithContext(context.Background())
+}
+
+func (i TopicRule) ToTopicRuleOutputWithContext(ctx context.Context) TopicRuleOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(TopicRuleOutput)
+}
+
+type TopicRuleOutput struct {
+	*pulumi.OutputState
+}
+
+func (TopicRuleOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*TopicRuleOutput)(nil)).Elem()
+}
+
+func (o TopicRuleOutput) ToTopicRuleOutput() TopicRuleOutput {
+	return o
+}
+
+func (o TopicRuleOutput) ToTopicRuleOutputWithContext(ctx context.Context) TopicRuleOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(TopicRuleOutput{})
 }

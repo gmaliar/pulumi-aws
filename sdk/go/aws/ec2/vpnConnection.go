@@ -4,6 +4,7 @@
 package ec2
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -24,8 +25,8 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/ec2"
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/ec2transitgateway"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/ec2"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/ec2transitgateway"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -61,7 +62,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/ec2"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/ec2"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -88,10 +89,10 @@ import (
 // 			return err
 // 		}
 // 		_, err = ec2.NewVpnConnection(ctx, "main", &ec2.VpnConnectionArgs{
-// 			CustomerGatewayId: customerGateway.ID(),
-// 			StaticRoutesOnly:  pulumi.Bool(true),
-// 			Type:              pulumi.String("ipsec.1"),
 // 			VpnGatewayId:      vpnGateway.ID(),
+// 			CustomerGatewayId: customerGateway.ID(),
+// 			Type:              pulumi.String("ipsec.1"),
+// 			StaticRoutesOnly:  pulumi.Bool(true),
 // 		})
 // 		if err != nil {
 // 			return err
@@ -99,6 +100,14 @@ import (
 // 		return nil
 // 	})
 // }
+// ```
+//
+// ## Import
+//
+// VPN Connections can be imported using the `vpn connection id`, e.g.
+//
+// ```sh
+//  $ pulumi import aws:ec2/vpnConnection:VpnConnection testvpnconnection vpn-40f41529
 // ```
 type VpnConnection struct {
 	pulumi.CustomResourceState
@@ -114,7 +123,7 @@ type VpnConnection struct {
 	StaticRoutesOnly pulumi.BoolOutput `pulumi:"staticRoutesOnly"`
 	// Tags to apply to the connection.
 	Tags pulumi.StringMapOutput `pulumi:"tags"`
-	// When associated with an EC2 Transit Gateway (`transitGatewayId` argument), the attachment ID.
+	// When associated with an EC2 Transit Gateway (`transitGatewayId` argument), the attachment ID. See also the [`ec2.Tag` resource](https://www.terraform.io/docs/providers/aws/r/ec2_tag.html) for tagging the EC2 Transit Gateway VPN Attachment.
 	TransitGatewayAttachmentId pulumi.StringOutput `pulumi:"transitGatewayAttachmentId"`
 	// The ID of the EC2 Transit Gateway.
 	TransitGatewayId pulumi.StringPtrOutput `pulumi:"transitGatewayId"`
@@ -156,14 +165,15 @@ type VpnConnection struct {
 // NewVpnConnection registers a new resource with the given unique name, arguments, and options.
 func NewVpnConnection(ctx *pulumi.Context,
 	name string, args *VpnConnectionArgs, opts ...pulumi.ResourceOption) (*VpnConnection, error) {
-	if args == nil || args.CustomerGatewayId == nil {
-		return nil, errors.New("missing required argument 'CustomerGatewayId'")
-	}
-	if args == nil || args.Type == nil {
-		return nil, errors.New("missing required argument 'Type'")
-	}
 	if args == nil {
-		args = &VpnConnectionArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.CustomerGatewayId == nil {
+		return nil, errors.New("invalid value for required argument 'CustomerGatewayId'")
+	}
+	if args.Type == nil {
+		return nil, errors.New("invalid value for required argument 'Type'")
 	}
 	var resource VpnConnection
 	err := ctx.RegisterResource("aws:ec2/vpnConnection:VpnConnection", name, args, &resource, opts...)
@@ -198,7 +208,7 @@ type vpnConnectionState struct {
 	StaticRoutesOnly *bool `pulumi:"staticRoutesOnly"`
 	// Tags to apply to the connection.
 	Tags map[string]string `pulumi:"tags"`
-	// When associated with an EC2 Transit Gateway (`transitGatewayId` argument), the attachment ID.
+	// When associated with an EC2 Transit Gateway (`transitGatewayId` argument), the attachment ID. See also the [`ec2.Tag` resource](https://www.terraform.io/docs/providers/aws/r/ec2_tag.html) for tagging the EC2 Transit Gateway VPN Attachment.
 	TransitGatewayAttachmentId *string `pulumi:"transitGatewayAttachmentId"`
 	// The ID of the EC2 Transit Gateway.
 	TransitGatewayId *string `pulumi:"transitGatewayId"`
@@ -249,7 +259,7 @@ type VpnConnectionState struct {
 	StaticRoutesOnly pulumi.BoolPtrInput
 	// Tags to apply to the connection.
 	Tags pulumi.StringMapInput
-	// When associated with an EC2 Transit Gateway (`transitGatewayId` argument), the attachment ID.
+	// When associated with an EC2 Transit Gateway (`transitGatewayId` argument), the attachment ID. See also the [`ec2.Tag` resource](https://www.terraform.io/docs/providers/aws/r/ec2_tag.html) for tagging the EC2 Transit Gateway VPN Attachment.
 	TransitGatewayAttachmentId pulumi.StringPtrInput
 	// The ID of the EC2 Transit Gateway.
 	TransitGatewayId pulumi.StringPtrInput
@@ -341,4 +351,43 @@ type VpnConnectionArgs struct {
 
 func (VpnConnectionArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*vpnConnectionArgs)(nil)).Elem()
+}
+
+type VpnConnectionInput interface {
+	pulumi.Input
+
+	ToVpnConnectionOutput() VpnConnectionOutput
+	ToVpnConnectionOutputWithContext(ctx context.Context) VpnConnectionOutput
+}
+
+func (VpnConnection) ElementType() reflect.Type {
+	return reflect.TypeOf((*VpnConnection)(nil)).Elem()
+}
+
+func (i VpnConnection) ToVpnConnectionOutput() VpnConnectionOutput {
+	return i.ToVpnConnectionOutputWithContext(context.Background())
+}
+
+func (i VpnConnection) ToVpnConnectionOutputWithContext(ctx context.Context) VpnConnectionOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(VpnConnectionOutput)
+}
+
+type VpnConnectionOutput struct {
+	*pulumi.OutputState
+}
+
+func (VpnConnectionOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*VpnConnectionOutput)(nil)).Elem()
+}
+
+func (o VpnConnectionOutput) ToVpnConnectionOutput() VpnConnectionOutput {
+	return o
+}
+
+func (o VpnConnectionOutput) ToVpnConnectionOutputWithContext(ctx context.Context) VpnConnectionOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(VpnConnectionOutput{})
 }

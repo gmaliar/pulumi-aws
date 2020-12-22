@@ -32,6 +32,14 @@ namespace Pulumi.Aws.ApiGatewayV2
     /// 
     /// }
     /// ```
+    /// 
+    /// ## Import
+    /// 
+    /// `aws_apigatewayv2_stage` can be imported by using the API identifier and stage name, e.g.
+    /// 
+    /// ```sh
+    ///  $ pulumi import aws:apigatewayv2/stage:Stage example aabbccddee/example-stage
+    /// ```
     /// </summary>
     public partial class Stage : Pulumi.CustomResource
     {
@@ -74,22 +82,21 @@ namespace Pulumi.Aws.ApiGatewayV2
         public Output<Outputs.StageDefaultRouteSettings?> DefaultRouteSettings { get; private set; } = null!;
 
         /// <summary>
-        /// The deployment identifier of the stage. Use the `aws.apigatewayv2.Deployment` resource to configure a deployment.
+        /// The deployment identifier of the stage. Use the [`aws.apigatewayv2.Deployment`](https://www.terraform.io/docs/providers/aws/r/apigatewayv2_deployment.html) resource to configure a deployment.
         /// </summary>
         [Output("deploymentId")]
-        public Output<string?> DeploymentId { get; private set; } = null!;
+        public Output<string> DeploymentId { get; private set; } = null!;
 
         /// <summary>
-        /// The description for the stage.
+        /// The description for the stage. Must be less than or equal to 1024 characters in length.
         /// </summary>
         [Output("description")]
         public Output<string?> Description { get; private set; } = null!;
 
         /// <summary>
-        /// The ARN prefix to be used in an `aws.lambda.Permission`'s `source_arn` attribute
-        /// or in an `aws.iam.Policy` to authorize access to the [`@connections` API](https://docs.aws.amazon.com/apigateway/latest/developerguide/apigateway-how-to-call-websocket-api-connections.html).
+        /// The ARN prefix to be used in an `aws.lambda.Permission` `source_arn` attribute.
+        /// For WebSocket APIs this attribute can additionally be used in an `aws.iam.Policy` to authorize access to the [`@connections` API](https://docs.aws.amazon.com/apigateway/latest/developerguide/apigateway-how-to-call-websocket-api-connections.html).
         /// See the [Amazon API Gateway Developer Guide](https://docs.aws.amazon.com/apigateway/latest/developerguide/apigateway-websocket-control-access-iam.html) for details.
-        /// Set only for WebSocket APIs.
         /// </summary>
         [Output("executionArn")]
         public Output<string> ExecutionArn { get; private set; } = null!;
@@ -102,7 +109,7 @@ namespace Pulumi.Aws.ApiGatewayV2
         public Output<string> InvokeUrl { get; private set; } = null!;
 
         /// <summary>
-        /// The name of the stage.
+        /// The name of the stage. Must be between 1 and 128 characters in length.
         /// </summary>
         [Output("name")]
         public Output<string> Name { get; private set; } = null!;
@@ -204,19 +211,19 @@ namespace Pulumi.Aws.ApiGatewayV2
         public Input<Inputs.StageDefaultRouteSettingsArgs>? DefaultRouteSettings { get; set; }
 
         /// <summary>
-        /// The deployment identifier of the stage. Use the `aws.apigatewayv2.Deployment` resource to configure a deployment.
+        /// The deployment identifier of the stage. Use the [`aws.apigatewayv2.Deployment`](https://www.terraform.io/docs/providers/aws/r/apigatewayv2_deployment.html) resource to configure a deployment.
         /// </summary>
         [Input("deploymentId")]
         public Input<string>? DeploymentId { get; set; }
 
         /// <summary>
-        /// The description for the stage.
+        /// The description for the stage. Must be less than or equal to 1024 characters in length.
         /// </summary>
         [Input("description")]
         public Input<string>? Description { get; set; }
 
         /// <summary>
-        /// The name of the stage.
+        /// The name of the stage. Must be between 1 and 128 characters in length.
         /// </summary>
         [Input("name")]
         public Input<string>? Name { get; set; }
@@ -303,22 +310,21 @@ namespace Pulumi.Aws.ApiGatewayV2
         public Input<Inputs.StageDefaultRouteSettingsGetArgs>? DefaultRouteSettings { get; set; }
 
         /// <summary>
-        /// The deployment identifier of the stage. Use the `aws.apigatewayv2.Deployment` resource to configure a deployment.
+        /// The deployment identifier of the stage. Use the [`aws.apigatewayv2.Deployment`](https://www.terraform.io/docs/providers/aws/r/apigatewayv2_deployment.html) resource to configure a deployment.
         /// </summary>
         [Input("deploymentId")]
         public Input<string>? DeploymentId { get; set; }
 
         /// <summary>
-        /// The description for the stage.
+        /// The description for the stage. Must be less than or equal to 1024 characters in length.
         /// </summary>
         [Input("description")]
         public Input<string>? Description { get; set; }
 
         /// <summary>
-        /// The ARN prefix to be used in an `aws.lambda.Permission`'s `source_arn` attribute
-        /// or in an `aws.iam.Policy` to authorize access to the [`@connections` API](https://docs.aws.amazon.com/apigateway/latest/developerguide/apigateway-how-to-call-websocket-api-connections.html).
+        /// The ARN prefix to be used in an `aws.lambda.Permission` `source_arn` attribute.
+        /// For WebSocket APIs this attribute can additionally be used in an `aws.iam.Policy` to authorize access to the [`@connections` API](https://docs.aws.amazon.com/apigateway/latest/developerguide/apigateway-how-to-call-websocket-api-connections.html).
         /// See the [Amazon API Gateway Developer Guide](https://docs.aws.amazon.com/apigateway/latest/developerguide/apigateway-websocket-control-access-iam.html) for details.
-        /// Set only for WebSocket APIs.
         /// </summary>
         [Input("executionArn")]
         public Input<string>? ExecutionArn { get; set; }
@@ -331,7 +337,7 @@ namespace Pulumi.Aws.ApiGatewayV2
         public Input<string>? InvokeUrl { get; set; }
 
         /// <summary>
-        /// The name of the stage.
+        /// The name of the stage. Must be between 1 and 128 characters in length.
         /// </summary>
         [Input("name")]
         public Input<string>? Name { get; set; }

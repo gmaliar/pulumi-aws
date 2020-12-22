@@ -31,6 +31,14 @@ namespace Pulumi.Aws.Ec2
     /// 
     /// }
     /// ```
+    /// 
+    /// ## Import
+    /// 
+    /// Placement groups can be imported using the `name`, e.g.
+    /// 
+    /// ```sh
+    ///  $ pulumi import aws:ec2/placementGroup:PlacementGroup prod_pg production-placement-group
+    /// ```
     /// </summary>
     public partial class PlacementGroup : Pulumi.CustomResource
     {
@@ -120,7 +128,7 @@ namespace Pulumi.Aws.Ec2
         /// The placement strategy. Can be `"cluster"`, `"partition"` or `"spread"`.
         /// </summary>
         [Input("strategy", required: true)]
-        public Input<string> Strategy { get; set; } = null!;
+        public InputUnion<string, Pulumi.Aws.Ec2.PlacementStrategy> Strategy { get; set; } = null!;
 
         [Input("tags")]
         private InputMap<string>? _tags;
@@ -163,7 +171,7 @@ namespace Pulumi.Aws.Ec2
         /// The placement strategy. Can be `"cluster"`, `"partition"` or `"spread"`.
         /// </summary>
         [Input("strategy")]
-        public Input<string>? Strategy { get; set; }
+        public InputUnion<string, Pulumi.Aws.Ec2.PlacementStrategy>? Strategy { get; set; }
 
         [Input("tags")]
         private InputMap<string>? _tags;

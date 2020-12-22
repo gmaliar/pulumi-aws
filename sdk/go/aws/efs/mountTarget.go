@@ -4,6 +4,7 @@
 package efs
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -18,8 +19,8 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/ec2"
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/efs"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/ec2"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/efs"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -32,15 +33,15 @@ import (
 // 			return err
 // 		}
 // 		alphaSubnet, err := ec2.NewSubnet(ctx, "alphaSubnet", &ec2.SubnetArgs{
+// 			VpcId:            foo.ID(),
 // 			AvailabilityZone: pulumi.String("us-west-2a"),
 // 			CidrBlock:        pulumi.String("10.0.1.0/24"),
-// 			VpcId:            foo.ID(),
 // 		})
 // 		if err != nil {
 // 			return err
 // 		}
 // 		_, err = efs.NewMountTarget(ctx, "alphaMountTarget", &efs.MountTargetArgs{
-// 			FileSystemId: pulumi.String(aws_efs_file_system.Foo.Id),
+// 			FileSystemId: pulumi.Any(aws_efs_file_system.Foo.Id),
 // 			SubnetId:     alphaSubnet.ID(),
 // 		})
 // 		if err != nil {
@@ -49,6 +50,14 @@ import (
 // 		return nil
 // 	})
 // }
+// ```
+//
+// ## Import
+//
+// The EFS mount targets can be imported using the `id`, e.g.
+//
+// ```sh
+//  $ pulumi import aws:efs/mountTarget:MountTarget alpha fsmt-52a643fb
 // ```
 type MountTarget struct {
 	pulumi.CustomResourceState
@@ -82,14 +91,15 @@ type MountTarget struct {
 // NewMountTarget registers a new resource with the given unique name, arguments, and options.
 func NewMountTarget(ctx *pulumi.Context,
 	name string, args *MountTargetArgs, opts ...pulumi.ResourceOption) (*MountTarget, error) {
-	if args == nil || args.FileSystemId == nil {
-		return nil, errors.New("missing required argument 'FileSystemId'")
-	}
-	if args == nil || args.SubnetId == nil {
-		return nil, errors.New("missing required argument 'SubnetId'")
-	}
 	if args == nil {
-		args = &MountTargetArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.FileSystemId == nil {
+		return nil, errors.New("invalid value for required argument 'FileSystemId'")
+	}
+	if args.SubnetId == nil {
+		return nil, errors.New("invalid value for required argument 'SubnetId'")
 	}
 	var resource MountTarget
 	err := ctx.RegisterResource("aws:efs/mountTarget:MountTarget", name, args, &resource, opts...)
@@ -199,4 +209,43 @@ type MountTargetArgs struct {
 
 func (MountTargetArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*mountTargetArgs)(nil)).Elem()
+}
+
+type MountTargetInput interface {
+	pulumi.Input
+
+	ToMountTargetOutput() MountTargetOutput
+	ToMountTargetOutputWithContext(ctx context.Context) MountTargetOutput
+}
+
+func (MountTarget) ElementType() reflect.Type {
+	return reflect.TypeOf((*MountTarget)(nil)).Elem()
+}
+
+func (i MountTarget) ToMountTargetOutput() MountTargetOutput {
+	return i.ToMountTargetOutputWithContext(context.Background())
+}
+
+func (i MountTarget) ToMountTargetOutputWithContext(ctx context.Context) MountTargetOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(MountTargetOutput)
+}
+
+type MountTargetOutput struct {
+	*pulumi.OutputState
+}
+
+func (MountTargetOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*MountTargetOutput)(nil)).Elem()
+}
+
+func (o MountTargetOutput) ToMountTargetOutput() MountTargetOutput {
+	return o
+}
+
+func (o MountTargetOutput) ToMountTargetOutputWithContext(ctx context.Context) MountTargetOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(MountTargetOutput{})
 }

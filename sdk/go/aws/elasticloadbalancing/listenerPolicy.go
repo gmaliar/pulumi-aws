@@ -4,6 +4,7 @@
 package elasticloadbalancing
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -19,7 +20,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/elb"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/elb"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -47,6 +48,8 @@ import (
 // 		}
 // 		_, err = elb.NewLoadBalancerPolicy(ctx, "wu_tang_ssl", &elb.LoadBalancerPolicyArgs{
 // 			LoadBalancerName: wu_tang.Name,
+// 			PolicyName:       pulumi.String("wu-tang-ssl"),
+// 			PolicyTypeName:   pulumi.String("SSLNegotiationPolicyType"),
 // 			PolicyAttributes: elb.LoadBalancerPolicyPolicyAttributeArray{
 // 				&elb.LoadBalancerPolicyPolicyAttributeArgs{
 // 					Name:  pulumi.String("ECDHE-ECDSA-AES128-GCM-SHA256"),
@@ -57,8 +60,6 @@ import (
 // 					Value: pulumi.String("true"),
 // 				},
 // 			},
-// 			PolicyName:     pulumi.String("wu-tang-ssl"),
-// 			PolicyTypeName: pulumi.String("SSLNegotiationPolicyType"),
 // 		})
 // 		if err != nil {
 // 			return err
@@ -85,7 +86,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/elb"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/elb"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -113,14 +114,14 @@ import (
 // 		}
 // 		_, err = elb.NewLoadBalancerPolicy(ctx, "wu_tang_ssl_tls_1_1", &elb.LoadBalancerPolicyArgs{
 // 			LoadBalancerName: wu_tang.Name,
+// 			PolicyName:       pulumi.String("wu-tang-ssl"),
+// 			PolicyTypeName:   pulumi.String("SSLNegotiationPolicyType"),
 // 			PolicyAttributes: elb.LoadBalancerPolicyPolicyAttributeArray{
 // 				&elb.LoadBalancerPolicyPolicyAttributeArgs{
 // 					Name:  pulumi.String("Reference-Security-Policy"),
 // 					Value: pulumi.String("ELBSecurityPolicy-TLS-1-1-2017-01"),
 // 				},
 // 			},
-// 			PolicyName:     pulumi.String("wu-tang-ssl"),
-// 			PolicyTypeName: pulumi.String("SSLNegotiationPolicyType"),
 // 		})
 // 		if err != nil {
 // 			return err
@@ -157,14 +158,15 @@ type ListenerPolicy struct {
 // NewListenerPolicy registers a new resource with the given unique name, arguments, and options.
 func NewListenerPolicy(ctx *pulumi.Context,
 	name string, args *ListenerPolicyArgs, opts ...pulumi.ResourceOption) (*ListenerPolicy, error) {
-	if args == nil || args.LoadBalancerName == nil {
-		return nil, errors.New("missing required argument 'LoadBalancerName'")
-	}
-	if args == nil || args.LoadBalancerPort == nil {
-		return nil, errors.New("missing required argument 'LoadBalancerPort'")
-	}
 	if args == nil {
-		args = &ListenerPolicyArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.LoadBalancerName == nil {
+		return nil, errors.New("invalid value for required argument 'LoadBalancerName'")
+	}
+	if args.LoadBalancerPort == nil {
+		return nil, errors.New("invalid value for required argument 'LoadBalancerPort'")
 	}
 	var resource ListenerPolicy
 	err := ctx.RegisterResource("aws:elasticloadbalancing/listenerPolicy:ListenerPolicy", name, args, &resource, opts...)
@@ -230,4 +232,43 @@ type ListenerPolicyArgs struct {
 
 func (ListenerPolicyArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*listenerPolicyArgs)(nil)).Elem()
+}
+
+type ListenerPolicyInput interface {
+	pulumi.Input
+
+	ToListenerPolicyOutput() ListenerPolicyOutput
+	ToListenerPolicyOutputWithContext(ctx context.Context) ListenerPolicyOutput
+}
+
+func (ListenerPolicy) ElementType() reflect.Type {
+	return reflect.TypeOf((*ListenerPolicy)(nil)).Elem()
+}
+
+func (i ListenerPolicy) ToListenerPolicyOutput() ListenerPolicyOutput {
+	return i.ToListenerPolicyOutputWithContext(context.Background())
+}
+
+func (i ListenerPolicy) ToListenerPolicyOutputWithContext(ctx context.Context) ListenerPolicyOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(ListenerPolicyOutput)
+}
+
+type ListenerPolicyOutput struct {
+	*pulumi.OutputState
+}
+
+func (ListenerPolicyOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*ListenerPolicyOutput)(nil)).Elem()
+}
+
+func (o ListenerPolicyOutput) ToListenerPolicyOutput() ListenerPolicyOutput {
+	return o
+}
+
+func (o ListenerPolicyOutput) ToListenerPolicyOutputWithContext(ctx context.Context) ListenerPolicyOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(ListenerPolicyOutput{})
 }

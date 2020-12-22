@@ -4,6 +4,7 @@
 package ec2transitgateway
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -19,7 +20,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/ec2transitgateway"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/ec2transitgateway"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -27,8 +28,8 @@ import (
 // 	pulumi.Run(func(ctx *pulumi.Context) error {
 // 		_, err := ec2transitgateway.NewRoute(ctx, "example", &ec2transitgateway.RouteArgs{
 // 			DestinationCidrBlock:       pulumi.String("0.0.0.0/0"),
-// 			TransitGatewayAttachmentId: pulumi.String(aws_ec2_transit_gateway_vpc_attachment.Example.Id),
-// 			TransitGatewayRouteTableId: pulumi.String(aws_ec2_transit_gateway.Example.Association_default_route_table_id),
+// 			TransitGatewayAttachmentId: pulumi.Any(aws_ec2_transit_gateway_vpc_attachment.Example.Id),
+// 			TransitGatewayRouteTableId: pulumi.Any(aws_ec2_transit_gateway.Example.Association_default_route_table_id),
 // 		})
 // 		if err != nil {
 // 			return err
@@ -43,16 +44,16 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/ec2transitgateway"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/ec2transitgateway"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
 // func main() {
 // 	pulumi.Run(func(ctx *pulumi.Context) error {
 // 		_, err := ec2transitgateway.NewRoute(ctx, "example", &ec2transitgateway.RouteArgs{
-// 			Blackhole:                  pulumi.Bool(true),
 // 			DestinationCidrBlock:       pulumi.String("0.0.0.0/0"),
-// 			TransitGatewayRouteTableId: pulumi.String(aws_ec2_transit_gateway.Example.Association_default_route_table_id),
+// 			Blackhole:                  pulumi.Bool(true),
+// 			TransitGatewayRouteTableId: pulumi.Any(aws_ec2_transit_gateway.Example.Association_default_route_table_id),
 // 		})
 // 		if err != nil {
 // 			return err
@@ -61,12 +62,20 @@ import (
 // 	})
 // }
 // ```
+//
+// ## Import
+//
+// `aws_ec2_transit_gateway_route` can be imported by using the EC2 Transit Gateway Route Table, an underscore, and the destination, e.g.
+//
+// ```sh
+//  $ pulumi import aws:ec2transitgateway/route:Route example tgw-rtb-12345678_0.0.0.0/0
+// ```
 type Route struct {
 	pulumi.CustomResourceState
 
 	// Indicates whether to drop traffic that matches this route (default to `false`).
 	Blackhole pulumi.BoolPtrOutput `pulumi:"blackhole"`
-	// IPv4 CIDR range used for destination matches. Routing decisions are based on the most specific match.
+	// IPv4 or IPv6 RFC1924 CIDR used for destination matches. Routing decisions are based on the most specific match.
 	DestinationCidrBlock pulumi.StringOutput `pulumi:"destinationCidrBlock"`
 	// Identifier of EC2 Transit Gateway Attachment (required if `blackhole` is set to false).
 	TransitGatewayAttachmentId pulumi.StringPtrOutput `pulumi:"transitGatewayAttachmentId"`
@@ -77,14 +86,15 @@ type Route struct {
 // NewRoute registers a new resource with the given unique name, arguments, and options.
 func NewRoute(ctx *pulumi.Context,
 	name string, args *RouteArgs, opts ...pulumi.ResourceOption) (*Route, error) {
-	if args == nil || args.DestinationCidrBlock == nil {
-		return nil, errors.New("missing required argument 'DestinationCidrBlock'")
-	}
-	if args == nil || args.TransitGatewayRouteTableId == nil {
-		return nil, errors.New("missing required argument 'TransitGatewayRouteTableId'")
-	}
 	if args == nil {
-		args = &RouteArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.DestinationCidrBlock == nil {
+		return nil, errors.New("invalid value for required argument 'DestinationCidrBlock'")
+	}
+	if args.TransitGatewayRouteTableId == nil {
+		return nil, errors.New("invalid value for required argument 'TransitGatewayRouteTableId'")
 	}
 	var resource Route
 	err := ctx.RegisterResource("aws:ec2transitgateway/route:Route", name, args, &resource, opts...)
@@ -110,7 +120,7 @@ func GetRoute(ctx *pulumi.Context,
 type routeState struct {
 	// Indicates whether to drop traffic that matches this route (default to `false`).
 	Blackhole *bool `pulumi:"blackhole"`
-	// IPv4 CIDR range used for destination matches. Routing decisions are based on the most specific match.
+	// IPv4 or IPv6 RFC1924 CIDR used for destination matches. Routing decisions are based on the most specific match.
 	DestinationCidrBlock *string `pulumi:"destinationCidrBlock"`
 	// Identifier of EC2 Transit Gateway Attachment (required if `blackhole` is set to false).
 	TransitGatewayAttachmentId *string `pulumi:"transitGatewayAttachmentId"`
@@ -121,7 +131,7 @@ type routeState struct {
 type RouteState struct {
 	// Indicates whether to drop traffic that matches this route (default to `false`).
 	Blackhole pulumi.BoolPtrInput
-	// IPv4 CIDR range used for destination matches. Routing decisions are based on the most specific match.
+	// IPv4 or IPv6 RFC1924 CIDR used for destination matches. Routing decisions are based on the most specific match.
 	DestinationCidrBlock pulumi.StringPtrInput
 	// Identifier of EC2 Transit Gateway Attachment (required if `blackhole` is set to false).
 	TransitGatewayAttachmentId pulumi.StringPtrInput
@@ -136,7 +146,7 @@ func (RouteState) ElementType() reflect.Type {
 type routeArgs struct {
 	// Indicates whether to drop traffic that matches this route (default to `false`).
 	Blackhole *bool `pulumi:"blackhole"`
-	// IPv4 CIDR range used for destination matches. Routing decisions are based on the most specific match.
+	// IPv4 or IPv6 RFC1924 CIDR used for destination matches. Routing decisions are based on the most specific match.
 	DestinationCidrBlock string `pulumi:"destinationCidrBlock"`
 	// Identifier of EC2 Transit Gateway Attachment (required if `blackhole` is set to false).
 	TransitGatewayAttachmentId *string `pulumi:"transitGatewayAttachmentId"`
@@ -148,7 +158,7 @@ type routeArgs struct {
 type RouteArgs struct {
 	// Indicates whether to drop traffic that matches this route (default to `false`).
 	Blackhole pulumi.BoolPtrInput
-	// IPv4 CIDR range used for destination matches. Routing decisions are based on the most specific match.
+	// IPv4 or IPv6 RFC1924 CIDR used for destination matches. Routing decisions are based on the most specific match.
 	DestinationCidrBlock pulumi.StringInput
 	// Identifier of EC2 Transit Gateway Attachment (required if `blackhole` is set to false).
 	TransitGatewayAttachmentId pulumi.StringPtrInput
@@ -158,4 +168,43 @@ type RouteArgs struct {
 
 func (RouteArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*routeArgs)(nil)).Elem()
+}
+
+type RouteInput interface {
+	pulumi.Input
+
+	ToRouteOutput() RouteOutput
+	ToRouteOutputWithContext(ctx context.Context) RouteOutput
+}
+
+func (Route) ElementType() reflect.Type {
+	return reflect.TypeOf((*Route)(nil)).Elem()
+}
+
+func (i Route) ToRouteOutput() RouteOutput {
+	return i.ToRouteOutputWithContext(context.Background())
+}
+
+func (i Route) ToRouteOutputWithContext(ctx context.Context) RouteOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(RouteOutput)
+}
+
+type RouteOutput struct {
+	*pulumi.OutputState
+}
+
+func (RouteOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*RouteOutput)(nil)).Elem()
+}
+
+func (o RouteOutput) ToRouteOutput() RouteOutput {
+	return o
+}
+
+func (o RouteOutput) ToRouteOutputWithContext(ctx context.Context) RouteOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(RouteOutput{})
 }

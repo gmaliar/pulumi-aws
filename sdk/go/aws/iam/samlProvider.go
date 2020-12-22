@@ -4,6 +4,7 @@
 package iam
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -11,6 +12,14 @@ import (
 )
 
 // Provides an IAM SAML provider.
+//
+// ## Import
+//
+// IAM SAML Providers can be imported using the `arn`, e.g.
+//
+// ```sh
+//  $ pulumi import aws:iam/samlProvider:SamlProvider default arn:aws:iam::123456789012:saml-provider/SAMLADFS
+// ```
 type SamlProvider struct {
 	pulumi.CustomResourceState
 
@@ -27,11 +36,12 @@ type SamlProvider struct {
 // NewSamlProvider registers a new resource with the given unique name, arguments, and options.
 func NewSamlProvider(ctx *pulumi.Context,
 	name string, args *SamlProviderArgs, opts ...pulumi.ResourceOption) (*SamlProvider, error) {
-	if args == nil || args.SamlMetadataDocument == nil {
-		return nil, errors.New("missing required argument 'SamlMetadataDocument'")
-	}
 	if args == nil {
-		args = &SamlProviderArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.SamlMetadataDocument == nil {
+		return nil, errors.New("invalid value for required argument 'SamlMetadataDocument'")
 	}
 	var resource SamlProvider
 	err := ctx.RegisterResource("aws:iam/samlProvider:SamlProvider", name, args, &resource, opts...)
@@ -97,4 +107,43 @@ type SamlProviderArgs struct {
 
 func (SamlProviderArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*samlProviderArgs)(nil)).Elem()
+}
+
+type SamlProviderInput interface {
+	pulumi.Input
+
+	ToSamlProviderOutput() SamlProviderOutput
+	ToSamlProviderOutputWithContext(ctx context.Context) SamlProviderOutput
+}
+
+func (SamlProvider) ElementType() reflect.Type {
+	return reflect.TypeOf((*SamlProvider)(nil)).Elem()
+}
+
+func (i SamlProvider) ToSamlProviderOutput() SamlProviderOutput {
+	return i.ToSamlProviderOutputWithContext(context.Background())
+}
+
+func (i SamlProvider) ToSamlProviderOutputWithContext(ctx context.Context) SamlProviderOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(SamlProviderOutput)
+}
+
+type SamlProviderOutput struct {
+	*pulumi.OutputState
+}
+
+func (SamlProviderOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*SamlProviderOutput)(nil)).Elem()
+}
+
+func (o SamlProviderOutput) ToSamlProviderOutput() SamlProviderOutput {
+	return o
+}
+
+func (o SamlProviderOutput) ToSamlProviderOutputWithContext(ctx context.Context) SamlProviderOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(SamlProviderOutput{})
 }

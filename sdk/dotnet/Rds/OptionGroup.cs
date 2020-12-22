@@ -29,6 +29,7 @@ namespace Pulumi.Aws.Rds
     ///     {
     ///         var example = new Aws.Rds.OptionGroup("example", new Aws.Rds.OptionGroupArgs
     ///         {
+    ///             OptionGroupDescription = "Option Group",
     ///             EngineName = "sqlserver-ee",
     ///             MajorEngineVersion = "11.00",
     ///             Options = 
@@ -62,7 +63,6 @@ namespace Pulumi.Aws.Rds
     ///                     OptionName = "TDE",
     ///                 },
     ///             },
-    ///             OptionGroupDescription = "Option Group",
     ///         });
     ///     }
     /// 
@@ -70,6 +70,14 @@ namespace Pulumi.Aws.Rds
     /// ```
     /// 
     /// &gt; **Note**: Any modifications to the `db_option_group` are set to happen immediately as we default to applying immediately.
+    /// 
+    /// ## Import
+    /// 
+    /// DB Option groups can be imported using the `name`, e.g.
+    /// 
+    /// ```sh
+    ///  $ pulumi import aws:rds/optionGroup:OptionGroup bar mysql-option-group
+    /// ```
     /// </summary>
     public partial class OptionGroup : Pulumi.CustomResource
     {

@@ -29,6 +29,18 @@ namespace Pulumi.Aws.Glacier
     ///         });
     ///         var myArchive = new Aws.Glacier.Vault("myArchive", new Aws.Glacier.VaultArgs
     ///         {
+    ///             Notifications = 
+    ///             {
+    ///                 new Aws.Glacier.Inputs.VaultNotificationArgs
+    ///                 {
+    ///                     SnsTopic = awsSnsTopic.Arn,
+    ///                     Events = 
+    ///                     {
+    ///                         "ArchiveRetrievalCompleted",
+    ///                         "InventoryRetrievalCompleted",
+    ///                     },
+    ///                 },
+    ///             },
     ///             AccessPolicy = @"{
     ///     ""Version"":""2012-10-17"",
     ///     ""Statement"":[
@@ -44,20 +56,7 @@ namespace Pulumi.Aws.Glacier
     ///        }
     ///     ]
     /// }
-    /// 
     /// ",
-    ///             Notifications = 
-    ///             {
-    ///                 new Aws.Glacier.Inputs.VaultNotificationArgs
-    ///                 {
-    ///                     Events = 
-    ///                     {
-    ///                         "ArchiveRetrievalCompleted",
-    ///                         "InventoryRetrievalCompleted",
-    ///                     },
-    ///                     SnsTopic = awsSnsTopic.Arn,
-    ///                 },
-    ///             },
     ///             Tags = 
     ///             {
     ///                 { "Test", "MyArchive" },
@@ -66,6 +65,14 @@ namespace Pulumi.Aws.Glacier
     ///     }
     /// 
     /// }
+    /// ```
+    /// 
+    /// ## Import
+    /// 
+    /// Glacier Vaults can be imported using the `name`, e.g.
+    /// 
+    /// ```sh
+    ///  $ pulumi import aws:glacier/vault:Vault archive my_archive
     /// ```
     /// </summary>
     public partial class Vault : Pulumi.CustomResource

@@ -2,8 +2,7 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 /**
@@ -17,9 +16,7 @@ import * as utilities from "../utilities";
  * import * as aws from "@pulumi/aws";
  *
  * const pool = new aws.cognito.UserPool("pool", {});
- * const client = new aws.cognito.UserPoolClient("client", {
- *     userPoolId: pool.id,
- * });
+ * const client = new aws.cognito.UserPoolClient("client", {userPoolId: pool.id});
  * ```
  * ### Create a user pool client with no SRP authentication
  *
@@ -29,9 +26,9 @@ import * as utilities from "../utilities";
  *
  * const pool = new aws.cognito.UserPool("pool", {});
  * const client = new aws.cognito.UserPoolClient("client", {
- *     explicitAuthFlows: ["ADMIN_NO_SRP_AUTH"],
- *     generateSecret: true,
  *     userPoolId: pool.id,
+ *     generateSecret: true,
+ *     explicitAuthFlows: ["ADMIN_NO_SRP_AUTH"],
  * });
  * ```
  * ### Create a user pool client with pinpoint analytics
@@ -40,11 +37,10 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const current = pulumi.output(aws.getCallerIdentity({ async: true }));
- * const testUserPool = new aws.cognito.UserPool("test", {});
- * const testApp = new aws.pinpoint.App("test", {});
- * const testRole = new aws.iam.Role("test", {
- *     assumeRolePolicy: `{
+ * const current = aws.getCallerIdentity({});
+ * const testUserPool = new aws.cognito.UserPool("testUserPool", {});
+ * const testApp = new aws.pinpoint.App("testApp", {});
+ * const testRole = new aws.iam.Role("testRole", {assumeRolePolicy: `{
  *   "Version": "2012-10-17",
  *   "Statement": [
  *     {
@@ -57,10 +53,10 @@ import * as utilities from "../utilities";
  *     }
  *   ]
  * }
- * `,
- * });
- * const testRolePolicy = new aws.iam.RolePolicy("test", {
- *     policy: pulumi.interpolate`{
+ * `});
+ * const testRolePolicy = new aws.iam.RolePolicy("testRolePolicy", {
+ *     role: testRole.id,
+ *     policy: pulumi.all([current, testApp.applicationId]).apply(([current, applicationId]) => `{
  *   "Version": "2012-10-17",
  *   "Statement": [
  *     {
@@ -69,22 +65,29 @@ import * as utilities from "../utilities";
  *         "mobiletargeting:PutItems"
  *       ],
  *       "Effect": "Allow",
- *       "Resource": "arn:aws:mobiletargeting:*:${current.accountId}:apps/${testApp.applicationId}*"
+ *       "Resource": "arn:aws:mobiletargeting:*:${current.accountId}:apps/${applicationId}*"
  *     }
  *   ]
  * }
- * `,
- *     role: testRole.id,
+ * `),
  * });
- * const testUserPoolClient = new aws.cognito.UserPoolClient("test", {
+ * const testUserPoolClient = new aws.cognito.UserPoolClient("testUserPoolClient", {
+ *     userPoolId: testUserPool.id,
  *     analyticsConfiguration: {
  *         applicationId: testApp.applicationId,
  *         externalId: "some_id",
  *         roleArn: testRole.arn,
  *         userDataShared: true,
  *     },
- *     userPoolId: testUserPool.id,
  * });
+ * ```
+ *
+ * ## Import
+ *
+ * Cognito User Pool Clients can be imported using the `id` of the Cognito User Pool, and the `id` of the Cognito User Pool Client, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:cognito/userPoolClient:UserPoolClient client <user_pool_id>/<user_pool_client_id>
  * ```
  */
 export class UserPoolClient extends pulumi.CustomResource {
@@ -215,7 +218,7 @@ export class UserPoolClient extends pulumi.CustomResource {
             inputs["writeAttributes"] = state ? state.writeAttributes : undefined;
         } else {
             const args = argsOrState as UserPoolClientArgs | undefined;
-            if (!args || args.userPoolId === undefined) {
+            if ((!args || args.userPoolId === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'userPoolId'");
             }
             inputs["allowedOauthFlows"] = args ? args.allowedOauthFlows : undefined;

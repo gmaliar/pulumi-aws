@@ -2,8 +2,7 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 /**
@@ -24,13 +23,11 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const example = new aws.worklink.Fleet("example", {
- *     network: {
- *         securityGroupIds: [aws_security_group_test.id],
- *         subnetIds: [aws_subnet_test.map(v => v.id)],
- *         vpcId: aws_vpc_test.id,
- *     },
- * });
+ * const example = new aws.worklink.Fleet("example", {network: {
+ *     vpcId: aws_vpc.test.id,
+ *     subnetIds: [aws_subnet.test.map(__item => __item.id)],
+ *     securityGroupIds: [aws_security_group.test.id],
+ * }});
  * ```
  *
  * Identity Provider Configuration Usage:
@@ -38,14 +35,20 @@ import * as utilities from "../utilities";
  * ```typescript
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
- * import * as fs from "fs";
+ * import * from "fs";
  *
- * const test = new aws.worklink.Fleet("test", {
- *     identityProvider: {
- *         samlMetadata: fs.readFileSync("saml-metadata.xml", "utf-8"),
- *         type: "SAML",
- *     },
- * });
+ * const test = new aws.worklink.Fleet("test", {identityProvider: {
+ *     type: "SAML",
+ *     samlMetadata: fs.readFileSync("saml-metadata.xml"),
+ * }});
+ * ```
+ *
+ * ## Import
+ *
+ * WorkLink can be imported using the ARN, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:worklink/fleet:Fleet test arn:aws:worklink::123456789012:fleet/example
  * ```
  */
 export class Fleet extends pulumi.CustomResource {
@@ -81,7 +84,7 @@ export class Fleet extends pulumi.CustomResource {
      */
     public /*out*/ readonly arn!: pulumi.Output<string>;
     /**
-     * The ARN of the Amazon Kinesis data stream that receives the audit events.
+     * The ARN of the Amazon Kinesis data stream that receives the audit events. Kinesis data stream name must begin with `"AmazonWorkLink-"`.
      */
     public readonly auditStreamArn!: pulumi.Output<string | undefined>;
     /**
@@ -178,7 +181,7 @@ export interface FleetState {
      */
     readonly arn?: pulumi.Input<string>;
     /**
-     * The ARN of the Amazon Kinesis data stream that receives the audit events.
+     * The ARN of the Amazon Kinesis data stream that receives the audit events. Kinesis data stream name must begin with `"AmazonWorkLink-"`.
      */
     readonly auditStreamArn?: pulumi.Input<string>;
     /**
@@ -224,7 +227,7 @@ export interface FleetState {
  */
 export interface FleetArgs {
     /**
-     * The ARN of the Amazon Kinesis data stream that receives the audit events.
+     * The ARN of the Amazon Kinesis data stream that receives the audit events. Kinesis data stream name must begin with `"AmazonWorkLink-"`.
      */
     readonly auditStreamArn?: pulumi.Input<string>;
     /**

@@ -44,7 +44,6 @@ namespace Pulumi.Aws.Pinpoint
     ///     }
     ///   ]
     /// }
-    /// 
     /// ",
     ///         });
     ///         var stream = new Aws.Pinpoint.EventStream("stream", new Aws.Pinpoint.EventStreamArgs
@@ -55,6 +54,7 @@ namespace Pulumi.Aws.Pinpoint
     ///         });
     ///         var testRolePolicy = new Aws.Iam.RolePolicy("testRolePolicy", new Aws.Iam.RolePolicyArgs
     ///         {
+    ///             Role = testRole.Id,
     ///             Policy = @"{
     ///   ""Version"": ""2012-10-17"",
     ///   ""Statement"": {
@@ -68,13 +68,19 @@ namespace Pulumi.Aws.Pinpoint
     ///     ]
     ///   }
     /// }
-    /// 
     /// ",
-    ///             Role = testRole.Id,
     ///         });
     ///     }
     /// 
     /// }
+    /// ```
+    /// 
+    /// ## Import
+    /// 
+    /// Pinpoint Event Stream can be imported using the `application-id`, e.g.
+    /// 
+    /// ```sh
+    ///  $ pulumi import aws:pinpoint/eventStream:EventStream stream application-id
     /// ```
     /// </summary>
     public partial class EventStream : Pulumi.CustomResource

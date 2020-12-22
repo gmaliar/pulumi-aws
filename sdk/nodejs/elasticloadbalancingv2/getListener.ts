@@ -2,8 +2,7 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 /**
@@ -23,17 +22,16 @@ import * as utilities from "../utilities";
  *
  * const config = new pulumi.Config();
  * const listenerArn = config.require("listenerArn");
- *
- * const listener = pulumi.output(aws.lb.getListener({
+ * const listener = aws.lb.getListener({
  *     arn: listenerArn,
- * }, { async: true }));
- * const selected = pulumi.output(aws.lb.getLoadBalancer({
+ * });
+ * const selected = aws.lb.getLoadBalancer({
  *     name: "default-public",
- * }, { async: true }));
- * const selected443 = selected.apply(selected => aws.lb.getListener({
- *     loadBalancerArn: selected.arn!,
+ * });
+ * const selected443 = selected.then(selected => aws.lb.getListener({
+ *     loadBalancerArn: selected.arn,
  *     port: 443,
- * }, { async: true }));
+ * }));
  * ```
  */
 /** @deprecated aws.elasticloadbalancingv2.getListener has been deprecated in favor of aws.lb.getListener */

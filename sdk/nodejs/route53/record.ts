@@ -2,11 +2,8 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
-
-import {RecordType} from "./index";
 
 /**
  * Provides a Route53 record resource.
@@ -19,11 +16,11 @@ import {RecordType} from "./index";
  * import * as aws from "@pulumi/aws";
  *
  * const www = new aws.route53.Record("www", {
+ *     zoneId: aws_route53_zone.primary.zone_id,
  *     name: "www.example.com",
- *     records: [aws_eip_lb.publicIp],
- *     ttl: 300,
  *     type: "A",
- *     zoneId: aws_route53_zone_primary.zoneId,
+ *     ttl: "300",
+ *     records: [aws_eip.lb.public_ip],
  * });
  * ```
  * ### Weighted routing policy
@@ -34,26 +31,26 @@ import {RecordType} from "./index";
  * import * as aws from "@pulumi/aws";
  *
  * const www_dev = new aws.route53.Record("www-dev", {
+ *     zoneId: aws_route53_zone.primary.zone_id,
  *     name: "www",
- *     records: ["dev.example.com"],
- *     setIdentifier: "dev",
- *     ttl: 5,
  *     type: "CNAME",
+ *     ttl: "5",
  *     weightedRoutingPolicies: [{
  *         weight: 10,
  *     }],
- *     zoneId: aws_route53_zone_primary.zoneId,
+ *     setIdentifier: "dev",
+ *     records: ["dev.example.com"],
  * });
  * const www_live = new aws.route53.Record("www-live", {
+ *     zoneId: aws_route53_zone.primary.zone_id,
  *     name: "www",
- *     records: ["live.example.com"],
- *     setIdentifier: "live",
- *     ttl: 5,
  *     type: "CNAME",
+ *     ttl: "5",
  *     weightedRoutingPolicies: [{
  *         weight: 90,
  *     }],
- *     zoneId: aws_route53_zone_primary.zoneId,
+ *     setIdentifier: "live",
+ *     records: ["live.example.com"],
  * });
  * ```
  * ### Alias record
@@ -77,14 +74,14 @@ import {RecordType} from "./index";
  *     }],
  * });
  * const www = new aws.route53.Record("www", {
- *     aliases: [{
- *         evaluateTargetHealth: true,
- *         name: main.dnsName,
- *         zoneId: main.zoneId,
- *     }],
+ *     zoneId: aws_route53_zone.primary.zone_id,
  *     name: "example.com",
  *     type: "A",
- *     zoneId: aws_route53_zone_primary.zoneId,
+ *     aliases: [{
+ *         name: main.dnsName,
+ *         zoneId: main.zoneId,
+ *         evaluateTargetHealth: true,
+ *     }],
  * });
  * ```
  * ### NS and SOA Record Management
@@ -95,20 +92,34 @@ import {RecordType} from "./index";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const exampleZone = new aws.route53.Zone("example", {});
- * const exampleRecord = new aws.route53.Record("example", {
+ * const exampleZone = new aws.route53.Zone("exampleZone", {});
+ * const exampleRecord = new aws.route53.Record("exampleRecord", {
  *     allowOverwrite: true,
  *     name: "test.example.com",
+ *     ttl: 30,
+ *     type: "NS",
+ *     zoneId: exampleZone.zoneId,
  *     records: [
  *         exampleZone.nameServers[0],
  *         exampleZone.nameServers[1],
  *         exampleZone.nameServers[2],
  *         exampleZone.nameServers[3],
  *     ],
- *     ttl: 30,
- *     type: "NS",
- *     zoneId: exampleZone.zoneId,
  * });
+ * ```
+ *
+ * ## Import
+ *
+ * Route53 Records can be imported using ID of the record, which is the zone identifier, record name, and record type, separated by underscores (`_`). e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:route53/record:Record myrecord Z4KAPRWWNC7JR_dev.example.com_NS
+ * ```
+ *
+ *  If the record also contains a delegated set identifier, it can be appended
+ *
+ * ```sh
+ *  $ pulumi import aws:route53/record:Record myrecord Z4KAPRWWNC7JR_dev.example.com_NS_dev
  * ```
  */
 export class Record extends pulumi.CustomResource {
@@ -230,13 +241,13 @@ export class Record extends pulumi.CustomResource {
             inputs["zoneId"] = state ? state.zoneId : undefined;
         } else {
             const args = argsOrState as RecordArgs | undefined;
-            if (!args || args.name === undefined) {
+            if ((!args || args.name === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'name'");
             }
-            if (!args || args.type === undefined) {
+            if ((!args || args.type === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'type'");
             }
-            if (!args || args.zoneId === undefined) {
+            if ((!args || args.zoneId === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'zoneId'");
             }
             inputs["aliases"] = args ? args.aliases : undefined;
@@ -322,7 +333,7 @@ export interface RecordState {
     /**
      * `PRIMARY` or `SECONDARY`. A `PRIMARY` record will be served if its healthcheck is passing, otherwise the `SECONDARY` will be served. See http://docs.aws.amazon.com/Route53/latest/DeveloperGuide/dns-failover-configuring-options.html#dns-failover-failover-rrsets
      */
-    readonly type?: pulumi.Input<string | RecordType>;
+    readonly type?: pulumi.Input<string | enums.route53.RecordType>;
     /**
      * A block indicating a weighted routing policy. Conflicts with any other routing policy. Documented below.
      */
@@ -385,7 +396,7 @@ export interface RecordArgs {
     /**
      * `PRIMARY` or `SECONDARY`. A `PRIMARY` record will be served if its healthcheck is passing, otherwise the `SECONDARY` will be served. See http://docs.aws.amazon.com/Route53/latest/DeveloperGuide/dns-failover-configuring-options.html#dns-failover-failover-rrsets
      */
-    readonly type: pulumi.Input<string | RecordType>;
+    readonly type: pulumi.Input<string | enums.route53.RecordType>;
     /**
      * A block indicating a weighted routing policy. Conflicts with any other routing policy. Documented below.
      */

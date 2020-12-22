@@ -27,11 +27,19 @@ namespace Pulumi.Aws.RedShift
     ///             ClusterIdentifier = "default",
     ///             DatabaseName = "default",
     ///         });
+    ///         // ...
     ///         var defaultTopic = new Aws.Sns.Topic("defaultTopic", new Aws.Sns.TopicArgs
     ///         {
     ///         });
     ///         var defaultEventSubscription = new Aws.RedShift.EventSubscription("defaultEventSubscription", new Aws.RedShift.EventSubscriptionArgs
     ///         {
+    ///             SnsTopicArn = defaultTopic.Arn,
+    ///             SourceType = "cluster",
+    ///             SourceIds = 
+    ///             {
+    ///                 defaultCluster.Id,
+    ///             },
+    ///             Severity = "INFO",
     ///             EventCategories = 
     ///             {
     ///                 "configuration",
@@ -39,13 +47,6 @@ namespace Pulumi.Aws.RedShift
     ///                 "monitoring",
     ///                 "security",
     ///             },
-    ///             Severity = "INFO",
-    ///             SnsTopicArn = defaultTopic.Arn,
-    ///             SourceIds = 
-    ///             {
-    ///                 defaultCluster.Id,
-    ///             },
-    ///             SourceType = "cluster",
     ///             Tags = 
     ///             {
     ///                 { "Name", "default" },
@@ -62,6 +63,14 @@ namespace Pulumi.Aws.RedShift
     /// * `arn` - Amazon Resource Name (ARN) of the Redshift event notification subscription
     /// * `id` - The name of the Redshift event notification subscription
     /// * `customer_aws_id` - The AWS customer account associated with the Redshift event notification subscription
+    /// 
+    /// ## Import
+    /// 
+    /// Redshift Event Subscriptions can be imported using the `name`, e.g.
+    /// 
+    /// ```sh
+    ///  $ pulumi import aws:redshift/eventSubscription:EventSubscription default redshift-event-sub
+    /// ```
     /// </summary>
     public partial class EventSubscription : Pulumi.CustomResource
     {

@@ -2,8 +2,7 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 /**
@@ -21,14 +20,14 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const bootstrapScript = pulumi.output(aws.s3.getBucketObject({
+ * const bootstrapScript = aws.s3.getBucketObject({
  *     bucket: "ourcorp-deploy-config",
  *     key: "ec2-bootstrap-script.sh",
- * }, { async: true }));
+ * });
  * const example = new aws.ec2.Instance("example", {
- *     ami: "ami-2757f631",
  *     instanceType: "t2.micro",
- *     userData: bootstrapScript.body,
+ *     ami: "ami-2757f631",
+ *     userData: bootstrapScript.then(bootstrapScript => bootstrapScript.body),
  * });
  * ```
  *
@@ -42,16 +41,16 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const lambda = pulumi.output(aws.s3.getBucketObject({
+ * const lambda = aws.s3.getBucketObject({
  *     bucket: "ourcorp-lambda-functions",
  *     key: "hello-world.zip",
- * }, { async: true }));
- * const testLambda = new aws.lambda.Function("test_lambda", {
+ * });
+ * const testLambda = new aws.lambda.Function("testLambda", {
+ *     s3Bucket: lambda.then(lambda => lambda.bucket),
+ *     s3Key: lambda.then(lambda => lambda.key),
+ *     s3ObjectVersion: lambda.then(lambda => lambda.versionId),
+ *     role: aws_iam_role.iam_for_lambda.arn,
  *     handler: "exports.test",
- *     role: aws_iam_role_iam_for_lambda.arn, // (not shown)
- *     s3Bucket: lambda.bucket,
- *     s3Key: lambda.key,
- *     s3ObjectVersion: lambda.versionId!,
  * });
  * ```
  */

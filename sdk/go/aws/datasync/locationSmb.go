@@ -4,6 +4,7 @@
 package datasync
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -20,20 +21,20 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/datasync"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/datasync"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
 // func main() {
 // 	pulumi.Run(func(ctx *pulumi.Context) error {
 // 		_, err := datasync.NewLocationSmb(ctx, "example", &datasync.LocationSmbArgs{
-// 			AgentArns: pulumi.StringArray{
-// 				pulumi.String(aws_datasync_agent.Example.Arn),
-// 			},
-// 			Password:       pulumi.String("ANotGreatPassword"),
 // 			ServerHostname: pulumi.String("smb.example.com"),
 // 			Subdirectory:   pulumi.String("/exported/path"),
 // 			User:           pulumi.String("Guest"),
+// 			Password:       pulumi.String("ANotGreatPassword"),
+// 			AgentArns: pulumi.StringArray{
+// 				pulumi.Any(aws_datasync_agent.Example.Arn),
+// 			},
 // 		})
 // 		if err != nil {
 // 			return err
@@ -41,6 +42,14 @@ import (
 // 		return nil
 // 	})
 // }
+// ```
+//
+// ## Import
+//
+// `aws_datasync_location_smb` can be imported by using the Amazon Resource Name (ARN), e.g.
+//
+// ```sh
+//  $ pulumi import aws:datasync/locationSmb:LocationSmb example arn:aws:datasync:us-east-1:123456789012:location/loc-12345678901234567
 // ```
 type LocationSmb struct {
 	pulumi.CustomResourceState
@@ -69,23 +78,24 @@ type LocationSmb struct {
 // NewLocationSmb registers a new resource with the given unique name, arguments, and options.
 func NewLocationSmb(ctx *pulumi.Context,
 	name string, args *LocationSmbArgs, opts ...pulumi.ResourceOption) (*LocationSmb, error) {
-	if args == nil || args.AgentArns == nil {
-		return nil, errors.New("missing required argument 'AgentArns'")
-	}
-	if args == nil || args.Password == nil {
-		return nil, errors.New("missing required argument 'Password'")
-	}
-	if args == nil || args.ServerHostname == nil {
-		return nil, errors.New("missing required argument 'ServerHostname'")
-	}
-	if args == nil || args.Subdirectory == nil {
-		return nil, errors.New("missing required argument 'Subdirectory'")
-	}
-	if args == nil || args.User == nil {
-		return nil, errors.New("missing required argument 'User'")
-	}
 	if args == nil {
-		args = &LocationSmbArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.AgentArns == nil {
+		return nil, errors.New("invalid value for required argument 'AgentArns'")
+	}
+	if args.Password == nil {
+		return nil, errors.New("invalid value for required argument 'Password'")
+	}
+	if args.ServerHostname == nil {
+		return nil, errors.New("invalid value for required argument 'ServerHostname'")
+	}
+	if args.Subdirectory == nil {
+		return nil, errors.New("invalid value for required argument 'Subdirectory'")
+	}
+	if args.User == nil {
+		return nil, errors.New("invalid value for required argument 'User'")
 	}
 	var resource LocationSmb
 	err := ctx.RegisterResource("aws:datasync/locationSmb:LocationSmb", name, args, &resource, opts...)
@@ -197,4 +207,43 @@ type LocationSmbArgs struct {
 
 func (LocationSmbArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*locationSmbArgs)(nil)).Elem()
+}
+
+type LocationSmbInput interface {
+	pulumi.Input
+
+	ToLocationSmbOutput() LocationSmbOutput
+	ToLocationSmbOutputWithContext(ctx context.Context) LocationSmbOutput
+}
+
+func (LocationSmb) ElementType() reflect.Type {
+	return reflect.TypeOf((*LocationSmb)(nil)).Elem()
+}
+
+func (i LocationSmb) ToLocationSmbOutput() LocationSmbOutput {
+	return i.ToLocationSmbOutputWithContext(context.Background())
+}
+
+func (i LocationSmb) ToLocationSmbOutputWithContext(ctx context.Context) LocationSmbOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(LocationSmbOutput)
+}
+
+type LocationSmbOutput struct {
+	*pulumi.OutputState
+}
+
+func (LocationSmbOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*LocationSmbOutput)(nil)).Elem()
+}
+
+func (o LocationSmbOutput) ToLocationSmbOutput() LocationSmbOutput {
+	return o
+}
+
+func (o LocationSmbOutput) ToLocationSmbOutputWithContext(ctx context.Context) LocationSmbOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(LocationSmbOutput{})
 }

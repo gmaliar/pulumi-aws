@@ -16,13 +16,19 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const main = new aws.ec2.Vpc("main", {
- *     cidrBlock: "10.0.0.0/16",
- * });
- * const secondaryCidr = new aws.ec2.VpcIpv4CidrBlockAssociation("secondary_cidr", {
- *     cidrBlock: "172.2.0.0/16",
+ * const main = new aws.ec2.Vpc("main", {cidrBlock: "10.0.0.0/16"});
+ * const secondaryCidr = new aws.ec2.VpcIpv4CidrBlockAssociation("secondaryCidr", {
  *     vpcId: main.id,
+ *     cidrBlock: "172.2.0.0/16",
  * });
+ * ```
+ *
+ * ## Import
+ *
+ * `aws_vpc_ipv4_cidr_block_association` can be imported by using the VPC CIDR Association ID, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:ec2/vpcIpv4CidrBlockAssociation:VpcIpv4CidrBlockAssociation example vpc-cidr-assoc-xxxxxxxx
  * ```
  */
 export class VpcIpv4CidrBlockAssociation extends pulumi.CustomResource {
@@ -78,10 +84,10 @@ export class VpcIpv4CidrBlockAssociation extends pulumi.CustomResource {
             inputs["vpcId"] = state ? state.vpcId : undefined;
         } else {
             const args = argsOrState as VpcIpv4CidrBlockAssociationArgs | undefined;
-            if (!args || args.cidrBlock === undefined) {
+            if ((!args || args.cidrBlock === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'cidrBlock'");
             }
-            if (!args || args.vpcId === undefined) {
+            if ((!args || args.vpcId === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'vpcId'");
             }
             inputs["cidrBlock"] = args ? args.cidrBlock : undefined;

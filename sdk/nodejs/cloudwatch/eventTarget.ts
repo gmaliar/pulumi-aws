@@ -2,12 +2,13 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 /**
- * Provides a CloudWatch Event Target resource.
+ * Provides an EventBridge Target resource.
+ *
+ * > **Note:** EventBridge was formerly known as CloudWatch Events. The functionality is identical.
  *
  * ## Example Usage
  *
@@ -30,12 +31,10 @@ import * as utilities from "../utilities";
  * }
  * `,
  * });
- * const testStream = new aws.kinesis.Stream("test_stream", {
- *     shardCount: 1,
- * });
+ * const testStream = new aws.kinesis.Stream("testStream", {shardCount: 1});
  * const yada = new aws.cloudwatch.EventTarget("yada", {
- *     arn: testStream.arn,
  *     rule: console.name,
+ *     arn: testStream.arn,
  *     runCommandTargets: [
  *         {
  *             key: "tag:Name",
@@ -54,16 +53,17 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const ssmLifecycleTrust = pulumi.output(aws.iam.getPolicyDocument({
+ * const ssmLifecycleTrust = aws.iam.getPolicyDocument({
  *     statements: [{
  *         actions: ["sts:AssumeRole"],
  *         principals: [{
- *             identifiers: ["events.amazonaws.com"],
  *             type: "Service",
+ *             identifiers: ["events.amazonaws.com"],
  *         }],
  *     }],
- * }, { async: true }));
- * const stopInstance = new aws.ssm.Document("stop_instance", {
+ * });
+ * const stopInstance = new aws.ssm.Document("stopInstance", {
+ *     documentType: "Command",
  *     content: `  {
  *     "schemaVersion": "1.2",
  *     "description": "Stop an instance",
@@ -82,41 +82,36 @@ import * as utilities from "../utilities";
  *     }
  *   }
  * `,
- *     documentType: "Command",
  * });
  * const ssmLifecyclePolicyDocument = stopInstance.arn.apply(arn => aws.iam.getPolicyDocument({
  *     statements: [
  *         {
+ *             effect: "Allow",
  *             actions: ["ssm:SendCommand"],
+ *             resources: ["arn:aws:ec2:eu-west-1:1234567890:instance/*"],
  *             conditions: [{
  *                 test: "StringEquals",
- *                 values: ["*"],
  *                 variable: "ec2:ResourceTag/Terminate",
+ *                 values: ["*"],
  *             }],
- *             effect: "Allow",
- *             resources: ["arn:aws:ec2:eu-west-1:1234567890:instance/*"],
  *         },
  *         {
- *             actions: ["ssm:SendCommand"],
  *             effect: "Allow",
+ *             actions: ["ssm:SendCommand"],
  *             resources: [arn],
  *         },
  *     ],
- * }, { async: true }));
- * const ssmLifecycleRole = new aws.iam.Role("ssm_lifecycle", {
- *     assumeRolePolicy: ssmLifecycleTrust.json,
- * });
- * const ssmLifecyclePolicy = new aws.iam.Policy("ssm_lifecycle", {
- *     policy: ssmLifecyclePolicyDocument.json,
- * });
- * const stopInstancesEventRule = new aws.cloudwatch.EventRule("stop_instances", {
+ * }));
+ * const ssmLifecycleRole = new aws.iam.Role("ssmLifecycleRole", {assumeRolePolicy: ssmLifecycleTrust.then(ssmLifecycleTrust => ssmLifecycleTrust.json)});
+ * const ssmLifecyclePolicy = new aws.iam.Policy("ssmLifecyclePolicy", {policy: ssmLifecyclePolicyDocument.json});
+ * const stopInstancesEventRule = new aws.cloudwatch.EventRule("stopInstancesEventRule", {
  *     description: "Stop instances nightly",
  *     scheduleExpression: "cron(0 0 * * ? *)",
  * });
- * const stopInstancesEventTarget = new aws.cloudwatch.EventTarget("stop_instances", {
+ * const stopInstancesEventTarget = new aws.cloudwatch.EventTarget("stopInstancesEventTarget", {
  *     arn: stopInstance.arn,
- *     roleArn: ssmLifecycleRole.arn,
  *     rule: stopInstancesEventRule.name,
+ *     roleArn: ssmLifecycleRole.arn,
  *     runCommandTargets: [{
  *         key: "tag:Terminate",
  *         values: ["midnight"],
@@ -130,15 +125,15 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const stopInstancesEventRule = new aws.cloudwatch.EventRule("stop_instances", {
+ * const stopInstancesEventRule = new aws.cloudwatch.EventRule("stopInstancesEventRule", {
  *     description: "Stop instances nightly",
  *     scheduleExpression: "cron(0 0 * * ? *)",
  * });
- * const stopInstancesEventTarget = new aws.cloudwatch.EventTarget("stop_instances", {
- *     arn: `arn:aws:ssm:${var_aws_region}::document/AWS-RunShellScript`,
+ * const stopInstancesEventTarget = new aws.cloudwatch.EventTarget("stopInstancesEventTarget", {
+ *     arn: `arn:aws:ssm:${_var.aws_region}::document/AWS-RunShellScript`,
  *     input: "{\"commands\":[\"halt\"]}",
- *     roleArn: aws_iam_role_ssm_lifecycle.arn,
  *     rule: stopInstancesEventRule.name,
+ *     roleArn: aws_iam_role.ssm_lifecycle.arn,
  *     runCommandTargets: [{
  *         key: "tag:Terminate",
  *         values: ["midnight"],
@@ -146,65 +141,58 @@ import * as utilities from "../utilities";
  * });
  * ```
  *
- * ## Example ECS Run Task with Role and Task Override Usage
+ * ## Example Input Transformer Usage - JSON Object
  *
  * ```typescript
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const ecsEvents = new aws.iam.Role("ecs_events", {
- *     assumeRolePolicy: `{
- *   "Version": "2012-10-17",
- *   "Statement": [
- *     {
- *       "Sid": "",
- *       "Effect": "Allow",
- *       "Principal": {
- *         "Service": "events.amazonaws.com"
- *       },
- *       "Action": "sts:AssumeRole"
- *     }
- *   ]
- * }
- * `,
- * });
- * const ecsEventsRunTaskWithAnyRole = new aws.iam.RolePolicy("ecs_events_run_task_with_any_role", {
- *     policy: aws_ecs_task_definition_task_name.arn.apply(arn => `{
- *     "Version": "2012-10-17",
- *     "Statement": [
- *         {
- *             "Effect": "Allow",
- *             "Action": "iam:PassRole",
- *             "Resource": "*"
+ * const exampleEventRule = new aws.cloudwatch.EventRule("exampleEventRule", {});
+ * // ...
+ * const exampleEventTarget = new aws.cloudwatch.EventTarget("exampleEventTarget", {
+ *     arn: aws_lambda_function.example.arn,
+ *     rule: exampleEventRule.id,
+ *     inputTransformer: {
+ *         inputPaths: {
+ *             instance: `$.detail.instance`,
+ *             status: `$.detail.status`,
  *         },
- *         {
- *             "Effect": "Allow",
- *             "Action": "ecs:RunTask",
- *             "Resource": "${arn.replace(/:\d+$/, ":*")}"
- *         }
- *     ]
- * }
- * `),
- *     role: ecsEvents.id,
- * });
- * const ecsScheduledTask = new aws.cloudwatch.EventTarget("ecs_scheduled_task", {
- *     arn: aws_ecs_cluster_cluster_name.arn,
- *     ecsTarget: {
- *         taskCount: 1,
- *         taskDefinitionArn: aws_ecs_task_definition_task_name.arn,
- *     },
- *     input: `{
- *   "containerOverrides": [
- *     {
- *       "name": "name-of-container-to-override",
- *       "command": ["bin/console", "scheduled-task"]
- *     }
- *   ]
+ *         inputTemplate: `{
+ *   "instance_id": <instance>,
+ *   "instance_status": <status>
  * }
  * `,
- *     roleArn: ecsEvents.arn,
- *     rule: aws_cloudwatch_event_rule_every_hour.name,
+ *     },
  * });
+ * ```
+ *
+ * ## Example Input Transformer Usage - Simple String
+ *
+ * ```typescript
+ * import * as pulumi from "@pulumi/pulumi";
+ * import * as aws from "@pulumi/aws";
+ *
+ * const exampleEventRule = new aws.cloudwatch.EventRule("exampleEventRule", {});
+ * // ...
+ * const exampleEventTarget = new aws.cloudwatch.EventTarget("exampleEventTarget", {
+ *     arn: aws_lambda_function.example.arn,
+ *     rule: exampleEventRule.id,
+ *     inputTransformer: {
+ *         inputPaths: {
+ *             instance: `$.detail.instance`,
+ *             status: `$.detail.status`,
+ *         },
+ *         inputTemplate: "\"<instance> is in state <status>\"",
+ *     },
+ * });
+ * ```
+ *
+ * ## Import
+ *
+ * EventBridge Targets can be imported using `event_bus_name/rule-name/target-id` (if you omit `event_bus_name`, the `default` event bus will be used).
+ *
+ * ```sh
+ *  $ pulumi import aws:cloudwatch/eventTarget:EventTarget test-event-target rule-name/target-id
  * ```
  */
 export class EventTarget extends pulumi.CustomResource {
@@ -248,16 +236,19 @@ export class EventTarget extends pulumi.CustomResource {
      */
     public readonly ecsTarget!: pulumi.Output<outputs.cloudwatch.EventTargetEcsTarget | undefined>;
     /**
-     * Valid JSON text passed to the target.
+     * The event bus to associate with the rule. If you omit this, the `default` event bus is used.
+     */
+    public readonly eventBusName!: pulumi.Output<string | undefined>;
+    /**
+     * Valid JSON text passed to the target. Conflicts with `inputPath` and `inputTransformer`.
      */
     public readonly input!: pulumi.Output<string | undefined>;
     /**
-     * The value of the [JSONPath](http://goessner.net/articles/JsonPath/)
-     * that is used for extracting part of the matched event when passing it to the target.
+     * The value of the [JSONPath](http://goessner.net/articles/JsonPath/) that is used for extracting part of the matched event when passing it to the target. Conflicts with `input` and `inputTransformer`.
      */
     public readonly inputPath!: pulumi.Output<string | undefined>;
     /**
-     * Parameters used when you are providing a custom input to a target based on certain event data.
+     * Parameters used when you are providing a custom input to a target based on certain event data. Conflicts with `input` and `inputPath`.
      */
     public readonly inputTransformer!: pulumi.Output<outputs.cloudwatch.EventTargetInputTransformer | undefined>;
     /**
@@ -300,6 +291,7 @@ export class EventTarget extends pulumi.CustomResource {
             inputs["arn"] = state ? state.arn : undefined;
             inputs["batchTarget"] = state ? state.batchTarget : undefined;
             inputs["ecsTarget"] = state ? state.ecsTarget : undefined;
+            inputs["eventBusName"] = state ? state.eventBusName : undefined;
             inputs["input"] = state ? state.input : undefined;
             inputs["inputPath"] = state ? state.inputPath : undefined;
             inputs["inputTransformer"] = state ? state.inputTransformer : undefined;
@@ -311,15 +303,16 @@ export class EventTarget extends pulumi.CustomResource {
             inputs["targetId"] = state ? state.targetId : undefined;
         } else {
             const args = argsOrState as EventTargetArgs | undefined;
-            if (!args || args.arn === undefined) {
+            if ((!args || args.arn === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'arn'");
             }
-            if (!args || args.rule === undefined) {
+            if ((!args || args.rule === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'rule'");
             }
             inputs["arn"] = args ? args.arn : undefined;
             inputs["batchTarget"] = args ? args.batchTarget : undefined;
             inputs["ecsTarget"] = args ? args.ecsTarget : undefined;
+            inputs["eventBusName"] = args ? args.eventBusName : undefined;
             inputs["input"] = args ? args.input : undefined;
             inputs["inputPath"] = args ? args.inputPath : undefined;
             inputs["inputTransformer"] = args ? args.inputTransformer : undefined;
@@ -358,16 +351,19 @@ export interface EventTargetState {
      */
     readonly ecsTarget?: pulumi.Input<inputs.cloudwatch.EventTargetEcsTarget>;
     /**
-     * Valid JSON text passed to the target.
+     * The event bus to associate with the rule. If you omit this, the `default` event bus is used.
+     */
+    readonly eventBusName?: pulumi.Input<string>;
+    /**
+     * Valid JSON text passed to the target. Conflicts with `inputPath` and `inputTransformer`.
      */
     readonly input?: pulumi.Input<string>;
     /**
-     * The value of the [JSONPath](http://goessner.net/articles/JsonPath/)
-     * that is used for extracting part of the matched event when passing it to the target.
+     * The value of the [JSONPath](http://goessner.net/articles/JsonPath/) that is used for extracting part of the matched event when passing it to the target. Conflicts with `input` and `inputTransformer`.
      */
     readonly inputPath?: pulumi.Input<string>;
     /**
-     * Parameters used when you are providing a custom input to a target based on certain event data.
+     * Parameters used when you are providing a custom input to a target based on certain event data. Conflicts with `input` and `inputPath`.
      */
     readonly inputTransformer?: pulumi.Input<inputs.cloudwatch.EventTargetInputTransformer>;
     /**
@@ -413,16 +409,19 @@ export interface EventTargetArgs {
      */
     readonly ecsTarget?: pulumi.Input<inputs.cloudwatch.EventTargetEcsTarget>;
     /**
-     * Valid JSON text passed to the target.
+     * The event bus to associate with the rule. If you omit this, the `default` event bus is used.
+     */
+    readonly eventBusName?: pulumi.Input<string>;
+    /**
+     * Valid JSON text passed to the target. Conflicts with `inputPath` and `inputTransformer`.
      */
     readonly input?: pulumi.Input<string>;
     /**
-     * The value of the [JSONPath](http://goessner.net/articles/JsonPath/)
-     * that is used for extracting part of the matched event when passing it to the target.
+     * The value of the [JSONPath](http://goessner.net/articles/JsonPath/) that is used for extracting part of the matched event when passing it to the target. Conflicts with `input` and `inputTransformer`.
      */
     readonly inputPath?: pulumi.Input<string>;
     /**
-     * Parameters used when you are providing a custom input to a target based on certain event data.
+     * Parameters used when you are providing a custom input to a target based on certain event data. Conflicts with `input` and `inputPath`.
      */
     readonly inputTransformer?: pulumi.Input<inputs.cloudwatch.EventTargetInputTransformer>;
     /**

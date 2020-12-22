@@ -4,6 +4,7 @@
 package ssm
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -24,7 +25,7 @@ import (
 // import (
 // 	"fmt"
 //
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/ssm"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/ssm"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -51,6 +52,40 @@ import (
 //
 // * `type` - The permission type for the document. The permission type can be `Share`.
 // * `accountIds` - The AWS user accounts that should have access to the document. The account IDs can either be a group of account IDs or `All`.
+//
+// ## Import
+//
+// SSM Documents can be imported using the name, e.g.
+//
+// ```sh
+//  $ pulumi import aws:ssm/document:Document example example
+// ```
+//
+//  The `attachments_source` argument does not have an SSM API method for reading the attachment information detail after creation. If the argument is set in the provider configuration on an imported resource, this provider will always show a difference. To workaround this behavior, either omit the argument from the configuration or use [`ignoreChanges`](https://www.pulumi.com/docs/intro/concepts/programming-model/#ignorechanges) to hide the difference, e.g. hcl resource "aws_ssm_document" "test" {
+//
+//  name
+//
+// = "test_document"
+//
+//  document_type = "Package"
+//
+//  attachments_source {
+//
+//  key
+//
+// = "SourceUrl"
+//
+//  values = ["s3://${aws_s3_bucket.object_bucket.bucket}/test.zip"]
+//
+//  }
+//
+// # There is no AWS SSM API for reading attachments_source info directly
+//
+//  lifecycle {
+//
+//  ignore_changes = [attachments_source]
+//
+//  } }
 type Document struct {
 	pulumi.CustomResourceState
 
@@ -100,14 +135,15 @@ type Document struct {
 // NewDocument registers a new resource with the given unique name, arguments, and options.
 func NewDocument(ctx *pulumi.Context,
 	name string, args *DocumentArgs, opts ...pulumi.ResourceOption) (*Document, error) {
-	if args == nil || args.Content == nil {
-		return nil, errors.New("missing required argument 'Content'")
-	}
-	if args == nil || args.DocumentType == nil {
-		return nil, errors.New("missing required argument 'DocumentType'")
-	}
 	if args == nil {
-		args = &DocumentArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.Content == nil {
+		return nil, errors.New("invalid value for required argument 'Content'")
+	}
+	if args.DocumentType == nil {
+		return nil, errors.New("invalid value for required argument 'DocumentType'")
 	}
 	var resource Document
 	err := ctx.RegisterResource("aws:ssm/document:Document", name, args, &resource, opts...)
@@ -263,4 +299,43 @@ type DocumentArgs struct {
 
 func (DocumentArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*documentArgs)(nil)).Elem()
+}
+
+type DocumentInput interface {
+	pulumi.Input
+
+	ToDocumentOutput() DocumentOutput
+	ToDocumentOutputWithContext(ctx context.Context) DocumentOutput
+}
+
+func (Document) ElementType() reflect.Type {
+	return reflect.TypeOf((*Document)(nil)).Elem()
+}
+
+func (i Document) ToDocumentOutput() DocumentOutput {
+	return i.ToDocumentOutputWithContext(context.Background())
+}
+
+func (i Document) ToDocumentOutputWithContext(ctx context.Context) DocumentOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(DocumentOutput)
+}
+
+type DocumentOutput struct {
+	*pulumi.OutputState
+}
+
+func (DocumentOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*DocumentOutput)(nil)).Elem()
+}
+
+func (o DocumentOutput) ToDocumentOutput() DocumentOutput {
+	return o
+}
+
+func (o DocumentOutput) ToDocumentOutputWithContext(ctx context.Context) DocumentOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(DocumentOutput{})
 }

@@ -2,12 +2,10 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 import {InstanceProfile} from "../iam";
-import {InstanceType} from "./index";
 
 /**
  * Provides an EC2 instance resource. This allows instances to be created, updated,
@@ -19,27 +17,35 @@ import {InstanceType} from "./index";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const ubuntu = pulumi.output(aws.getAmi({
+ * const ubuntu = aws.getAmi({
+ *     mostRecent: true,
  *     filters: [
  *         {
  *             name: "name",
- *             values: ["ubuntu/images/hvm-ssd/ubuntu-trusty-14.04-amd64-server-*"],
+ *             values: ["ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-*"],
  *         },
  *         {
  *             name: "virtualization-type",
  *             values: ["hvm"],
  *         },
  *     ],
- *     mostRecent: true,
- *     owners: ["099720109477"], // Canonical
- * }, { async: true }));
+ *     owners: ["099720109477"],
+ * });
  * const web = new aws.ec2.Instance("web", {
- *     ami: ubuntu.id,
- *     instanceType: "t2.micro",
+ *     ami: ubuntu.then(ubuntu => ubuntu.id),
+ *     instanceType: "t3.micro",
  *     tags: {
  *         Name: "HelloWorld",
  *     },
  * });
+ * ```
+ *
+ * ## Import
+ *
+ * Instances can be imported using the `id`, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:ec2/instance:Instance web i-12345678
  * ```
  */
 export class Instance extends pulumi.CustomResource {
@@ -154,7 +160,7 @@ export class Instance extends pulumi.CustomResource {
     /**
      * The type of instance to start. Updates to this field will trigger a stop/start of the EC2 instance.
      */
-    public readonly instanceType!: pulumi.Output<InstanceType>;
+    public readonly instanceType!: pulumi.Output<string>;
     /**
      * A number of IPv6 addresses to associate with the primary network interface. Amazon EC2 chooses the IPv6 addresses from the range of your subnet.
      */
@@ -224,6 +230,10 @@ export class Instance extends pulumi.CustomResource {
      * device of the instance. See Block Devices below for details.
      */
     public readonly rootBlockDevice!: pulumi.Output<outputs.ec2.InstanceRootBlockDevice>;
+    /**
+     * A list of secondary private IPv4 addresses to assign to the instance's primary network interface (eth0) in a VPC. Can only be assigned to the primary network interface (eth0) attached at instance creation, not a pre-existing network interface i.e. referenced in a `networkInterface` block. Refer to the [Elastic network interfaces documentation](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using-eni.html#AvailableIpPerENI) to see the maximum number of private IP addresses allowed per instance type.
+     */
+    public readonly secondaryPrivateIps!: pulumi.Output<string[]>;
     /**
      * A list of security group names (EC2-Classic) or IDs (default VPC) to associate with.
      *
@@ -309,6 +319,7 @@ export class Instance extends pulumi.CustomResource {
             inputs["publicDns"] = state ? state.publicDns : undefined;
             inputs["publicIp"] = state ? state.publicIp : undefined;
             inputs["rootBlockDevice"] = state ? state.rootBlockDevice : undefined;
+            inputs["secondaryPrivateIps"] = state ? state.secondaryPrivateIps : undefined;
             inputs["securityGroups"] = state ? state.securityGroups : undefined;
             inputs["sourceDestCheck"] = state ? state.sourceDestCheck : undefined;
             inputs["subnetId"] = state ? state.subnetId : undefined;
@@ -320,10 +331,10 @@ export class Instance extends pulumi.CustomResource {
             inputs["vpcSecurityGroupIds"] = state ? state.vpcSecurityGroupIds : undefined;
         } else {
             const args = argsOrState as InstanceArgs | undefined;
-            if (!args || args.ami === undefined) {
+            if ((!args || args.ami === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'ami'");
             }
-            if (!args || args.instanceType === undefined) {
+            if ((!args || args.instanceType === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'instanceType'");
             }
             inputs["ami"] = args ? args.ami : undefined;
@@ -351,6 +362,7 @@ export class Instance extends pulumi.CustomResource {
             inputs["placementGroup"] = args ? args.placementGroup : undefined;
             inputs["privateIp"] = args ? args.privateIp : undefined;
             inputs["rootBlockDevice"] = args ? args.rootBlockDevice : undefined;
+            inputs["secondaryPrivateIps"] = args ? args.secondaryPrivateIps : undefined;
             inputs["securityGroups"] = args ? args.securityGroups : undefined;
             inputs["sourceDestCheck"] = args ? args.sourceDestCheck : undefined;
             inputs["subnetId"] = args ? args.subnetId : undefined;
@@ -468,7 +480,7 @@ export interface InstanceState {
     /**
      * The type of instance to start. Updates to this field will trigger a stop/start of the EC2 instance.
      */
-    readonly instanceType?: pulumi.Input<InstanceType>;
+    readonly instanceType?: pulumi.Input<string | enums.ec2.InstanceType>;
     /**
      * A number of IPv6 addresses to associate with the primary network interface. Amazon EC2 chooses the IPv6 addresses from the range of your subnet.
      */
@@ -539,6 +551,10 @@ export interface InstanceState {
      */
     readonly rootBlockDevice?: pulumi.Input<inputs.ec2.InstanceRootBlockDevice>;
     /**
+     * A list of secondary private IPv4 addresses to assign to the instance's primary network interface (eth0) in a VPC. Can only be assigned to the primary network interface (eth0) attached at instance creation, not a pre-existing network interface i.e. referenced in a `networkInterface` block. Refer to the [Elastic network interfaces documentation](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using-eni.html#AvailableIpPerENI) to see the maximum number of private IP addresses allowed per instance type.
+     */
+    readonly secondaryPrivateIps?: pulumi.Input<pulumi.Input<string>[]>;
+    /**
      * A list of security group names (EC2-Classic) or IDs (default VPC) to associate with.
      *
      * @deprecated Use of `securityGroups` is discouraged as it does not allow for changes and will force your instance to be replaced if changes are made. To avoid this, use `vpcSecurityGroupIds` which allows for updates.
@@ -560,7 +576,7 @@ export interface InstanceState {
     /**
      * The tenancy of the instance (if the instance is running in a VPC). An instance with a tenancy of dedicated runs on single-tenant hardware. The host tenancy is not supported for the import-instance command.
      */
-    readonly tenancy?: pulumi.Input<string>;
+    readonly tenancy?: pulumi.Input<string | enums.ec2.Tenancy>;
     /**
      * The user data to provide when launching the instance. Do not pass gzip-compressed data via this argument; see `userDataBase64` instead.
      */
@@ -659,7 +675,7 @@ export interface InstanceArgs {
     /**
      * The type of instance to start. Updates to this field will trigger a stop/start of the EC2 instance.
      */
-    readonly instanceType: pulumi.Input<InstanceType>;
+    readonly instanceType: pulumi.Input<string | enums.ec2.InstanceType>;
     /**
      * A number of IPv6 addresses to associate with the primary network interface. Amazon EC2 chooses the IPv6 addresses from the range of your subnet.
      */
@@ -699,6 +715,10 @@ export interface InstanceArgs {
      */
     readonly rootBlockDevice?: pulumi.Input<inputs.ec2.InstanceRootBlockDevice>;
     /**
+     * A list of secondary private IPv4 addresses to assign to the instance's primary network interface (eth0) in a VPC. Can only be assigned to the primary network interface (eth0) attached at instance creation, not a pre-existing network interface i.e. referenced in a `networkInterface` block. Refer to the [Elastic network interfaces documentation](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using-eni.html#AvailableIpPerENI) to see the maximum number of private IP addresses allowed per instance type.
+     */
+    readonly secondaryPrivateIps?: pulumi.Input<pulumi.Input<string>[]>;
+    /**
      * A list of security group names (EC2-Classic) or IDs (default VPC) to associate with.
      *
      * @deprecated Use of `securityGroups` is discouraged as it does not allow for changes and will force your instance to be replaced if changes are made. To avoid this, use `vpcSecurityGroupIds` which allows for updates.
@@ -720,7 +740,7 @@ export interface InstanceArgs {
     /**
      * The tenancy of the instance (if the instance is running in a VPC). An instance with a tenancy of dedicated runs on single-tenant hardware. The host tenancy is not supported for the import-instance command.
      */
-    readonly tenancy?: pulumi.Input<string>;
+    readonly tenancy?: pulumi.Input<string | enums.ec2.Tenancy>;
     /**
      * The user data to provide when launching the instance. Do not pass gzip-compressed data via this argument; see `userDataBase64` instead.
      */

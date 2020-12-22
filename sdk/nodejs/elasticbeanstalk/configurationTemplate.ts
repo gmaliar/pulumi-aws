@@ -2,8 +2,7 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 /**
@@ -17,10 +16,8 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const tftest = new aws.elasticbeanstalk.Application("tftest", {
- *     description: "tf-test-desc",
- * });
- * const tfTemplate = new aws.elasticbeanstalk.ConfigurationTemplate("tf_template", {
+ * const tftest = new aws.elasticbeanstalk.Application("tftest", {description: "tf-test-desc"});
+ * const tfTemplate = new aws.elasticbeanstalk.ConfigurationTemplate("tfTemplate", {
  *     application: tftest.name,
  *     solutionStackName: "64bit Amazon Linux 2015.09 v2.0.8 running Go 1.4",
  * });
@@ -110,7 +107,7 @@ export class ConfigurationTemplate extends pulumi.CustomResource {
             inputs["solutionStackName"] = state ? state.solutionStackName : undefined;
         } else {
             const args = argsOrState as ConfigurationTemplateArgs | undefined;
-            if (!args || args.application === undefined) {
+            if ((!args || args.application === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'application'");
             }
             inputs["application"] = args ? args.application : undefined;

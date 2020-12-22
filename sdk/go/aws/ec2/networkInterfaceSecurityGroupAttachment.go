@@ -4,6 +4,7 @@
 package ec2
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -36,8 +37,8 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws"
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/ec2"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/ec2"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -45,6 +46,7 @@ import (
 // 	pulumi.Run(func(ctx *pulumi.Context) error {
 // 		opt0 := true
 // 		ami, err := aws.GetAmi(ctx, &aws.GetAmiArgs{
+// 			MostRecent: &opt0,
 // 			Filters: []aws.GetAmiFilter{
 // 				aws.GetAmiFilter{
 // 					Name: "name",
@@ -53,7 +55,6 @@ import (
 // 					},
 // 				},
 // 			},
-// 			MostRecent: &opt0,
 // 			Owners: []string{
 // 				"amazon",
 // 			},
@@ -62,8 +63,8 @@ import (
 // 			return err
 // 		}
 // 		instance, err := ec2.NewInstance(ctx, "instance", &ec2.InstanceArgs{
-// 			Ami:          pulumi.String(ami.Id),
 // 			InstanceType: pulumi.String("t2.micro"),
+// 			Ami:          pulumi.String(ami.Id),
 // 			Tags: pulumi.StringMap{
 // 				"type": pulumi.String("test-instance"),
 // 			},
@@ -80,8 +81,8 @@ import (
 // 			return err
 // 		}
 // 		_, err = ec2.NewNetworkInterfaceSecurityGroupAttachment(ctx, "sgAttachment", &ec2.NetworkInterfaceSecurityGroupAttachmentArgs{
-// 			NetworkInterfaceId: instance.PrimaryNetworkInterfaceId,
 // 			SecurityGroupId:    sg.ID(),
+// 			NetworkInterfaceId: instance.PrimaryNetworkInterfaceId,
 // 		})
 // 		if err != nil {
 // 			return err
@@ -99,7 +100,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/ec2"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/ec2"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -121,8 +122,8 @@ import (
 // 			return err
 // 		}
 // 		_, err = ec2.NewNetworkInterfaceSecurityGroupAttachment(ctx, "sgAttachment", &ec2.NetworkInterfaceSecurityGroupAttachmentArgs{
-// 			NetworkInterfaceId: pulumi.String(instance.NetworkInterfaceId),
 // 			SecurityGroupId:    sg.ID(),
+// 			NetworkInterfaceId: pulumi.String(instance.NetworkInterfaceId),
 // 		})
 // 		if err != nil {
 // 			return err
@@ -146,14 +147,15 @@ type NetworkInterfaceSecurityGroupAttachment struct {
 // NewNetworkInterfaceSecurityGroupAttachment registers a new resource with the given unique name, arguments, and options.
 func NewNetworkInterfaceSecurityGroupAttachment(ctx *pulumi.Context,
 	name string, args *NetworkInterfaceSecurityGroupAttachmentArgs, opts ...pulumi.ResourceOption) (*NetworkInterfaceSecurityGroupAttachment, error) {
-	if args == nil || args.NetworkInterfaceId == nil {
-		return nil, errors.New("missing required argument 'NetworkInterfaceId'")
-	}
-	if args == nil || args.SecurityGroupId == nil {
-		return nil, errors.New("missing required argument 'SecurityGroupId'")
-	}
 	if args == nil {
-		args = &NetworkInterfaceSecurityGroupAttachmentArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.NetworkInterfaceId == nil {
+		return nil, errors.New("invalid value for required argument 'NetworkInterfaceId'")
+	}
+	if args.SecurityGroupId == nil {
+		return nil, errors.New("invalid value for required argument 'SecurityGroupId'")
 	}
 	var resource NetworkInterfaceSecurityGroupAttachment
 	err := ctx.RegisterResource("aws:ec2/networkInterfaceSecurityGroupAttachment:NetworkInterfaceSecurityGroupAttachment", name, args, &resource, opts...)
@@ -211,4 +213,43 @@ type NetworkInterfaceSecurityGroupAttachmentArgs struct {
 
 func (NetworkInterfaceSecurityGroupAttachmentArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*networkInterfaceSecurityGroupAttachmentArgs)(nil)).Elem()
+}
+
+type NetworkInterfaceSecurityGroupAttachmentInput interface {
+	pulumi.Input
+
+	ToNetworkInterfaceSecurityGroupAttachmentOutput() NetworkInterfaceSecurityGroupAttachmentOutput
+	ToNetworkInterfaceSecurityGroupAttachmentOutputWithContext(ctx context.Context) NetworkInterfaceSecurityGroupAttachmentOutput
+}
+
+func (NetworkInterfaceSecurityGroupAttachment) ElementType() reflect.Type {
+	return reflect.TypeOf((*NetworkInterfaceSecurityGroupAttachment)(nil)).Elem()
+}
+
+func (i NetworkInterfaceSecurityGroupAttachment) ToNetworkInterfaceSecurityGroupAttachmentOutput() NetworkInterfaceSecurityGroupAttachmentOutput {
+	return i.ToNetworkInterfaceSecurityGroupAttachmentOutputWithContext(context.Background())
+}
+
+func (i NetworkInterfaceSecurityGroupAttachment) ToNetworkInterfaceSecurityGroupAttachmentOutputWithContext(ctx context.Context) NetworkInterfaceSecurityGroupAttachmentOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(NetworkInterfaceSecurityGroupAttachmentOutput)
+}
+
+type NetworkInterfaceSecurityGroupAttachmentOutput struct {
+	*pulumi.OutputState
+}
+
+func (NetworkInterfaceSecurityGroupAttachmentOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*NetworkInterfaceSecurityGroupAttachmentOutput)(nil)).Elem()
+}
+
+func (o NetworkInterfaceSecurityGroupAttachmentOutput) ToNetworkInterfaceSecurityGroupAttachmentOutput() NetworkInterfaceSecurityGroupAttachmentOutput {
+	return o
+}
+
+func (o NetworkInterfaceSecurityGroupAttachmentOutput) ToNetworkInterfaceSecurityGroupAttachmentOutputWithContext(ctx context.Context) NetworkInterfaceSecurityGroupAttachmentOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(NetworkInterfaceSecurityGroupAttachmentOutput{})
 }

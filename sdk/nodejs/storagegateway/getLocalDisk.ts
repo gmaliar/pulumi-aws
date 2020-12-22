@@ -2,8 +2,7 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 /**
@@ -15,10 +14,10 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const test = pulumi.all([aws_volume_attachment_test.deviceName, aws_storagegateway_gateway_test.arn]).apply(([deviceName, arn]) => aws.storagegateway.getLocalDisk({
- *     diskPath: deviceName,
- *     gatewayArn: arn,
- * }, { async: true }));
+ * const test = aws.storagegateway.getLocalDisk({
+ *     diskPath: aws_volume_attachment.test.device_name,
+ *     gatewayArn: aws_storagegateway_gateway.test.arn,
+ * });
  * ```
  */
 export function getLocalDisk(args: GetLocalDiskArgs, opts?: pulumi.InvokeOptions): Promise<GetLocalDiskResult> {

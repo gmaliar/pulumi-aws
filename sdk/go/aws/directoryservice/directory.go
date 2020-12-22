@@ -4,6 +4,7 @@
 package directoryservice
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -21,8 +22,8 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/directoryservice"
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/ec2"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/directoryservice"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/ec2"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -35,33 +36,34 @@ import (
 // 			return err
 // 		}
 // 		foo, err := ec2.NewSubnet(ctx, "foo", &ec2.SubnetArgs{
+// 			VpcId:            main.ID(),
 // 			AvailabilityZone: pulumi.String("us-west-2a"),
 // 			CidrBlock:        pulumi.String("10.0.1.0/24"),
-// 			VpcId:            main.ID(),
 // 		})
 // 		if err != nil {
 // 			return err
 // 		}
 // 		barSubnet, err := ec2.NewSubnet(ctx, "barSubnet", &ec2.SubnetArgs{
+// 			VpcId:            main.ID(),
 // 			AvailabilityZone: pulumi.String("us-west-2b"),
 // 			CidrBlock:        pulumi.String("10.0.2.0/24"),
-// 			VpcId:            main.ID(),
 // 		})
 // 		if err != nil {
 // 			return err
 // 		}
 // 		_, err = directoryservice.NewDirectory(ctx, "barDirectory", &directoryservice.DirectoryArgs{
+// 			Name:     pulumi.String("corp.notexample.com"),
 // 			Password: pulumi.String("SuperSecretPassw0rd"),
 // 			Size:     pulumi.String("Small"),
-// 			Tags: pulumi.StringMap{
-// 				"Project": pulumi.String("foo"),
-// 			},
 // 			VpcSettings: &directoryservice.DirectoryVpcSettingsArgs{
+// 				VpcId: main.ID(),
 // 				SubnetIds: pulumi.StringArray{
 // 					foo.ID(),
 // 					barSubnet.ID(),
 // 				},
-// 				VpcId: main.ID(),
+// 			},
+// 			Tags: pulumi.StringMap{
+// 				"Project": pulumi.String("foo"),
 // 			},
 // 		})
 // 		if err != nil {
@@ -77,8 +79,8 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/directoryservice"
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/ec2"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/directoryservice"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/ec2"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -91,34 +93,35 @@ import (
 // 			return err
 // 		}
 // 		foo, err := ec2.NewSubnet(ctx, "foo", &ec2.SubnetArgs{
+// 			VpcId:            main.ID(),
 // 			AvailabilityZone: pulumi.String("us-west-2a"),
 // 			CidrBlock:        pulumi.String("10.0.1.0/24"),
-// 			VpcId:            main.ID(),
 // 		})
 // 		if err != nil {
 // 			return err
 // 		}
 // 		barSubnet, err := ec2.NewSubnet(ctx, "barSubnet", &ec2.SubnetArgs{
+// 			VpcId:            main.ID(),
 // 			AvailabilityZone: pulumi.String("us-west-2b"),
 // 			CidrBlock:        pulumi.String("10.0.2.0/24"),
-// 			VpcId:            main.ID(),
 // 		})
 // 		if err != nil {
 // 			return err
 // 		}
 // 		_, err = directoryservice.NewDirectory(ctx, "barDirectory", &directoryservice.DirectoryArgs{
-// 			Edition:  pulumi.String("Standard"),
+// 			Name:     pulumi.String("corp.notexample.com"),
 // 			Password: pulumi.String("SuperSecretPassw0rd"),
-// 			Tags: pulumi.StringMap{
-// 				"Project": pulumi.String("foo"),
-// 			},
-// 			Type: pulumi.String("MicrosoftAD"),
+// 			Edition:  pulumi.String("Standard"),
+// 			Type:     pulumi.String("MicrosoftAD"),
 // 			VpcSettings: &directoryservice.DirectoryVpcSettingsArgs{
+// 				VpcId: main.ID(),
 // 				SubnetIds: pulumi.StringArray{
 // 					foo.ID(),
 // 					barSubnet.ID(),
 // 				},
-// 				VpcId: main.ID(),
+// 			},
+// 			Tags: pulumi.StringMap{
+// 				"Project": pulumi.String("foo"),
 // 			},
 // 		})
 // 		if err != nil {
@@ -134,8 +137,8 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/directoryservice"
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/ec2"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/directoryservice"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/ec2"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -148,22 +151,26 @@ import (
 // 			return err
 // 		}
 // 		foo, err := ec2.NewSubnet(ctx, "foo", &ec2.SubnetArgs{
+// 			VpcId:            main.ID(),
 // 			AvailabilityZone: pulumi.String("us-west-2a"),
 // 			CidrBlock:        pulumi.String("10.0.1.0/24"),
-// 			VpcId:            main.ID(),
 // 		})
 // 		if err != nil {
 // 			return err
 // 		}
 // 		bar, err := ec2.NewSubnet(ctx, "bar", &ec2.SubnetArgs{
+// 			VpcId:            main.ID(),
 // 			AvailabilityZone: pulumi.String("us-west-2b"),
 // 			CidrBlock:        pulumi.String("10.0.2.0/24"),
-// 			VpcId:            main.ID(),
 // 		})
 // 		if err != nil {
 // 			return err
 // 		}
 // 		_, err = directoryservice.NewDirectory(ctx, "connector", &directoryservice.DirectoryArgs{
+// 			Name:     pulumi.String("corp.notexample.com"),
+// 			Password: pulumi.String("SuperSecretPassw0rd"),
+// 			Size:     pulumi.String("Small"),
+// 			Type:     pulumi.String("ADConnector"),
 // 			ConnectSettings: &directoryservice.DirectoryConnectSettingsArgs{
 // 				CustomerDnsIps: pulumi.StringArray{
 // 					pulumi.String("A.B.C.D"),
@@ -175,9 +182,6 @@ import (
 // 				},
 // 				VpcId: main.ID(),
 // 			},
-// 			Password: pulumi.String("SuperSecretPassw0rd"),
-// 			Size:     pulumi.String("Small"),
-// 			Type:     pulumi.String("ADConnector"),
 // 		})
 // 		if err != nil {
 // 			return err
@@ -185,6 +189,14 @@ import (
 // 		return nil
 // 	})
 // }
+// ```
+//
+// ## Import
+//
+// DirectoryService directories can be imported using the directory `id`, e.g.
+//
+// ```sh
+//  $ pulumi import aws:directoryservice/directory:Directory sample d-926724cf57
 // ```
 type Directory struct {
 	pulumi.CustomResourceState
@@ -224,11 +236,15 @@ type Directory struct {
 // NewDirectory registers a new resource with the given unique name, arguments, and options.
 func NewDirectory(ctx *pulumi.Context,
 	name string, args *DirectoryArgs, opts ...pulumi.ResourceOption) (*Directory, error) {
-	if args == nil || args.Password == nil {
-		return nil, errors.New("missing required argument 'Password'")
-	}
 	if args == nil {
-		args = &DirectoryArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.Name == nil {
+		return nil, errors.New("invalid value for required argument 'Name'")
+	}
+	if args.Password == nil {
+		return nil, errors.New("invalid value for required argument 'Password'")
 	}
 	var resource Directory
 	err := ctx.RegisterResource("aws:directoryservice/directory:Directory", name, args, &resource, opts...)
@@ -333,7 +349,7 @@ type directoryArgs struct {
 	// Whether to enable single-sign on for the directory. Requires `alias`. Defaults to `false`.
 	EnableSso *bool `pulumi:"enableSso"`
 	// The fully qualified name for the directory, such as `corp.example.com`
-	Name *string `pulumi:"name"`
+	Name string `pulumi:"name"`
 	// The password for the directory administrator or connector user.
 	Password string `pulumi:"password"`
 	// The short name of the directory, such as `CORP`.
@@ -361,7 +377,7 @@ type DirectoryArgs struct {
 	// Whether to enable single-sign on for the directory. Requires `alias`. Defaults to `false`.
 	EnableSso pulumi.BoolPtrInput
 	// The fully qualified name for the directory, such as `corp.example.com`
-	Name pulumi.StringPtrInput
+	Name pulumi.StringInput
 	// The password for the directory administrator or connector user.
 	Password pulumi.StringInput
 	// The short name of the directory, such as `CORP`.
@@ -378,4 +394,43 @@ type DirectoryArgs struct {
 
 func (DirectoryArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*directoryArgs)(nil)).Elem()
+}
+
+type DirectoryInput interface {
+	pulumi.Input
+
+	ToDirectoryOutput() DirectoryOutput
+	ToDirectoryOutputWithContext(ctx context.Context) DirectoryOutput
+}
+
+func (Directory) ElementType() reflect.Type {
+	return reflect.TypeOf((*Directory)(nil)).Elem()
+}
+
+func (i Directory) ToDirectoryOutput() DirectoryOutput {
+	return i.ToDirectoryOutputWithContext(context.Background())
+}
+
+func (i Directory) ToDirectoryOutputWithContext(ctx context.Context) DirectoryOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(DirectoryOutput)
+}
+
+type DirectoryOutput struct {
+	*pulumi.OutputState
+}
+
+func (DirectoryOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*DirectoryOutput)(nil)).Elem()
+}
+
+func (o DirectoryOutput) ToDirectoryOutput() DirectoryOutput {
+	return o
+}
+
+func (o DirectoryOutput) ToDirectoryOutputWithContext(ctx context.Context) DirectoryOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(DirectoryOutput{})
 }

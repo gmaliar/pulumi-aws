@@ -21,8 +21,8 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/ec2"
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/s3"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/ec2"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/s3"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -36,8 +36,8 @@ import (
 // 			return err
 // 		}
 // 		_, err = ec2.NewInstance(ctx, "example", &ec2.InstanceArgs{
-// 			Ami:          pulumi.String("ami-2757f631"),
 // 			InstanceType: pulumi.String("t2.micro"),
+// 			Ami:          pulumi.String("ami-2757f631"),
 // 			UserData:     pulumi.String(bootstrapScript.Body),
 // 		})
 // 		if err != nil {
@@ -58,8 +58,8 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/lambda"
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/s3"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/lambda"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/s3"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -73,11 +73,11 @@ import (
 // 			return err
 // 		}
 // 		_, err = lambda.NewFunction(ctx, "testLambda", &lambda.FunctionArgs{
-// 			Handler:         pulumi.String("exports.test"),
-// 			Role:            pulumi.String(aws_iam_role.Iam_for_lambda.Arn),
 // 			S3Bucket:        pulumi.String(lambda.Bucket),
 // 			S3Key:           pulumi.String(lambda.Key),
 // 			S3ObjectVersion: pulumi.String(lambda.VersionId),
+// 			Role:            pulumi.Any(aws_iam_role.Iam_for_lambda.Arn),
+// 			Handler:         pulumi.String("exports.test"),
 // 		})
 // 		if err != nil {
 // 			return err

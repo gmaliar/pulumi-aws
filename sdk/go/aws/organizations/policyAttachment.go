@@ -4,6 +4,7 @@
 package organizations
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -19,14 +20,14 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/organizations"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/organizations"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
 // func main() {
 // 	pulumi.Run(func(ctx *pulumi.Context) error {
 // 		_, err := organizations.NewPolicyAttachment(ctx, "account", &organizations.PolicyAttachmentArgs{
-// 			PolicyId: pulumi.String(aws_organizations_policy.Example.Id),
+// 			PolicyId: pulumi.Any(aws_organizations_policy.Example.Id),
 // 			TargetId: pulumi.String("123456789012"),
 // 		})
 // 		if err != nil {
@@ -42,15 +43,15 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/organizations"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/organizations"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
 // func main() {
 // 	pulumi.Run(func(ctx *pulumi.Context) error {
 // 		_, err := organizations.NewPolicyAttachment(ctx, "root", &organizations.PolicyAttachmentArgs{
-// 			PolicyId: pulumi.String(aws_organizations_policy.Example.Id),
-// 			TargetId: pulumi.String(aws_organizations_organization.Example.Roots[0].Id),
+// 			PolicyId: pulumi.Any(aws_organizations_policy.Example.Id),
+// 			TargetId: pulumi.Any(aws_organizations_organization.Example.Roots[0].Id),
 // 		})
 // 		if err != nil {
 // 			return err
@@ -65,15 +66,15 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/organizations"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/organizations"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
 // func main() {
 // 	pulumi.Run(func(ctx *pulumi.Context) error {
 // 		_, err := organizations.NewPolicyAttachment(ctx, "unit", &organizations.PolicyAttachmentArgs{
-// 			PolicyId: pulumi.String(aws_organizations_policy.Example.Id),
-// 			TargetId: pulumi.String(aws_organizations_organizational_unit.Example.Id),
+// 			PolicyId: pulumi.Any(aws_organizations_policy.Example.Id),
+// 			TargetId: pulumi.Any(aws_organizations_organizational_unit.Example.Id),
 // 		})
 // 		if err != nil {
 // 			return err
@@ -81,6 +82,14 @@ import (
 // 		return nil
 // 	})
 // }
+// ```
+//
+// ## Import
+//
+// `aws_organizations_policy_attachment` can be imported by using the target ID and policy ID, e.g. with an account target
+//
+// ```sh
+//  $ pulumi import aws:organizations/policyAttachment:PolicyAttachment account 123456789012:p-12345678
 // ```
 type PolicyAttachment struct {
 	pulumi.CustomResourceState
@@ -94,14 +103,15 @@ type PolicyAttachment struct {
 // NewPolicyAttachment registers a new resource with the given unique name, arguments, and options.
 func NewPolicyAttachment(ctx *pulumi.Context,
 	name string, args *PolicyAttachmentArgs, opts ...pulumi.ResourceOption) (*PolicyAttachment, error) {
-	if args == nil || args.PolicyId == nil {
-		return nil, errors.New("missing required argument 'PolicyId'")
-	}
-	if args == nil || args.TargetId == nil {
-		return nil, errors.New("missing required argument 'TargetId'")
-	}
 	if args == nil {
-		args = &PolicyAttachmentArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.PolicyId == nil {
+		return nil, errors.New("invalid value for required argument 'PolicyId'")
+	}
+	if args.TargetId == nil {
+		return nil, errors.New("invalid value for required argument 'TargetId'")
 	}
 	var resource PolicyAttachment
 	err := ctx.RegisterResource("aws:organizations/policyAttachment:PolicyAttachment", name, args, &resource, opts...)
@@ -159,4 +169,43 @@ type PolicyAttachmentArgs struct {
 
 func (PolicyAttachmentArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*policyAttachmentArgs)(nil)).Elem()
+}
+
+type PolicyAttachmentInput interface {
+	pulumi.Input
+
+	ToPolicyAttachmentOutput() PolicyAttachmentOutput
+	ToPolicyAttachmentOutputWithContext(ctx context.Context) PolicyAttachmentOutput
+}
+
+func (PolicyAttachment) ElementType() reflect.Type {
+	return reflect.TypeOf((*PolicyAttachment)(nil)).Elem()
+}
+
+func (i PolicyAttachment) ToPolicyAttachmentOutput() PolicyAttachmentOutput {
+	return i.ToPolicyAttachmentOutputWithContext(context.Background())
+}
+
+func (i PolicyAttachment) ToPolicyAttachmentOutputWithContext(ctx context.Context) PolicyAttachmentOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(PolicyAttachmentOutput)
+}
+
+type PolicyAttachmentOutput struct {
+	*pulumi.OutputState
+}
+
+func (PolicyAttachmentOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*PolicyAttachmentOutput)(nil)).Elem()
+}
+
+func (o PolicyAttachmentOutput) ToPolicyAttachmentOutput() PolicyAttachmentOutput {
+	return o
+}
+
+func (o PolicyAttachmentOutput) ToPolicyAttachmentOutputWithContext(ctx context.Context) PolicyAttachmentOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(PolicyAttachmentOutput{})
 }

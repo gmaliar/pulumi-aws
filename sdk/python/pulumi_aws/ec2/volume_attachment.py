@@ -5,40 +5,24 @@
 import warnings
 import pulumi
 import pulumi.runtime
-from typing import Union
-from .. import utilities, tables
+from typing import Any, Mapping, Optional, Sequence, Union
+from .. import _utilities, _tables
+
+__all__ = ['VolumeAttachment']
 
 
 class VolumeAttachment(pulumi.CustomResource):
-    device_name: pulumi.Output[str]
-    """
-    The device name to expose to the instance (for
-    example, `/dev/sdh` or `xvdh`).  See [Device Naming on Linux Instances](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/device_naming.html#available-ec2-device-names) and [Device Naming on Windows Instances](https://docs.aws.amazon.com/AWSEC2/latest/WindowsGuide/device_naming.html#available-ec2-device-names) for more information.
-    """
-    force_detach: pulumi.Output[bool]
-    """
-    Set to `true` if you want to force the
-    volume to detach. Useful if previous attempts failed, but use this option only
-    as a last resort, as this can result in **data loss**. See
-    [Detaching an Amazon EBS Volume from an Instance](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-detaching-volume.html) for more information.
-    """
-    instance_id: pulumi.Output[str]
-    """
-    ID of the Instance to attach to
-    """
-    skip_destroy: pulumi.Output[bool]
-    """
-    Set this to true if you do not wish
-    to detach the volume from the instance to which it is attached at destroy
-    time, and instead just remove the attachment from this provider state. This is
-    useful when destroying an instance which has volumes created by some other
-    means attached.
-    """
-    volume_id: pulumi.Output[str]
-    """
-    ID of the Volume to be attached
-    """
-    def __init__(__self__, resource_name, opts=None, device_name=None, force_detach=None, instance_id=None, skip_destroy=None, volume_id=None, __props__=None, __name__=None, __opts__=None):
+    def __init__(__self__,
+                 resource_name: str,
+                 opts: Optional[pulumi.ResourceOptions] = None,
+                 device_name: Optional[pulumi.Input[str]] = None,
+                 force_detach: Optional[pulumi.Input[bool]] = None,
+                 instance_id: Optional[pulumi.Input[str]] = None,
+                 skip_destroy: Optional[pulumi.Input[bool]] = None,
+                 volume_id: Optional[pulumi.Input[str]] = None,
+                 __props__=None,
+                 __name__=None,
+                 __opts__=None):
         """
         Provides an AWS EBS Volume Attachment as a top level resource, to attach and
         detach volumes from AWS Instances.
@@ -54,7 +38,7 @@ class VolumeAttachment(pulumi.CustomResource):
         web = aws.ec2.Instance("web",
             ami="ami-21f78e11",
             availability_zone="us-west-2a",
-            instance_type="t1.micro",
+            instance_type="t2.micro",
             tags={
                 "Name": "HelloWorld",
             })
@@ -63,9 +47,19 @@ class VolumeAttachment(pulumi.CustomResource):
             size=1)
         ebs_att = aws.ec2.VolumeAttachment("ebsAtt",
             device_name="/dev/sdh",
-            instance_id=web.id,
-            volume_id=example.id)
+            volume_id=example.id,
+            instance_id=web.id)
         ```
+
+        ## Import
+
+        EBS Volume Attachments can be imported using `DEVICE_NAME:VOLUME_ID:INSTANCE_ID`, e.g.
+
+        ```sh
+         $ pulumi import aws:ec2/volumeAttachment:VolumeAttachment example /dev/sdh:vol-049df61146c4d7901:i-12345678
+        ```
+
+         [1]https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/device_naming.html#available-ec2-device-names [2]https://docs.aws.amazon.com/AWSEC2/latest/WindowsGuide/device_naming.html#available-ec2-device-names [3]https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-detaching-volume.html
 
         :param str resource_name: The name of the resource.
         :param pulumi.ResourceOptions opts: Options for the resource.
@@ -94,21 +88,21 @@ class VolumeAttachment(pulumi.CustomResource):
         if not isinstance(opts, pulumi.ResourceOptions):
             raise TypeError('Expected resource options to be a ResourceOptions instance')
         if opts.version is None:
-            opts.version = utilities.get_version()
+            opts.version = _utilities.get_version()
         if opts.id is None:
             if __props__ is not None:
                 raise TypeError('__props__ is only valid when passed in combination with a valid opts.id to get an existing resource')
             __props__ = dict()
 
-            if device_name is None:
+            if device_name is None and not opts.urn:
                 raise TypeError("Missing required property 'device_name'")
             __props__['device_name'] = device_name
             __props__['force_detach'] = force_detach
-            if instance_id is None:
+            if instance_id is None and not opts.urn:
                 raise TypeError("Missing required property 'instance_id'")
             __props__['instance_id'] = instance_id
             __props__['skip_destroy'] = skip_destroy
-            if volume_id is None:
+            if volume_id is None and not opts.urn:
                 raise TypeError("Missing required property 'volume_id'")
             __props__['volume_id'] = volume_id
         super(VolumeAttachment, __self__).__init__(
@@ -118,13 +112,20 @@ class VolumeAttachment(pulumi.CustomResource):
             opts)
 
     @staticmethod
-    def get(resource_name, id, opts=None, device_name=None, force_detach=None, instance_id=None, skip_destroy=None, volume_id=None):
+    def get(resource_name: str,
+            id: pulumi.Input[str],
+            opts: Optional[pulumi.ResourceOptions] = None,
+            device_name: Optional[pulumi.Input[str]] = None,
+            force_detach: Optional[pulumi.Input[bool]] = None,
+            instance_id: Optional[pulumi.Input[str]] = None,
+            skip_destroy: Optional[pulumi.Input[bool]] = None,
+            volume_id: Optional[pulumi.Input[str]] = None) -> 'VolumeAttachment':
         """
         Get an existing VolumeAttachment resource's state with the given name, id, and optional extra
         properties used to qualify the lookup.
 
         :param str resource_name: The unique name of the resulting resource.
-        :param str id: The unique provider ID of the resource to lookup.
+        :param pulumi.Input[str] id: The unique provider ID of the resource to lookup.
         :param pulumi.ResourceOptions opts: Options for the resource.
         :param pulumi.Input[str] device_name: The device name to expose to the instance (for
                example, `/dev/sdh` or `xvdh`).  See [Device Naming on Linux Instances](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/device_naming.html#available-ec2-device-names) and [Device Naming on Windows Instances](https://docs.aws.amazon.com/AWSEC2/latest/WindowsGuide/device_naming.html#available-ec2-device-names) for more information.
@@ -151,8 +152,57 @@ class VolumeAttachment(pulumi.CustomResource):
         __props__["volume_id"] = volume_id
         return VolumeAttachment(resource_name, opts=opts, __props__=__props__)
 
+    @property
+    @pulumi.getter(name="deviceName")
+    def device_name(self) -> pulumi.Output[str]:
+        """
+        The device name to expose to the instance (for
+        example, `/dev/sdh` or `xvdh`).  See [Device Naming on Linux Instances](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/device_naming.html#available-ec2-device-names) and [Device Naming on Windows Instances](https://docs.aws.amazon.com/AWSEC2/latest/WindowsGuide/device_naming.html#available-ec2-device-names) for more information.
+        """
+        return pulumi.get(self, "device_name")
+
+    @property
+    @pulumi.getter(name="forceDetach")
+    def force_detach(self) -> pulumi.Output[Optional[bool]]:
+        """
+        Set to `true` if you want to force the
+        volume to detach. Useful if previous attempts failed, but use this option only
+        as a last resort, as this can result in **data loss**. See
+        [Detaching an Amazon EBS Volume from an Instance](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-detaching-volume.html) for more information.
+        """
+        return pulumi.get(self, "force_detach")
+
+    @property
+    @pulumi.getter(name="instanceId")
+    def instance_id(self) -> pulumi.Output[str]:
+        """
+        ID of the Instance to attach to
+        """
+        return pulumi.get(self, "instance_id")
+
+    @property
+    @pulumi.getter(name="skipDestroy")
+    def skip_destroy(self) -> pulumi.Output[Optional[bool]]:
+        """
+        Set this to true if you do not wish
+        to detach the volume from the instance to which it is attached at destroy
+        time, and instead just remove the attachment from this provider state. This is
+        useful when destroying an instance which has volumes created by some other
+        means attached.
+        """
+        return pulumi.get(self, "skip_destroy")
+
+    @property
+    @pulumi.getter(name="volumeId")
+    def volume_id(self) -> pulumi.Output[str]:
+        """
+        ID of the Volume to be attached
+        """
+        return pulumi.get(self, "volume_id")
+
     def translate_output_property(self, prop):
-        return tables._CAMEL_TO_SNAKE_CASE_TABLE.get(prop) or prop
+        return _tables.CAMEL_TO_SNAKE_CASE_TABLE.get(prop) or prop
 
     def translate_input_property(self, prop):
-        return tables._SNAKE_TO_CAMEL_CASE_TABLE.get(prop) or prop
+        return _tables.SNAKE_TO_CAMEL_CASE_TABLE.get(prop) or prop
+

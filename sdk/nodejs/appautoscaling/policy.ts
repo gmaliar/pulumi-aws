@@ -2,8 +2,7 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 /**
@@ -16,14 +15,14 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const dynamodbTableReadTarget = new aws.appautoscaling.Target("dynamodb_table_read_target", {
+ * const dynamodbTableReadTarget = new aws.appautoscaling.Target("dynamodbTableReadTarget", {
  *     maxCapacity: 100,
  *     minCapacity: 5,
  *     resourceId: "table/tableName",
  *     scalableDimension: "dynamodb:table:ReadCapacityUnits",
  *     serviceNamespace: "dynamodb",
  * });
- * const dynamodbTableReadPolicy = new aws.appautoscaling.Policy("dynamodb_table_read_policy", {
+ * const dynamodbTableReadPolicy = new aws.appautoscaling.Policy("dynamodbTableReadPolicy", {
  *     policyType: "TargetTrackingScaling",
  *     resourceId: dynamodbTableReadTarget.resourceId,
  *     scalableDimension: dynamodbTableReadTarget.scalableDimension,
@@ -42,14 +41,14 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const ecsTarget = new aws.appautoscaling.Target("ecs_target", {
+ * const ecsTarget = new aws.appautoscaling.Target("ecsTarget", {
  *     maxCapacity: 4,
  *     minCapacity: 1,
  *     resourceId: "service/clusterName/serviceName",
  *     scalableDimension: "ecs:service:DesiredCount",
  *     serviceNamespace: "ecs",
  * });
- * const ecsPolicy = new aws.appautoscaling.Policy("ecs_policy", {
+ * const ecsPolicy = new aws.appautoscaling.Policy("ecsPolicy", {
  *     policyType: "StepScaling",
  *     resourceId: ecsTarget.resourceId,
  *     scalableDimension: ecsTarget.scalableDimension,
@@ -59,7 +58,7 @@ import * as utilities from "../utilities";
  *         cooldown: 60,
  *         metricAggregationType: "Maximum",
  *         stepAdjustments: [{
- *             metricIntervalUpperBound: "0",
+ *             metricIntervalUpperBound: 0,
  *             scalingAdjustment: -1,
  *         }],
  *     },
@@ -71,11 +70,11 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const ecsService = new aws.ecs.Service("ecs_service", {
+ * const ecsService = new aws.ecs.Service("ecsService", {
  *     cluster: "clusterName",
- *     desiredCount: 2,
  *     taskDefinition: "taskDefinitionFamily:1",
- * }, { ignoreChanges: ["desiredCount"] });
+ *     desiredCount: 2,
+ * });
  * ```
  * ### Aurora Read Replica Autoscaling
  *
@@ -83,27 +82,35 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const replicasTarget = new aws.appautoscaling.Target("replicas", {
- *     maxCapacity: 15,
- *     minCapacity: 1,
- *     resourceId: pulumi.interpolate`cluster:${aws_rds_cluster_example.id}`,
- *     scalableDimension: "rds:cluster:ReadReplicaCount",
+ * const replicasTarget = new aws.appautoscaling.Target("replicasTarget", {
  *     serviceNamespace: "rds",
+ *     scalableDimension: "rds:cluster:ReadReplicaCount",
+ *     resourceId: `cluster:${aws_rds_cluster.example.id}`,
+ *     minCapacity: 1,
+ *     maxCapacity: 15,
  * });
- * const replicasPolicy = new aws.appautoscaling.Policy("replicas", {
- *     policyType: "TargetTrackingScaling",
- *     resourceId: replicasTarget.resourceId,
- *     scalableDimension: replicasTarget.scalableDimension,
+ * const replicasPolicy = new aws.appautoscaling.Policy("replicasPolicy", {
  *     serviceNamespace: replicasTarget.serviceNamespace,
+ *     scalableDimension: replicasTarget.scalableDimension,
+ *     resourceId: replicasTarget.resourceId,
+ *     policyType: "TargetTrackingScaling",
  *     targetTrackingScalingPolicyConfiguration: {
  *         predefinedMetricSpecification: {
  *             predefinedMetricType: "RDSReaderAverageCPUUtilization",
  *         },
+ *         targetValue: 75,
  *         scaleInCooldown: 300,
  *         scaleOutCooldown: 300,
- *         targetValue: 75,
  *     },
  * });
+ * ```
+ *
+ * ## Import
+ *
+ * Application AutoScaling Policy can be imported using the `service-namespace` , `resource-id`, `scalable-dimension` and `policy-name` separated by `/`.
+ *
+ * ```sh
+ *  $ pulumi import aws:appautoscaling/policy:Policy test-policy service-namespace/resource-id/scalable-dimension/policy-name
  * ```
  */
 export class Policy extends pulumi.CustomResource {
@@ -139,7 +146,7 @@ export class Policy extends pulumi.CustomResource {
      */
     public /*out*/ readonly arn!: pulumi.Output<string>;
     /**
-     * The name of the policy.
+     * The name of the policy. Must be between 1 and 255 characters in length.
      */
     public readonly name!: pulumi.Output<string>;
     /**
@@ -189,13 +196,13 @@ export class Policy extends pulumi.CustomResource {
             inputs["targetTrackingScalingPolicyConfiguration"] = state ? state.targetTrackingScalingPolicyConfiguration : undefined;
         } else {
             const args = argsOrState as PolicyArgs | undefined;
-            if (!args || args.resourceId === undefined) {
+            if ((!args || args.resourceId === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'resourceId'");
             }
-            if (!args || args.scalableDimension === undefined) {
+            if ((!args || args.scalableDimension === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'scalableDimension'");
             }
-            if (!args || args.serviceNamespace === undefined) {
+            if ((!args || args.serviceNamespace === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'serviceNamespace'");
             }
             inputs["name"] = args ? args.name : undefined;
@@ -227,7 +234,7 @@ export interface PolicyState {
      */
     readonly arn?: pulumi.Input<string>;
     /**
-     * The name of the policy.
+     * The name of the policy. Must be between 1 and 255 characters in length.
      */
     readonly name?: pulumi.Input<string>;
     /**
@@ -261,7 +268,7 @@ export interface PolicyState {
  */
 export interface PolicyArgs {
     /**
-     * The name of the policy.
+     * The name of the policy. Must be between 1 and 255 characters in length.
      */
     readonly name?: pulumi.Input<string>;
     /**

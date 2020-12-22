@@ -114,8 +114,8 @@ namespace Pulumi.Aws.AppMesh
     ///                         {
     ///                             { "stack", "blue" },
     ///                         },
-    ///                         NamespaceName = example.Name,
     ///                         ServiceName = "serviceb1",
+    ///                         NamespaceName = example.Name,
     ///                     },
     ///                 },
     ///             },
@@ -151,19 +151,19 @@ namespace Pulumi.Aws.AppMesh
     ///                 },
     ///                 Listener = new Aws.AppMesh.Inputs.VirtualNodeSpecListenerArgs
     ///                 {
-    ///                     HealthCheck = new Aws.AppMesh.Inputs.VirtualNodeSpecListenerHealthCheckArgs
-    ///                     {
-    ///                         HealthyThreshold = 2,
-    ///                         IntervalMillis = 5000,
-    ///                         Path = "/ping",
-    ///                         Protocol = "http",
-    ///                         TimeoutMillis = 2000,
-    ///                         UnhealthyThreshold = 2,
-    ///                     },
     ///                     PortMapping = new Aws.AppMesh.Inputs.VirtualNodeSpecListenerPortMappingArgs
     ///                     {
     ///                         Port = 8080,
     ///                         Protocol = "http",
+    ///                     },
+    ///                     HealthCheck = new Aws.AppMesh.Inputs.VirtualNodeSpecListenerHealthCheckArgs
+    ///                     {
+    ///                         Protocol = "http",
+    ///                         Path = "/ping",
+    ///                         HealthyThreshold = 2,
+    ///                         UnhealthyThreshold = 2,
+    ///                         TimeoutMillis = 2000,
+    ///                         IntervalMillis = 5000,
     ///                     },
     ///                 },
     ///                 ServiceDiscovery = new Aws.AppMesh.Inputs.VirtualNodeSpecServiceDiscoveryArgs
@@ -212,6 +212,13 @@ namespace Pulumi.Aws.AppMesh
     ///                         Protocol = "http",
     ///                     },
     ///                 },
+    ///                 ServiceDiscovery = new Aws.AppMesh.Inputs.VirtualNodeSpecServiceDiscoveryArgs
+    ///                 {
+    ///                     Dns = new Aws.AppMesh.Inputs.VirtualNodeSpecServiceDiscoveryDnsArgs
+    ///                     {
+    ///                         Hostname = "serviceb.simpleapp.local",
+    ///                     },
+    ///                 },
     ///                 Logging = new Aws.AppMesh.Inputs.VirtualNodeSpecLoggingArgs
     ///                 {
     ///                     AccessLog = new Aws.AppMesh.Inputs.VirtualNodeSpecLoggingAccessLogArgs
@@ -222,19 +229,22 @@ namespace Pulumi.Aws.AppMesh
     ///                         },
     ///                     },
     ///                 },
-    ///                 ServiceDiscovery = new Aws.AppMesh.Inputs.VirtualNodeSpecServiceDiscoveryArgs
-    ///                 {
-    ///                     Dns = new Aws.AppMesh.Inputs.VirtualNodeSpecServiceDiscoveryDnsArgs
-    ///                     {
-    ///                         Hostname = "serviceb.simpleapp.local",
-    ///                     },
-    ///                 },
     ///             },
     ///         });
     ///     }
     /// 
     /// }
     /// ```
+    /// 
+    /// ## Import
+    /// 
+    /// App Mesh virtual nodes can be imported using `mesh_name` together with the virtual node's `name`, e.g.
+    /// 
+    /// ```sh
+    ///  $ pulumi import aws:appmesh/virtualNode:VirtualNode serviceb1 simpleapp/serviceBv1
+    /// ```
+    /// 
+    ///  [1]/docs/providers/aws/index.html
     /// </summary>
     public partial class VirtualNode : Pulumi.CustomResource
     {
@@ -257,16 +267,28 @@ namespace Pulumi.Aws.AppMesh
         public Output<string> LastUpdatedDate { get; private set; } = null!;
 
         /// <summary>
-        /// The name of the service mesh in which to create the virtual node.
+        /// The name of the service mesh in which to create the virtual node. Must be between 1 and 255 characters in length.
         /// </summary>
         [Output("meshName")]
         public Output<string> MeshName { get; private set; } = null!;
 
         /// <summary>
-        /// The name to use for the virtual node.
+        /// The AWS account ID of the service mesh's owner. Defaults to the account ID the [AWS provider](https://www.terraform.io/docs/providers/aws/index.html) is currently connected to.
+        /// </summary>
+        [Output("meshOwner")]
+        public Output<string> MeshOwner { get; private set; } = null!;
+
+        /// <summary>
+        /// The name to use for the virtual node. Must be between 1 and 255 characters in length.
         /// </summary>
         [Output("name")]
         public Output<string> Name { get; private set; } = null!;
+
+        /// <summary>
+        /// The resource owner's AWS account ID.
+        /// </summary>
+        [Output("resourceOwner")]
+        public Output<string> ResourceOwner { get; private set; } = null!;
 
         /// <summary>
         /// The virtual node specification to apply.
@@ -327,13 +349,19 @@ namespace Pulumi.Aws.AppMesh
     public sealed class VirtualNodeArgs : Pulumi.ResourceArgs
     {
         /// <summary>
-        /// The name of the service mesh in which to create the virtual node.
+        /// The name of the service mesh in which to create the virtual node. Must be between 1 and 255 characters in length.
         /// </summary>
         [Input("meshName", required: true)]
         public Input<string> MeshName { get; set; } = null!;
 
         /// <summary>
-        /// The name to use for the virtual node.
+        /// The AWS account ID of the service mesh's owner. Defaults to the account ID the [AWS provider](https://www.terraform.io/docs/providers/aws/index.html) is currently connected to.
+        /// </summary>
+        [Input("meshOwner")]
+        public Input<string>? MeshOwner { get; set; }
+
+        /// <summary>
+        /// The name to use for the virtual node. Must be between 1 and 255 characters in length.
         /// </summary>
         [Input("name")]
         public Input<string>? Name { get; set; }
@@ -382,16 +410,28 @@ namespace Pulumi.Aws.AppMesh
         public Input<string>? LastUpdatedDate { get; set; }
 
         /// <summary>
-        /// The name of the service mesh in which to create the virtual node.
+        /// The name of the service mesh in which to create the virtual node. Must be between 1 and 255 characters in length.
         /// </summary>
         [Input("meshName")]
         public Input<string>? MeshName { get; set; }
 
         /// <summary>
-        /// The name to use for the virtual node.
+        /// The AWS account ID of the service mesh's owner. Defaults to the account ID the [AWS provider](https://www.terraform.io/docs/providers/aws/index.html) is currently connected to.
+        /// </summary>
+        [Input("meshOwner")]
+        public Input<string>? MeshOwner { get; set; }
+
+        /// <summary>
+        /// The name to use for the virtual node. Must be between 1 and 255 characters in length.
         /// </summary>
         [Input("name")]
         public Input<string>? Name { get; set; }
+
+        /// <summary>
+        /// The resource owner's AWS account ID.
+        /// </summary>
+        [Input("resourceOwner")]
+        public Input<string>? ResourceOwner { get; set; }
 
         /// <summary>
         /// The virtual node specification to apply.

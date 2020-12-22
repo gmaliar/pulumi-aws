@@ -24,6 +24,7 @@ namespace Pulumi.Aws.GlobalAccelerator
     ///     {
     ///         var example = new Aws.GlobalAccelerator.EndpointGroup("example", new Aws.GlobalAccelerator.EndpointGroupArgs
     ///         {
+    ///             ListenerArn = aws_globalaccelerator_listener.Example.Id,
     ///             EndpointConfigurations = 
     ///             {
     ///                 new Aws.GlobalAccelerator.Inputs.EndpointGroupEndpointConfigurationArgs
@@ -32,15 +33,28 @@ namespace Pulumi.Aws.GlobalAccelerator
     ///                     Weight = 100,
     ///                 },
     ///             },
-    ///             ListenerArn = aws_globalaccelerator_listener.Example.Id,
     ///         });
     ///     }
     /// 
     /// }
     /// ```
+    /// 
+    /// ## Import
+    /// 
+    /// Global Accelerator endpoint groups can be imported using the `id`, e.g.
+    /// 
+    /// ```sh
+    ///  $ pulumi import aws:globalaccelerator/endpointGroup:EndpointGroup example arn:aws:globalaccelerator::111111111111:accelerator/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx/listener/xxxxxxx/endpoint-group/xxxxxxxx
+    /// ```
     /// </summary>
     public partial class EndpointGroup : Pulumi.CustomResource
     {
+        /// <summary>
+        /// The Amazon Resource Name (ARN) of the endpoint group.
+        /// </summary>
+        [Output("arn")]
+        public Output<string> Arn { get; private set; } = null!;
+
         /// <summary>
         /// The list of endpoint objects. Fields documented below.
         /// </summary>
@@ -59,17 +73,11 @@ namespace Pulumi.Aws.GlobalAccelerator
         [Output("healthCheckIntervalSeconds")]
         public Output<int?> HealthCheckIntervalSeconds { get; private set; } = null!;
 
-        /// <summary>
-        /// If the protocol is HTTP/S, then this specifies the path that is the destination for health check targets. The default value is slash (/).
-        /// </summary>
         [Output("healthCheckPath")]
-        public Output<string?> HealthCheckPath { get; private set; } = null!;
+        public Output<string> HealthCheckPath { get; private set; } = null!;
 
-        /// <summary>
-        /// The port that AWS Global Accelerator uses to check the health of endpoints that are part of this endpoint group. The default port is the listener port that this endpoint group is associated with. If listener port is a list of ports, Global Accelerator uses the first port in the list.
-        /// </summary>
         [Output("healthCheckPort")]
-        public Output<int?> HealthCheckPort { get; private set; } = null!;
+        public Output<int> HealthCheckPort { get; private set; } = null!;
 
         /// <summary>
         /// The protocol that AWS Global Accelerator uses to check the health of endpoints that are part of this endpoint group. The default value is TCP.
@@ -82,6 +90,12 @@ namespace Pulumi.Aws.GlobalAccelerator
         /// </summary>
         [Output("listenerArn")]
         public Output<string> ListenerArn { get; private set; } = null!;
+
+        /// <summary>
+        /// Override specific listener ports used to route traffic to endpoints that are part of this endpoint group. Fields documented below.
+        /// </summary>
+        [Output("portOverrides")]
+        public Output<ImmutableArray<Outputs.EndpointGroupPortOverride>> PortOverrides { get; private set; } = null!;
 
         /// <summary>
         /// The number of consecutive health checks required to set the state of a healthy endpoint to unhealthy, or to set an unhealthy endpoint to healthy. The default value is 3.
@@ -165,15 +179,9 @@ namespace Pulumi.Aws.GlobalAccelerator
         [Input("healthCheckIntervalSeconds")]
         public Input<int>? HealthCheckIntervalSeconds { get; set; }
 
-        /// <summary>
-        /// If the protocol is HTTP/S, then this specifies the path that is the destination for health check targets. The default value is slash (/).
-        /// </summary>
         [Input("healthCheckPath")]
         public Input<string>? HealthCheckPath { get; set; }
 
-        /// <summary>
-        /// The port that AWS Global Accelerator uses to check the health of endpoints that are part of this endpoint group. The default port is the listener port that this endpoint group is associated with. If listener port is a list of ports, Global Accelerator uses the first port in the list.
-        /// </summary>
         [Input("healthCheckPort")]
         public Input<int>? HealthCheckPort { get; set; }
 
@@ -188,6 +196,18 @@ namespace Pulumi.Aws.GlobalAccelerator
         /// </summary>
         [Input("listenerArn", required: true)]
         public Input<string> ListenerArn { get; set; } = null!;
+
+        [Input("portOverrides")]
+        private InputList<Inputs.EndpointGroupPortOverrideArgs>? _portOverrides;
+
+        /// <summary>
+        /// Override specific listener ports used to route traffic to endpoints that are part of this endpoint group. Fields documented below.
+        /// </summary>
+        public InputList<Inputs.EndpointGroupPortOverrideArgs> PortOverrides
+        {
+            get => _portOverrides ?? (_portOverrides = new InputList<Inputs.EndpointGroupPortOverrideArgs>());
+            set => _portOverrides = value;
+        }
 
         /// <summary>
         /// The number of consecutive health checks required to set the state of a healthy endpoint to unhealthy, or to set an unhealthy endpoint to healthy. The default value is 3.
@@ -208,6 +228,12 @@ namespace Pulumi.Aws.GlobalAccelerator
 
     public sealed class EndpointGroupState : Pulumi.ResourceArgs
     {
+        /// <summary>
+        /// The Amazon Resource Name (ARN) of the endpoint group.
+        /// </summary>
+        [Input("arn")]
+        public Input<string>? Arn { get; set; }
+
         [Input("endpointConfigurations")]
         private InputList<Inputs.EndpointGroupEndpointConfigurationGetArgs>? _endpointConfigurations;
 
@@ -232,15 +258,9 @@ namespace Pulumi.Aws.GlobalAccelerator
         [Input("healthCheckIntervalSeconds")]
         public Input<int>? HealthCheckIntervalSeconds { get; set; }
 
-        /// <summary>
-        /// If the protocol is HTTP/S, then this specifies the path that is the destination for health check targets. The default value is slash (/).
-        /// </summary>
         [Input("healthCheckPath")]
         public Input<string>? HealthCheckPath { get; set; }
 
-        /// <summary>
-        /// The port that AWS Global Accelerator uses to check the health of endpoints that are part of this endpoint group. The default port is the listener port that this endpoint group is associated with. If listener port is a list of ports, Global Accelerator uses the first port in the list.
-        /// </summary>
         [Input("healthCheckPort")]
         public Input<int>? HealthCheckPort { get; set; }
 
@@ -255,6 +275,18 @@ namespace Pulumi.Aws.GlobalAccelerator
         /// </summary>
         [Input("listenerArn")]
         public Input<string>? ListenerArn { get; set; }
+
+        [Input("portOverrides")]
+        private InputList<Inputs.EndpointGroupPortOverrideGetArgs>? _portOverrides;
+
+        /// <summary>
+        /// Override specific listener ports used to route traffic to endpoints that are part of this endpoint group. Fields documented below.
+        /// </summary>
+        public InputList<Inputs.EndpointGroupPortOverrideGetArgs> PortOverrides
+        {
+            get => _portOverrides ?? (_portOverrides = new InputList<Inputs.EndpointGroupPortOverrideGetArgs>());
+            set => _portOverrides = value;
+        }
 
         /// <summary>
         /// The number of consecutive health checks required to set the state of a healthy endpoint to unhealthy, or to set an unhealthy endpoint to healthy. The default value is 3.

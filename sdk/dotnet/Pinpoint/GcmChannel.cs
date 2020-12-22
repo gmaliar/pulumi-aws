@@ -29,12 +29,20 @@ namespace Pulumi.Aws.Pinpoint
     ///         });
     ///         var gcm = new Aws.Pinpoint.GcmChannel("gcm", new Aws.Pinpoint.GcmChannelArgs
     ///         {
-    ///             ApiKey = "api_key",
     ///             ApplicationId = app.ApplicationId,
+    ///             ApiKey = "api_key",
     ///         });
     ///     }
     /// 
     /// }
+    /// ```
+    /// 
+    /// ## Import
+    /// 
+    /// Pinpoint GCM Channel can be imported using the `application-id`, e.g.
+    /// 
+    /// ```sh
+    ///  $ pulumi import aws:pinpoint/gcmChannel:GcmChannel gcm application-id
     /// ```
     /// </summary>
     public partial class GcmChannel : Pulumi.CustomResource

@@ -2,8 +2,7 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 /**
@@ -29,15 +28,23 @@ import * as utilities from "../utilities";
  *
  * const fwd = new aws.route53.ResolverRule("fwd", {
  *     domainName: "example.com",
- *     resolverEndpointId: aws_route53_resolver_endpoint_foo.id,
  *     ruleType: "FORWARD",
- *     tags: {
- *         Environment: "Prod",
- *     },
+ *     resolverEndpointId: aws_route53_resolver_endpoint.foo.id,
  *     targetIps: [{
  *         ip: "123.45.67.89",
  *     }],
+ *     tags: {
+ *         Environment: "Prod",
+ *     },
  * });
+ * ```
+ *
+ * ## Import
+ *
+ * Route53 Resolver rules can be imported using the `id`, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:route53/resolverRule:ResolverRule sys rslvr-rr-0123456789abcdef0
  * ```
  */
 export class ResolverRule extends pulumi.CustomResource {
@@ -131,10 +138,10 @@ export class ResolverRule extends pulumi.CustomResource {
             inputs["targetIps"] = state ? state.targetIps : undefined;
         } else {
             const args = argsOrState as ResolverRuleArgs | undefined;
-            if (!args || args.domainName === undefined) {
+            if ((!args || args.domainName === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'domainName'");
             }
-            if (!args || args.ruleType === undefined) {
+            if ((!args || args.ruleType === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'ruleType'");
             }
             inputs["domainName"] = args ? args.domainName : undefined;

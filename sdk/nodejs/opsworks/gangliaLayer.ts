@@ -2,8 +2,7 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 /**
@@ -16,8 +15,8 @@ import * as utilities from "../utilities";
  * import * as aws from "@pulumi/aws";
  *
  * const monitor = new aws.opsworks.GangliaLayer("monitor", {
+ *     stackId: aws_opsworks_stack.main.id,
  *     password: "foobarbaz",
- *     stackId: aws_opsworks_stack_main.id,
  * });
  * ```
  */
@@ -174,10 +173,10 @@ export class GangliaLayer extends pulumi.CustomResource {
             inputs["username"] = state ? state.username : undefined;
         } else {
             const args = argsOrState as GangliaLayerArgs | undefined;
-            if (!args || args.password === undefined) {
+            if ((!args || args.password === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'password'");
             }
-            if (!args || args.stackId === undefined) {
+            if ((!args || args.stackId === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'stackId'");
             }
             inputs["autoAssignElasticIps"] = args ? args.autoAssignElasticIps : undefined;

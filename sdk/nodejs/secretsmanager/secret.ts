@@ -2,8 +2,7 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 /**
@@ -31,11 +30,19 @@ import * as utilities from "../utilities";
  * import * as aws from "@pulumi/aws";
  *
  * const rotation_example = new aws.secretsmanager.Secret("rotation-example", {
- *     rotationLambdaArn: aws_lambda_function_example.arn,
+ *     rotationLambdaArn: aws_lambda_function.example.arn,
  *     rotationRules: {
  *         automaticallyAfterDays: 7,
  *     },
  * });
+ * ```
+ *
+ * ## Import
+ *
+ * `aws_secretsmanager_secret` can be imported by using the secret Amazon Resource Name (ARN), e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:secretsmanager/secret:Secret example arn:aws:secretsmanager:us-east-1:123456789012:secret:example-123456
  * ```
  */
 export class Secret extends pulumi.CustomResource {
@@ -75,7 +82,7 @@ export class Secret extends pulumi.CustomResource {
      */
     public readonly description!: pulumi.Output<string | undefined>;
     /**
-     * Specifies the ARN or alias of the AWS KMS customer master key (CMK) to be used to encrypt the secret values in the versions stored in this secret. If you don't specify this value, then Secrets Manager defaults to using the AWS account's default CMK (the one named `aws/secretsmanager`). If the default KMS CMK with that name doesn't yet exist, then AWS Secrets Manager creates it for you automatically the first time.
+     * Specifies the ARN or Id of the AWS KMS customer master key (CMK) to be used to encrypt the secret values in the versions stored in this secret. If you don't specify this value, then Secrets Manager defaults to using the AWS account's default CMK (the one named `aws/secretsmanager`). If the default KMS CMK with that name doesn't yet exist, then AWS Secrets Manager creates it for you automatically the first time.
      */
     public readonly kmsKeyId!: pulumi.Output<string | undefined>;
     /**
@@ -89,7 +96,7 @@ export class Secret extends pulumi.CustomResource {
     /**
      * A valid JSON document representing a [resource policy](https://docs.aws.amazon.com/secretsmanager/latest/userguide/auth-and-access_resource-based-policies.html).
      */
-    public readonly policy!: pulumi.Output<string | undefined>;
+    public readonly policy!: pulumi.Output<string>;
     /**
      * Specifies the number of days that AWS Secrets Manager waits before it can delete the secret. This value can be `0` to force deletion without recovery or range from `7` to `30` days. The default value is `30`.
      */
@@ -178,7 +185,7 @@ export interface SecretState {
      */
     readonly description?: pulumi.Input<string>;
     /**
-     * Specifies the ARN or alias of the AWS KMS customer master key (CMK) to be used to encrypt the secret values in the versions stored in this secret. If you don't specify this value, then Secrets Manager defaults to using the AWS account's default CMK (the one named `aws/secretsmanager`). If the default KMS CMK with that name doesn't yet exist, then AWS Secrets Manager creates it for you automatically the first time.
+     * Specifies the ARN or Id of the AWS KMS customer master key (CMK) to be used to encrypt the secret values in the versions stored in this secret. If you don't specify this value, then Secrets Manager defaults to using the AWS account's default CMK (the one named `aws/secretsmanager`). If the default KMS CMK with that name doesn't yet exist, then AWS Secrets Manager creates it for you automatically the first time.
      */
     readonly kmsKeyId?: pulumi.Input<string>;
     /**
@@ -230,7 +237,7 @@ export interface SecretArgs {
      */
     readonly description?: pulumi.Input<string>;
     /**
-     * Specifies the ARN or alias of the AWS KMS customer master key (CMK) to be used to encrypt the secret values in the versions stored in this secret. If you don't specify this value, then Secrets Manager defaults to using the AWS account's default CMK (the one named `aws/secretsmanager`). If the default KMS CMK with that name doesn't yet exist, then AWS Secrets Manager creates it for you automatically the first time.
+     * Specifies the ARN or Id of the AWS KMS customer master key (CMK) to be used to encrypt the secret values in the versions stored in this secret. If you don't specify this value, then Secrets Manager defaults to using the AWS account's default CMK (the one named `aws/secretsmanager`). If the default KMS CMK with that name doesn't yet exist, then AWS Secrets Manager creates it for you automatically the first time.
      */
     readonly kmsKeyId?: pulumi.Input<string>;
     /**

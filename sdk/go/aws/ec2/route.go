@@ -4,6 +4,7 @@
 package ec2
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -24,7 +25,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/ec2"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/ec2"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -35,7 +36,7 @@ import (
 // 			DestinationCidrBlock:   pulumi.String("10.0.1.0/22"),
 // 			VpcPeeringConnectionId: pulumi.String("pcx-45ff3dc1"),
 // 		}, pulumi.DependsOn([]pulumi.Resource{
-// 			"aws_route_table.testing",
+// 			aws_route_table.Testing,
 // 		}))
 // 		if err != nil {
 // 			return err
@@ -50,15 +51,15 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/ec2"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/ec2"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
 // func main() {
 // 	pulumi.Run(func(ctx *pulumi.Context) error {
 // 		vpc, err := ec2.NewVpc(ctx, "vpc", &ec2.VpcArgs{
-// 			AssignGeneratedIpv6CidrBlock: pulumi.Bool(true),
 // 			CidrBlock:                    pulumi.String("10.1.0.0/16"),
+// 			AssignGeneratedIpv6CidrBlock: pulumi.Bool(true),
 // 		})
 // 		if err != nil {
 // 			return err
@@ -70,9 +71,9 @@ import (
 // 			return err
 // 		}
 // 		_, err = ec2.NewRoute(ctx, "route", &ec2.RouteArgs{
+// 			RouteTableId:             pulumi.String("rtb-4fbb3ac4"),
 // 			DestinationIpv6CidrBlock: pulumi.String("::/0"),
 // 			EgressOnlyGatewayId:      egress.ID(),
-// 			RouteTableId:             pulumi.String("rtb-4fbb3ac4"),
 // 		})
 // 		if err != nil {
 // 			return err
@@ -80,6 +81,20 @@ import (
 // 		return nil
 // 	})
 // }
+// ```
+//
+// ## Import
+//
+// Individual routes can be imported using `ROUTETABLEID_DESTINATION`. For example, import a route in route table `rtb-656C65616E6F72` with an IPv4 destination CIDR of `10.42.0.0/16` like thisconsole
+//
+// ```sh
+//  $ pulumi import aws:ec2/route:Route my_route rtb-656C65616E6F72_10.42.0.0/16
+// ```
+//
+//  Import a route in route table `rtb-656C65616E6F72` with an IPv6 destination CIDR of `2620:0:2d0:200::8/125` similarlyconsole
+//
+// ```sh
+//  $ pulumi import aws:ec2/route:Route my_route rtb-656C65616E6F72_2620:0:2d0:200::8/125
 // ```
 type Route struct {
 	pulumi.CustomResourceState
@@ -96,6 +111,8 @@ type Route struct {
 	// Identifier of an EC2 instance.
 	InstanceId      pulumi.StringOutput `pulumi:"instanceId"`
 	InstanceOwnerId pulumi.StringOutput `pulumi:"instanceOwnerId"`
+	// Identifier of a Outpost local gateway.
+	LocalGatewayId pulumi.StringOutput `pulumi:"localGatewayId"`
 	// Identifier of a VPC NAT gateway.
 	NatGatewayId pulumi.StringOutput `pulumi:"natGatewayId"`
 	// Identifier of an EC2 network interface.
@@ -106,6 +123,8 @@ type Route struct {
 	State        pulumi.StringOutput `pulumi:"state"`
 	// Identifier of an EC2 Transit Gateway.
 	TransitGatewayId pulumi.StringPtrOutput `pulumi:"transitGatewayId"`
+	// Identifier of a VPC Endpoint.
+	VpcEndpointId pulumi.StringPtrOutput `pulumi:"vpcEndpointId"`
 	// Identifier of a VPC peering connection.
 	VpcPeeringConnectionId pulumi.StringPtrOutput `pulumi:"vpcPeeringConnectionId"`
 }
@@ -113,11 +132,12 @@ type Route struct {
 // NewRoute registers a new resource with the given unique name, arguments, and options.
 func NewRoute(ctx *pulumi.Context,
 	name string, args *RouteArgs, opts ...pulumi.ResourceOption) (*Route, error) {
-	if args == nil || args.RouteTableId == nil {
-		return nil, errors.New("missing required argument 'RouteTableId'")
-	}
 	if args == nil {
-		args = &RouteArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.RouteTableId == nil {
+		return nil, errors.New("invalid value for required argument 'RouteTableId'")
 	}
 	var resource Route
 	err := ctx.RegisterResource("aws:ec2/route:Route", name, args, &resource, opts...)
@@ -153,6 +173,8 @@ type routeState struct {
 	// Identifier of an EC2 instance.
 	InstanceId      *string `pulumi:"instanceId"`
 	InstanceOwnerId *string `pulumi:"instanceOwnerId"`
+	// Identifier of a Outpost local gateway.
+	LocalGatewayId *string `pulumi:"localGatewayId"`
 	// Identifier of a VPC NAT gateway.
 	NatGatewayId *string `pulumi:"natGatewayId"`
 	// Identifier of an EC2 network interface.
@@ -163,6 +185,8 @@ type routeState struct {
 	State        *string `pulumi:"state"`
 	// Identifier of an EC2 Transit Gateway.
 	TransitGatewayId *string `pulumi:"transitGatewayId"`
+	// Identifier of a VPC Endpoint.
+	VpcEndpointId *string `pulumi:"vpcEndpointId"`
 	// Identifier of a VPC peering connection.
 	VpcPeeringConnectionId *string `pulumi:"vpcPeeringConnectionId"`
 }
@@ -180,6 +204,8 @@ type RouteState struct {
 	// Identifier of an EC2 instance.
 	InstanceId      pulumi.StringPtrInput
 	InstanceOwnerId pulumi.StringPtrInput
+	// Identifier of a Outpost local gateway.
+	LocalGatewayId pulumi.StringPtrInput
 	// Identifier of a VPC NAT gateway.
 	NatGatewayId pulumi.StringPtrInput
 	// Identifier of an EC2 network interface.
@@ -190,6 +216,8 @@ type RouteState struct {
 	State        pulumi.StringPtrInput
 	// Identifier of an EC2 Transit Gateway.
 	TransitGatewayId pulumi.StringPtrInput
+	// Identifier of a VPC Endpoint.
+	VpcEndpointId pulumi.StringPtrInput
 	// Identifier of a VPC peering connection.
 	VpcPeeringConnectionId pulumi.StringPtrInput
 }
@@ -209,6 +237,8 @@ type routeArgs struct {
 	GatewayId *string `pulumi:"gatewayId"`
 	// Identifier of an EC2 instance.
 	InstanceId *string `pulumi:"instanceId"`
+	// Identifier of a Outpost local gateway.
+	LocalGatewayId *string `pulumi:"localGatewayId"`
 	// Identifier of a VPC NAT gateway.
 	NatGatewayId *string `pulumi:"natGatewayId"`
 	// Identifier of an EC2 network interface.
@@ -217,6 +247,8 @@ type routeArgs struct {
 	RouteTableId string `pulumi:"routeTableId"`
 	// Identifier of an EC2 Transit Gateway.
 	TransitGatewayId *string `pulumi:"transitGatewayId"`
+	// Identifier of a VPC Endpoint.
+	VpcEndpointId *string `pulumi:"vpcEndpointId"`
 	// Identifier of a VPC peering connection.
 	VpcPeeringConnectionId *string `pulumi:"vpcPeeringConnectionId"`
 }
@@ -233,6 +265,8 @@ type RouteArgs struct {
 	GatewayId pulumi.StringPtrInput
 	// Identifier of an EC2 instance.
 	InstanceId pulumi.StringPtrInput
+	// Identifier of a Outpost local gateway.
+	LocalGatewayId pulumi.StringPtrInput
 	// Identifier of a VPC NAT gateway.
 	NatGatewayId pulumi.StringPtrInput
 	// Identifier of an EC2 network interface.
@@ -241,10 +275,51 @@ type RouteArgs struct {
 	RouteTableId pulumi.StringInput
 	// Identifier of an EC2 Transit Gateway.
 	TransitGatewayId pulumi.StringPtrInput
+	// Identifier of a VPC Endpoint.
+	VpcEndpointId pulumi.StringPtrInput
 	// Identifier of a VPC peering connection.
 	VpcPeeringConnectionId pulumi.StringPtrInput
 }
 
 func (RouteArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*routeArgs)(nil)).Elem()
+}
+
+type RouteInput interface {
+	pulumi.Input
+
+	ToRouteOutput() RouteOutput
+	ToRouteOutputWithContext(ctx context.Context) RouteOutput
+}
+
+func (Route) ElementType() reflect.Type {
+	return reflect.TypeOf((*Route)(nil)).Elem()
+}
+
+func (i Route) ToRouteOutput() RouteOutput {
+	return i.ToRouteOutputWithContext(context.Background())
+}
+
+func (i Route) ToRouteOutputWithContext(ctx context.Context) RouteOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(RouteOutput)
+}
+
+type RouteOutput struct {
+	*pulumi.OutputState
+}
+
+func (RouteOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*RouteOutput)(nil)).Elem()
+}
+
+func (o RouteOutput) ToRouteOutput() RouteOutput {
+	return o
+}
+
+func (o RouteOutput) ToRouteOutputWithContext(ctx context.Context) RouteOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(RouteOutput{})
 }

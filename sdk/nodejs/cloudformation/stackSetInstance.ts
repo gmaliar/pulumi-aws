@@ -20,7 +20,7 @@ import * as utilities from "../utilities";
  * const example = new aws.cloudformation.StackSetInstance("example", {
  *     accountId: "123456789012",
  *     region: "us-east-1",
- *     stackSetName: aws_cloudformation_stack_set_example.name,
+ *     stackSetName: aws_cloudformation_stack_set.example.name,
  * });
  * ```
  * ### Example IAM Setup in Target Account
@@ -29,22 +29,18 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const aWSCloudFormationStackSetExecutionRoleAssumeRolePolicy = aws_iam_role_AWSCloudFormationStackSetAdministrationRole.arn.apply(arn => aws.iam.getPolicyDocument({
+ * const aWSCloudFormationStackSetExecutionRoleAssumeRolePolicy = aws.iam.getPolicyDocument({
  *     statements: [{
  *         actions: ["sts:AssumeRole"],
  *         effect: "Allow",
  *         principals: [{
- *             identifiers: [arn],
+ *             identifiers: [aws_iam_role.AWSCloudFormationStackSetAdministrationRole.arn],
  *             type: "AWS",
  *         }],
  *     }],
- * }, { async: true }));
- * const aWSCloudFormationStackSetExecutionRole = new aws.iam.Role("AWSCloudFormationStackSetExecutionRole", {
- *     assumeRolePolicy: aWSCloudFormationStackSetExecutionRoleAssumeRolePolicy.json,
  * });
- * // Documentation: https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/stacksets-prereqs.html
- * // Additional IAM permissions necessary depend on the resources defined in the StackSet template
- * const aWSCloudFormationStackSetExecutionRoleMinimumExecutionPolicyPolicyDocument = pulumi.output(aws.iam.getPolicyDocument({
+ * const aWSCloudFormationStackSetExecutionRole = new aws.iam.Role("aWSCloudFormationStackSetExecutionRole", {assumeRolePolicy: aWSCloudFormationStackSetExecutionRoleAssumeRolePolicy.then(aWSCloudFormationStackSetExecutionRoleAssumeRolePolicy => aWSCloudFormationStackSetExecutionRoleAssumeRolePolicy.json)});
+ * const aWSCloudFormationStackSetExecutionRoleMinimumExecutionPolicyPolicyDocument = aws.iam.getPolicyDocument({
  *     statements: [{
  *         actions: [
  *             "cloudformation:*",
@@ -54,11 +50,19 @@ import * as utilities from "../utilities";
  *         effect: "Allow",
  *         resources: ["*"],
  *     }],
- * }, { async: true }));
- * const aWSCloudFormationStackSetExecutionRoleMinimumExecutionPolicyRolePolicy = new aws.iam.RolePolicy("AWSCloudFormationStackSetExecutionRole_MinimumExecutionPolicy", {
- *     policy: aWSCloudFormationStackSetExecutionRoleMinimumExecutionPolicyPolicyDocument.json,
+ * });
+ * const aWSCloudFormationStackSetExecutionRoleMinimumExecutionPolicyRolePolicy = new aws.iam.RolePolicy("aWSCloudFormationStackSetExecutionRoleMinimumExecutionPolicyRolePolicy", {
+ *     policy: aWSCloudFormationStackSetExecutionRoleMinimumExecutionPolicyPolicyDocument.then(aWSCloudFormationStackSetExecutionRoleMinimumExecutionPolicyPolicyDocument => aWSCloudFormationStackSetExecutionRoleMinimumExecutionPolicyPolicyDocument.json),
  *     role: aWSCloudFormationStackSetExecutionRole.name,
  * });
+ * ```
+ *
+ * ## Import
+ *
+ * CloudFormation StackSet Instances can be imported using the StackSet name, target AWS account ID, and target AWS region separated by commas (`,`) e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:cloudformation/stackSetInstance:StackSetInstance example example,123456789012,us-east-1
  * ```
  */
 export class StackSetInstance extends pulumi.CustomResource {
@@ -134,7 +138,7 @@ export class StackSetInstance extends pulumi.CustomResource {
             inputs["stackSetName"] = state ? state.stackSetName : undefined;
         } else {
             const args = argsOrState as StackSetInstanceArgs | undefined;
-            if (!args || args.stackSetName === undefined) {
+            if ((!args || args.stackSetName === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'stackSetName'");
             }
             inputs["accountId"] = args ? args.accountId : undefined;

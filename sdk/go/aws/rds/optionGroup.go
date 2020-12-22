@@ -4,6 +4,7 @@
 package rds
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -23,15 +24,16 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/rds"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/rds"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
 // func main() {
 // 	pulumi.Run(func(ctx *pulumi.Context) error {
 // 		_, err := rds.NewOptionGroup(ctx, "example", &rds.OptionGroupArgs{
-// 			EngineName:         pulumi.String("sqlserver-ee"),
-// 			MajorEngineVersion: pulumi.String("11.00"),
+// 			OptionGroupDescription: pulumi.String("Option Group"),
+// 			EngineName:             pulumi.String("sqlserver-ee"),
+// 			MajorEngineVersion:     pulumi.String("11.00"),
 // 			Options: rds.OptionGroupOptionArray{
 // 				&rds.OptionGroupOptionArgs{
 // 					OptionName: pulumi.String("Timezone"),
@@ -47,7 +49,7 @@ import (
 // 					OptionSettings: rds.OptionGroupOptionOptionSettingArray{
 // 						&rds.OptionGroupOptionOptionSettingArgs{
 // 							Name:  pulumi.String("IAM_ROLE_ARN"),
-// 							Value: pulumi.String(aws_iam_role.Example.Arn),
+// 							Value: pulumi.Any(aws_iam_role.Example.Arn),
 // 						},
 // 					},
 // 				},
@@ -55,7 +57,6 @@ import (
 // 					OptionName: pulumi.String("TDE"),
 // 				},
 // 			},
-// 			OptionGroupDescription: pulumi.String("Option Group"),
 // 		})
 // 		if err != nil {
 // 			return err
@@ -66,6 +67,14 @@ import (
 // ```
 //
 // > **Note**: Any modifications to the `dbOptionGroup` are set to happen immediately as we default to applying immediately.
+//
+// ## Import
+//
+// DB Option groups can be imported using the `name`, e.g.
+//
+// ```sh
+//  $ pulumi import aws:rds/optionGroup:OptionGroup bar mysql-option-group
+// ```
 type OptionGroup struct {
 	pulumi.CustomResourceState
 
@@ -90,14 +99,15 @@ type OptionGroup struct {
 // NewOptionGroup registers a new resource with the given unique name, arguments, and options.
 func NewOptionGroup(ctx *pulumi.Context,
 	name string, args *OptionGroupArgs, opts ...pulumi.ResourceOption) (*OptionGroup, error) {
-	if args == nil || args.EngineName == nil {
-		return nil, errors.New("missing required argument 'EngineName'")
-	}
-	if args == nil || args.MajorEngineVersion == nil {
-		return nil, errors.New("missing required argument 'MajorEngineVersion'")
-	}
 	if args == nil {
-		args = &OptionGroupArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.EngineName == nil {
+		return nil, errors.New("invalid value for required argument 'EngineName'")
+	}
+	if args.MajorEngineVersion == nil {
+		return nil, errors.New("invalid value for required argument 'MajorEngineVersion'")
 	}
 	if args.OptionGroupDescription == nil {
 		args.OptionGroupDescription = pulumi.StringPtr("Managed by Pulumi")
@@ -202,4 +212,43 @@ type OptionGroupArgs struct {
 
 func (OptionGroupArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*optionGroupArgs)(nil)).Elem()
+}
+
+type OptionGroupInput interface {
+	pulumi.Input
+
+	ToOptionGroupOutput() OptionGroupOutput
+	ToOptionGroupOutputWithContext(ctx context.Context) OptionGroupOutput
+}
+
+func (OptionGroup) ElementType() reflect.Type {
+	return reflect.TypeOf((*OptionGroup)(nil)).Elem()
+}
+
+func (i OptionGroup) ToOptionGroupOutput() OptionGroupOutput {
+	return i.ToOptionGroupOutputWithContext(context.Background())
+}
+
+func (i OptionGroup) ToOptionGroupOutputWithContext(ctx context.Context) OptionGroupOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(OptionGroupOutput)
+}
+
+type OptionGroupOutput struct {
+	*pulumi.OutputState
+}
+
+func (OptionGroupOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*OptionGroupOutput)(nil)).Elem()
+}
+
+func (o OptionGroupOutput) ToOptionGroupOutput() OptionGroupOutput {
+	return o
+}
+
+func (o OptionGroupOutput) ToOptionGroupOutputWithContext(ctx context.Context) OptionGroupOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(OptionGroupOutput{})
 }

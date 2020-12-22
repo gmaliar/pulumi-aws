@@ -13,9 +13,15 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const example = new aws.ec2transitgateway.RouteTable("example", {
- *     transitGatewayId: aws_ec2_transit_gateway_example.id,
- * });
+ * const example = new aws.ec2transitgateway.RouteTable("example", {transitGatewayId: aws_ec2_transit_gateway.example.id});
+ * ```
+ *
+ * ## Import
+ *
+ * `aws_ec2_transit_gateway_route_table` can be imported by using the EC2 Transit Gateway Route Table identifier, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:ec2transitgateway/routeTable:RouteTable example tgw-rtb-12345678
  * ```
  */
 export class RouteTable extends pulumi.CustomResource {
@@ -47,6 +53,10 @@ export class RouteTable extends pulumi.CustomResource {
     }
 
     /**
+     * EC2 Transit Gateway Route Table Amazon Resource Name (ARN).
+     */
+    public /*out*/ readonly arn!: pulumi.Output<string>;
+    /**
      * Boolean whether this is the default association route table for the EC2 Transit Gateway.
      */
     public /*out*/ readonly defaultAssociationRouteTable!: pulumi.Output<boolean>;
@@ -75,17 +85,19 @@ export class RouteTable extends pulumi.CustomResource {
         let inputs: pulumi.Inputs = {};
         if (opts && opts.id) {
             const state = argsOrState as RouteTableState | undefined;
+            inputs["arn"] = state ? state.arn : undefined;
             inputs["defaultAssociationRouteTable"] = state ? state.defaultAssociationRouteTable : undefined;
             inputs["defaultPropagationRouteTable"] = state ? state.defaultPropagationRouteTable : undefined;
             inputs["tags"] = state ? state.tags : undefined;
             inputs["transitGatewayId"] = state ? state.transitGatewayId : undefined;
         } else {
             const args = argsOrState as RouteTableArgs | undefined;
-            if (!args || args.transitGatewayId === undefined) {
+            if ((!args || args.transitGatewayId === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'transitGatewayId'");
             }
             inputs["tags"] = args ? args.tags : undefined;
             inputs["transitGatewayId"] = args ? args.transitGatewayId : undefined;
+            inputs["arn"] = undefined /*out*/;
             inputs["defaultAssociationRouteTable"] = undefined /*out*/;
             inputs["defaultPropagationRouteTable"] = undefined /*out*/;
         }
@@ -104,6 +116,10 @@ export class RouteTable extends pulumi.CustomResource {
  * Input properties used for looking up and filtering RouteTable resources.
  */
 export interface RouteTableState {
+    /**
+     * EC2 Transit Gateway Route Table Amazon Resource Name (ARN).
+     */
+    readonly arn?: pulumi.Input<string>;
     /**
      * Boolean whether this is the default association route table for the EC2 Transit Gateway.
      */

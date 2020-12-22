@@ -4,38 +4,18 @@
 package organizations
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 )
 
-// Provides a resource to create an organization.
+// ## Import
 //
-// ## Example Usage
+// The AWS organization can be imported by using the `id`, e.g.
 //
-// ```go
-// package main
-//
-// import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/organizations"
-// 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
-// )
-//
-// func main() {
-// 	pulumi.Run(func(ctx *pulumi.Context) error {
-// 		_, err := organizations.NewOrganization(ctx, "org", &organizations.OrganizationArgs{
-// 			AwsServiceAccessPrincipals: pulumi.StringArray{
-// 				pulumi.String("cloudtrail.amazonaws.com"),
-// 				pulumi.String("config.amazonaws.com"),
-// 			},
-// 			FeatureSet: pulumi.String("ALL"),
-// 		})
-// 		if err != nil {
-// 			return err
-// 		}
-// 		return nil
-// 	})
-// }
+// ```sh
+//  $ pulumi import aws:organizations/organization:Organization my_org o-1234567
 // ```
 type Organization struct {
 	pulumi.CustomResourceState
@@ -68,6 +48,7 @@ func NewOrganization(ctx *pulumi.Context,
 	if args == nil {
 		args = &OrganizationArgs{}
 	}
+
 	var resource Organization
 	err := ctx.RegisterResource("aws:organizations/organization:Organization", name, args, &resource, opts...)
 	if err != nil {
@@ -160,4 +141,43 @@ type OrganizationArgs struct {
 
 func (OrganizationArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*organizationArgs)(nil)).Elem()
+}
+
+type OrganizationInput interface {
+	pulumi.Input
+
+	ToOrganizationOutput() OrganizationOutput
+	ToOrganizationOutputWithContext(ctx context.Context) OrganizationOutput
+}
+
+func (Organization) ElementType() reflect.Type {
+	return reflect.TypeOf((*Organization)(nil)).Elem()
+}
+
+func (i Organization) ToOrganizationOutput() OrganizationOutput {
+	return i.ToOrganizationOutputWithContext(context.Background())
+}
+
+func (i Organization) ToOrganizationOutputWithContext(ctx context.Context) OrganizationOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(OrganizationOutput)
+}
+
+type OrganizationOutput struct {
+	*pulumi.OutputState
+}
+
+func (OrganizationOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*OrganizationOutput)(nil)).Elem()
+}
+
+func (o OrganizationOutput) ToOrganizationOutput() OrganizationOutput {
+	return o
+}
+
+func (o OrganizationOutput) ToOrganizationOutputWithContext(ctx context.Context) OrganizationOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(OrganizationOutput{})
 }

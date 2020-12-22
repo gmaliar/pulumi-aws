@@ -17,15 +17,17 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/ec2"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/ec2"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
 // func main() {
 // 	pulumi.Run(func(ctx *pulumi.Context) error {
 // 		opt0 := "s3"
+// 		opt1 := "Gateway"
 // 		s3, err := ec2.LookupVpcEndpointService(ctx, &ec2.LookupVpcEndpointServiceArgs{
-// 			Service: &opt0,
+// 			Service:     &opt0,
+// 			ServiceType: &opt1,
 // 		}, nil)
 // 		if err != nil {
 // 			return err
@@ -37,8 +39,8 @@ import (
 // 			return err
 // 		}
 // 		_, err = ec2.NewVpcEndpoint(ctx, "ep", &ec2.VpcEndpointArgs{
-// 			ServiceName: pulumi.String(s3.ServiceName),
 // 			VpcId:       foo.ID(),
+// 			ServiceName: pulumi.String(s3.ServiceName),
 // 		})
 // 		if err != nil {
 // 			return err
@@ -53,7 +55,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/ec2"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/ec2"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -76,7 +78,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/ec2"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/ec2"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -116,6 +118,8 @@ type LookupVpcEndpointServiceArgs struct {
 	Service *string `pulumi:"service"`
 	// The service name that is specified when creating a VPC endpoint. For AWS services the service name is usually in the form `com.amazonaws.<region>.<service>` (the SageMaker Notebook service is an exception to this rule, the service name is in the form `aws.sagemaker.<region>.notebook`).
 	ServiceName *string `pulumi:"serviceName"`
+	// The service type, `Gateway` or `Interface`.
+	ServiceType *string `pulumi:"serviceType"`
 	// A map of tags, each pair of which must exactly match a pair on the desired VPC Endpoint Service.
 	Tags map[string]string `pulumi:"tags"`
 }
@@ -143,7 +147,6 @@ type LookupVpcEndpointServiceResult struct {
 	// The ID of the endpoint service.
 	ServiceId   string `pulumi:"serviceId"`
 	ServiceName string `pulumi:"serviceName"`
-	// The service type, `Gateway` or `Interface`.
 	ServiceType string `pulumi:"serviceType"`
 	// A map of tags assigned to the resource.
 	Tags map[string]string `pulumi:"tags"`

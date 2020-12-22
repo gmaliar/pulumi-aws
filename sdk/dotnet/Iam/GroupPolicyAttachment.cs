@@ -30,9 +30,8 @@ namespace Pulumi.Aws.Iam
     ///         var policy = new Aws.Iam.Policy("policy", new Aws.Iam.PolicyArgs
     ///         {
     ///             Description = "A test policy",
-    ///             Policy = "",
+    ///             Policy = "{ ... policy JSON ... }",
     ///         });
-    ///         // insert policy here
     ///         var test_attach = new Aws.Iam.GroupPolicyAttachment("test-attach", new Aws.Iam.GroupPolicyAttachmentArgs
     ///         {
     ///             Group = @group.Name,
@@ -41,6 +40,14 @@ namespace Pulumi.Aws.Iam
     ///     }
     /// 
     /// }
+    /// ```
+    /// 
+    /// ## Import
+    /// 
+    /// IAM group policy attachments can be imported using the group name and policy arn separated by `/`.
+    /// 
+    /// ```sh
+    ///  $ pulumi import aws:iam/groupPolicyAttachment:GroupPolicyAttachment test-attach test-group/arn:aws:iam::xxxxxxxxxxxx:policy/test-policy
     /// ```
     /// </summary>
     public partial class GroupPolicyAttachment : Pulumi.CustomResource

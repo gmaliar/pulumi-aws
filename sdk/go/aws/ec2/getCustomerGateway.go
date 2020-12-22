@@ -15,7 +15,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/ec2"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/ec2"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -35,17 +35,17 @@ import (
 // 			return err
 // 		}
 // 		main, err := ec2.NewVpnGateway(ctx, "main", &ec2.VpnGatewayArgs{
+// 			VpcId:         pulumi.Any(aws_vpc.Main.Id),
 // 			AmazonSideAsn: pulumi.String("7224"),
-// 			VpcId:         pulumi.String(aws_vpc.Main.Id),
 // 		})
 // 		if err != nil {
 // 			return err
 // 		}
 // 		_, err = ec2.NewVpnConnection(ctx, "transit", &ec2.VpnConnectionArgs{
-// 			CustomerGatewayId: pulumi.String(foo.Id),
-// 			StaticRoutesOnly:  pulumi.Bool(false),
-// 			Type:              pulumi.String(foo.Type),
 // 			VpnGatewayId:      main.ID(),
+// 			CustomerGatewayId: pulumi.String(foo.Id),
+// 			Type:              pulumi.String(foo.Type),
+// 			StaticRoutesOnly:  pulumi.Bool(false),
 // 		})
 // 		if err != nil {
 // 			return err
@@ -80,7 +80,7 @@ type LookupCustomerGatewayResult struct {
 	// (Optional) The gateway's Border Gateway Protocol (BGP) Autonomous System Number (ASN).
 	BgpAsn  int                        `pulumi:"bgpAsn"`
 	Filters []GetCustomerGatewayFilter `pulumi:"filters"`
-	Id      *string                    `pulumi:"id"`
+	Id      string                     `pulumi:"id"`
 	// (Optional) The IP address of the gateway's Internet-routable external interface.
 	IpAddress string `pulumi:"ipAddress"`
 	// Map of key-value pairs assigned to the gateway.

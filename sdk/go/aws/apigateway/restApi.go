@@ -4,6 +4,7 @@
 package apigateway
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
@@ -20,7 +21,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/apigateway"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/apigateway"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -42,7 +43,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/apigateway"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/apigateway"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -59,6 +60,14 @@ import (
 // 		return nil
 // 	})
 // }
+// ```
+//
+// ## Import
+//
+// `aws_api_gateway_rest_api` can be imported by using the REST API ID, e.g.
+//
+// ```sh
+//  $ pulumi import aws:apigateway/restApi:RestApi example 12345abcde
 // ```
 type RestApi struct {
 	pulumi.CustomResourceState
@@ -85,8 +94,8 @@ type RestApi struct {
 	MinimumCompressionSize pulumi.IntPtrOutput `pulumi:"minimumCompressionSize"`
 	// The name of the REST API
 	Name pulumi.StringOutput `pulumi:"name"`
-	// JSON formatted policy document that controls access to the API Gateway.
-	Policy pulumi.StringPtrOutput `pulumi:"policy"`
+	// JSON formatted policy document that controls access to the API Gateway. This provider will only perform drift detection of its value when present in a configuration. It is recommended to use the `apigateway.RestApiPolicy` resource instead.
+	Policy pulumi.StringOutput `pulumi:"policy"`
 	// The resource ID of the REST API's root
 	RootResourceId pulumi.StringOutput `pulumi:"rootResourceId"`
 	// Key-value map of resource tags
@@ -99,6 +108,7 @@ func NewRestApi(ctx *pulumi.Context,
 	if args == nil {
 		args = &RestApiArgs{}
 	}
+
 	var resource RestApi
 	err := ctx.RegisterResource("aws:apigateway/restApi:RestApi", name, args, &resource, opts...)
 	if err != nil {
@@ -143,7 +153,7 @@ type restApiState struct {
 	MinimumCompressionSize *int `pulumi:"minimumCompressionSize"`
 	// The name of the REST API
 	Name *string `pulumi:"name"`
-	// JSON formatted policy document that controls access to the API Gateway.
+	// JSON formatted policy document that controls access to the API Gateway. This provider will only perform drift detection of its value when present in a configuration. It is recommended to use the `apigateway.RestApiPolicy` resource instead.
 	Policy *string `pulumi:"policy"`
 	// The resource ID of the REST API's root
 	RootResourceId *string `pulumi:"rootResourceId"`
@@ -174,7 +184,7 @@ type RestApiState struct {
 	MinimumCompressionSize pulumi.IntPtrInput
 	// The name of the REST API
 	Name pulumi.StringPtrInput
-	// JSON formatted policy document that controls access to the API Gateway.
+	// JSON formatted policy document that controls access to the API Gateway. This provider will only perform drift detection of its value when present in a configuration. It is recommended to use the `apigateway.RestApiPolicy` resource instead.
 	Policy pulumi.StringPtrInput
 	// The resource ID of the REST API's root
 	RootResourceId pulumi.StringPtrInput
@@ -201,7 +211,7 @@ type restApiArgs struct {
 	MinimumCompressionSize *int `pulumi:"minimumCompressionSize"`
 	// The name of the REST API
 	Name *string `pulumi:"name"`
-	// JSON formatted policy document that controls access to the API Gateway.
+	// JSON formatted policy document that controls access to the API Gateway. This provider will only perform drift detection of its value when present in a configuration. It is recommended to use the `apigateway.RestApiPolicy` resource instead.
 	Policy *string `pulumi:"policy"`
 	// Key-value map of resource tags
 	Tags map[string]string `pulumi:"tags"`
@@ -223,7 +233,7 @@ type RestApiArgs struct {
 	MinimumCompressionSize pulumi.IntPtrInput
 	// The name of the REST API
 	Name pulumi.StringPtrInput
-	// JSON formatted policy document that controls access to the API Gateway.
+	// JSON formatted policy document that controls access to the API Gateway. This provider will only perform drift detection of its value when present in a configuration. It is recommended to use the `apigateway.RestApiPolicy` resource instead.
 	Policy pulumi.StringPtrInput
 	// Key-value map of resource tags
 	Tags pulumi.StringMapInput
@@ -231,4 +241,43 @@ type RestApiArgs struct {
 
 func (RestApiArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*restApiArgs)(nil)).Elem()
+}
+
+type RestApiInput interface {
+	pulumi.Input
+
+	ToRestApiOutput() RestApiOutput
+	ToRestApiOutputWithContext(ctx context.Context) RestApiOutput
+}
+
+func (RestApi) ElementType() reflect.Type {
+	return reflect.TypeOf((*RestApi)(nil)).Elem()
+}
+
+func (i RestApi) ToRestApiOutput() RestApiOutput {
+	return i.ToRestApiOutputWithContext(context.Background())
+}
+
+func (i RestApi) ToRestApiOutputWithContext(ctx context.Context) RestApiOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(RestApiOutput)
+}
+
+type RestApiOutput struct {
+	*pulumi.OutputState
+}
+
+func (RestApiOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*RestApiOutput)(nil)).Elem()
+}
+
+func (o RestApiOutput) ToRestApiOutput() RestApiOutput {
+	return o
+}
+
+func (o RestApiOutput) ToRestApiOutputWithContext(ctx context.Context) RestApiOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(RestApiOutput{})
 }

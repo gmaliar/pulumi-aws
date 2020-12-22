@@ -4,6 +4,7 @@
 package ec2
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
@@ -24,7 +25,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/ec2"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/ec2"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -47,6 +48,14 @@ import (
 // 		return nil
 // 	})
 // }
+// ```
+//
+// ## Import
+//
+// `aws_ami` can be imported using the ID of the AMI, e.g.
+//
+// ```sh
+//  $ pulumi import aws:ec2/ami:Ami example ami-12345678
 // ```
 type Ami struct {
 	pulumi.CustomResourceState
@@ -98,6 +107,7 @@ func NewAmi(ctx *pulumi.Context,
 	if args == nil {
 		args = &AmiArgs{}
 	}
+
 	var resource Ami
 	err := ctx.RegisterResource("aws:ec2/ami:Ami", name, args, &resource, opts...)
 	if err != nil {
@@ -284,4 +294,43 @@ type AmiArgs struct {
 
 func (AmiArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*amiArgs)(nil)).Elem()
+}
+
+type AmiInput interface {
+	pulumi.Input
+
+	ToAmiOutput() AmiOutput
+	ToAmiOutputWithContext(ctx context.Context) AmiOutput
+}
+
+func (Ami) ElementType() reflect.Type {
+	return reflect.TypeOf((*Ami)(nil)).Elem()
+}
+
+func (i Ami) ToAmiOutput() AmiOutput {
+	return i.ToAmiOutputWithContext(context.Background())
+}
+
+func (i Ami) ToAmiOutputWithContext(ctx context.Context) AmiOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(AmiOutput)
+}
+
+type AmiOutput struct {
+	*pulumi.OutputState
+}
+
+func (AmiOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*AmiOutput)(nil)).Elem()
+}
+
+func (o AmiOutput) ToAmiOutput() AmiOutput {
+	return o
+}
+
+func (o AmiOutput) ToAmiOutputWithContext(ctx context.Context) AmiOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(AmiOutput{})
 }

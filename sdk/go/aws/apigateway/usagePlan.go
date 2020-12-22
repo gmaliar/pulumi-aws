@@ -4,6 +4,7 @@
 package apigateway
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
@@ -17,7 +18,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/apigateway"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/apigateway"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -42,6 +43,8 @@ import (
 // 			return err
 // 		}
 // 		_, err = apigateway.NewUsagePlan(ctx, "myUsagePlan", &apigateway.UsagePlanArgs{
+// 			Description: pulumi.String("my description"),
+// 			ProductCode: pulumi.String("MYCODE"),
 // 			ApiStages: apigateway.UsagePlanApiStageArray{
 // 				&apigateway.UsagePlanApiStageArgs{
 // 					ApiId: myapi.ID(),
@@ -52,8 +55,6 @@ import (
 // 					Stage: prod.StageName,
 // 				},
 // 			},
-// 			Description: pulumi.String("my description"),
-// 			ProductCode: pulumi.String("MYCODE"),
 // 			QuotaSettings: &apigateway.UsagePlanQuotaSettingsArgs{
 // 				Limit:  pulumi.Int(20),
 // 				Offset: pulumi.Int(2),
@@ -71,6 +72,14 @@ import (
 // 	})
 // }
 // ```
+//
+// ## Import
+//
+// AWS API Gateway Usage Plan can be imported using the `id`, e.g.
+//
+// ```sh
+//  $ pulumi import aws:apigateway/usagePlan:UsagePlan myusageplan <usage_plan_id>
+// ```
 type UsagePlan struct {
 	pulumi.CustomResourceState
 
@@ -82,7 +91,7 @@ type UsagePlan struct {
 	Description pulumi.StringPtrOutput `pulumi:"description"`
 	// The name of the usage plan.
 	Name pulumi.StringOutput `pulumi:"name"`
-	// The AWS Markeplace product identifier to associate with the usage plan as a SaaS product on AWS Marketplace.
+	// The AWS Marketplace product identifier to associate with the usage plan as a SaaS product on AWS Marketplace.
 	ProductCode pulumi.StringPtrOutput `pulumi:"productCode"`
 	// The quota settings of the usage plan.
 	QuotaSettings UsagePlanQuotaSettingsPtrOutput `pulumi:"quotaSettings"`
@@ -98,6 +107,7 @@ func NewUsagePlan(ctx *pulumi.Context,
 	if args == nil {
 		args = &UsagePlanArgs{}
 	}
+
 	var resource UsagePlan
 	err := ctx.RegisterResource("aws:apigateway/usagePlan:UsagePlan", name, args, &resource, opts...)
 	if err != nil {
@@ -128,7 +138,7 @@ type usagePlanState struct {
 	Description *string `pulumi:"description"`
 	// The name of the usage plan.
 	Name *string `pulumi:"name"`
-	// The AWS Markeplace product identifier to associate with the usage plan as a SaaS product on AWS Marketplace.
+	// The AWS Marketplace product identifier to associate with the usage plan as a SaaS product on AWS Marketplace.
 	ProductCode *string `pulumi:"productCode"`
 	// The quota settings of the usage plan.
 	QuotaSettings *UsagePlanQuotaSettings `pulumi:"quotaSettings"`
@@ -147,7 +157,7 @@ type UsagePlanState struct {
 	Description pulumi.StringPtrInput
 	// The name of the usage plan.
 	Name pulumi.StringPtrInput
-	// The AWS Markeplace product identifier to associate with the usage plan as a SaaS product on AWS Marketplace.
+	// The AWS Marketplace product identifier to associate with the usage plan as a SaaS product on AWS Marketplace.
 	ProductCode pulumi.StringPtrInput
 	// The quota settings of the usage plan.
 	QuotaSettings UsagePlanQuotaSettingsPtrInput
@@ -168,7 +178,7 @@ type usagePlanArgs struct {
 	Description *string `pulumi:"description"`
 	// The name of the usage plan.
 	Name *string `pulumi:"name"`
-	// The AWS Markeplace product identifier to associate with the usage plan as a SaaS product on AWS Marketplace.
+	// The AWS Marketplace product identifier to associate with the usage plan as a SaaS product on AWS Marketplace.
 	ProductCode *string `pulumi:"productCode"`
 	// The quota settings of the usage plan.
 	QuotaSettings *UsagePlanQuotaSettings `pulumi:"quotaSettings"`
@@ -186,7 +196,7 @@ type UsagePlanArgs struct {
 	Description pulumi.StringPtrInput
 	// The name of the usage plan.
 	Name pulumi.StringPtrInput
-	// The AWS Markeplace product identifier to associate with the usage plan as a SaaS product on AWS Marketplace.
+	// The AWS Marketplace product identifier to associate with the usage plan as a SaaS product on AWS Marketplace.
 	ProductCode pulumi.StringPtrInput
 	// The quota settings of the usage plan.
 	QuotaSettings UsagePlanQuotaSettingsPtrInput
@@ -198,4 +208,43 @@ type UsagePlanArgs struct {
 
 func (UsagePlanArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*usagePlanArgs)(nil)).Elem()
+}
+
+type UsagePlanInput interface {
+	pulumi.Input
+
+	ToUsagePlanOutput() UsagePlanOutput
+	ToUsagePlanOutputWithContext(ctx context.Context) UsagePlanOutput
+}
+
+func (UsagePlan) ElementType() reflect.Type {
+	return reflect.TypeOf((*UsagePlan)(nil)).Elem()
+}
+
+func (i UsagePlan) ToUsagePlanOutput() UsagePlanOutput {
+	return i.ToUsagePlanOutputWithContext(context.Background())
+}
+
+func (i UsagePlan) ToUsagePlanOutputWithContext(ctx context.Context) UsagePlanOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(UsagePlanOutput)
+}
+
+type UsagePlanOutput struct {
+	*pulumi.OutputState
+}
+
+func (UsagePlanOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*UsagePlanOutput)(nil)).Elem()
+}
+
+func (o UsagePlanOutput) ToUsagePlanOutput() UsagePlanOutput {
+	return o
+}
+
+func (o UsagePlanOutput) ToUsagePlanOutputWithContext(ctx context.Context) UsagePlanOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(UsagePlanOutput{})
 }

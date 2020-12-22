@@ -5,16 +5,20 @@
 import warnings
 import pulumi
 import pulumi.runtime
-from typing import Union
-from .. import utilities, tables
+from typing import Any, Mapping, Optional, Sequence, Union
+from .. import _utilities, _tables
+
+__all__ = ['ReceiptRuleSet']
 
 
 class ReceiptRuleSet(pulumi.CustomResource):
-    rule_set_name: pulumi.Output[str]
-    """
-    The name of the rule set
-    """
-    def __init__(__self__, resource_name, opts=None, rule_set_name=None, __props__=None, __name__=None, __opts__=None):
+    def __init__(__self__,
+                 resource_name: str,
+                 opts: Optional[pulumi.ResourceOptions] = None,
+                 rule_set_name: Optional[pulumi.Input[str]] = None,
+                 __props__=None,
+                 __name__=None,
+                 __opts__=None):
         """
         Provides an SES receipt rule set resource
 
@@ -25,6 +29,14 @@ class ReceiptRuleSet(pulumi.CustomResource):
         import pulumi_aws as aws
 
         main = aws.ses.ReceiptRuleSet("main", rule_set_name="primary-rules")
+        ```
+
+        ## Import
+
+        SES receipt rule sets can be imported using the rule set name.
+
+        ```sh
+         $ pulumi import aws:ses/receiptRuleSet:ReceiptRuleSet my_rule_set my_rule_set_name
         ```
 
         :param str resource_name: The name of the resource.
@@ -42,13 +54,13 @@ class ReceiptRuleSet(pulumi.CustomResource):
         if not isinstance(opts, pulumi.ResourceOptions):
             raise TypeError('Expected resource options to be a ResourceOptions instance')
         if opts.version is None:
-            opts.version = utilities.get_version()
+            opts.version = _utilities.get_version()
         if opts.id is None:
             if __props__ is not None:
                 raise TypeError('__props__ is only valid when passed in combination with a valid opts.id to get an existing resource')
             __props__ = dict()
 
-            if rule_set_name is None:
+            if rule_set_name is None and not opts.urn:
                 raise TypeError("Missing required property 'rule_set_name'")
             __props__['rule_set_name'] = rule_set_name
         super(ReceiptRuleSet, __self__).__init__(
@@ -58,13 +70,16 @@ class ReceiptRuleSet(pulumi.CustomResource):
             opts)
 
     @staticmethod
-    def get(resource_name, id, opts=None, rule_set_name=None):
+    def get(resource_name: str,
+            id: pulumi.Input[str],
+            opts: Optional[pulumi.ResourceOptions] = None,
+            rule_set_name: Optional[pulumi.Input[str]] = None) -> 'ReceiptRuleSet':
         """
         Get an existing ReceiptRuleSet resource's state with the given name, id, and optional extra
         properties used to qualify the lookup.
 
         :param str resource_name: The unique name of the resulting resource.
-        :param str id: The unique provider ID of the resource to lookup.
+        :param pulumi.Input[str] id: The unique provider ID of the resource to lookup.
         :param pulumi.ResourceOptions opts: Options for the resource.
         :param pulumi.Input[str] rule_set_name: The name of the rule set
         """
@@ -75,8 +90,17 @@ class ReceiptRuleSet(pulumi.CustomResource):
         __props__["rule_set_name"] = rule_set_name
         return ReceiptRuleSet(resource_name, opts=opts, __props__=__props__)
 
+    @property
+    @pulumi.getter(name="ruleSetName")
+    def rule_set_name(self) -> pulumi.Output[str]:
+        """
+        The name of the rule set
+        """
+        return pulumi.get(self, "rule_set_name")
+
     def translate_output_property(self, prop):
-        return tables._CAMEL_TO_SNAKE_CASE_TABLE.get(prop) or prop
+        return _tables.CAMEL_TO_SNAKE_CASE_TABLE.get(prop) or prop
 
     def translate_input_property(self, prop):
-        return tables._SNAKE_TO_CAMEL_CASE_TABLE.get(prop) or prop
+        return _tables.SNAKE_TO_CAMEL_CASE_TABLE.get(prop) or prop
+

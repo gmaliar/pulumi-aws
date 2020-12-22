@@ -13,12 +13,12 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const myStackPermission = new aws.opsworks.Permission("my_stack_permission", {
+ * const myStackPermission = new aws.opsworks.Permission("myStackPermission", {
  *     allowSsh: true,
  *     allowSudo: true,
  *     level: "iam_only",
- *     stackId: aws_opsworks_stack_stack.id,
- *     userArn: aws_iam_user_user.arn,
+ *     userArn: aws_iam_user.user.arn,
+ *     stackId: aws_opsworks_stack.stack.id,
  * });
  * ```
  */
@@ -90,7 +90,7 @@ export class Permission extends pulumi.CustomResource {
             inputs["userArn"] = state ? state.userArn : undefined;
         } else {
             const args = argsOrState as PermissionArgs | undefined;
-            if (!args || args.userArn === undefined) {
+            if ((!args || args.userArn === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'userArn'");
             }
             inputs["allowSsh"] = args ? args.allowSsh : undefined;

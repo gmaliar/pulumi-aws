@@ -15,7 +15,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/outposts"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/outposts"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -43,6 +43,8 @@ func GetOutpost(ctx *pulumi.Context, args *GetOutpostArgs, opts ...pulumi.Invoke
 
 // A collection of arguments for invoking getOutpost.
 type GetOutpostArgs struct {
+	// Amazon Resource Name (ARN).
+	Arn *string `pulumi:"arn"`
 	// Identifier of the Outpost.
 	Id *string `pulumi:"id"`
 	// Name of the Outpost.
@@ -51,7 +53,6 @@ type GetOutpostArgs struct {
 
 // A collection of values returned by getOutpost.
 type GetOutpostResult struct {
-	// Amazon Resource Name (ARN).
 	Arn string `pulumi:"arn"`
 	// Availability Zone name.
 	AvailabilityZone string `pulumi:"availabilityZone"`

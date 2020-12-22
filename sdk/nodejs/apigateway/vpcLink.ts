@@ -16,17 +16,25 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const exampleLoadBalancer = new aws.lb.LoadBalancer("example", {
+ * const exampleLoadBalancer = new aws.lb.LoadBalancer("exampleLoadBalancer", {
  *     internal: true,
  *     loadBalancerType: "network",
  *     subnetMappings: [{
  *         subnetId: "12345",
  *     }],
  * });
- * const exampleVpcLink = new aws.apigateway.VpcLink("example", {
+ * const exampleVpcLink = new aws.apigateway.VpcLink("exampleVpcLink", {
  *     description: "example description",
- *     targetArn: exampleLoadBalancer.arn,
+ *     targetArn: [exampleLoadBalancer.arn],
  * });
+ * ```
+ *
+ * ## Import
+ *
+ * API Gateway VPC Link can be imported using the `id`, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:apigateway/vpcLink:VpcLink example <vpc_link_id>
  * ```
  */
 export class VpcLink extends pulumi.CustomResource {
@@ -94,7 +102,7 @@ export class VpcLink extends pulumi.CustomResource {
             inputs["targetArn"] = state ? state.targetArn : undefined;
         } else {
             const args = argsOrState as VpcLinkArgs | undefined;
-            if (!args || args.targetArn === undefined) {
+            if ((!args || args.targetArn === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'targetArn'");
             }
             inputs["description"] = args ? args.description : undefined;

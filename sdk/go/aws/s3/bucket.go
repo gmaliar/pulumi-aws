@@ -4,12 +4,15 @@
 package s3
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 )
 
 // Provides a S3 bucket resource.
+//
+// > This functionality is for managing S3 in an AWS Partition. To manage [S3 on Outposts](https://docs.aws.amazon.com/AmazonS3/latest/dev/S3onOutposts.html), see the [`s3control.Bucket` resource](https://www.terraform.io/docs/providers/aws/r/s3control_bucket.html).
 //
 // ## Example Usage
 // ### Private Bucket w/ Tags
@@ -18,7 +21,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/s3"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/s3"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -44,7 +47,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/s3"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/s3"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -84,7 +87,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/s3"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/s3"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -109,7 +112,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/s3"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/s3"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -143,7 +146,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/s3"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/s3"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -227,9 +230,9 @@ import (
 // import (
 // 	"fmt"
 //
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/iam"
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/providers"
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/s3"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/iam"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/providers"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/s3"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -242,13 +245,12 @@ import (
 // 			return err
 // 		}
 // 		replicationRole, err := iam.NewRole(ctx, "replicationRole", &iam.RoleArgs{
-// 			AssumeRolePolicy: pulumi.String(fmt.Sprintf("%v%v%v%v%v%v%v%v%v%v%v%v%v%v", "{\n", "  \"Version\": \"2012-10-17\",\n", "  \"Statement\": [\n", "    {\n", "      \"Action\": \"sts:AssumeRole\",\n", "      \"Principal\": {\n", "        \"Service\": \"s3.amazonaws.com\"\n", "      },\n", "      \"Effect\": \"Allow\",\n", "      \"Sid\": \"\"\n", "    }\n", "  ]\n", "}\n", "\n")),
+// 			AssumeRolePolicy: pulumi.String(fmt.Sprintf("%v%v%v%v%v%v%v%v%v%v%v%v%v", "{\n", "  \"Version\": \"2012-10-17\",\n", "  \"Statement\": [\n", "    {\n", "      \"Action\": \"sts:AssumeRole\",\n", "      \"Principal\": {\n", "        \"Service\": \"s3.amazonaws.com\"\n", "      },\n", "      \"Effect\": \"Allow\",\n", "      \"Sid\": \"\"\n", "    }\n", "  ]\n", "}\n")),
 // 		})
 // 		if err != nil {
 // 			return err
 // 		}
 // 		destination, err := s3.NewBucket(ctx, "destination", &s3.BucketArgs{
-// 			Region: pulumi.String("eu-west-1"),
 // 			Versioning: &s3.BucketVersioningArgs{
 // 				Enabled: pulumi.Bool(true),
 // 			},
@@ -257,26 +259,25 @@ import (
 // 			return err
 // 		}
 // 		bucket, err := s3.NewBucket(ctx, "bucket", &s3.BucketArgs{
-// 			Acl:    pulumi.String("private"),
-// 			Region: pulumi.String("eu-central-1"),
+// 			Acl: pulumi.String("private"),
+// 			Versioning: &s3.BucketVersioningArgs{
+// 				Enabled: pulumi.Bool(true),
+// 			},
 // 			ReplicationConfiguration: &s3.BucketReplicationConfigurationArgs{
 // 				Role: replicationRole.Arn,
 // 				Rules: s3.BucketReplicationConfigurationRuleArray{
 // 					&s3.BucketReplicationConfigurationRuleArgs{
+// 						Id:     pulumi.String("foobar"),
+// 						Prefix: pulumi.String("foo"),
+// 						Status: pulumi.String("Enabled"),
 // 						Destination: &s3.BucketReplicationConfigurationRuleDestinationArgs{
 // 							Bucket:       destination.Arn,
 // 							StorageClass: pulumi.String("STANDARD"),
 // 						},
-// 						Id:     pulumi.String("foobar"),
-// 						Prefix: pulumi.String("foo"),
-// 						Status: pulumi.String("Enabled"),
 // 					},
 // 				},
 // 			},
-// 			Versioning: &s3.BucketVersioningArgs{
-// 				Enabled: pulumi.Bool(true),
-// 			},
-// 		}, pulumi.Provider("aws.central"))
+// 		}, pulumi.Provider(aws.Central))
 // 		if err != nil {
 // 			return err
 // 		}
@@ -285,15 +286,15 @@ import (
 // 				bucketArn := _args[0].(string)
 // 				bucketArn1 := _args[1].(string)
 // 				destinationArn := _args[2].(string)
-// 				return fmt.Sprintf("%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v", "{\n", "  \"Version\": \"2012-10-17\",\n", "  \"Statement\": [\n", "    {\n", "      \"Action\": [\n", "        \"s3:GetReplicationConfiguration\",\n", "        \"s3:ListBucket\"\n", "      ],\n", "      \"Effect\": \"Allow\",\n", "      \"Resource\": [\n", "        \"", bucketArn, "\"\n", "      ]\n", "    },\n", "    {\n", "      \"Action\": [\n", "        \"s3:GetObjectVersion\",\n", "        \"s3:GetObjectVersionAcl\"\n", "      ],\n", "      \"Effect\": \"Allow\",\n", "      \"Resource\": [\n", "        \"", bucketArn1, "/*\"\n", "      ]\n", "    },\n", "    {\n", "      \"Action\": [\n", "        \"s3:ReplicateObject\",\n", "        \"s3:ReplicateDelete\"\n", "      ],\n", "      \"Effect\": \"Allow\",\n", "      \"Resource\": \"", destinationArn, "/*\"\n", "    }\n", "  ]\n", "}\n", "\n"), nil
+// 				return fmt.Sprintf("%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v", "{\n", "  \"Version\": \"2012-10-17\",\n", "  \"Statement\": [\n", "    {\n", "      \"Action\": [\n", "        \"s3:GetReplicationConfiguration\",\n", "        \"s3:ListBucket\"\n", "      ],\n", "      \"Effect\": \"Allow\",\n", "      \"Resource\": [\n", "        \"", bucketArn, "\"\n", "      ]\n", "    },\n", "    {\n", "      \"Action\": [\n", "        \"s3:GetObjectVersion\",\n", "        \"s3:GetObjectVersionAcl\"\n", "      ],\n", "      \"Effect\": \"Allow\",\n", "      \"Resource\": [\n", "        \"", bucketArn1, "/*\"\n", "      ]\n", "    },\n", "    {\n", "      \"Action\": [\n", "        \"s3:ReplicateObject\",\n", "        \"s3:ReplicateDelete\"\n", "      ],\n", "      \"Effect\": \"Allow\",\n", "      \"Resource\": \"", destinationArn, "/*\"\n", "    }\n", "  ]\n", "}\n"), nil
 // 			}).(pulumi.StringOutput),
 // 		})
 // 		if err != nil {
 // 			return err
 // 		}
 // 		_, err = iam.NewRolePolicyAttachment(ctx, "replicationRolePolicyAttachment", &iam.RolePolicyAttachmentArgs{
-// 			PolicyArn: replicationPolicy.Arn,
 // 			Role:      replicationRole.Name,
+// 			PolicyArn: replicationPolicy.Arn,
 // 		})
 // 		if err != nil {
 // 			return err
@@ -308,16 +309,16 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/kms"
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/s3"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/kms"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/s3"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
 // func main() {
 // 	pulumi.Run(func(ctx *pulumi.Context) error {
 // 		mykey, err := kms.NewKey(ctx, "mykey", &kms.KeyArgs{
-// 			DeletionWindowInDays: pulumi.Int(10),
 // 			Description:          pulumi.String("This key is used to encrypt bucket objects"),
+// 			DeletionWindowInDays: pulumi.Int(10),
 // 		})
 // 		if err != nil {
 // 			return err
@@ -345,8 +346,8 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws"
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/s3"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/s3"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -359,19 +360,19 @@ import (
 // 		_, err = s3.NewBucket(ctx, "bucket", &s3.BucketArgs{
 // 			Grants: s3.BucketGrantArray{
 // 				&s3.BucketGrantArgs{
-// 					Id: pulumi.String(currentUser.Id),
+// 					Id:   pulumi.String(currentUser.Id),
+// 					Type: pulumi.String("CanonicalUser"),
 // 					Permissions: pulumi.StringArray{
 // 						pulumi.String("FULL_CONTROL"),
 // 					},
-// 					Type: pulumi.String("CanonicalUser"),
 // 				},
 // 				&s3.BucketGrantArgs{
+// 					Type: pulumi.String("Group"),
 // 					Permissions: pulumi.StringArray{
 // 						pulumi.String("READ"),
 // 						pulumi.String("WRITE"),
 // 					},
-// 					Type: pulumi.String("Group"),
-// 					Uri:  pulumi.String("http://acs.amazonaws.com/groups/s3/LogDelivery"),
+// 					Uri: pulumi.String("http://acs.amazonaws.com/groups/s3/LogDelivery"),
 // 				},
 // 			},
 // 		})
@@ -382,20 +383,30 @@ import (
 // 	})
 // }
 // ```
+//
+// ## Import
+//
+// S3 bucket can be imported using the `bucket`, e.g.
+//
+// ```sh
+//  $ pulumi import aws:s3/bucket:Bucket bucket bucket-name
+// ```
+//
+//  The `policy` argument is not imported and will be deprecated in a future version 3.x of the Terraform AWS Provider for removal in version 4.0. Use the [`aws_s3_bucket_policy` resource](/docs/providers/aws/r/s3_bucket_policy.html) to manage the S3 Bucket Policy instead.
 type Bucket struct {
 	pulumi.CustomResourceState
 
 	// Sets the accelerate configuration of an existing bucket. Can be `Enabled` or `Suspended`.
 	AccelerationStatus pulumi.StringOutput `pulumi:"accelerationStatus"`
-	// The [canned ACL](https://docs.aws.amazon.com/AmazonS3/latest/dev/acl-overview.html#canned-acl) to apply. Defaults to "private".  Conflicts with `grant`.
+	// The [canned ACL](https://docs.aws.amazon.com/AmazonS3/latest/dev/acl-overview.html#canned-acl) to apply. Valid values are `private`, `public-read`, `public-read-write`, `aws-exec-read`, `authenticated-read`, and `log-delivery-write`. Defaults to `private`.  Conflicts with `grant`.
 	Acl pulumi.StringPtrOutput `pulumi:"acl"`
 	// The ARN of the bucket. Will be of format `arn:aws:s3:::bucketname`.
 	Arn pulumi.StringOutput `pulumi:"arn"`
-	// The name of the bucket. If omitted, this provider will assign a random, unique name.
+	// The name of the bucket. If omitted, this provider will assign a random, unique name. Must be less than or equal to 63 characters in length.
 	Bucket pulumi.StringOutput `pulumi:"bucket"`
 	// The bucket domain name. Will be of format `bucketname.s3.amazonaws.com`.
 	BucketDomainName pulumi.StringOutput `pulumi:"bucketDomainName"`
-	// Creates a unique bucket name beginning with the specified prefix. Conflicts with `bucket`.
+	// Creates a unique bucket name beginning with the specified prefix. Conflicts with `bucket`. Must be less than or equal to 37 characters in length.
 	BucketPrefix pulumi.StringPtrOutput `pulumi:"bucketPrefix"`
 	// The bucket region-specific domain name. The bucket domain name including the region name, please refer [here](https://docs.aws.amazon.com/general/latest/gr/rande.html#s3_region) for format. Note: The AWS CloudFront allows specifying S3 region-specific endpoint when creating S3 origin, it will prevent [redirect issues](https://forums.aws.amazon.com/thread.jspa?threadID=216814) from CloudFront to S3 Origin URL.
 	BucketRegionalDomainName pulumi.StringOutput `pulumi:"bucketRegionalDomainName"`
@@ -415,7 +426,7 @@ type Bucket struct {
 	ObjectLockConfiguration BucketObjectLockConfigurationPtrOutput `pulumi:"objectLockConfiguration"`
 	// A valid [bucket policy](https://docs.aws.amazon.com/AmazonS3/latest/dev/example-bucket-policies.html) JSON document. Note that if the policy document is not specific enough (but still valid), the provider may view the policy as constantly changing in a `pulumi up / preview / update`. In this case, please make sure you use the verbose/specific version of the policy.
 	Policy pulumi.StringPtrOutput `pulumi:"policy"`
-	// If specified, the AWS region this bucket should reside in. Otherwise, the region used by the callee.
+	// The AWS region this bucket resides in.
 	Region pulumi.StringOutput `pulumi:"region"`
 	// A configuration of [replication configuration](http://docs.aws.amazon.com/AmazonS3/latest/dev/crr.html) (documented below).
 	ReplicationConfiguration BucketReplicationConfigurationPtrOutput `pulumi:"replicationConfiguration"`
@@ -444,6 +455,7 @@ func NewBucket(ctx *pulumi.Context,
 	if args == nil {
 		args = &BucketArgs{}
 	}
+
 	var resource Bucket
 	err := ctx.RegisterResource("aws:s3/bucket:Bucket", name, args, &resource, opts...)
 	if err != nil {
@@ -468,15 +480,15 @@ func GetBucket(ctx *pulumi.Context,
 type bucketState struct {
 	// Sets the accelerate configuration of an existing bucket. Can be `Enabled` or `Suspended`.
 	AccelerationStatus *string `pulumi:"accelerationStatus"`
-	// The [canned ACL](https://docs.aws.amazon.com/AmazonS3/latest/dev/acl-overview.html#canned-acl) to apply. Defaults to "private".  Conflicts with `grant`.
+	// The [canned ACL](https://docs.aws.amazon.com/AmazonS3/latest/dev/acl-overview.html#canned-acl) to apply. Valid values are `private`, `public-read`, `public-read-write`, `aws-exec-read`, `authenticated-read`, and `log-delivery-write`. Defaults to `private`.  Conflicts with `grant`.
 	Acl *string `pulumi:"acl"`
 	// The ARN of the bucket. Will be of format `arn:aws:s3:::bucketname`.
 	Arn *string `pulumi:"arn"`
-	// The name of the bucket. If omitted, this provider will assign a random, unique name.
+	// The name of the bucket. If omitted, this provider will assign a random, unique name. Must be less than or equal to 63 characters in length.
 	Bucket *string `pulumi:"bucket"`
 	// The bucket domain name. Will be of format `bucketname.s3.amazonaws.com`.
 	BucketDomainName *string `pulumi:"bucketDomainName"`
-	// Creates a unique bucket name beginning with the specified prefix. Conflicts with `bucket`.
+	// Creates a unique bucket name beginning with the specified prefix. Conflicts with `bucket`. Must be less than or equal to 37 characters in length.
 	BucketPrefix *string `pulumi:"bucketPrefix"`
 	// The bucket region-specific domain name. The bucket domain name including the region name, please refer [here](https://docs.aws.amazon.com/general/latest/gr/rande.html#s3_region) for format. Note: The AWS CloudFront allows specifying S3 region-specific endpoint when creating S3 origin, it will prevent [redirect issues](https://forums.aws.amazon.com/thread.jspa?threadID=216814) from CloudFront to S3 Origin URL.
 	BucketRegionalDomainName *string `pulumi:"bucketRegionalDomainName"`
@@ -496,7 +508,7 @@ type bucketState struct {
 	ObjectLockConfiguration *BucketObjectLockConfiguration `pulumi:"objectLockConfiguration"`
 	// A valid [bucket policy](https://docs.aws.amazon.com/AmazonS3/latest/dev/example-bucket-policies.html) JSON document. Note that if the policy document is not specific enough (but still valid), the provider may view the policy as constantly changing in a `pulumi up / preview / update`. In this case, please make sure you use the verbose/specific version of the policy.
 	Policy *string `pulumi:"policy"`
-	// If specified, the AWS region this bucket should reside in. Otherwise, the region used by the callee.
+	// The AWS region this bucket resides in.
 	Region *string `pulumi:"region"`
 	// A configuration of [replication configuration](http://docs.aws.amazon.com/AmazonS3/latest/dev/crr.html) (documented below).
 	ReplicationConfiguration *BucketReplicationConfiguration `pulumi:"replicationConfiguration"`
@@ -522,15 +534,15 @@ type bucketState struct {
 type BucketState struct {
 	// Sets the accelerate configuration of an existing bucket. Can be `Enabled` or `Suspended`.
 	AccelerationStatus pulumi.StringPtrInput
-	// The [canned ACL](https://docs.aws.amazon.com/AmazonS3/latest/dev/acl-overview.html#canned-acl) to apply. Defaults to "private".  Conflicts with `grant`.
+	// The [canned ACL](https://docs.aws.amazon.com/AmazonS3/latest/dev/acl-overview.html#canned-acl) to apply. Valid values are `private`, `public-read`, `public-read-write`, `aws-exec-read`, `authenticated-read`, and `log-delivery-write`. Defaults to `private`.  Conflicts with `grant`.
 	Acl pulumi.StringPtrInput
 	// The ARN of the bucket. Will be of format `arn:aws:s3:::bucketname`.
 	Arn pulumi.StringPtrInput
-	// The name of the bucket. If omitted, this provider will assign a random, unique name.
+	// The name of the bucket. If omitted, this provider will assign a random, unique name. Must be less than or equal to 63 characters in length.
 	Bucket pulumi.StringPtrInput
 	// The bucket domain name. Will be of format `bucketname.s3.amazonaws.com`.
 	BucketDomainName pulumi.StringPtrInput
-	// Creates a unique bucket name beginning with the specified prefix. Conflicts with `bucket`.
+	// Creates a unique bucket name beginning with the specified prefix. Conflicts with `bucket`. Must be less than or equal to 37 characters in length.
 	BucketPrefix pulumi.StringPtrInput
 	// The bucket region-specific domain name. The bucket domain name including the region name, please refer [here](https://docs.aws.amazon.com/general/latest/gr/rande.html#s3_region) for format. Note: The AWS CloudFront allows specifying S3 region-specific endpoint when creating S3 origin, it will prevent [redirect issues](https://forums.aws.amazon.com/thread.jspa?threadID=216814) from CloudFront to S3 Origin URL.
 	BucketRegionalDomainName pulumi.StringPtrInput
@@ -550,7 +562,7 @@ type BucketState struct {
 	ObjectLockConfiguration BucketObjectLockConfigurationPtrInput
 	// A valid [bucket policy](https://docs.aws.amazon.com/AmazonS3/latest/dev/example-bucket-policies.html) JSON document. Note that if the policy document is not specific enough (but still valid), the provider may view the policy as constantly changing in a `pulumi up / preview / update`. In this case, please make sure you use the verbose/specific version of the policy.
 	Policy pulumi.StringPtrInput
-	// If specified, the AWS region this bucket should reside in. Otherwise, the region used by the callee.
+	// The AWS region this bucket resides in.
 	Region pulumi.StringPtrInput
 	// A configuration of [replication configuration](http://docs.aws.amazon.com/AmazonS3/latest/dev/crr.html) (documented below).
 	ReplicationConfiguration BucketReplicationConfigurationPtrInput
@@ -580,13 +592,13 @@ func (BucketState) ElementType() reflect.Type {
 type bucketArgs struct {
 	// Sets the accelerate configuration of an existing bucket. Can be `Enabled` or `Suspended`.
 	AccelerationStatus *string `pulumi:"accelerationStatus"`
-	// The [canned ACL](https://docs.aws.amazon.com/AmazonS3/latest/dev/acl-overview.html#canned-acl) to apply. Defaults to "private".  Conflicts with `grant`.
-	Acl interface{} `pulumi:"acl"`
+	// The [canned ACL](https://docs.aws.amazon.com/AmazonS3/latest/dev/acl-overview.html#canned-acl) to apply. Valid values are `private`, `public-read`, `public-read-write`, `aws-exec-read`, `authenticated-read`, and `log-delivery-write`. Defaults to `private`.  Conflicts with `grant`.
+	Acl *string `pulumi:"acl"`
 	// The ARN of the bucket. Will be of format `arn:aws:s3:::bucketname`.
 	Arn *string `pulumi:"arn"`
-	// The name of the bucket. If omitted, this provider will assign a random, unique name.
+	// The name of the bucket. If omitted, this provider will assign a random, unique name. Must be less than or equal to 63 characters in length.
 	Bucket *string `pulumi:"bucket"`
-	// Creates a unique bucket name beginning with the specified prefix. Conflicts with `bucket`.
+	// Creates a unique bucket name beginning with the specified prefix. Conflicts with `bucket`. Must be less than or equal to 37 characters in length.
 	BucketPrefix *string `pulumi:"bucketPrefix"`
 	// A rule of [Cross-Origin Resource Sharing](https://docs.aws.amazon.com/AmazonS3/latest/dev/cors.html) (documented below).
 	CorsRules []BucketCorsRule `pulumi:"corsRules"`
@@ -604,8 +616,6 @@ type bucketArgs struct {
 	ObjectLockConfiguration *BucketObjectLockConfiguration `pulumi:"objectLockConfiguration"`
 	// A valid [bucket policy](https://docs.aws.amazon.com/AmazonS3/latest/dev/example-bucket-policies.html) JSON document. Note that if the policy document is not specific enough (but still valid), the provider may view the policy as constantly changing in a `pulumi up / preview / update`. In this case, please make sure you use the verbose/specific version of the policy.
 	Policy interface{} `pulumi:"policy"`
-	// If specified, the AWS region this bucket should reside in. Otherwise, the region used by the callee.
-	Region *string `pulumi:"region"`
 	// A configuration of [replication configuration](http://docs.aws.amazon.com/AmazonS3/latest/dev/crr.html) (documented below).
 	ReplicationConfiguration *BucketReplicationConfiguration `pulumi:"replicationConfiguration"`
 	// Specifies who should bear the cost of Amazon S3 data transfer.
@@ -631,13 +641,13 @@ type bucketArgs struct {
 type BucketArgs struct {
 	// Sets the accelerate configuration of an existing bucket. Can be `Enabled` or `Suspended`.
 	AccelerationStatus pulumi.StringPtrInput
-	// The [canned ACL](https://docs.aws.amazon.com/AmazonS3/latest/dev/acl-overview.html#canned-acl) to apply. Defaults to "private".  Conflicts with `grant`.
-	Acl pulumi.Input
+	// The [canned ACL](https://docs.aws.amazon.com/AmazonS3/latest/dev/acl-overview.html#canned-acl) to apply. Valid values are `private`, `public-read`, `public-read-write`, `aws-exec-read`, `authenticated-read`, and `log-delivery-write`. Defaults to `private`.  Conflicts with `grant`.
+	Acl pulumi.StringPtrInput
 	// The ARN of the bucket. Will be of format `arn:aws:s3:::bucketname`.
 	Arn pulumi.StringPtrInput
-	// The name of the bucket. If omitted, this provider will assign a random, unique name.
+	// The name of the bucket. If omitted, this provider will assign a random, unique name. Must be less than or equal to 63 characters in length.
 	Bucket pulumi.StringPtrInput
-	// Creates a unique bucket name beginning with the specified prefix. Conflicts with `bucket`.
+	// Creates a unique bucket name beginning with the specified prefix. Conflicts with `bucket`. Must be less than or equal to 37 characters in length.
 	BucketPrefix pulumi.StringPtrInput
 	// A rule of [Cross-Origin Resource Sharing](https://docs.aws.amazon.com/AmazonS3/latest/dev/cors.html) (documented below).
 	CorsRules BucketCorsRuleArrayInput
@@ -655,8 +665,6 @@ type BucketArgs struct {
 	ObjectLockConfiguration BucketObjectLockConfigurationPtrInput
 	// A valid [bucket policy](https://docs.aws.amazon.com/AmazonS3/latest/dev/example-bucket-policies.html) JSON document. Note that if the policy document is not specific enough (but still valid), the provider may view the policy as constantly changing in a `pulumi up / preview / update`. In this case, please make sure you use the verbose/specific version of the policy.
 	Policy pulumi.Input
-	// If specified, the AWS region this bucket should reside in. Otherwise, the region used by the callee.
-	Region pulumi.StringPtrInput
 	// A configuration of [replication configuration](http://docs.aws.amazon.com/AmazonS3/latest/dev/crr.html) (documented below).
 	ReplicationConfiguration BucketReplicationConfigurationPtrInput
 	// Specifies who should bear the cost of Amazon S3 data transfer.
@@ -680,4 +688,43 @@ type BucketArgs struct {
 
 func (BucketArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*bucketArgs)(nil)).Elem()
+}
+
+type BucketInput interface {
+	pulumi.Input
+
+	ToBucketOutput() BucketOutput
+	ToBucketOutputWithContext(ctx context.Context) BucketOutput
+}
+
+func (Bucket) ElementType() reflect.Type {
+	return reflect.TypeOf((*Bucket)(nil)).Elem()
+}
+
+func (i Bucket) ToBucketOutput() BucketOutput {
+	return i.ToBucketOutputWithContext(context.Background())
+}
+
+func (i Bucket) ToBucketOutputWithContext(ctx context.Context) BucketOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(BucketOutput)
+}
+
+type BucketOutput struct {
+	*pulumi.OutputState
+}
+
+func (BucketOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*BucketOutput)(nil)).Elem()
+}
+
+func (o BucketOutput) ToBucketOutput() BucketOutput {
+	return o
+}
+
+func (o BucketOutput) ToBucketOutputWithContext(ctx context.Context) BucketOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(BucketOutput{})
 }

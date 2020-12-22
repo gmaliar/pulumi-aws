@@ -24,14 +24,22 @@ namespace Pulumi.Aws.Ses
     ///     {
     ///         var test = new Aws.Ses.IdentityNotificationTopic("test", new Aws.Ses.IdentityNotificationTopicArgs
     ///         {
+    ///             TopicArn = aws_sns_topic.Example.Arn,
+    ///             NotificationType = "Bounce",
     ///             Identity = aws_ses_domain_identity.Example.Domain,
     ///             IncludeOriginalHeaders = true,
-    ///             NotificationType = "Bounce",
-    ///             TopicArn = aws_sns_topic.Example.Arn,
     ///         });
     ///     }
     /// 
     /// }
+    /// ```
+    /// 
+    /// ## Import
+    /// 
+    /// Identity Notification Topics can be imported using ID of the record. The ID is made up as IDENTITY|TYPE where IDENTITY is the SES Identity and TYPE is the Notification Type. e.g. example.com|Bounce In this example, `example.com` is the SES Identity and `Bounce` is the Notification Type. To import the ID above, it would look as follows
+    /// 
+    /// ```sh
+    ///  $ pulumi import aws:ses/identityNotificationTopic:IdentityNotificationTopic test 'example.com|Bounce'
     /// ```
     /// </summary>
     public partial class IdentityNotificationTopic : Pulumi.CustomResource

@@ -76,6 +76,7 @@ namespace Pulumi.Aws.Route53
     ///     {
     ///         var parent = new Aws.Route53.HealthCheck("parent", new Aws.Route53.HealthCheckArgs
     ///         {
+    ///             Type = "CALCULATED",
     ///             ChildHealthThreshold = 1,
     ///             ChildHealthchecks = 
     ///             {
@@ -85,7 +86,6 @@ namespace Pulumi.Aws.Route53
     ///             {
     ///                 { "Name", "tf-test-calculated-health-check" },
     ///             },
-    ///             Type = "CALCULATED",
     ///         });
     ///     }
     /// 
@@ -103,7 +103,6 @@ namespace Pulumi.Aws.Route53
     ///     {
     ///         var foobar = new Aws.CloudWatch.MetricAlarm("foobar", new Aws.CloudWatch.MetricAlarmArgs
     ///         {
-    ///             AlarmDescription = "This metric monitors ec2 cpu utilization",
     ///             ComparisonOperator = "GreaterThanOrEqualToThreshold",
     ///             EvaluationPeriods = 2,
     ///             MetricName = "CPUUtilization",
@@ -111,17 +110,26 @@ namespace Pulumi.Aws.Route53
     ///             Period = 120,
     ///             Statistic = "Average",
     ///             Threshold = 80,
+    ///             AlarmDescription = "This metric monitors ec2 cpu utilization",
     ///         });
     ///         var foo = new Aws.Route53.HealthCheck("foo", new Aws.Route53.HealthCheckArgs
     ///         {
+    ///             Type = "CLOUDWATCH_METRIC",
     ///             CloudwatchAlarmName = foobar.Name,
     ///             CloudwatchAlarmRegion = "us-west-2",
     ///             InsufficientDataHealthStatus = "Healthy",
-    ///             Type = "CLOUDWATCH_METRIC",
     ///         });
     ///     }
     /// 
     /// }
+    /// ```
+    /// 
+    /// ## Import
+    /// 
+    /// Route53 Health Checks can be imported using the `health check id`, e.g.
+    /// 
+    /// ```sh
+    ///  $ pulumi import aws:route53/healthCheck:HealthCheck http_check abcdef11-2222-3333-4444-555555fedcba
     /// ```
     /// </summary>
     public partial class HealthCheck : Pulumi.CustomResource
@@ -149,6 +157,15 @@ namespace Pulumi.Aws.Route53
         /// </summary>
         [Output("cloudwatchAlarmRegion")]
         public Output<string?> CloudwatchAlarmRegion { get; private set; } = null!;
+
+        /// <summary>
+        /// A boolean value that stops Route 53 from performing health checks. When set to true, Route 53 will do the following depending on the type of health check:
+        /// * For health checks that check the health of endpoints, Route5 53 stops submitting requests to your application, server, or other resource.
+        /// * For calculated health checks, Route 53 stops aggregating the status of the referenced health checks.
+        /// * For health checks that monitor CloudWatch alarms, Route 53 stops monitoring the corresponding CloudWatch metrics.
+        /// </summary>
+        [Output("disabled")]
+        public Output<bool?> Disabled { get; private set; } = null!;
 
         /// <summary>
         /// A boolean value that indicates whether Route53 should send the `fqdn` to the endpoint when performing the health check. This defaults to AWS' defaults: when the `type` is "HTTPS" `enable_sni` defaults to `true`, when `type` is anything else `enable_sni` defaults to `false`.
@@ -318,6 +335,15 @@ namespace Pulumi.Aws.Route53
         public Input<string>? CloudwatchAlarmRegion { get; set; }
 
         /// <summary>
+        /// A boolean value that stops Route 53 from performing health checks. When set to true, Route 53 will do the following depending on the type of health check:
+        /// * For health checks that check the health of endpoints, Route5 53 stops submitting requests to your application, server, or other resource.
+        /// * For calculated health checks, Route 53 stops aggregating the status of the referenced health checks.
+        /// * For health checks that monitor CloudWatch alarms, Route 53 stops monitoring the corresponding CloudWatch metrics.
+        /// </summary>
+        [Input("disabled")]
+        public Input<bool>? Disabled { get; set; }
+
+        /// <summary>
         /// A boolean value that indicates whether Route53 should send the `fqdn` to the endpoint when performing the health check. This defaults to AWS' defaults: when the `type` is "HTTPS" `enable_sni` defaults to `true`, when `type` is anything else `enable_sni` defaults to `false`.
         /// </summary>
         [Input("enableSni")]
@@ -456,6 +482,15 @@ namespace Pulumi.Aws.Route53
         /// </summary>
         [Input("cloudwatchAlarmRegion")]
         public Input<string>? CloudwatchAlarmRegion { get; set; }
+
+        /// <summary>
+        /// A boolean value that stops Route 53 from performing health checks. When set to true, Route 53 will do the following depending on the type of health check:
+        /// * For health checks that check the health of endpoints, Route5 53 stops submitting requests to your application, server, or other resource.
+        /// * For calculated health checks, Route 53 stops aggregating the status of the referenced health checks.
+        /// * For health checks that monitor CloudWatch alarms, Route 53 stops monitoring the corresponding CloudWatch metrics.
+        /// </summary>
+        [Input("disabled")]
+        public Input<bool>? Disabled { get; set; }
 
         /// <summary>
         /// A boolean value that indicates whether Route53 should send the `fqdn` to the endpoint when performing the health check. This defaults to AWS' defaults: when the `type` is "HTTPS" `enable_sni` defaults to `true`, when `type` is anything else `enable_sni` defaults to `false`.

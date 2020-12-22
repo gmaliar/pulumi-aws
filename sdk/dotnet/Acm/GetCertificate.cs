@@ -28,7 +28,24 @@ namespace Pulumi.Aws.Acm
         /// {
         ///     public MyStack()
         ///     {
-        ///         var example = Output.Create(Aws.Acm.GetCertificate.InvokeAsync(new Aws.Acm.GetCertificateArgs
+        ///         var issued = Output.Create(Aws.Acm.GetCertificate.InvokeAsync(new Aws.Acm.GetCertificateArgs
+        ///         {
+        ///             Domain = "tf.example.com",
+        ///             Statuses = 
+        ///             {
+        ///                 "ISSUED",
+        ///             },
+        ///         }));
+        ///         var amazonIssued = Output.Create(Aws.Acm.GetCertificate.InvokeAsync(new Aws.Acm.GetCertificateArgs
+        ///         {
+        ///             Domain = "tf.example.com",
+        ///             MostRecent = true,
+        ///             Types = 
+        ///             {
+        ///                 "AMAZON_ISSUED",
+        ///             },
+        ///         }));
+        ///         var rsa4096 = Output.Create(Aws.Acm.GetCertificate.InvokeAsync(new Aws.Acm.GetCertificateArgs
         ///         {
         ///             Domain = "tf.example.com",
         ///             KeyTypes = 
@@ -122,7 +139,7 @@ namespace Pulumi.Aws.Acm
     public sealed class GetCertificateResult
     {
         /// <summary>
-        /// Set to the ARN of the found certificate, suitable for referencing in other resources that support ACM certificates.
+        /// Amazon Resource Name (ARN) of the found certificate, suitable for referencing in other resources that support ACM certificates.
         /// </summary>
         public readonly string Arn;
         public readonly string Domain;

@@ -102,6 +102,9 @@ namespace Pulumi.Aws.Inputs
         [Input("codepipeline")]
         public Input<string>? Codepipeline { get; set; }
 
+        [Input("codestarconnections")]
+        public Input<string>? Codestarconnections { get; set; }
+
         [Input("cognitoidentity")]
         public Input<string>? Cognitoidentity { get; set; }
 
@@ -152,6 +155,9 @@ namespace Pulumi.Aws.Inputs
 
         [Input("ecr")]
         public Input<string>? Ecr { get; set; }
+
+        [Input("ecrpublic")]
+        public Input<string>? Ecrpublic { get; set; }
 
         [Input("ecs")]
         public Input<string>? Ecs { get; set; }
@@ -213,6 +219,9 @@ namespace Pulumi.Aws.Inputs
         [Input("iam")]
         public Input<string>? Iam { get; set; }
 
+        [Input("identitystore")]
+        public Input<string>? Identitystore { get; set; }
+
         [Input("imagebuilder")]
         public Input<string>? Imagebuilder { get; set; }
 
@@ -233,9 +242,6 @@ namespace Pulumi.Aws.Inputs
 
         [Input("kinesis")]
         public Input<string>? Kinesis { get; set; }
-
-        [Input("kinesisAnalytics")]
-        public Input<string>? KinesisAnalytics { get; set; }
 
         [Input("kinesisanalytics")]
         public Input<string>? Kinesisanalytics { get; set; }
@@ -267,6 +273,9 @@ namespace Pulumi.Aws.Inputs
         [Input("macie")]
         public Input<string>? Macie { get; set; }
 
+        [Input("macie2")]
+        public Input<string>? Macie2 { get; set; }
+
         [Input("managedblockchain")]
         public Input<string>? Managedblockchain { get; set; }
 
@@ -294,8 +303,14 @@ namespace Pulumi.Aws.Inputs
         [Input("mq")]
         public Input<string>? Mq { get; set; }
 
+        [Input("mwaa")]
+        public Input<string>? Mwaa { get; set; }
+
         [Input("neptune")]
         public Input<string>? Neptune { get; set; }
+
+        [Input("networkfirewall")]
+        public Input<string>? Networkfirewall { get; set; }
 
         [Input("networkmanager")]
         public Input<string>? Networkmanager { get; set; }
@@ -323,9 +338,6 @@ namespace Pulumi.Aws.Inputs
 
         [Input("quicksight")]
         public Input<string>? Quicksight { get; set; }
-
-        [Input("r53")]
-        public Input<string>? R53 { get; set; }
 
         [Input("ram")]
         public Input<string>? Ram { get; set; }
@@ -357,6 +369,9 @@ namespace Pulumi.Aws.Inputs
         [Input("s3control")]
         public Input<string>? S3control { get; set; }
 
+        [Input("s3outposts")]
+        public Input<string>? S3outposts { get; set; }
+
         [Input("sagemaker")]
         public Input<string>? Sagemaker { get; set; }
 
@@ -387,6 +402,9 @@ namespace Pulumi.Aws.Inputs
         [Input("shield")]
         public Input<string>? Shield { get; set; }
 
+        [Input("signer")]
+        public Input<string>? Signer { get; set; }
+
         [Input("sns")]
         public Input<string>? Sns { get; set; }
 
@@ -395,6 +413,9 @@ namespace Pulumi.Aws.Inputs
 
         [Input("ssm")]
         public Input<string>? Ssm { get; set; }
+
+        [Input("ssoadmin")]
+        public Input<string>? Ssoadmin { get; set; }
 
         [Input("stepfunctions")]
         public Input<string>? Stepfunctions { get; set; }
@@ -410,6 +431,9 @@ namespace Pulumi.Aws.Inputs
 
         [Input("synthetics")]
         public Input<string>? Synthetics { get; set; }
+
+        [Input("timestreamwrite")]
+        public Input<string>? Timestreamwrite { get; set; }
 
         [Input("transfer")]
         public Input<string>? Transfer { get; set; }

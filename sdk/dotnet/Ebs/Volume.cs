@@ -37,6 +37,14 @@ namespace Pulumi.Aws.Ebs
     /// ```
     /// 
     /// &gt; **NOTE**: One of `size` or `snapshot_id` is required when specifying an EBS volume
+    /// 
+    /// ## Import
+    /// 
+    /// EBS Volumes can be imported using the `id`, e.g.
+    /// 
+    /// ```sh
+    ///  $ pulumi import aws:ebs/volume:Volume id vol-049df61146c4d7901
+    /// ```
     /// </summary>
     public partial class Volume : Pulumi.CustomResource
     {
@@ -59,7 +67,7 @@ namespace Pulumi.Aws.Ebs
         public Output<bool> Encrypted { get; private set; } = null!;
 
         /// <summary>
-        /// The amount of IOPS to provision for the disk.
+        /// The amount of IOPS to provision for the disk. Only valid for `type` of `io1` or `io2`.
         /// </summary>
         [Output("iops")]
         public Output<int> Iops { get; private set; } = null!;
@@ -101,7 +109,7 @@ namespace Pulumi.Aws.Ebs
         public Output<ImmutableDictionary<string, string>?> Tags { get; private set; } = null!;
 
         /// <summary>
-        /// The type of EBS volume. Can be "standard", "gp2", "io1", "sc1" or "st1" (Default: "gp2").
+        /// The type of EBS volume. Can be "standard", "gp2", "io1", "io2", "sc1" or "st1" (Default: "gp2").
         /// </summary>
         [Output("type")]
         public Output<string> Type { get; private set; } = null!;
@@ -165,7 +173,7 @@ namespace Pulumi.Aws.Ebs
         public Input<bool>? Encrypted { get; set; }
 
         /// <summary>
-        /// The amount of IOPS to provision for the disk.
+        /// The amount of IOPS to provision for the disk. Only valid for `type` of `io1` or `io2`.
         /// </summary>
         [Input("iops")]
         public Input<int>? Iops { get; set; }
@@ -213,7 +221,7 @@ namespace Pulumi.Aws.Ebs
         }
 
         /// <summary>
-        /// The type of EBS volume. Can be "standard", "gp2", "io1", "sc1" or "st1" (Default: "gp2").
+        /// The type of EBS volume. Can be "standard", "gp2", "io1", "io2", "sc1" or "st1" (Default: "gp2").
         /// </summary>
         [Input("type")]
         public Input<string>? Type { get; set; }
@@ -244,7 +252,7 @@ namespace Pulumi.Aws.Ebs
         public Input<bool>? Encrypted { get; set; }
 
         /// <summary>
-        /// The amount of IOPS to provision for the disk.
+        /// The amount of IOPS to provision for the disk. Only valid for `type` of `io1` or `io2`.
         /// </summary>
         [Input("iops")]
         public Input<int>? Iops { get; set; }
@@ -292,7 +300,7 @@ namespace Pulumi.Aws.Ebs
         }
 
         /// <summary>
-        /// The type of EBS volume. Can be "standard", "gp2", "io1", "sc1" or "st1" (Default: "gp2").
+        /// The type of EBS volume. Can be "standard", "gp2", "io1", "io2", "sc1" or "st1" (Default: "gp2").
         /// </summary>
         [Input("type")]
         public Input<string>? Type { get; set; }

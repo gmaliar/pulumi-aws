@@ -2,8 +2,7 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 /**
@@ -29,8 +28,7 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const organizationRole = new aws.iam.Role("organization", {
- *     assumeRolePolicy: `{
+ * const organizationRole = new aws.iam.Role("organizationRole", {assumeRolePolicy: `{
  *   "Version": "2012-10-17",
  *   "Statement": [
  *     {
@@ -43,18 +41,25 @@ import * as utilities from "../utilities";
  *     }
  *   ]
  * }
- * `,
- * });
- * const organizationRolePolicyAttachment = new aws.iam.RolePolicyAttachment("organization", {
- *     policyArn: "arn:aws:iam::aws:policy/service-role/AWSConfigRoleForOrganizations",
+ * `});
+ * const organizationRolePolicyAttachment = new aws.iam.RolePolicyAttachment("organizationRolePolicyAttachment", {
  *     role: organizationRole.name,
+ *     policyArn: "arn:aws:iam::aws:policy/service-role/AWSConfigRoleForOrganizations",
  * });
- * const organizationConfigurationAggregator = new aws.cfg.ConfigurationAggregator("organization", {
- *     organizationAggregationSource: {
- *         allRegions: true,
- *         roleArn: organizationRole.arn,
- *     },
- * }, { dependsOn: [organizationRolePolicyAttachment] });
+ * const organizationConfigurationAggregator = new aws.cfg.ConfigurationAggregator("organizationConfigurationAggregator", {organizationAggregationSource: {
+ *     allRegions: true,
+ *     roleArn: organizationRole.arn,
+ * }}, {
+ *     dependsOn: [organizationRolePolicyAttachment],
+ * });
+ * ```
+ *
+ * ## Import
+ *
+ * Configuration Aggregators can be imported using the name, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:cfg/configurationAggregator:ConfigurationAggregator example foo
  * ```
  */
 export class ConfigurationAggregator extends pulumi.CustomResource {

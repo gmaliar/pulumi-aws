@@ -4,6 +4,7 @@
 package datasync
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -20,20 +21,20 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/datasync"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/datasync"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
 // func main() {
 // 	pulumi.Run(func(ctx *pulumi.Context) error {
 // 		_, err := datasync.NewEfsLocation(ctx, "example", &datasync.EfsLocationArgs{
+// 			EfsFileSystemArn: pulumi.Any(aws_efs_mount_target.Example.File_system_arn),
 // 			Ec2Config: &datasync.EfsLocationEc2ConfigArgs{
 // 				SecurityGroupArns: pulumi.StringArray{
-// 					pulumi.String(aws_security_group.Example.Arn),
+// 					pulumi.Any(aws_security_group.Example.Arn),
 // 				},
-// 				SubnetArn: pulumi.String(aws_subnet.Example.Arn),
+// 				SubnetArn: pulumi.Any(aws_subnet.Example.Arn),
 // 			},
-// 			EfsFileSystemArn: pulumi.String(aws_efs_mount_target.Example.File_system_arn),
 // 		})
 // 		if err != nil {
 // 			return err
@@ -41,6 +42,14 @@ import (
 // 		return nil
 // 	})
 // }
+// ```
+//
+// ## Import
+//
+// `aws_datasync_location_efs` can be imported by using the DataSync Task Amazon Resource Name (ARN), e.g.
+//
+// ```sh
+//  $ pulumi import aws:datasync/efsLocation:EfsLocation example arn:aws:datasync:us-east-1:123456789012:location/loc-12345678901234567
 // ```
 type EfsLocation struct {
 	pulumi.CustomResourceState
@@ -61,14 +70,15 @@ type EfsLocation struct {
 // NewEfsLocation registers a new resource with the given unique name, arguments, and options.
 func NewEfsLocation(ctx *pulumi.Context,
 	name string, args *EfsLocationArgs, opts ...pulumi.ResourceOption) (*EfsLocation, error) {
-	if args == nil || args.Ec2Config == nil {
-		return nil, errors.New("missing required argument 'Ec2Config'")
-	}
-	if args == nil || args.EfsFileSystemArn == nil {
-		return nil, errors.New("missing required argument 'EfsFileSystemArn'")
-	}
 	if args == nil {
-		args = &EfsLocationArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.Ec2Config == nil {
+		return nil, errors.New("invalid value for required argument 'Ec2Config'")
+	}
+	if args.EfsFileSystemArn == nil {
+		return nil, errors.New("invalid value for required argument 'EfsFileSystemArn'")
 	}
 	var resource EfsLocation
 	err := ctx.RegisterResource("aws:datasync/efsLocation:EfsLocation", name, args, &resource, opts...)
@@ -148,4 +158,43 @@ type EfsLocationArgs struct {
 
 func (EfsLocationArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*efsLocationArgs)(nil)).Elem()
+}
+
+type EfsLocationInput interface {
+	pulumi.Input
+
+	ToEfsLocationOutput() EfsLocationOutput
+	ToEfsLocationOutputWithContext(ctx context.Context) EfsLocationOutput
+}
+
+func (EfsLocation) ElementType() reflect.Type {
+	return reflect.TypeOf((*EfsLocation)(nil)).Elem()
+}
+
+func (i EfsLocation) ToEfsLocationOutput() EfsLocationOutput {
+	return i.ToEfsLocationOutputWithContext(context.Background())
+}
+
+func (i EfsLocation) ToEfsLocationOutputWithContext(ctx context.Context) EfsLocationOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(EfsLocationOutput)
+}
+
+type EfsLocationOutput struct {
+	*pulumi.OutputState
+}
+
+func (EfsLocationOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*EfsLocationOutput)(nil)).Elem()
+}
+
+func (o EfsLocationOutput) ToEfsLocationOutput() EfsLocationOutput {
+	return o
+}
+
+func (o EfsLocationOutput) ToEfsLocationOutputWithContext(ctx context.Context) EfsLocationOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(EfsLocationOutput{})
 }

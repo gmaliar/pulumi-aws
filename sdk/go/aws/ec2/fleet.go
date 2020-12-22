@@ -4,6 +4,7 @@
 package ec2
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -18,7 +19,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/ec2"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/ec2"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -27,8 +28,8 @@ import (
 // 		_, err := ec2.NewFleet(ctx, "example", &ec2.FleetArgs{
 // 			LaunchTemplateConfig: &ec2.FleetLaunchTemplateConfigArgs{
 // 				LaunchTemplateSpecification: &ec2.FleetLaunchTemplateConfigLaunchTemplateSpecificationArgs{
-// 					LaunchTemplateId: pulumi.String(aws_launch_template.Example.Id),
-// 					Version:          pulumi.String(aws_launch_template.Example.Latest_version),
+// 					LaunchTemplateId: pulumi.Any(aws_launch_template.Example.Id),
+// 					Version:          pulumi.Any(aws_launch_template.Example.Latest_version),
 // 				},
 // 			},
 // 			TargetCapacitySpecification: &ec2.FleetTargetCapacitySpecificationArgs{
@@ -42,6 +43,14 @@ import (
 // 		return nil
 // 	})
 // }
+// ```
+//
+// ## Import
+//
+// `aws_ec2_fleet` can be imported by using the Fleet identifier, e.g.
+//
+// ```sh
+//  $ pulumi import aws:ec2/fleet:Fleet example fleet-b9b55d27-c5fc-41ac-a6f3-48fcc91f080c
 // ```
 type Fleet struct {
 	pulumi.CustomResourceState
@@ -71,14 +80,15 @@ type Fleet struct {
 // NewFleet registers a new resource with the given unique name, arguments, and options.
 func NewFleet(ctx *pulumi.Context,
 	name string, args *FleetArgs, opts ...pulumi.ResourceOption) (*Fleet, error) {
-	if args == nil || args.LaunchTemplateConfig == nil {
-		return nil, errors.New("missing required argument 'LaunchTemplateConfig'")
-	}
-	if args == nil || args.TargetCapacitySpecification == nil {
-		return nil, errors.New("missing required argument 'TargetCapacitySpecification'")
-	}
 	if args == nil {
-		args = &FleetArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.LaunchTemplateConfig == nil {
+		return nil, errors.New("invalid value for required argument 'LaunchTemplateConfig'")
+	}
+	if args.TargetCapacitySpecification == nil {
+		return nil, errors.New("invalid value for required argument 'TargetCapacitySpecification'")
 	}
 	var resource Fleet
 	err := ctx.RegisterResource("aws:ec2/fleet:Fleet", name, args, &resource, opts...)
@@ -200,4 +210,43 @@ type FleetArgs struct {
 
 func (FleetArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*fleetArgs)(nil)).Elem()
+}
+
+type FleetInput interface {
+	pulumi.Input
+
+	ToFleetOutput() FleetOutput
+	ToFleetOutputWithContext(ctx context.Context) FleetOutput
+}
+
+func (Fleet) ElementType() reflect.Type {
+	return reflect.TypeOf((*Fleet)(nil)).Elem()
+}
+
+func (i Fleet) ToFleetOutput() FleetOutput {
+	return i.ToFleetOutputWithContext(context.Background())
+}
+
+func (i Fleet) ToFleetOutputWithContext(ctx context.Context) FleetOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(FleetOutput)
+}
+
+type FleetOutput struct {
+	*pulumi.OutputState
+}
+
+func (FleetOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*FleetOutput)(nil)).Elem()
+}
+
+func (o FleetOutput) ToFleetOutput() FleetOutput {
+	return o
+}
+
+func (o FleetOutput) ToFleetOutputWithContext(ctx context.Context) FleetOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(FleetOutput{})
 }

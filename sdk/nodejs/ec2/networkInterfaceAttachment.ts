@@ -14,9 +14,9 @@ import * as utilities from "../utilities";
  * import * as aws from "@pulumi/aws";
  *
  * const test = new aws.ec2.NetworkInterfaceAttachment("test", {
+ *     instanceId: aws_instance.test.id,
+ *     networkInterfaceId: aws_network_interface.test.id,
  *     deviceIndex: 0,
- *     instanceId: aws_instance_test.id,
- *     networkInterfaceId: aws_network_interface_test.id,
  * });
  * ```
  */
@@ -88,13 +88,13 @@ export class NetworkInterfaceAttachment extends pulumi.CustomResource {
             inputs["status"] = state ? state.status : undefined;
         } else {
             const args = argsOrState as NetworkInterfaceAttachmentArgs | undefined;
-            if (!args || args.deviceIndex === undefined) {
+            if ((!args || args.deviceIndex === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'deviceIndex'");
             }
-            if (!args || args.instanceId === undefined) {
+            if ((!args || args.instanceId === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'instanceId'");
             }
-            if (!args || args.networkInterfaceId === undefined) {
+            if ((!args || args.networkInterfaceId === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'networkInterfaceId'");
             }
             inputs["deviceIndex"] = args ? args.deviceIndex : undefined;

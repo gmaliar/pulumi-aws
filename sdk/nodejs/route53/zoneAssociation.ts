@@ -5,7 +5,7 @@ import * as pulumi from "@pulumi/pulumi";
 import * as utilities from "../utilities";
 
 /**
- * Manages a Route53 Hosted Zone VPC association. VPC associations can only be made on private zones.
+ * Manages a Route53 Hosted Zone VPC association. VPC associations can only be made on private zones. See the `aws.route53.VpcAssociationAuthorization` resource for setting up cross-account associations.
  *
  * > **NOTE:** Unless explicit association ordering is required (e.g. a separate cross-account association authorization), usage of this resource is not recommended. Use the `vpc` configuration blocks available within the `aws.route53.Zone` resource instead.
  *
@@ -22,25 +22,32 @@ import * as utilities from "../utilities";
  *     enableDnsHostnames: true,
  *     enableDnsSupport: true,
  * });
- * const secondaryVpc = new aws.ec2.Vpc("secondary", {
+ * const secondaryVpc = new aws.ec2.Vpc("secondaryVpc", {
  *     cidrBlock: "10.7.0.0/16",
  *     enableDnsHostnames: true,
  *     enableDnsSupport: true,
  * });
- * const example = new aws.route53.Zone("example", {
- *     // NOTE: The aws_route53_zone vpc argument accepts multiple configuration
- *     //       blocks. The below usage of the single vpc configuration, the
- *     //       lifecycle configuration, and the aws_route53_zone_association
- *     //       resource is for illustrative purposes (e.g. for a separate
- *     //       cross-account authorization process, which is not shown here).
- *     vpcs: [{
- *         vpcId: primary.id,
- *     }],
- * }, { ignoreChanges: ["vpcId", "vpcRegion", "vpcs"] });
- * const secondaryZoneAssociation = new aws.route53.ZoneAssociation("secondary", {
- *     vpcId: secondaryVpc.id,
+ * const example = new aws.route53.Zone("example", {vpcs: [{
+ *     vpcId: primary.id,
+ * }]});
+ * const secondaryZoneAssociation = new aws.route53.ZoneAssociation("secondaryZoneAssociation", {
  *     zoneId: example.zoneId,
+ *     vpcId: secondaryVpc.id,
  * });
+ * ```
+ *
+ * ## Import
+ *
+ * Route 53 Hosted Zone Associations can be imported via the Hosted Zone ID and VPC ID, separated by a colon (`:`), e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:route53/zoneAssociation:ZoneAssociation example Z123456ABCDEFG:vpc-12345678
+ * ```
+ *
+ *  If the VPC is in a different region than the Terraform AWS Provider region configuration, the VPC Region can be added to the end. e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:route53/zoneAssociation:ZoneAssociation example Z123456ABCDEFG:vpc-12345678:us-east-2
  * ```
  */
 export class ZoneAssociation extends pulumi.CustomResource {
@@ -72,6 +79,10 @@ export class ZoneAssociation extends pulumi.CustomResource {
     }
 
     /**
+     * The account ID of the account that created the hosted zone.
+     */
+    public /*out*/ readonly owningAccount!: pulumi.Output<string>;
+    /**
      * The VPC to associate with the private hosted zone.
      */
     public readonly vpcId!: pulumi.Output<string>;
@@ -96,20 +107,22 @@ export class ZoneAssociation extends pulumi.CustomResource {
         let inputs: pulumi.Inputs = {};
         if (opts && opts.id) {
             const state = argsOrState as ZoneAssociationState | undefined;
+            inputs["owningAccount"] = state ? state.owningAccount : undefined;
             inputs["vpcId"] = state ? state.vpcId : undefined;
             inputs["vpcRegion"] = state ? state.vpcRegion : undefined;
             inputs["zoneId"] = state ? state.zoneId : undefined;
         } else {
             const args = argsOrState as ZoneAssociationArgs | undefined;
-            if (!args || args.vpcId === undefined) {
+            if ((!args || args.vpcId === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'vpcId'");
             }
-            if (!args || args.zoneId === undefined) {
+            if ((!args || args.zoneId === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'zoneId'");
             }
             inputs["vpcId"] = args ? args.vpcId : undefined;
             inputs["vpcRegion"] = args ? args.vpcRegion : undefined;
             inputs["zoneId"] = args ? args.zoneId : undefined;
+            inputs["owningAccount"] = undefined /*out*/;
         }
         if (!opts) {
             opts = {}
@@ -126,6 +139,10 @@ export class ZoneAssociation extends pulumi.CustomResource {
  * Input properties used for looking up and filtering ZoneAssociation resources.
  */
 export interface ZoneAssociationState {
+    /**
+     * The account ID of the account that created the hosted zone.
+     */
+    readonly owningAccount?: pulumi.Input<string>;
     /**
      * The VPC to associate with the private hosted zone.
      */

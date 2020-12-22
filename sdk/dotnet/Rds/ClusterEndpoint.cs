@@ -31,44 +31,43 @@ namespace Pulumi.Aws.Rds
     ///                 "us-west-2b",
     ///                 "us-west-2c",
     ///             },
-    ///             BackupRetentionPeriod = 5,
-    ///             ClusterIdentifier = "aurora-cluster-demo",
     ///             DatabaseName = "mydb",
-    ///             MasterPassword = "bar",
     ///             MasterUsername = "foo",
+    ///             MasterPassword = "bar",
+    ///             BackupRetentionPeriod = 5,
     ///             PreferredBackupWindow = "07:00-09:00",
     ///         });
     ///         var test1 = new Aws.Rds.ClusterInstance("test1", new Aws.Rds.ClusterInstanceArgs
     ///         {
     ///             ApplyImmediately = true,
     ///             ClusterIdentifier = @default.Id,
-    ///             Engine = @default.Engine,
-    ///             EngineVersion = @default.EngineVersion,
     ///             Identifier = "test1",
     ///             InstanceClass = "db.t2.small",
+    ///             Engine = @default.Engine,
+    ///             EngineVersion = @default.EngineVersion,
     ///         });
     ///         var test2 = new Aws.Rds.ClusterInstance("test2", new Aws.Rds.ClusterInstanceArgs
     ///         {
     ///             ApplyImmediately = true,
     ///             ClusterIdentifier = @default.Id,
-    ///             Engine = @default.Engine,
-    ///             EngineVersion = @default.EngineVersion,
     ///             Identifier = "test2",
     ///             InstanceClass = "db.t2.small",
+    ///             Engine = @default.Engine,
+    ///             EngineVersion = @default.EngineVersion,
     ///         });
     ///         var test3 = new Aws.Rds.ClusterInstance("test3", new Aws.Rds.ClusterInstanceArgs
     ///         {
     ///             ApplyImmediately = true,
     ///             ClusterIdentifier = @default.Id,
-    ///             Engine = @default.Engine,
-    ///             EngineVersion = @default.EngineVersion,
     ///             Identifier = "test3",
     ///             InstanceClass = "db.t2.small",
+    ///             Engine = @default.Engine,
+    ///             EngineVersion = @default.EngineVersion,
     ///         });
     ///         var eligible = new Aws.Rds.ClusterEndpoint("eligible", new Aws.Rds.ClusterEndpointArgs
     ///         {
-    ///             ClusterEndpointIdentifier = "reader",
     ///             ClusterIdentifier = @default.Id,
+    ///             ClusterEndpointIdentifier = "reader",
     ///             CustomEndpointType = "READER",
     ///             ExcludedMembers = 
     ///             {
@@ -78,8 +77,8 @@ namespace Pulumi.Aws.Rds
     ///         });
     ///         var @static = new Aws.Rds.ClusterEndpoint("static", new Aws.Rds.ClusterEndpointArgs
     ///         {
-    ///             ClusterEndpointIdentifier = "static",
     ///             ClusterIdentifier = @default.Id,
+    ///             ClusterEndpointIdentifier = "static",
     ///             CustomEndpointType = "READER",
     ///             StaticMembers = 
     ///             {
@@ -91,6 +90,16 @@ namespace Pulumi.Aws.Rds
     /// 
     /// }
     /// ```
+    /// 
+    /// ## Import
+    /// 
+    /// RDS Clusters Endpoint can be imported using the `cluster_endpoint_identifier`, e.g.
+    /// 
+    /// ```sh
+    ///  $ pulumi import aws:rds/clusterEndpoint:ClusterEndpoint custom_reader aurora-prod-cluster-custom-reader
+    /// ```
+    /// 
+    ///  [1]https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/Aurora.Overview.Endpoints.html#Aurora.Endpoints.Cluster
     /// </summary>
     public partial class ClusterEndpoint : Pulumi.CustomResource
     {

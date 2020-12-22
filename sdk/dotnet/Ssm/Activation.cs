@@ -32,13 +32,12 @@ namespace Pulumi.Aws.Ssm
     ///       ""Action"": ""sts:AssumeRole""
     ///     }
     ///   }
-    /// 
     /// ",
     ///         });
     ///         var testAttach = new Aws.Iam.RolePolicyAttachment("testAttach", new Aws.Iam.RolePolicyAttachmentArgs
     ///         {
-    ///             PolicyArn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore",
     ///             Role = testRole.Name,
+    ///             PolicyArn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore",
     ///         });
     ///         var foo = new Aws.Ssm.Activation("foo", new Aws.Ssm.ActivationArgs
     ///         {
@@ -49,12 +48,20 @@ namespace Pulumi.Aws.Ssm
     ///         {
     ///             DependsOn = 
     ///             {
-    ///                 "aws_iam_role_policy_attachment.test_attach",
+    ///                 testAttach,
     ///             },
     ///         });
     ///     }
     /// 
     /// }
+    /// ```
+    /// 
+    /// ## Import
+    /// 
+    /// AWS SSM Activation can be imported using the `id`, e.g.
+    /// 
+    /// ```sh
+    ///  $ pulumi import aws:ssm/activation:Activation example e488f2f6-e686-4afb-8a04-ef6dfEXAMPLE
     /// ```
     /// </summary>
     public partial class Activation : Pulumi.CustomResource

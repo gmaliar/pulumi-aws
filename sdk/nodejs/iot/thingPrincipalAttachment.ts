@@ -14,12 +14,12 @@ import {ARN} from "..";
  * ```typescript
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
- * import * as fs from "fs";
+ * import * from "fs";
  *
  * const example = new aws.iot.Thing("example", {});
  * const cert = new aws.iot.Certificate("cert", {
+ *     csr: fs.readFileSync("csr.pem"),
  *     active: true,
- *     csr: fs.readFileSync("csr.pem", "utf-8"),
  * });
  * const att = new aws.iot.ThingPrincipalAttachment("att", {
  *     principal: cert.arn,
@@ -80,10 +80,10 @@ export class ThingPrincipalAttachment extends pulumi.CustomResource {
             inputs["thing"] = state ? state.thing : undefined;
         } else {
             const args = argsOrState as ThingPrincipalAttachmentArgs | undefined;
-            if (!args || args.principal === undefined) {
+            if ((!args || args.principal === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'principal'");
             }
-            if (!args || args.thing === undefined) {
+            if ((!args || args.thing === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'thing'");
             }
             inputs["principal"] = args ? args.principal : undefined;

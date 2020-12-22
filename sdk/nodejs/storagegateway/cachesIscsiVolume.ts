@@ -13,7 +13,7 @@ import * as utilities from "../utilities";
  *
  * ## Example Usage
  *
- * > **NOTE:** These examples are referencing the `aws.storagegateway.Cache` resource `gatewayArn` attribute to ensure this provider properly adds cache before creating the volume. If you are not using this method, you may need to declare an expicit dependency (e.g. via `dependsOn = ["aws_storagegateway_cache.example"]`) to ensure proper ordering.
+ * > **NOTE:** These examples are referencing the `aws.storagegateway.Cache` resource `gatewayArn` attribute to ensure this provider properly adds cache before creating the volume. If you are not using this method, you may need to declare an expicit dependency (e.g. via `dependsOn = [aws_storagegateway_cache.example]`) to ensure proper ordering.
  * ### Create Empty Cached iSCSI Volume
  *
  * ```typescript
@@ -21,11 +21,12 @@ import * as utilities from "../utilities";
  * import * as aws from "@pulumi/aws";
  *
  * const example = new aws.storagegateway.CachesIscsiVolume("example", {
- *     gatewayArn: aws_storagegateway_cache_example.gatewayArn,
- *     networkInterfaceId: aws_instance_example.privateIp,
+ *     gatewayArn: aws_storagegateway_cache.example.gateway_arn,
+ *     networkInterfaceId: aws_instance.example.private_ip,
  *     targetName: "example",
- *     volumeSizeInBytes: 5368709120, // 5 GB
+ *     volumeSizeInBytes: 5368709120,
  * });
+ * // 5 GB
  * ```
  * ### Create Cached iSCSI Volume From Snapshot
  *
@@ -34,11 +35,11 @@ import * as utilities from "../utilities";
  * import * as aws from "@pulumi/aws";
  *
  * const example = new aws.storagegateway.CachesIscsiVolume("example", {
- *     gatewayArn: aws_storagegateway_cache_example.gatewayArn,
- *     networkInterfaceId: aws_instance_example.privateIp,
- *     snapshotId: aws_ebs_snapshot_example.id,
+ *     gatewayArn: aws_storagegateway_cache.example.gateway_arn,
+ *     networkInterfaceId: aws_instance.example.private_ip,
+ *     snapshotId: aws_ebs_snapshot.example.id,
  *     targetName: "example",
- *     volumeSizeInBytes: aws_ebs_snapshot_example.volumeSize.apply(volumeSize => (((volumeSize * 1024) * 1024) * 1024)),
+ *     volumeSizeInBytes: aws_ebs_snapshot.example.volume_size * 1024 * 1024 * 1024,
  * });
  * ```
  * ### Create Cached iSCSI Volume From Source Volume
@@ -48,12 +49,20 @@ import * as utilities from "../utilities";
  * import * as aws from "@pulumi/aws";
  *
  * const example = new aws.storagegateway.CachesIscsiVolume("example", {
- *     gatewayArn: aws_storagegateway_cache_example.gatewayArn,
- *     networkInterfaceId: aws_instance_example.privateIp,
- *     sourceVolumeArn: aws_storagegateway_cached_iscsi_volume_existing.arn,
+ *     gatewayArn: aws_storagegateway_cache.example.gateway_arn,
+ *     networkInterfaceId: aws_instance.example.private_ip,
+ *     sourceVolumeArn: aws_storagegateway_cached_iscsi_volume.existing.arn,
  *     targetName: "example",
- *     volumeSizeInBytes: aws_storagegateway_cached_iscsi_volume_existing.volumeSizeInBytes,
+ *     volumeSizeInBytes: aws_storagegateway_cached_iscsi_volume.existing.volume_size_in_bytes,
  * });
+ * ```
+ *
+ * ## Import
+ *
+ * `aws_storagegateway_cached_iscsi_volume` can be imported by using the volume Amazon Resource Name (ARN), e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:storagegateway/cachesIscsiVolume:CachesIscsiVolume example arn:aws:storagegateway:us-east-1:123456789012:gateway/sgw-12345678/volume/vol-12345678
  * ```
  */
 export class CachesIscsiVolume extends pulumi.CustomResource {
@@ -96,6 +105,14 @@ export class CachesIscsiVolume extends pulumi.CustomResource {
      * The Amazon Resource Name (ARN) of the gateway.
      */
     public readonly gatewayArn!: pulumi.Output<string>;
+    /**
+     * Set to `true` to use Amazon S3 server side encryption with your own AWS KMS key, or `false` to use a key managed by Amazon S3.
+     */
+    public readonly kmsEncrypted!: pulumi.Output<boolean | undefined>;
+    /**
+     * The Amazon Resource Name (ARN) of the AWS KMS key used for Amazon S3 server side encryption. Is required when `kmsEncrypted` is set.
+     */
+    public readonly kmsKey!: pulumi.Output<string | undefined>;
     /**
      * Logical disk number.
      */
@@ -156,6 +173,8 @@ export class CachesIscsiVolume extends pulumi.CustomResource {
             inputs["arn"] = state ? state.arn : undefined;
             inputs["chapEnabled"] = state ? state.chapEnabled : undefined;
             inputs["gatewayArn"] = state ? state.gatewayArn : undefined;
+            inputs["kmsEncrypted"] = state ? state.kmsEncrypted : undefined;
+            inputs["kmsKey"] = state ? state.kmsKey : undefined;
             inputs["lunNumber"] = state ? state.lunNumber : undefined;
             inputs["networkInterfaceId"] = state ? state.networkInterfaceId : undefined;
             inputs["networkInterfacePort"] = state ? state.networkInterfacePort : undefined;
@@ -169,19 +188,21 @@ export class CachesIscsiVolume extends pulumi.CustomResource {
             inputs["volumeSizeInBytes"] = state ? state.volumeSizeInBytes : undefined;
         } else {
             const args = argsOrState as CachesIscsiVolumeArgs | undefined;
-            if (!args || args.gatewayArn === undefined) {
+            if ((!args || args.gatewayArn === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'gatewayArn'");
             }
-            if (!args || args.networkInterfaceId === undefined) {
+            if ((!args || args.networkInterfaceId === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'networkInterfaceId'");
             }
-            if (!args || args.targetName === undefined) {
+            if ((!args || args.targetName === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'targetName'");
             }
-            if (!args || args.volumeSizeInBytes === undefined) {
+            if ((!args || args.volumeSizeInBytes === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'volumeSizeInBytes'");
             }
             inputs["gatewayArn"] = args ? args.gatewayArn : undefined;
+            inputs["kmsEncrypted"] = args ? args.kmsEncrypted : undefined;
+            inputs["kmsKey"] = args ? args.kmsKey : undefined;
             inputs["networkInterfaceId"] = args ? args.networkInterfaceId : undefined;
             inputs["snapshotId"] = args ? args.snapshotId : undefined;
             inputs["sourceVolumeArn"] = args ? args.sourceVolumeArn : undefined;
@@ -223,6 +244,14 @@ export interface CachesIscsiVolumeState {
      * The Amazon Resource Name (ARN) of the gateway.
      */
     readonly gatewayArn?: pulumi.Input<string>;
+    /**
+     * Set to `true` to use Amazon S3 server side encryption with your own AWS KMS key, or `false` to use a key managed by Amazon S3.
+     */
+    readonly kmsEncrypted?: pulumi.Input<boolean>;
+    /**
+     * The Amazon Resource Name (ARN) of the AWS KMS key used for Amazon S3 server side encryption. Is required when `kmsEncrypted` is set.
+     */
+    readonly kmsKey?: pulumi.Input<string>;
     /**
      * Logical disk number.
      */
@@ -277,6 +306,14 @@ export interface CachesIscsiVolumeArgs {
      * The Amazon Resource Name (ARN) of the gateway.
      */
     readonly gatewayArn: pulumi.Input<string>;
+    /**
+     * Set to `true` to use Amazon S3 server side encryption with your own AWS KMS key, or `false` to use a key managed by Amazon S3.
+     */
+    readonly kmsEncrypted?: pulumi.Input<boolean>;
+    /**
+     * The Amazon Resource Name (ARN) of the AWS KMS key used for Amazon S3 server side encryption. Is required when `kmsEncrypted` is set.
+     */
+    readonly kmsKey?: pulumi.Input<string>;
     /**
      * The network interface of the gateway on which to expose the iSCSI target. Only IPv4 addresses are accepted.
      */

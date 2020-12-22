@@ -18,10 +18,20 @@ import * as utilities from "../utilities";
  * import * as aws from "@pulumi/aws";
  *
  * const example = new aws.apigatewayv2.Deployment("example", {
- *     apiId: aws_apigatewayv2_route_example.apiId,
+ *     apiId: aws_apigatewayv2_route.example.api_id,
  *     description: "Example deployment",
  * });
  * ```
+ *
+ * ## Import
+ *
+ * `aws_apigatewayv2_deployment` can be imported by using the API identifier and deployment identifier, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:apigatewayv2/deployment:Deployment example aabbccddee/1122334
+ * ```
+ *
+ *  The `triggers` argument cannot be imported.
  */
 export class Deployment extends pulumi.CustomResource {
     /**
@@ -60,7 +70,7 @@ export class Deployment extends pulumi.CustomResource {
      */
     public /*out*/ readonly autoDeployed!: pulumi.Output<boolean>;
     /**
-     * The description for the deployment resource.
+     * The description for the deployment resource. Must be less than or equal to 1024 characters in length.
      */
     public readonly description!: pulumi.Output<string | undefined>;
     /**
@@ -86,7 +96,7 @@ export class Deployment extends pulumi.CustomResource {
             inputs["triggers"] = state ? state.triggers : undefined;
         } else {
             const args = argsOrState as DeploymentArgs | undefined;
-            if (!args || args.apiId === undefined) {
+            if ((!args || args.apiId === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'apiId'");
             }
             inputs["apiId"] = args ? args.apiId : undefined;
@@ -118,7 +128,7 @@ export interface DeploymentState {
      */
     readonly autoDeployed?: pulumi.Input<boolean>;
     /**
-     * The description for the deployment resource.
+     * The description for the deployment resource. Must be less than or equal to 1024 characters in length.
      */
     readonly description?: pulumi.Input<string>;
     /**
@@ -136,7 +146,7 @@ export interface DeploymentArgs {
      */
     readonly apiId: pulumi.Input<string>;
     /**
-     * The description for the deployment resource.
+     * The description for the deployment resource. Must be less than or equal to 1024 characters in length.
      */
     readonly description?: pulumi.Input<string>;
     /**

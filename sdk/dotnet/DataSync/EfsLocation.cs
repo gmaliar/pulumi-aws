@@ -26,6 +26,7 @@ namespace Pulumi.Aws.DataSync
     ///     {
     ///         var example = new Aws.DataSync.EfsLocation("example", new Aws.DataSync.EfsLocationArgs
     ///         {
+    ///             EfsFileSystemArn = aws_efs_mount_target.Example.File_system_arn,
     ///             Ec2Config = new Aws.DataSync.Inputs.EfsLocationEc2ConfigArgs
     ///             {
     ///                 SecurityGroupArns = 
@@ -34,11 +35,18 @@ namespace Pulumi.Aws.DataSync
     ///                 },
     ///                 SubnetArn = aws_subnet.Example.Arn,
     ///             },
-    ///             EfsFileSystemArn = aws_efs_mount_target.Example.File_system_arn,
     ///         });
     ///     }
     /// 
     /// }
+    /// ```
+    /// 
+    /// ## Import
+    /// 
+    /// `aws_datasync_location_efs` can be imported by using the DataSync Task Amazon Resource Name (ARN), e.g.
+    /// 
+    /// ```sh
+    ///  $ pulumi import aws:datasync/efsLocation:EfsLocation example arn:aws:datasync:us-east-1:123456789012:location/loc-12345678901234567
     /// ```
     /// </summary>
     public partial class EfsLocation : Pulumi.CustomResource

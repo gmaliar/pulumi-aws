@@ -4,6 +4,7 @@
 package cloudformation
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -22,7 +23,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/cloudformation"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/cloudformation"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -31,7 +32,7 @@ import (
 // 		_, err := cloudformation.NewStackSetInstance(ctx, "example", &cloudformation.StackSetInstanceArgs{
 // 			AccountId:    pulumi.String("123456789012"),
 // 			Region:       pulumi.String("us-east-1"),
-// 			StackSetName: pulumi.String(aws_cloudformation_stack_set.Example.Name),
+// 			StackSetName: pulumi.Any(aws_cloudformation_stack_set.Example.Name),
 // 		})
 // 		if err != nil {
 // 			return err
@@ -39,6 +40,14 @@ import (
 // 		return nil
 // 	})
 // }
+// ```
+//
+// ## Import
+//
+// CloudFormation StackSet Instances can be imported using the StackSet name, target AWS account ID, and target AWS region separated by commas (`,`) e.g.
+//
+// ```sh
+//  $ pulumi import aws:cloudformation/stackSetInstance:StackSetInstance example example,123456789012,us-east-1
 // ```
 type StackSetInstance struct {
 	pulumi.CustomResourceState
@@ -60,11 +69,12 @@ type StackSetInstance struct {
 // NewStackSetInstance registers a new resource with the given unique name, arguments, and options.
 func NewStackSetInstance(ctx *pulumi.Context,
 	name string, args *StackSetInstanceArgs, opts ...pulumi.ResourceOption) (*StackSetInstance, error) {
-	if args == nil || args.StackSetName == nil {
-		return nil, errors.New("missing required argument 'StackSetName'")
-	}
 	if args == nil {
-		args = &StackSetInstanceArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.StackSetName == nil {
+		return nil, errors.New("invalid value for required argument 'StackSetName'")
 	}
 	var resource StackSetInstance
 	err := ctx.RegisterResource("aws:cloudformation/stackSetInstance:StackSetInstance", name, args, &resource, opts...)
@@ -150,4 +160,43 @@ type StackSetInstanceArgs struct {
 
 func (StackSetInstanceArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*stackSetInstanceArgs)(nil)).Elem()
+}
+
+type StackSetInstanceInput interface {
+	pulumi.Input
+
+	ToStackSetInstanceOutput() StackSetInstanceOutput
+	ToStackSetInstanceOutputWithContext(ctx context.Context) StackSetInstanceOutput
+}
+
+func (StackSetInstance) ElementType() reflect.Type {
+	return reflect.TypeOf((*StackSetInstance)(nil)).Elem()
+}
+
+func (i StackSetInstance) ToStackSetInstanceOutput() StackSetInstanceOutput {
+	return i.ToStackSetInstanceOutputWithContext(context.Background())
+}
+
+func (i StackSetInstance) ToStackSetInstanceOutputWithContext(ctx context.Context) StackSetInstanceOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(StackSetInstanceOutput)
+}
+
+type StackSetInstanceOutput struct {
+	*pulumi.OutputState
+}
+
+func (StackSetInstanceOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*StackSetInstanceOutput)(nil)).Elem()
+}
+
+func (o StackSetInstanceOutput) ToStackSetInstanceOutput() StackSetInstanceOutput {
+	return o
+}
+
+func (o StackSetInstanceOutput) ToStackSetInstanceOutputWithContext(ctx context.Context) StackSetInstanceOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(StackSetInstanceOutput{})
 }

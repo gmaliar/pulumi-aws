@@ -17,6 +17,14 @@ import * as utilities from "../utilities";
  *     ruleSetName: "primary-rules",
  * });
  * ```
+ *
+ * ## Import
+ *
+ * SES receipt rule sets can be imported using the rule set name.
+ *
+ * ```sh
+ *  $ pulumi import aws:ses/receiptRuleSet:ReceiptRuleSet my_rule_set my_rule_set_name
+ * ```
  */
 export class ReceiptRuleSet extends pulumi.CustomResource {
     /**
@@ -66,7 +74,7 @@ export class ReceiptRuleSet extends pulumi.CustomResource {
             inputs["ruleSetName"] = state ? state.ruleSetName : undefined;
         } else {
             const args = argsOrState as ReceiptRuleSetArgs | undefined;
-            if (!args || args.ruleSetName === undefined) {
+            if ((!args || args.ruleSetName === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'ruleSetName'");
             }
             inputs["ruleSetName"] = args ? args.ruleSetName : undefined;

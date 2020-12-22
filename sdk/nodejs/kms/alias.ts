@@ -15,10 +15,16 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const key = new aws.kms.Key("a", {});
- * const alias = new aws.kms.Alias("a", {
- *     targetKeyId: key.keyId,
- * });
+ * const key = new aws.kms.Key("key", {});
+ * const alias = new aws.kms.Alias("alias", {targetKeyId: key.keyId});
+ * ```
+ *
+ * ## Import
+ *
+ * KMS aliases can be imported using the `name`, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:kms/alias:Alias a alias/my-key-alias
  * ```
  */
 export class Alias extends pulumi.CustomResource {
@@ -90,7 +96,7 @@ export class Alias extends pulumi.CustomResource {
             inputs["targetKeyId"] = state ? state.targetKeyId : undefined;
         } else {
             const args = argsOrState as AliasArgs | undefined;
-            if (!args || args.targetKeyId === undefined) {
+            if ((!args || args.targetKeyId === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'targetKeyId'");
             }
             inputs["name"] = args ? args.name : undefined;

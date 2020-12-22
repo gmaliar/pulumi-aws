@@ -13,26 +13,34 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const currentRegion = pulumi.output(aws.getRegion({ async: true }));
- * const currentCallerIdentity = pulumi.output(aws.getCallerIdentity({ async: true }));
- * const exampleContainer = new aws.mediastore.Container("example", {});
- * const exampleContainerPolicy = new aws.mediastore.ContainerPolicy("example", {
+ * const currentRegion = aws.getRegion({});
+ * const currentCallerIdentity = aws.getCallerIdentity({});
+ * const exampleContainer = new aws.mediastore.Container("exampleContainer", {});
+ * const exampleContainerPolicy = new aws.mediastore.ContainerPolicy("exampleContainerPolicy", {
  *     containerName: exampleContainer.name,
- *     policy: pulumi.interpolate`{
+ *     policy: pulumi.all([currentCallerIdentity, currentRegion, currentCallerIdentity, exampleContainer.name]).apply(([currentCallerIdentity, currentRegion, currentCallerIdentity1, name]) => `{
  * 	"Version": "2012-10-17",
  * 	"Statement": [{
  * 		"Sid": "MediaStoreFullAccess",
  * 		"Action": [ "mediastore:*" ],
  * 		"Principal": {"AWS" : "arn:aws:iam::${currentCallerIdentity.accountId}:root"},
  * 		"Effect": "Allow",
- * 		"Resource": "arn:aws:mediastore:${currentRegion.name!}:${currentCallerIdentity.accountId}:container/${exampleContainer.name}/*",
+ * 		"Resource": "arn:aws:mediastore:${currentRegion.name}:${currentCallerIdentity1.accountId}:container/${name}/*",
  * 		"Condition": {
  * 			"Bool": { "aws:SecureTransport": "true" }
  * 		}
  * 	}]
  * }
- * `,
+ * `),
  * });
+ * ```
+ *
+ * ## Import
+ *
+ * MediaStore Container Policy can be imported using the MediaStore Container Name, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:mediastore/containerPolicy:ContainerPolicy example example
  * ```
  */
 export class ContainerPolicy extends pulumi.CustomResource {
@@ -88,10 +96,10 @@ export class ContainerPolicy extends pulumi.CustomResource {
             inputs["policy"] = state ? state.policy : undefined;
         } else {
             const args = argsOrState as ContainerPolicyArgs | undefined;
-            if (!args || args.containerName === undefined) {
+            if ((!args || args.containerName === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'containerName'");
             }
-            if (!args || args.policy === undefined) {
+            if ((!args || args.policy === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'policy'");
             }
             inputs["containerName"] = args ? args.containerName : undefined;

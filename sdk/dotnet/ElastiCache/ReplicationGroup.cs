@@ -23,6 +23,78 @@ namespace Pulumi.Aws.ElastiCache
     /// servers reboots.
     /// 
     /// ## Example Usage
+    /// ### Redis Cluster Mode Disabled
+    /// 
+    /// To create a single shard primary with single read replica:
+    /// 
+    /// ```csharp
+    /// using Pulumi;
+    /// using Aws = Pulumi.Aws;
+    /// 
+    /// class MyStack : Stack
+    /// {
+    ///     public MyStack()
+    ///     {
+    ///         var example = new Aws.ElastiCache.ReplicationGroup("example", new Aws.ElastiCache.ReplicationGroupArgs
+    ///         {
+    ///             AutomaticFailoverEnabled = true,
+    ///             AvailabilityZones = 
+    ///             {
+    ///                 "us-west-2a",
+    ///                 "us-west-2b",
+    ///             },
+    ///             NodeType = "cache.m4.large",
+    ///             NumberCacheClusters = 2,
+    ///             ParameterGroupName = "default.redis3.2",
+    ///             Port = 6379,
+    ///             ReplicationGroupDescription = "test description",
+    ///         });
+    ///     }
+    /// 
+    /// }
+    /// ```
+    /// 
+    /// You have two options for adjusting the number of replicas:
+    /// 
+    /// * Adjusting `number_cache_clusters` directly. This will attempt to automatically add or remove replicas, but provides no granular control (e.g. preferred availability zone, cache cluster ID) for the added or removed replicas. This also currently expects cache cluster IDs in the form of `replication_group_id-00#`.
+    /// * Otherwise for fine grained control of the underlying cache clusters, they can be added or removed with the `aws.elasticache.Cluster` resource and its `replication_group_id` attribute. In this situation, you will need to utilize [`ignoreChanges`](https://www.pulumi.com/docs/intro/concepts/programming-model/#ignorechanges) to prevent perpetual differences with the `number_cache_cluster` attribute.
+    /// 
+    /// ```csharp
+    /// using System.Collections.Generic;
+    /// using Pulumi;
+    /// using Aws = Pulumi.Aws;
+    /// 
+    /// class MyStack : Stack
+    /// {
+    ///     public MyStack()
+    ///     {
+    ///         var example = new Aws.ElastiCache.ReplicationGroup("example", new Aws.ElastiCache.ReplicationGroupArgs
+    ///         {
+    ///             AutomaticFailoverEnabled = true,
+    ///             AvailabilityZones = 
+    ///             {
+    ///                 "us-west-2a",
+    ///                 "us-west-2b",
+    ///             },
+    ///             ReplicationGroupDescription = "test description",
+    ///             NodeType = "cache.m4.large",
+    ///             NumberCacheClusters = 2,
+    ///             ParameterGroupName = "default.redis3.2",
+    ///             Port = 6379,
+    ///         });
+    ///         var replica = new List&lt;Aws.ElastiCache.Cluster&gt;();
+    ///         for (var rangeIndex = 0; rangeIndex &lt; (1 == true); rangeIndex++)
+    ///         {
+    ///             var range = new { Value = rangeIndex };
+    ///             replica.Add(new Aws.ElastiCache.Cluster($"replica-{range.Value}", new Aws.ElastiCache.ClusterArgs
+    ///             {
+    ///                 ReplicationGroupId = example.Id,
+    ///             }));
+    ///         }
+    ///     }
+    /// 
+    /// }
+    /// ```
     /// ### Redis Cluster Mode Enabled
     /// 
     /// To create two shards with a primary and a single read replica each:
@@ -58,6 +130,14 @@ namespace Pulumi.Aws.ElastiCache
     /// &gt; **Note:** Automatic Failover is unavailable for Redis versions earlier than 2.8.6,
     /// and unavailable on T1 node types. For T2 node types, it is only available on Redis version 3.2.4 or later with cluster mode enabled. See the [High Availability Using Replication Groups](https://docs.aws.amazon.com/AmazonElastiCache/latest/red-ug/Replication.html) guide
     /// for full details on using Replication Groups.
+    /// 
+    /// ## Import
+    /// 
+    /// ElastiCache Replication Groups can be imported using the `replication_group_id`, e.g.
+    /// 
+    /// ```sh
+    ///  $ pulumi import aws:elasticache/replicationGroup:ReplicationGroup my_replication_group replication-group-1
+    /// ```
     /// </summary>
     public partial class ReplicationGroup : Pulumi.CustomResource
     {
@@ -222,7 +302,7 @@ namespace Pulumi.Aws.ElastiCache
         /// retain automatic cache cluster snapshots before deleting them. For example, if you set
         /// SnapshotRetentionLimit to 5, then a snapshot that was taken today will be retained for 5 days
         /// before being deleted. If the value of SnapshotRetentionLimit is set to zero (0), backups are turned off.
-        /// Please note that setting a `snapshot_retention_limit` is not supported on cache.t1.micro or cache.t2.* cache nodes
+        /// Please note that setting a `snapshot_retention_limit` is not supported on cache.t1.micro cache nodes
         /// </summary>
         [Output("snapshotRetentionLimit")]
         public Output<int?> SnapshotRetentionLimit { get; private set; } = null!;
@@ -241,7 +321,7 @@ namespace Pulumi.Aws.ElastiCache
         public Output<string> SubnetGroupName { get; private set; } = null!;
 
         /// <summary>
-        /// A map of tags to assign to the resource
+        /// A map of tags to assign to the resource. Adding tags to this resource will add or overwrite any existing tags on the clusters in the replication group and not to the group itself.
         /// </summary>
         [Output("tags")]
         public Output<ImmutableDictionary<string, string>?> Tags { get; private set; } = null!;
@@ -465,7 +545,7 @@ namespace Pulumi.Aws.ElastiCache
         /// retain automatic cache cluster snapshots before deleting them. For example, if you set
         /// SnapshotRetentionLimit to 5, then a snapshot that was taken today will be retained for 5 days
         /// before being deleted. If the value of SnapshotRetentionLimit is set to zero (0), backups are turned off.
-        /// Please note that setting a `snapshot_retention_limit` is not supported on cache.t1.micro or cache.t2.* cache nodes
+        /// Please note that setting a `snapshot_retention_limit` is not supported on cache.t1.micro cache nodes
         /// </summary>
         [Input("snapshotRetentionLimit")]
         public Input<int>? SnapshotRetentionLimit { get; set; }
@@ -487,7 +567,7 @@ namespace Pulumi.Aws.ElastiCache
         private InputMap<string>? _tags;
 
         /// <summary>
-        /// A map of tags to assign to the resource
+        /// A map of tags to assign to the resource. Adding tags to this resource will add or overwrite any existing tags on the clusters in the replication group and not to the group itself.
         /// </summary>
         public InputMap<string> Tags
         {
@@ -699,7 +779,7 @@ namespace Pulumi.Aws.ElastiCache
         /// retain automatic cache cluster snapshots before deleting them. For example, if you set
         /// SnapshotRetentionLimit to 5, then a snapshot that was taken today will be retained for 5 days
         /// before being deleted. If the value of SnapshotRetentionLimit is set to zero (0), backups are turned off.
-        /// Please note that setting a `snapshot_retention_limit` is not supported on cache.t1.micro or cache.t2.* cache nodes
+        /// Please note that setting a `snapshot_retention_limit` is not supported on cache.t1.micro cache nodes
         /// </summary>
         [Input("snapshotRetentionLimit")]
         public Input<int>? SnapshotRetentionLimit { get; set; }
@@ -721,7 +801,7 @@ namespace Pulumi.Aws.ElastiCache
         private InputMap<string>? _tags;
 
         /// <summary>
-        /// A map of tags to assign to the resource
+        /// A map of tags to assign to the resource. Adding tags to this resource will add or overwrite any existing tags on the clusters in the replication group and not to the group itself.
         /// </summary>
         public InputMap<string> Tags
         {

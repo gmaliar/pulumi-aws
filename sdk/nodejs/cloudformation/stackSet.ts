@@ -17,7 +17,7 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const aWSCloudFormationStackSetAdministrationRoleAssumeRolePolicy = pulumi.output(aws.iam.getPolicyDocument({
+ * const aWSCloudFormationStackSetAdministrationRoleAssumeRolePolicy = aws.iam.getPolicyDocument({
  *     statements: [{
  *         actions: ["sts:AssumeRole"],
  *         effect: "Allow",
@@ -26,10 +26,8 @@ import * as utilities from "../utilities";
  *             type: "Service",
  *         }],
  *     }],
- * }, { async: true }));
- * const aWSCloudFormationStackSetAdministrationRole = new aws.iam.Role("AWSCloudFormationStackSetAdministrationRole", {
- *     assumeRolePolicy: aWSCloudFormationStackSetAdministrationRoleAssumeRolePolicy.json,
  * });
+ * const aWSCloudFormationStackSetAdministrationRole = new aws.iam.Role("aWSCloudFormationStackSetAdministrationRole", {assumeRolePolicy: aWSCloudFormationStackSetAdministrationRoleAssumeRolePolicy.then(aWSCloudFormationStackSetAdministrationRoleAssumeRolePolicy => aWSCloudFormationStackSetAdministrationRoleAssumeRolePolicy.json)});
  * const example = new aws.cloudformation.StackSet("example", {
  *     administrationRoleArn: aWSCloudFormationStackSetAdministrationRole.arn,
  *     parameters: {
@@ -63,11 +61,19 @@ import * as utilities from "../utilities";
  *         effect: "Allow",
  *         resources: [`arn:aws:iam::*:role/${executionRoleName}`],
  *     }],
- * }, { async: true }));
- * const aWSCloudFormationStackSetAdministrationRoleExecutionPolicyRolePolicy = new aws.iam.RolePolicy("AWSCloudFormationStackSetAdministrationRole_ExecutionPolicy", {
+ * }));
+ * const aWSCloudFormationStackSetAdministrationRoleExecutionPolicyRolePolicy = new aws.iam.RolePolicy("aWSCloudFormationStackSetAdministrationRoleExecutionPolicyRolePolicy", {
  *     policy: aWSCloudFormationStackSetAdministrationRoleExecutionPolicyPolicyDocument.json,
  *     role: aWSCloudFormationStackSetAdministrationRole.name,
  * });
+ * ```
+ *
+ * ## Import
+ *
+ * CloudFormation StackSets can be imported using the `name`, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:cloudformation/stackSet:StackSet example example
  * ```
  */
 export class StackSet extends pulumi.CustomResource {
@@ -168,7 +174,7 @@ export class StackSet extends pulumi.CustomResource {
             inputs["templateUrl"] = state ? state.templateUrl : undefined;
         } else {
             const args = argsOrState as StackSetArgs | undefined;
-            if (!args || args.administrationRoleArn === undefined) {
+            if ((!args || args.administrationRoleArn === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'administrationRoleArn'");
             }
             inputs["administrationRoleArn"] = args ? args.administrationRoleArn : undefined;

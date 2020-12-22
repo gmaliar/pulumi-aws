@@ -13,12 +13,22 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const exampleAccount = new aws.securityhub.Account("example", {});
- * const exampleMember = new aws.securityhub.Member("example", {
+ * const exampleAccount = new aws.securityhub.Account("exampleAccount", {});
+ * const exampleMember = new aws.securityhub.Member("exampleMember", {
  *     accountId: "123456789012",
  *     email: "example@example.com",
  *     invite: true,
- * }, { dependsOn: [exampleAccount] });
+ * }, {
+ *     dependsOn: [exampleAccount],
+ * });
+ * ```
+ *
+ * ## Import
+ *
+ * Security Hub members can be imported using their account ID, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:securityhub/member:Member example 123456789012
  * ```
  */
 export class Member extends pulumi.CustomResource {
@@ -89,10 +99,10 @@ export class Member extends pulumi.CustomResource {
             inputs["memberStatus"] = state ? state.memberStatus : undefined;
         } else {
             const args = argsOrState as MemberArgs | undefined;
-            if (!args || args.accountId === undefined) {
+            if ((!args || args.accountId === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'accountId'");
             }
-            if (!args || args.email === undefined) {
+            if ((!args || args.email === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'email'");
             }
             inputs["accountId"] = args ? args.accountId : undefined;

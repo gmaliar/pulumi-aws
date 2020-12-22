@@ -4,6 +4,7 @@
 package cognito
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -20,16 +21,16 @@ import (
 // import (
 // 	"fmt"
 //
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/cognito"
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/iam"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/cognito"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/iam"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
 // func main() {
 // 	pulumi.Run(func(ctx *pulumi.Context) error {
 // 		mainIdentityPool, err := cognito.NewIdentityPool(ctx, "mainIdentityPool", &cognito.IdentityPoolArgs{
-// 			AllowUnauthenticatedIdentities: pulumi.Bool(false),
 // 			IdentityPoolName:               pulumi.String("identity pool"),
+// 			AllowUnauthenticatedIdentities: pulumi.Bool(false),
 // 			SupportedLoginProviders: pulumi.StringMap{
 // 				"graph.facebook.com": pulumi.String("7346241598935555"),
 // 			},
@@ -39,15 +40,15 @@ import (
 // 		}
 // 		authenticatedRole, err := iam.NewRole(ctx, "authenticatedRole", &iam.RoleArgs{
 // 			AssumeRolePolicy: mainIdentityPool.ID().ApplyT(func(id string) (string, error) {
-// 				return fmt.Sprintf("%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v", "{\n", "  \"Version\": \"2012-10-17\",\n", "  \"Statement\": [\n", "    {\n", "      \"Effect\": \"Allow\",\n", "      \"Principal\": {\n", "        \"Federated\": \"cognito-identity.amazonaws.com\"\n", "      },\n", "      \"Action\": \"sts:AssumeRoleWithWebIdentity\",\n", "      \"Condition\": {\n", "        \"StringEquals\": {\n", "          \"cognito-identity.amazonaws.com:aud\": \"", id, "\"\n", "        },\n", "        \"ForAnyValue:StringLike\": {\n", "          \"cognito-identity.amazonaws.com:amr\": \"authenticated\"\n", "        }\n", "      }\n", "    }\n", "  ]\n", "}\n", "\n"), nil
+// 				return fmt.Sprintf("%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v", "{\n", "  \"Version\": \"2012-10-17\",\n", "  \"Statement\": [\n", "    {\n", "      \"Effect\": \"Allow\",\n", "      \"Principal\": {\n", "        \"Federated\": \"cognito-identity.amazonaws.com\"\n", "      },\n", "      \"Action\": \"sts:AssumeRoleWithWebIdentity\",\n", "      \"Condition\": {\n", "        \"StringEquals\": {\n", "          \"cognito-identity.amazonaws.com:aud\": \"", id, "\"\n", "        },\n", "        \"ForAnyValue:StringLike\": {\n", "          \"cognito-identity.amazonaws.com:amr\": \"authenticated\"\n", "        }\n", "      }\n", "    }\n", "  ]\n", "}\n"), nil
 // 			}).(pulumi.StringOutput),
 // 		})
 // 		if err != nil {
 // 			return err
 // 		}
 // 		_, err = iam.NewRolePolicy(ctx, "authenticatedRolePolicy", &iam.RolePolicyArgs{
-// 			Policy: pulumi.String(fmt.Sprintf("%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v", "{\n", "  \"Version\": \"2012-10-17\",\n", "  \"Statement\": [\n", "    {\n", "      \"Effect\": \"Allow\",\n", "      \"Action\": [\n", "        \"mobileanalytics:PutEvents\",\n", "        \"cognito-sync:*\",\n", "        \"cognito-identity:*\"\n", "      ],\n", "      \"Resource\": [\n", "        \"*\"\n", "      ]\n", "    }\n", "  ]\n", "}\n", "\n")),
 // 			Role:   authenticatedRole.ID(),
+// 			Policy: pulumi.String(fmt.Sprintf("%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v", "{\n", "  \"Version\": \"2012-10-17\",\n", "  \"Statement\": [\n", "    {\n", "      \"Effect\": \"Allow\",\n", "      \"Action\": [\n", "        \"mobileanalytics:PutEvents\",\n", "        \"cognito-sync:*\",\n", "        \"cognito-identity:*\"\n", "      ],\n", "      \"Resource\": [\n", "        \"*\"\n", "      ]\n", "    }\n", "  ]\n", "}\n")),
 // 		})
 // 		if err != nil {
 // 			return err
@@ -56,8 +57,9 @@ import (
 // 			IdentityPoolId: mainIdentityPool.ID(),
 // 			RoleMappings: cognito.IdentityPoolRoleAttachmentRoleMappingArray{
 // 				&cognito.IdentityPoolRoleAttachmentRoleMappingArgs{
-// 					AmbiguousRoleResolution: pulumi.String("AuthenticatedRole"),
 // 					IdentityProvider:        pulumi.String("graph.facebook.com"),
+// 					AmbiguousRoleResolution: pulumi.String("AuthenticatedRole"),
+// 					Type:                    pulumi.String("Rules"),
 // 					MappingRules: cognito.IdentityPoolRoleAttachmentRoleMappingMappingRuleArray{
 // 						&cognito.IdentityPoolRoleAttachmentRoleMappingMappingRuleArgs{
 // 							Claim:     pulumi.String("isAdmin"),
@@ -66,7 +68,6 @@ import (
 // 							Value:     pulumi.String("paid"),
 // 						},
 // 					},
-// 					Type: pulumi.String("Rules"),
 // 				},
 // 			},
 // 			Roles: pulumi.StringMap{
@@ -79,6 +80,14 @@ import (
 // 		return nil
 // 	})
 // }
+// ```
+//
+// ## Import
+//
+// Cognito Identity Pool Roles Attachment can be imported using the Identity Pool id, e.g.
+//
+// ```sh
+//  $ pulumi import aws:cognito/identityPoolRoleAttachment:IdentityPoolRoleAttachment example <identity-pool-id>
 // ```
 type IdentityPoolRoleAttachment struct {
 	pulumi.CustomResourceState
@@ -94,14 +103,15 @@ type IdentityPoolRoleAttachment struct {
 // NewIdentityPoolRoleAttachment registers a new resource with the given unique name, arguments, and options.
 func NewIdentityPoolRoleAttachment(ctx *pulumi.Context,
 	name string, args *IdentityPoolRoleAttachmentArgs, opts ...pulumi.ResourceOption) (*IdentityPoolRoleAttachment, error) {
-	if args == nil || args.IdentityPoolId == nil {
-		return nil, errors.New("missing required argument 'IdentityPoolId'")
-	}
-	if args == nil || args.Roles == nil {
-		return nil, errors.New("missing required argument 'Roles'")
-	}
 	if args == nil {
-		args = &IdentityPoolRoleAttachmentArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.IdentityPoolId == nil {
+		return nil, errors.New("invalid value for required argument 'IdentityPoolId'")
+	}
+	if args.Roles == nil {
+		return nil, errors.New("invalid value for required argument 'Roles'")
 	}
 	var resource IdentityPoolRoleAttachment
 	err := ctx.RegisterResource("aws:cognito/identityPoolRoleAttachment:IdentityPoolRoleAttachment", name, args, &resource, opts...)
@@ -167,4 +177,43 @@ type IdentityPoolRoleAttachmentArgs struct {
 
 func (IdentityPoolRoleAttachmentArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*identityPoolRoleAttachmentArgs)(nil)).Elem()
+}
+
+type IdentityPoolRoleAttachmentInput interface {
+	pulumi.Input
+
+	ToIdentityPoolRoleAttachmentOutput() IdentityPoolRoleAttachmentOutput
+	ToIdentityPoolRoleAttachmentOutputWithContext(ctx context.Context) IdentityPoolRoleAttachmentOutput
+}
+
+func (IdentityPoolRoleAttachment) ElementType() reflect.Type {
+	return reflect.TypeOf((*IdentityPoolRoleAttachment)(nil)).Elem()
+}
+
+func (i IdentityPoolRoleAttachment) ToIdentityPoolRoleAttachmentOutput() IdentityPoolRoleAttachmentOutput {
+	return i.ToIdentityPoolRoleAttachmentOutputWithContext(context.Background())
+}
+
+func (i IdentityPoolRoleAttachment) ToIdentityPoolRoleAttachmentOutputWithContext(ctx context.Context) IdentityPoolRoleAttachmentOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(IdentityPoolRoleAttachmentOutput)
+}
+
+type IdentityPoolRoleAttachmentOutput struct {
+	*pulumi.OutputState
+}
+
+func (IdentityPoolRoleAttachmentOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*IdentityPoolRoleAttachmentOutput)(nil)).Elem()
+}
+
+func (o IdentityPoolRoleAttachmentOutput) ToIdentityPoolRoleAttachmentOutput() IdentityPoolRoleAttachmentOutput {
+	return o
+}
+
+func (o IdentityPoolRoleAttachmentOutput) ToIdentityPoolRoleAttachmentOutputWithContext(ctx context.Context) IdentityPoolRoleAttachmentOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(IdentityPoolRoleAttachmentOutput{})
 }

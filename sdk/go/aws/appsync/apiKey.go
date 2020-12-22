@@ -4,6 +4,7 @@
 package appsync
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -18,7 +19,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/appsync"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/appsync"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -41,6 +42,14 @@ import (
 // 	})
 // }
 // ```
+//
+// ## Import
+//
+// `aws_appsync_api_key` can be imported using the AppSync API ID and key separated by `:`, e.g.
+//
+// ```sh
+//  $ pulumi import aws:appsync/apiKey:ApiKey example xxxxx:yyyyy
+// ```
 type ApiKey struct {
 	pulumi.CustomResourceState
 
@@ -57,11 +66,12 @@ type ApiKey struct {
 // NewApiKey registers a new resource with the given unique name, arguments, and options.
 func NewApiKey(ctx *pulumi.Context,
 	name string, args *ApiKeyArgs, opts ...pulumi.ResourceOption) (*ApiKey, error) {
-	if args == nil || args.ApiId == nil {
-		return nil, errors.New("missing required argument 'ApiId'")
-	}
 	if args == nil {
-		args = &ApiKeyArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.ApiId == nil {
+		return nil, errors.New("invalid value for required argument 'ApiId'")
 	}
 	if args.Description == nil {
 		args.Description = pulumi.StringPtr("Managed by Pulumi")
@@ -134,4 +144,43 @@ type ApiKeyArgs struct {
 
 func (ApiKeyArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*apiKeyArgs)(nil)).Elem()
+}
+
+type ApiKeyInput interface {
+	pulumi.Input
+
+	ToApiKeyOutput() ApiKeyOutput
+	ToApiKeyOutputWithContext(ctx context.Context) ApiKeyOutput
+}
+
+func (ApiKey) ElementType() reflect.Type {
+	return reflect.TypeOf((*ApiKey)(nil)).Elem()
+}
+
+func (i ApiKey) ToApiKeyOutput() ApiKeyOutput {
+	return i.ToApiKeyOutputWithContext(context.Background())
+}
+
+func (i ApiKey) ToApiKeyOutputWithContext(ctx context.Context) ApiKeyOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(ApiKeyOutput)
+}
+
+type ApiKeyOutput struct {
+	*pulumi.OutputState
+}
+
+func (ApiKeyOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*ApiKeyOutput)(nil)).Elem()
+}
+
+func (o ApiKeyOutput) ToApiKeyOutput() ApiKeyOutput {
+	return o
+}
+
+func (o ApiKeyOutput) ToApiKeyOutputWithContext(ctx context.Context) ApiKeyOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(ApiKeyOutput{})
 }

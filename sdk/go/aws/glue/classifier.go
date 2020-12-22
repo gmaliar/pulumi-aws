@@ -4,6 +4,7 @@
 package glue
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
@@ -20,7 +21,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/glue"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/glue"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -52,7 +53,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/glue"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/glue"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -77,7 +78,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/glue"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/glue"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -101,7 +102,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/glue"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/glue"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -119,6 +120,14 @@ import (
 // 		return nil
 // 	})
 // }
+// ```
+//
+// ## Import
+//
+// Glue Classifiers can be imported using their name, e.g.
+//
+// ```sh
+//  $ pulumi import aws:glue/classifier:Classifier MyClassifier MyClassifier
 // ```
 type Classifier struct {
 	pulumi.CustomResourceState
@@ -141,6 +150,7 @@ func NewClassifier(ctx *pulumi.Context,
 	if args == nil {
 		args = &ClassifierArgs{}
 	}
+
 	var resource Classifier
 	err := ctx.RegisterResource("aws:glue/classifier:Classifier", name, args, &resource, opts...)
 	if err != nil {
@@ -221,4 +231,43 @@ type ClassifierArgs struct {
 
 func (ClassifierArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*classifierArgs)(nil)).Elem()
+}
+
+type ClassifierInput interface {
+	pulumi.Input
+
+	ToClassifierOutput() ClassifierOutput
+	ToClassifierOutputWithContext(ctx context.Context) ClassifierOutput
+}
+
+func (Classifier) ElementType() reflect.Type {
+	return reflect.TypeOf((*Classifier)(nil)).Elem()
+}
+
+func (i Classifier) ToClassifierOutput() ClassifierOutput {
+	return i.ToClassifierOutputWithContext(context.Background())
+}
+
+func (i Classifier) ToClassifierOutputWithContext(ctx context.Context) ClassifierOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(ClassifierOutput)
+}
+
+type ClassifierOutput struct {
+	*pulumi.OutputState
+}
+
+func (ClassifierOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*ClassifierOutput)(nil)).Elem()
+}
+
+func (o ClassifierOutput) ToClassifierOutput() ClassifierOutput {
+	return o
+}
+
+func (o ClassifierOutput) ToClassifierOutputWithContext(ctx context.Context) ClassifierOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(ClassifierOutput{})
 }

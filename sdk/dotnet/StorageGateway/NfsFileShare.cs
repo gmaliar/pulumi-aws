@@ -36,6 +36,14 @@ namespace Pulumi.Aws.StorageGateway
     /// 
     /// }
     /// ```
+    /// 
+    /// ## Import
+    /// 
+    /// `aws_storagegateway_nfs_file_share` can be imported by using the NFS File Share Amazon Resource Name (ARN), e.g.
+    /// 
+    /// ```sh
+    ///  $ pulumi import aws:storagegateway/nfsFileShare:NfsFileShare example arn:aws:storagegateway:us-east-1:123456789012:share/share-12345678
+    /// ```
     /// </summary>
     public partial class NfsFileShare : Pulumi.CustomResource
     {
@@ -44,6 +52,12 @@ namespace Pulumi.Aws.StorageGateway
         /// </summary>
         [Output("arn")]
         public Output<string> Arn { get; private set; } = null!;
+
+        /// <summary>
+        /// Refresh cache information. see Cache Attributes for more details.
+        /// </summary>
+        [Output("cacheAttributes")]
+        public Output<Outputs.NfsFileShareCacheAttributes?> CacheAttributes { get; private set; } = null!;
 
         /// <summary>
         /// The list of clients that are allowed to access the file gateway. The list must contain either valid IP addresses or valid CIDR blocks. Set to `["0.0.0.0/0"]` to not limit access. Minimum 1 item. Maximum 100 items.
@@ -56,6 +70,12 @@ namespace Pulumi.Aws.StorageGateway
         /// </summary>
         [Output("defaultStorageClass")]
         public Output<string?> DefaultStorageClass { get; private set; } = null!;
+
+        /// <summary>
+        /// The name of the file share. Must be set if an S3 prefix name is set in `location_arn`.
+        /// </summary>
+        [Output("fileShareName")]
+        public Output<string> FileShareName { get; private set; } = null!;
 
         /// <summary>
         /// ID of the NFS File Share.
@@ -94,10 +114,16 @@ namespace Pulumi.Aws.StorageGateway
         public Output<string> LocationArn { get; private set; } = null!;
 
         /// <summary>
-        /// Nested argument with file share default values. More information below.
+        /// Nested argument with file share default values. More information below. see NFS File Share Defaults for more details.
         /// </summary>
         [Output("nfsFileShareDefaults")]
         public Output<Outputs.NfsFileShareNfsFileShareDefaults?> NfsFileShareDefaults { get; private set; } = null!;
+
+        /// <summary>
+        /// The notification policy of the file share. For more information see the [AWS Documentation](https://docs.aws.amazon.com/storagegateway/latest/APIReference/API_CreateNFSFileShare.html#StorageGateway-CreateNFSFileShare-request-NotificationPolicy). Default value is `{}`.
+        /// </summary>
+        [Output("notificationPolicy")]
+        public Output<string?> NotificationPolicy { get; private set; } = null!;
 
         /// <summary>
         /// Access Control List permission for S3 bucket objects. Defaults to `private`.
@@ -187,6 +213,12 @@ namespace Pulumi.Aws.StorageGateway
 
     public sealed class NfsFileShareArgs : Pulumi.ResourceArgs
     {
+        /// <summary>
+        /// Refresh cache information. see Cache Attributes for more details.
+        /// </summary>
+        [Input("cacheAttributes")]
+        public Input<Inputs.NfsFileShareCacheAttributesArgs>? CacheAttributes { get; set; }
+
         [Input("clientLists", required: true)]
         private InputList<string>? _clientLists;
 
@@ -204,6 +236,12 @@ namespace Pulumi.Aws.StorageGateway
         /// </summary>
         [Input("defaultStorageClass")]
         public Input<string>? DefaultStorageClass { get; set; }
+
+        /// <summary>
+        /// The name of the file share. Must be set if an S3 prefix name is set in `location_arn`.
+        /// </summary>
+        [Input("fileShareName")]
+        public Input<string>? FileShareName { get; set; }
 
         /// <summary>
         /// Amazon Resource Name (ARN) of the file gateway.
@@ -236,10 +274,16 @@ namespace Pulumi.Aws.StorageGateway
         public Input<string> LocationArn { get; set; } = null!;
 
         /// <summary>
-        /// Nested argument with file share default values. More information below.
+        /// Nested argument with file share default values. More information below. see NFS File Share Defaults for more details.
         /// </summary>
         [Input("nfsFileShareDefaults")]
         public Input<Inputs.NfsFileShareNfsFileShareDefaultsArgs>? NfsFileShareDefaults { get; set; }
+
+        /// <summary>
+        /// The notification policy of the file share. For more information see the [AWS Documentation](https://docs.aws.amazon.com/storagegateway/latest/APIReference/API_CreateNFSFileShare.html#StorageGateway-CreateNFSFileShare-request-NotificationPolicy). Default value is `{}`.
+        /// </summary>
+        [Input("notificationPolicy")]
+        public Input<string>? NotificationPolicy { get; set; }
 
         /// <summary>
         /// Access Control List permission for S3 bucket objects. Defaults to `private`.
@@ -296,6 +340,12 @@ namespace Pulumi.Aws.StorageGateway
         [Input("arn")]
         public Input<string>? Arn { get; set; }
 
+        /// <summary>
+        /// Refresh cache information. see Cache Attributes for more details.
+        /// </summary>
+        [Input("cacheAttributes")]
+        public Input<Inputs.NfsFileShareCacheAttributesGetArgs>? CacheAttributes { get; set; }
+
         [Input("clientLists")]
         private InputList<string>? _clientLists;
 
@@ -313,6 +363,12 @@ namespace Pulumi.Aws.StorageGateway
         /// </summary>
         [Input("defaultStorageClass")]
         public Input<string>? DefaultStorageClass { get; set; }
+
+        /// <summary>
+        /// The name of the file share. Must be set if an S3 prefix name is set in `location_arn`.
+        /// </summary>
+        [Input("fileShareName")]
+        public Input<string>? FileShareName { get; set; }
 
         /// <summary>
         /// ID of the NFS File Share.
@@ -351,10 +407,16 @@ namespace Pulumi.Aws.StorageGateway
         public Input<string>? LocationArn { get; set; }
 
         /// <summary>
-        /// Nested argument with file share default values. More information below.
+        /// Nested argument with file share default values. More information below. see NFS File Share Defaults for more details.
         /// </summary>
         [Input("nfsFileShareDefaults")]
         public Input<Inputs.NfsFileShareNfsFileShareDefaultsGetArgs>? NfsFileShareDefaults { get; set; }
+
+        /// <summary>
+        /// The notification policy of the file share. For more information see the [AWS Documentation](https://docs.aws.amazon.com/storagegateway/latest/APIReference/API_CreateNFSFileShare.html#StorageGateway-CreateNFSFileShare-request-NotificationPolicy). Default value is `{}`.
+        /// </summary>
+        [Input("notificationPolicy")]
+        public Input<string>? NotificationPolicy { get; set; }
 
         /// <summary>
         /// Access Control List permission for S3 bucket objects. Defaults to `private`.

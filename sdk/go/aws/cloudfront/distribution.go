@@ -4,6 +4,7 @@
 package cloudfront
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -21,13 +22,17 @@ import (
 // after creation or modification. During this time, deletes to resources will be
 // blocked. If you need to delete a distribution that is enabled and you do not
 // want to wait, you need to use the `retainOnDelete` flag.
+//
+// ## Import
+//
+// Cloudfront Distributions can be imported using the `id`, e.g.
+//
+// ```sh
+//  $ pulumi import aws:cloudfront/distribution:Distribution distribution E74FTE3EXAMPLE
+// ```
 type Distribution struct {
 	pulumi.CustomResourceState
 
-	// The key pair IDs that CloudFront is aware of for
-	// each trusted signer, if the distribution is set up to serve private content
-	// with signed URLs.
-	ActiveTrustedSigners pulumi.StringMapOutput `pulumi:"activeTrustedSigners"`
 	// Extra CNAMEs (alternate domain names), if any, for
 	// this distribution.
 	Aliases pulumi.StringArrayOutput `pulumi:"aliases"`
@@ -101,6 +106,9 @@ type Distribution struct {
 	Status pulumi.StringOutput `pulumi:"status"`
 	// A map of tags to assign to the resource.
 	Tags pulumi.StringMapOutput `pulumi:"tags"`
+	// List of AWS account IDs (or `self`) that you want to allow to create signed URLs for private content.
+	// See the [CloudFront User Guide](https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/private-content-trusted-signers.html) for more information about this feature.
+	TrustedSigners DistributionTrustedSignerArrayOutput `pulumi:"trustedSigners"`
 	// The SSL
 	// configuration for this distribution (maximum
 	// one).
@@ -109,34 +117,37 @@ type Distribution struct {
 	// the distribution status to change from `InProgress` to `Deployed`. Setting
 	// this to`false` will skip the process. Default: `true`.
 	WaitForDeployment pulumi.BoolPtrOutput `pulumi:"waitForDeployment"`
-	// If you're using AWS WAF to filter CloudFront
-	// requests, the Id of the AWS WAF web ACL that is associated with the
-	// distribution. The WAF Web ACL must exist in the WAF Global (CloudFront)
-	// region and the credentials configuring this argument must have
-	// `waf:GetWebACL` permissions assigned. If using WAFv2, provide the ARN of the web ACL.
+	// A unique identifier that specifies the AWS WAF web ACL,
+	// if any, to associate with this distribution.
+	// To specify a web ACL created using the latest version of AWS WAF (WAFv2), use the ACL ARN,
+	// for example `aws_wafv2_web_acl.example.arn`. To specify a web
+	// ACL created using AWS WAF Classic, use the ACL ID, for example `aws_waf_web_acl.example.id`.
+	// The WAF Web ACL must exist in the WAF Global (CloudFront) region and the
+	// credentials configuring this argument must have `waf:GetWebACL` permissions assigned.
 	WebAclId pulumi.StringPtrOutput `pulumi:"webAclId"`
 }
 
 // NewDistribution registers a new resource with the given unique name, arguments, and options.
 func NewDistribution(ctx *pulumi.Context,
 	name string, args *DistributionArgs, opts ...pulumi.ResourceOption) (*Distribution, error) {
-	if args == nil || args.DefaultCacheBehavior == nil {
-		return nil, errors.New("missing required argument 'DefaultCacheBehavior'")
-	}
-	if args == nil || args.Enabled == nil {
-		return nil, errors.New("missing required argument 'Enabled'")
-	}
-	if args == nil || args.Origins == nil {
-		return nil, errors.New("missing required argument 'Origins'")
-	}
-	if args == nil || args.Restrictions == nil {
-		return nil, errors.New("missing required argument 'Restrictions'")
-	}
-	if args == nil || args.ViewerCertificate == nil {
-		return nil, errors.New("missing required argument 'ViewerCertificate'")
-	}
 	if args == nil {
-		args = &DistributionArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.DefaultCacheBehavior == nil {
+		return nil, errors.New("invalid value for required argument 'DefaultCacheBehavior'")
+	}
+	if args.Enabled == nil {
+		return nil, errors.New("invalid value for required argument 'Enabled'")
+	}
+	if args.Origins == nil {
+		return nil, errors.New("invalid value for required argument 'Origins'")
+	}
+	if args.Restrictions == nil {
+		return nil, errors.New("invalid value for required argument 'Restrictions'")
+	}
+	if args.ViewerCertificate == nil {
+		return nil, errors.New("invalid value for required argument 'ViewerCertificate'")
 	}
 	var resource Distribution
 	err := ctx.RegisterResource("aws:cloudfront/distribution:Distribution", name, args, &resource, opts...)
@@ -160,10 +171,6 @@ func GetDistribution(ctx *pulumi.Context,
 
 // Input properties used for looking up and filtering Distribution resources.
 type distributionState struct {
-	// The key pair IDs that CloudFront is aware of for
-	// each trusted signer, if the distribution is set up to serve private content
-	// with signed URLs.
-	ActiveTrustedSigners map[string]string `pulumi:"activeTrustedSigners"`
 	// Extra CNAMEs (alternate domain names), if any, for
 	// this distribution.
 	Aliases []string `pulumi:"aliases"`
@@ -237,6 +244,9 @@ type distributionState struct {
 	Status *string `pulumi:"status"`
 	// A map of tags to assign to the resource.
 	Tags map[string]string `pulumi:"tags"`
+	// List of AWS account IDs (or `self`) that you want to allow to create signed URLs for private content.
+	// See the [CloudFront User Guide](https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/private-content-trusted-signers.html) for more information about this feature.
+	TrustedSigners []DistributionTrustedSigner `pulumi:"trustedSigners"`
 	// The SSL
 	// configuration for this distribution (maximum
 	// one).
@@ -245,19 +255,17 @@ type distributionState struct {
 	// the distribution status to change from `InProgress` to `Deployed`. Setting
 	// this to`false` will skip the process. Default: `true`.
 	WaitForDeployment *bool `pulumi:"waitForDeployment"`
-	// If you're using AWS WAF to filter CloudFront
-	// requests, the Id of the AWS WAF web ACL that is associated with the
-	// distribution. The WAF Web ACL must exist in the WAF Global (CloudFront)
-	// region and the credentials configuring this argument must have
-	// `waf:GetWebACL` permissions assigned. If using WAFv2, provide the ARN of the web ACL.
+	// A unique identifier that specifies the AWS WAF web ACL,
+	// if any, to associate with this distribution.
+	// To specify a web ACL created using the latest version of AWS WAF (WAFv2), use the ACL ARN,
+	// for example `aws_wafv2_web_acl.example.arn`. To specify a web
+	// ACL created using AWS WAF Classic, use the ACL ID, for example `aws_waf_web_acl.example.id`.
+	// The WAF Web ACL must exist in the WAF Global (CloudFront) region and the
+	// credentials configuring this argument must have `waf:GetWebACL` permissions assigned.
 	WebAclId *string `pulumi:"webAclId"`
 }
 
 type DistributionState struct {
-	// The key pair IDs that CloudFront is aware of for
-	// each trusted signer, if the distribution is set up to serve private content
-	// with signed URLs.
-	ActiveTrustedSigners pulumi.StringMapInput
 	// Extra CNAMEs (alternate domain names), if any, for
 	// this distribution.
 	Aliases pulumi.StringArrayInput
@@ -331,6 +339,9 @@ type DistributionState struct {
 	Status pulumi.StringPtrInput
 	// A map of tags to assign to the resource.
 	Tags pulumi.StringMapInput
+	// List of AWS account IDs (or `self`) that you want to allow to create signed URLs for private content.
+	// See the [CloudFront User Guide](https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/private-content-trusted-signers.html) for more information about this feature.
+	TrustedSigners DistributionTrustedSignerArrayInput
 	// The SSL
 	// configuration for this distribution (maximum
 	// one).
@@ -339,11 +350,13 @@ type DistributionState struct {
 	// the distribution status to change from `InProgress` to `Deployed`. Setting
 	// this to`false` will skip the process. Default: `true`.
 	WaitForDeployment pulumi.BoolPtrInput
-	// If you're using AWS WAF to filter CloudFront
-	// requests, the Id of the AWS WAF web ACL that is associated with the
-	// distribution. The WAF Web ACL must exist in the WAF Global (CloudFront)
-	// region and the credentials configuring this argument must have
-	// `waf:GetWebACL` permissions assigned. If using WAFv2, provide the ARN of the web ACL.
+	// A unique identifier that specifies the AWS WAF web ACL,
+	// if any, to associate with this distribution.
+	// To specify a web ACL created using the latest version of AWS WAF (WAFv2), use the ACL ARN,
+	// for example `aws_wafv2_web_acl.example.arn`. To specify a web
+	// ACL created using AWS WAF Classic, use the ACL ID, for example `aws_waf_web_acl.example.id`.
+	// The WAF Web ACL must exist in the WAF Global (CloudFront) region and the
+	// credentials configuring this argument must have `waf:GetWebACL` permissions assigned.
 	WebAclId pulumi.StringPtrInput
 }
 
@@ -409,11 +422,13 @@ type distributionArgs struct {
 	// the distribution status to change from `InProgress` to `Deployed`. Setting
 	// this to`false` will skip the process. Default: `true`.
 	WaitForDeployment *bool `pulumi:"waitForDeployment"`
-	// If you're using AWS WAF to filter CloudFront
-	// requests, the Id of the AWS WAF web ACL that is associated with the
-	// distribution. The WAF Web ACL must exist in the WAF Global (CloudFront)
-	// region and the credentials configuring this argument must have
-	// `waf:GetWebACL` permissions assigned. If using WAFv2, provide the ARN of the web ACL.
+	// A unique identifier that specifies the AWS WAF web ACL,
+	// if any, to associate with this distribution.
+	// To specify a web ACL created using the latest version of AWS WAF (WAFv2), use the ACL ARN,
+	// for example `aws_wafv2_web_acl.example.arn`. To specify a web
+	// ACL created using AWS WAF Classic, use the ACL ID, for example `aws_waf_web_acl.example.id`.
+	// The WAF Web ACL must exist in the WAF Global (CloudFront) region and the
+	// credentials configuring this argument must have `waf:GetWebACL` permissions assigned.
 	WebAclId *string `pulumi:"webAclId"`
 }
 
@@ -476,14 +491,55 @@ type DistributionArgs struct {
 	// the distribution status to change from `InProgress` to `Deployed`. Setting
 	// this to`false` will skip the process. Default: `true`.
 	WaitForDeployment pulumi.BoolPtrInput
-	// If you're using AWS WAF to filter CloudFront
-	// requests, the Id of the AWS WAF web ACL that is associated with the
-	// distribution. The WAF Web ACL must exist in the WAF Global (CloudFront)
-	// region and the credentials configuring this argument must have
-	// `waf:GetWebACL` permissions assigned. If using WAFv2, provide the ARN of the web ACL.
+	// A unique identifier that specifies the AWS WAF web ACL,
+	// if any, to associate with this distribution.
+	// To specify a web ACL created using the latest version of AWS WAF (WAFv2), use the ACL ARN,
+	// for example `aws_wafv2_web_acl.example.arn`. To specify a web
+	// ACL created using AWS WAF Classic, use the ACL ID, for example `aws_waf_web_acl.example.id`.
+	// The WAF Web ACL must exist in the WAF Global (CloudFront) region and the
+	// credentials configuring this argument must have `waf:GetWebACL` permissions assigned.
 	WebAclId pulumi.StringPtrInput
 }
 
 func (DistributionArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*distributionArgs)(nil)).Elem()
+}
+
+type DistributionInput interface {
+	pulumi.Input
+
+	ToDistributionOutput() DistributionOutput
+	ToDistributionOutputWithContext(ctx context.Context) DistributionOutput
+}
+
+func (Distribution) ElementType() reflect.Type {
+	return reflect.TypeOf((*Distribution)(nil)).Elem()
+}
+
+func (i Distribution) ToDistributionOutput() DistributionOutput {
+	return i.ToDistributionOutputWithContext(context.Background())
+}
+
+func (i Distribution) ToDistributionOutputWithContext(ctx context.Context) DistributionOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(DistributionOutput)
+}
+
+type DistributionOutput struct {
+	*pulumi.OutputState
+}
+
+func (DistributionOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*DistributionOutput)(nil)).Elem()
+}
+
+func (o DistributionOutput) ToDistributionOutput() DistributionOutput {
+	return o
+}
+
+func (o DistributionOutput) ToDistributionOutputWithContext(ctx context.Context) DistributionOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(DistributionOutput{})
 }

@@ -4,6 +4,7 @@
 package dynamodb
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -23,7 +24,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/dynamodb"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/dynamodb"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -86,7 +87,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/dynamodb"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/dynamodb"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -118,6 +119,14 @@ import (
 // 		return nil
 // 	})
 // }
+// ```
+//
+// ## Import
+//
+// DynamoDB tables can be imported using the `name`, e.g.
+//
+// ```sh
+//  $ pulumi import aws:dynamodb/table:Table basic-dynamodb-table GameScores
 // ```
 type Table struct {
 	pulumi.CustomResourceState
@@ -173,14 +182,15 @@ type Table struct {
 // NewTable registers a new resource with the given unique name, arguments, and options.
 func NewTable(ctx *pulumi.Context,
 	name string, args *TableArgs, opts ...pulumi.ResourceOption) (*Table, error) {
-	if args == nil || args.Attributes == nil {
-		return nil, errors.New("missing required argument 'Attributes'")
-	}
-	if args == nil || args.HashKey == nil {
-		return nil, errors.New("missing required argument 'HashKey'")
-	}
 	if args == nil {
-		args = &TableArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.Attributes == nil {
+		return nil, errors.New("invalid value for required argument 'Attributes'")
+	}
+	if args.HashKey == nil {
+		return nil, errors.New("invalid value for required argument 'HashKey'")
 	}
 	var resource Table
 	err := ctx.RegisterResource("aws:dynamodb/table:Table", name, args, &resource, opts...)
@@ -388,4 +398,43 @@ type TableArgs struct {
 
 func (TableArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*tableArgs)(nil)).Elem()
+}
+
+type TableInput interface {
+	pulumi.Input
+
+	ToTableOutput() TableOutput
+	ToTableOutputWithContext(ctx context.Context) TableOutput
+}
+
+func (Table) ElementType() reflect.Type {
+	return reflect.TypeOf((*Table)(nil)).Elem()
+}
+
+func (i Table) ToTableOutput() TableOutput {
+	return i.ToTableOutputWithContext(context.Background())
+}
+
+func (i Table) ToTableOutputWithContext(ctx context.Context) TableOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(TableOutput)
+}
+
+type TableOutput struct {
+	*pulumi.OutputState
+}
+
+func (TableOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*TableOutput)(nil)).Elem()
+}
+
+func (o TableOutput) ToTableOutput() TableOutput {
+	return o
+}
+
+func (o TableOutput) ToTableOutputWithContext(ctx context.Context) TableOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(TableOutput{})
 }

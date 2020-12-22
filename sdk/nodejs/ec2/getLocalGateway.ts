@@ -2,8 +2,7 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 /**
@@ -18,11 +17,10 @@ import * as utilities from "../utilities";
  * import * as aws from "@pulumi/aws";
  *
  * const config = new pulumi.Config();
- * const localGatewayId = config.require("localGatewayId");
- *
- * const selected = pulumi.output(aws.ec2.getLocalGateway({
+ * const localGatewayId = config.requireObject("localGatewayId");
+ * const selected = aws.ec2.getLocalGateway({
  *     id: localGatewayId,
- * }, { async: true }));
+ * });
  * ```
  */
 export function getLocalGateway(args?: GetLocalGatewayArgs, opts?: pulumi.InvokeOptions): Promise<GetLocalGatewayResult> {

@@ -13,11 +13,11 @@ import * as utilities from "../utilities";
  * ```typescript
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
- * import * as fs from "fs";
+ * import * from "fs";
  *
  * const cert = new aws.iot.Certificate("cert", {
+ *     csr: fs.readFileSync("/my/csr.pem"),
  *     active: true,
- *     csr: fs.readFileSync("/my/csr.pem", "utf-8"),
  * });
  * ```
  * ### Without CSR
@@ -108,7 +108,7 @@ export class Certificate extends pulumi.CustomResource {
             inputs["publicKey"] = state ? state.publicKey : undefined;
         } else {
             const args = argsOrState as CertificateArgs | undefined;
-            if (!args || args.active === undefined) {
+            if ((!args || args.active === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'active'");
             }
             inputs["active"] = args ? args.active : undefined;

@@ -4,6 +4,7 @@
 package apigatewayv2
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -22,14 +23,14 @@ import (
 // import (
 // 	"fmt"
 //
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/apigatewayv2"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/apigatewayv2"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
 // func main() {
 // 	pulumi.Run(func(ctx *pulumi.Context) error {
 // 		_, err := apigatewayv2.NewRoute(ctx, "example", &apigatewayv2.RouteArgs{
-// 			ApiId:    pulumi.String(aws_apigatewayv2_api.Example.Id),
+// 			ApiId:    pulumi.Any(aws_apigatewayv2_api.Example.Id),
 // 			RouteKey: pulumi.String(fmt.Sprintf("%v%v", "$", "default")),
 // 		})
 // 		if err != nil {
@@ -38,6 +39,14 @@ import (
 // 		return nil
 // 	})
 // }
+// ```
+//
+// ## Import
+//
+// `aws_apigatewayv2_route` can be imported by using the API identifier and route identifier, e.g.
+//
+// ```sh
+//  $ pulumi import aws:apigatewayv2/route:Route example aabbccddee/1122334
 // ```
 type Route struct {
 	pulumi.CustomResourceState
@@ -57,29 +66,30 @@ type Route struct {
 	AuthorizerId pulumi.StringPtrOutput `pulumi:"authorizerId"`
 	// The [model selection expression](https://docs.aws.amazon.com/apigateway/latest/developerguide/apigateway-websocket-api-selection-expressions.html#apigateway-websocket-api-model-selection-expressions) for the route.
 	ModelSelectionExpression pulumi.StringPtrOutput `pulumi:"modelSelectionExpression"`
-	// The operation name for the route.
+	// The operation name for the route. Must be between 1 and 64 characters in length.
 	OperationName pulumi.StringPtrOutput `pulumi:"operationName"`
 	// The request models for the route.
 	RequestModels pulumi.StringMapOutput `pulumi:"requestModels"`
-	// The route key for the route.
+	// The route key for the route. For HTTP APIs, the route key can be either `$default`, or a combination of an HTTP method and resource path, for example, `GET /pets`.
 	RouteKey pulumi.StringOutput `pulumi:"routeKey"`
 	// The [route response selection expression](https://docs.aws.amazon.com/apigateway/latest/developerguide/apigateway-websocket-api-selection-expressions.html#apigateway-websocket-api-route-response-selection-expressions) for the route.
 	RouteResponseSelectionExpression pulumi.StringPtrOutput `pulumi:"routeResponseSelectionExpression"`
-	// The target for the route.
+	// The target for the route. Must be between 1 and 128 characters in length.
 	Target pulumi.StringPtrOutput `pulumi:"target"`
 }
 
 // NewRoute registers a new resource with the given unique name, arguments, and options.
 func NewRoute(ctx *pulumi.Context,
 	name string, args *RouteArgs, opts ...pulumi.ResourceOption) (*Route, error) {
-	if args == nil || args.ApiId == nil {
-		return nil, errors.New("missing required argument 'ApiId'")
-	}
-	if args == nil || args.RouteKey == nil {
-		return nil, errors.New("missing required argument 'RouteKey'")
-	}
 	if args == nil {
-		args = &RouteArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.ApiId == nil {
+		return nil, errors.New("invalid value for required argument 'ApiId'")
+	}
+	if args.RouteKey == nil {
+		return nil, errors.New("invalid value for required argument 'RouteKey'")
 	}
 	var resource Route
 	err := ctx.RegisterResource("aws:apigatewayv2/route:Route", name, args, &resource, opts...)
@@ -118,15 +128,15 @@ type routeState struct {
 	AuthorizerId *string `pulumi:"authorizerId"`
 	// The [model selection expression](https://docs.aws.amazon.com/apigateway/latest/developerguide/apigateway-websocket-api-selection-expressions.html#apigateway-websocket-api-model-selection-expressions) for the route.
 	ModelSelectionExpression *string `pulumi:"modelSelectionExpression"`
-	// The operation name for the route.
+	// The operation name for the route. Must be between 1 and 64 characters in length.
 	OperationName *string `pulumi:"operationName"`
 	// The request models for the route.
 	RequestModels map[string]string `pulumi:"requestModels"`
-	// The route key for the route.
+	// The route key for the route. For HTTP APIs, the route key can be either `$default`, or a combination of an HTTP method and resource path, for example, `GET /pets`.
 	RouteKey *string `pulumi:"routeKey"`
 	// The [route response selection expression](https://docs.aws.amazon.com/apigateway/latest/developerguide/apigateway-websocket-api-selection-expressions.html#apigateway-websocket-api-route-response-selection-expressions) for the route.
 	RouteResponseSelectionExpression *string `pulumi:"routeResponseSelectionExpression"`
-	// The target for the route.
+	// The target for the route. Must be between 1 and 128 characters in length.
 	Target *string `pulumi:"target"`
 }
 
@@ -146,15 +156,15 @@ type RouteState struct {
 	AuthorizerId pulumi.StringPtrInput
 	// The [model selection expression](https://docs.aws.amazon.com/apigateway/latest/developerguide/apigateway-websocket-api-selection-expressions.html#apigateway-websocket-api-model-selection-expressions) for the route.
 	ModelSelectionExpression pulumi.StringPtrInput
-	// The operation name for the route.
+	// The operation name for the route. Must be between 1 and 64 characters in length.
 	OperationName pulumi.StringPtrInput
 	// The request models for the route.
 	RequestModels pulumi.StringMapInput
-	// The route key for the route.
+	// The route key for the route. For HTTP APIs, the route key can be either `$default`, or a combination of an HTTP method and resource path, for example, `GET /pets`.
 	RouteKey pulumi.StringPtrInput
 	// The [route response selection expression](https://docs.aws.amazon.com/apigateway/latest/developerguide/apigateway-websocket-api-selection-expressions.html#apigateway-websocket-api-route-response-selection-expressions) for the route.
 	RouteResponseSelectionExpression pulumi.StringPtrInput
-	// The target for the route.
+	// The target for the route. Must be between 1 and 128 characters in length.
 	Target pulumi.StringPtrInput
 }
 
@@ -178,15 +188,15 @@ type routeArgs struct {
 	AuthorizerId *string `pulumi:"authorizerId"`
 	// The [model selection expression](https://docs.aws.amazon.com/apigateway/latest/developerguide/apigateway-websocket-api-selection-expressions.html#apigateway-websocket-api-model-selection-expressions) for the route.
 	ModelSelectionExpression *string `pulumi:"modelSelectionExpression"`
-	// The operation name for the route.
+	// The operation name for the route. Must be between 1 and 64 characters in length.
 	OperationName *string `pulumi:"operationName"`
 	// The request models for the route.
 	RequestModels map[string]string `pulumi:"requestModels"`
-	// The route key for the route.
+	// The route key for the route. For HTTP APIs, the route key can be either `$default`, or a combination of an HTTP method and resource path, for example, `GET /pets`.
 	RouteKey string `pulumi:"routeKey"`
 	// The [route response selection expression](https://docs.aws.amazon.com/apigateway/latest/developerguide/apigateway-websocket-api-selection-expressions.html#apigateway-websocket-api-route-response-selection-expressions) for the route.
 	RouteResponseSelectionExpression *string `pulumi:"routeResponseSelectionExpression"`
-	// The target for the route.
+	// The target for the route. Must be between 1 and 128 characters in length.
 	Target *string `pulumi:"target"`
 }
 
@@ -207,18 +217,57 @@ type RouteArgs struct {
 	AuthorizerId pulumi.StringPtrInput
 	// The [model selection expression](https://docs.aws.amazon.com/apigateway/latest/developerguide/apigateway-websocket-api-selection-expressions.html#apigateway-websocket-api-model-selection-expressions) for the route.
 	ModelSelectionExpression pulumi.StringPtrInput
-	// The operation name for the route.
+	// The operation name for the route. Must be between 1 and 64 characters in length.
 	OperationName pulumi.StringPtrInput
 	// The request models for the route.
 	RequestModels pulumi.StringMapInput
-	// The route key for the route.
+	// The route key for the route. For HTTP APIs, the route key can be either `$default`, or a combination of an HTTP method and resource path, for example, `GET /pets`.
 	RouteKey pulumi.StringInput
 	// The [route response selection expression](https://docs.aws.amazon.com/apigateway/latest/developerguide/apigateway-websocket-api-selection-expressions.html#apigateway-websocket-api-route-response-selection-expressions) for the route.
 	RouteResponseSelectionExpression pulumi.StringPtrInput
-	// The target for the route.
+	// The target for the route. Must be between 1 and 128 characters in length.
 	Target pulumi.StringPtrInput
 }
 
 func (RouteArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*routeArgs)(nil)).Elem()
+}
+
+type RouteInput interface {
+	pulumi.Input
+
+	ToRouteOutput() RouteOutput
+	ToRouteOutputWithContext(ctx context.Context) RouteOutput
+}
+
+func (Route) ElementType() reflect.Type {
+	return reflect.TypeOf((*Route)(nil)).Elem()
+}
+
+func (i Route) ToRouteOutput() RouteOutput {
+	return i.ToRouteOutputWithContext(context.Background())
+}
+
+func (i Route) ToRouteOutputWithContext(ctx context.Context) RouteOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(RouteOutput)
+}
+
+type RouteOutput struct {
+	*pulumi.OutputState
+}
+
+func (RouteOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*RouteOutput)(nil)).Elem()
+}
+
+func (o RouteOutput) ToRouteOutput() RouteOutput {
+	return o
+}
+
+func (o RouteOutput) ToRouteOutputWithContext(ctx context.Context) RouteOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(RouteOutput{})
 }

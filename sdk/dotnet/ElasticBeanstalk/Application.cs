@@ -29,17 +29,25 @@ namespace Pulumi.Aws.ElasticBeanstalk
     ///     {
     ///         var tftest = new Aws.ElasticBeanstalk.Application("tftest", new Aws.ElasticBeanstalk.ApplicationArgs
     ///         {
+    ///             Description = "tf-test-desc",
     ///             AppversionLifecycle = new Aws.ElasticBeanstalk.Inputs.ApplicationAppversionLifecycleArgs
     ///             {
-    ///                 DeleteSourceFromS3 = true,
-    ///                 MaxCount = 128,
     ///                 ServiceRole = aws_iam_role.Beanstalk_service.Arn,
+    ///                 MaxCount = 128,
+    ///                 DeleteSourceFromS3 = true,
     ///             },
-    ///             Description = "tf-test-desc",
     ///         });
     ///     }
     /// 
     /// }
+    /// ```
+    /// 
+    /// ## Import
+    /// 
+    /// Elastic Beanstalk Applications can be imported using the `name`, e.g.
+    /// 
+    /// ```sh
+    ///  $ pulumi import aws:elasticbeanstalk/application:Application tf_test tf-test-name
     /// ```
     /// </summary>
     public partial class Application : Pulumi.CustomResource

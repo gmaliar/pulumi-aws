@@ -4,6 +4,7 @@
 package iam
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -22,6 +23,16 @@ import (
 // Certificates][2] in AWS Documentation.
 //
 // > **Note:** All arguments including the private key will be stored in the raw state as plain-text.
+//
+// ## Import
+//
+// IAM Server Certificates can be imported using the `name`, e.g.
+//
+// ```sh
+//  $ pulumi import aws:iam/serverCertificate:ServerCertificate certificate example.com-certificate-until-2018
+// ```
+//
+//  [1]https://docs.aws.amazon.com/IAM/latest/UserGuide/Using_Identifiers.html [2]https://docs.aws.amazon.com/IAM/latest/UserGuide/ManagingServerCerts.html [lifecycle]/docs/configuration/resources.html
 type ServerCertificate struct {
 	pulumi.CustomResourceState
 
@@ -52,14 +63,15 @@ type ServerCertificate struct {
 // NewServerCertificate registers a new resource with the given unique name, arguments, and options.
 func NewServerCertificate(ctx *pulumi.Context,
 	name string, args *ServerCertificateArgs, opts ...pulumi.ResourceOption) (*ServerCertificate, error) {
-	if args == nil || args.CertificateBody == nil {
-		return nil, errors.New("missing required argument 'CertificateBody'")
-	}
-	if args == nil || args.PrivateKey == nil {
-		return nil, errors.New("missing required argument 'PrivateKey'")
-	}
 	if args == nil {
-		args = &ServerCertificateArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.CertificateBody == nil {
+		return nil, errors.New("invalid value for required argument 'CertificateBody'")
+	}
+	if args.PrivateKey == nil {
+		return nil, errors.New("invalid value for required argument 'PrivateKey'")
 	}
 	var resource ServerCertificate
 	err := ctx.RegisterResource("aws:iam/serverCertificate:ServerCertificate", name, args, &resource, opts...)
@@ -189,4 +201,43 @@ type ServerCertificateArgs struct {
 
 func (ServerCertificateArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*serverCertificateArgs)(nil)).Elem()
+}
+
+type ServerCertificateInput interface {
+	pulumi.Input
+
+	ToServerCertificateOutput() ServerCertificateOutput
+	ToServerCertificateOutputWithContext(ctx context.Context) ServerCertificateOutput
+}
+
+func (ServerCertificate) ElementType() reflect.Type {
+	return reflect.TypeOf((*ServerCertificate)(nil)).Elem()
+}
+
+func (i ServerCertificate) ToServerCertificateOutput() ServerCertificateOutput {
+	return i.ToServerCertificateOutputWithContext(context.Background())
+}
+
+func (i ServerCertificate) ToServerCertificateOutputWithContext(ctx context.Context) ServerCertificateOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(ServerCertificateOutput)
+}
+
+type ServerCertificateOutput struct {
+	*pulumi.OutputState
+}
+
+func (ServerCertificateOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*ServerCertificateOutput)(nil)).Elem()
+}
+
+func (o ServerCertificateOutput) ToServerCertificateOutput() ServerCertificateOutput {
+	return o
+}
+
+func (o ServerCertificateOutput) ToServerCertificateOutputWithContext(ctx context.Context) ServerCertificateOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(ServerCertificateOutput{})
 }

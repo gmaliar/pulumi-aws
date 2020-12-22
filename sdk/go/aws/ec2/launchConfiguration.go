@@ -4,6 +4,7 @@
 package ec2
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -18,8 +19,8 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws"
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/ec2"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/ec2"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -27,6 +28,7 @@ import (
 // 	pulumi.Run(func(ctx *pulumi.Context) error {
 // 		opt0 := true
 // 		ubuntu, err := aws.GetAmi(ctx, &aws.GetAmiArgs{
+// 			MostRecent: &opt0,
 // 			Filters: []aws.GetAmiFilter{
 // 				aws.GetAmiFilter{
 // 					Name: "name",
@@ -41,7 +43,6 @@ import (
 // 					},
 // 				},
 // 			},
-// 			MostRecent: &opt0,
 // 			Owners: []string{
 // 				"099720109477",
 // 			},
@@ -74,9 +75,9 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws"
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/autoscaling"
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/ec2"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/autoscaling"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/ec2"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -84,6 +85,7 @@ import (
 // 	pulumi.Run(func(ctx *pulumi.Context) error {
 // 		opt0 := true
 // 		ubuntu, err := aws.GetAmi(ctx, &aws.GetAmiArgs{
+// 			MostRecent: &opt0,
 // 			Filters: []aws.GetAmiFilter{
 // 				aws.GetAmiFilter{
 // 					Name: "name",
@@ -98,7 +100,6 @@ import (
 // 					},
 // 				},
 // 			},
-// 			MostRecent: &opt0,
 // 			Owners: []string{
 // 				"099720109477",
 // 			},
@@ -107,17 +108,17 @@ import (
 // 			return err
 // 		}
 // 		asConf, err := ec2.NewLaunchConfiguration(ctx, "asConf", &ec2.LaunchConfigurationArgs{
+// 			NamePrefix:   pulumi.String("lc-example-"),
 // 			ImageId:      pulumi.String(ubuntu.Id),
 // 			InstanceType: pulumi.String("t2.micro"),
-// 			NamePrefix:   pulumi.String("lc-example-"),
 // 		})
 // 		if err != nil {
 // 			return err
 // 		}
 // 		_, err = autoscaling.NewGroup(ctx, "bar", &autoscaling.GroupArgs{
 // 			LaunchConfiguration: asConf.Name,
-// 			MaxSize:             pulumi.Int(2),
 // 			MinSize:             pulumi.Int(1),
+// 			MaxSize:             pulumi.Int(2),
 // 		})
 // 		if err != nil {
 // 			return err
@@ -144,9 +145,9 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws"
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/autoscaling"
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/ec2"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/autoscaling"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/ec2"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -154,6 +155,7 @@ import (
 // 	pulumi.Run(func(ctx *pulumi.Context) error {
 // 		opt0 := true
 // 		ubuntu, err := aws.GetAmi(ctx, &aws.GetAmiArgs{
+// 			MostRecent: &opt0,
 // 			Filters: []aws.GetAmiFilter{
 // 				aws.GetAmiFilter{
 // 					Name: "name",
@@ -168,7 +170,6 @@ import (
 // 					},
 // 				},
 // 			},
-// 			MostRecent: &opt0,
 // 			Owners: []string{
 // 				"099720109477",
 // 			},
@@ -230,6 +231,7 @@ import (
 // * `deleteOnTermination` - (Optional) Whether the volume should be destroyed
 //   on instance termination (Default: `true`).
 // * `encrypted` - (Optional) Whether the volume should be encrypted or not. Do not use this option if you are using `snapshotId` as the encrypted flag will be determined by the snapshot. (Default: `false`).
+// * `noDevice` - (Optional) Whether the device in the block device mapping of the AMI is suppressed.
 //
 // Modifying any `ebsBlockDevice` currently requires resource replacement.
 //
@@ -250,6 +252,14 @@ import (
 // cannot currently be detected by this provider. After updating to block device
 // configuration, resource recreation can be manually triggered by using the
 // [`up` command with the --replace argument](https://www.pulumi.com/docs/reference/cli/pulumi_up/).
+//
+// ## Import
+//
+// Launch configurations can be imported using the `name`, e.g.
+//
+// ```sh
+//  $ pulumi import aws:ec2/launchConfiguration:LaunchConfiguration as_conf lg-123456
+// ```
 type LaunchConfiguration struct {
 	pulumi.CustomResourceState
 
@@ -306,14 +316,15 @@ type LaunchConfiguration struct {
 // NewLaunchConfiguration registers a new resource with the given unique name, arguments, and options.
 func NewLaunchConfiguration(ctx *pulumi.Context,
 	name string, args *LaunchConfigurationArgs, opts ...pulumi.ResourceOption) (*LaunchConfiguration, error) {
-	if args == nil || args.ImageId == nil {
-		return nil, errors.New("missing required argument 'ImageId'")
-	}
-	if args == nil || args.InstanceType == nil {
-		return nil, errors.New("missing required argument 'InstanceType'")
-	}
 	if args == nil {
-		args = &LaunchConfigurationArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.ImageId == nil {
+		return nil, errors.New("invalid value for required argument 'ImageId'")
+	}
+	if args.InstanceType == nil {
+		return nil, errors.New("invalid value for required argument 'InstanceType'")
 	}
 	var resource LaunchConfiguration
 	err := ctx.RegisterResource("aws:ec2/launchConfiguration:LaunchConfiguration", name, args, &resource, opts...)
@@ -543,4 +554,43 @@ type LaunchConfigurationArgs struct {
 
 func (LaunchConfigurationArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*launchConfigurationArgs)(nil)).Elem()
+}
+
+type LaunchConfigurationInput interface {
+	pulumi.Input
+
+	ToLaunchConfigurationOutput() LaunchConfigurationOutput
+	ToLaunchConfigurationOutputWithContext(ctx context.Context) LaunchConfigurationOutput
+}
+
+func (LaunchConfiguration) ElementType() reflect.Type {
+	return reflect.TypeOf((*LaunchConfiguration)(nil)).Elem()
+}
+
+func (i LaunchConfiguration) ToLaunchConfigurationOutput() LaunchConfigurationOutput {
+	return i.ToLaunchConfigurationOutputWithContext(context.Background())
+}
+
+func (i LaunchConfiguration) ToLaunchConfigurationOutputWithContext(ctx context.Context) LaunchConfigurationOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(LaunchConfigurationOutput)
+}
+
+type LaunchConfigurationOutput struct {
+	*pulumi.OutputState
+}
+
+func (LaunchConfigurationOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*LaunchConfigurationOutput)(nil)).Elem()
+}
+
+func (o LaunchConfigurationOutput) ToLaunchConfigurationOutput() LaunchConfigurationOutput {
+	return o
+}
+
+func (o LaunchConfigurationOutput) ToLaunchConfigurationOutputWithContext(ctx context.Context) LaunchConfigurationOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(LaunchConfigurationOutput{})
 }

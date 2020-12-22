@@ -2,8 +2,7 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 /**
@@ -17,21 +16,16 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * // Declare the data source
- * const rules = pulumi.output(aws.inspector.getRulesPackages({ async: true }));
+ * const rules = aws.inspector.getRulesPackages({});
  * // e.g. Use in aws_inspector_assessment_template
- * const group = new aws.inspector.ResourceGroup("group", {
- *     tags: {
- *         test: "test",
- *     },
- * });
- * const assessmentAssessmentTarget = new aws.inspector.AssessmentTarget("assessment", {
- *     resourceGroupArn: group.arn,
- * });
- * const assessmentAssessmentTemplate = new aws.inspector.AssessmentTemplate("assessment", {
- *     duration: 60,
- *     rulesPackageArns: rules.arns,
+ * const group = new aws.inspector.ResourceGroup("group", {tags: {
+ *     test: "test",
+ * }});
+ * const assessmentAssessmentTarget = new aws.inspector.AssessmentTarget("assessmentAssessmentTarget", {resourceGroupArn: group.arn});
+ * const assessmentAssessmentTemplate = new aws.inspector.AssessmentTemplate("assessmentAssessmentTemplate", {
  *     targetArn: assessmentAssessmentTarget.arn,
+ *     duration: "60",
+ *     rulesPackageArns: rules.then(rules => rules.arns),
  * });
  * ```
  */

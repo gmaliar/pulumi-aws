@@ -8,6 +8,7 @@ import * as utilities from "../utilities";
  * Manages an Access Analyzer Analyzer. More information can be found in the [Access Analyzer User Guide](https://docs.aws.amazon.com/IAM/latest/UserGuide/what-is-access-analyzer.html).
  *
  * ## Example Usage
+ * ### Account Analyzer
  *
  * ```typescript
  * import * as pulumi from "@pulumi/pulumi";
@@ -16,6 +17,28 @@ import * as utilities from "../utilities";
  * const example = new aws.accessanalyzer.Analyzer("example", {
  *     analyzerName: "example",
  * });
+ * ```
+ * ### Organization Analyzer
+ *
+ * ```typescript
+ * import * as pulumi from "@pulumi/pulumi";
+ * import * as aws from "@pulumi/aws";
+ *
+ * const exampleOrganization = new aws.organizations.Organization("exampleOrganization", {awsServiceAccessPrincipals: ["access-analyzer.amazonaws.com"]});
+ * const exampleAnalyzer = new aws.accessanalyzer.Analyzer("exampleAnalyzer", {
+ *     analyzerName: "example",
+ *     type: "ORGANIZATION",
+ * }, {
+ *     dependsOn: [exampleOrganization],
+ * });
+ * ```
+ *
+ * ## Import
+ *
+ * Access Analyzer Analyzers can be imported using the `analyzer_name`, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:accessanalyzer/analyzer:Analyzer example example
  * ```
  */
 export class Analyzer extends pulumi.CustomResource {
@@ -56,7 +79,7 @@ export class Analyzer extends pulumi.CustomResource {
      */
     public readonly tags!: pulumi.Output<{[key: string]: string} | undefined>;
     /**
-     * Type of Analyzer. Valid value is currently only `ACCOUNT`. Defaults to `ACCOUNT`.
+     * Type of Analyzer. Valid values are `ACCOUNT` or `ORGANIZATION`. Defaults to `ACCOUNT`.
      */
     public readonly type!: pulumi.Output<string | undefined>;
 
@@ -78,7 +101,7 @@ export class Analyzer extends pulumi.CustomResource {
             inputs["type"] = state ? state.type : undefined;
         } else {
             const args = argsOrState as AnalyzerArgs | undefined;
-            if (!args || args.analyzerName === undefined) {
+            if ((!args || args.analyzerName === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'analyzerName'");
             }
             inputs["analyzerName"] = args ? args.analyzerName : undefined;
@@ -111,7 +134,7 @@ export interface AnalyzerState {
      */
     readonly tags?: pulumi.Input<{[key: string]: pulumi.Input<string>}>;
     /**
-     * Type of Analyzer. Valid value is currently only `ACCOUNT`. Defaults to `ACCOUNT`.
+     * Type of Analyzer. Valid values are `ACCOUNT` or `ORGANIZATION`. Defaults to `ACCOUNT`.
      */
     readonly type?: pulumi.Input<string>;
 }
@@ -129,7 +152,7 @@ export interface AnalyzerArgs {
      */
     readonly tags?: pulumi.Input<{[key: string]: pulumi.Input<string>}>;
     /**
-     * Type of Analyzer. Valid value is currently only `ACCOUNT`. Defaults to `ACCOUNT`.
+     * Type of Analyzer. Valid values are `ACCOUNT` or `ORGANIZATION`. Defaults to `ACCOUNT`.
      */
     readonly type?: pulumi.Input<string>;
 }

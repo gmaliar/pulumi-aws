@@ -44,7 +44,6 @@ namespace Pulumi.Aws.Pinpoint
     ///     }
     ///   ]
     /// }
-    /// 
     /// ",
     ///         });
     ///         var email = new Aws.Pinpoint.EmailChannel("email", new Aws.Pinpoint.EmailChannelArgs
@@ -56,6 +55,7 @@ namespace Pulumi.Aws.Pinpoint
     ///         });
     ///         var rolePolicy = new Aws.Iam.RolePolicy("rolePolicy", new Aws.Iam.RolePolicyArgs
     ///         {
+    ///             Role = role.Id,
     ///             Policy = @"{
     ///   ""Version"": ""2012-10-17"",
     ///   ""Statement"": {
@@ -69,13 +69,19 @@ namespace Pulumi.Aws.Pinpoint
     ///     ]
     ///   }
     /// }
-    /// 
     /// ",
-    ///             Role = role.Id,
     ///         });
     ///     }
     /// 
     /// }
+    /// ```
+    /// 
+    /// ## Import
+    /// 
+    /// Pinpoint Email Channel can be imported using the `application-id`, e.g.
+    /// 
+    /// ```sh
+    ///  $ pulumi import aws:pinpoint/emailChannel:EmailChannel email application-id
     /// ```
     /// </summary>
     public partial class EmailChannel : Pulumi.CustomResource

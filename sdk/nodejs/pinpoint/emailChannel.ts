@@ -14,11 +14,8 @@ import * as utilities from "../utilities";
  * import * as aws from "@pulumi/aws";
  *
  * const app = new aws.pinpoint.App("app", {});
- * const identity = new aws.ses.DomainIdentity("identity", {
- *     domain: "example.com",
- * });
- * const role = new aws.iam.Role("role", {
- *     assumeRolePolicy: `{
+ * const identity = new aws.ses.DomainIdentity("identity", {domain: "example.com"});
+ * const role = new aws.iam.Role("role", {assumeRolePolicy: `{
  *   "Version": "2012-10-17",
  *   "Statement": [
  *     {
@@ -31,15 +28,15 @@ import * as utilities from "../utilities";
  *     }
  *   ]
  * }
- * `,
- * });
+ * `});
  * const email = new aws.pinpoint.EmailChannel("email", {
  *     applicationId: app.applicationId,
  *     fromAddress: "user@example.com",
  *     identity: identity.arn,
  *     roleArn: role.arn,
  * });
- * const rolePolicy = new aws.iam.RolePolicy("role_policy", {
+ * const rolePolicy = new aws.iam.RolePolicy("rolePolicy", {
+ *     role: role.id,
  *     policy: `{
  *   "Version": "2012-10-17",
  *   "Statement": {
@@ -54,8 +51,15 @@ import * as utilities from "../utilities";
  *   }
  * }
  * `,
- *     role: role.id,
  * });
+ * ```
+ *
+ * ## Import
+ *
+ * Pinpoint Email Channel can be imported using the `application-id`, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:pinpoint/emailChannel:EmailChannel email application-id
  * ```
  */
 export class EmailChannel extends pulumi.CustomResource {
@@ -131,16 +135,16 @@ export class EmailChannel extends pulumi.CustomResource {
             inputs["roleArn"] = state ? state.roleArn : undefined;
         } else {
             const args = argsOrState as EmailChannelArgs | undefined;
-            if (!args || args.applicationId === undefined) {
+            if ((!args || args.applicationId === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'applicationId'");
             }
-            if (!args || args.fromAddress === undefined) {
+            if ((!args || args.fromAddress === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'fromAddress'");
             }
-            if (!args || args.identity === undefined) {
+            if ((!args || args.identity === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'identity'");
             }
-            if (!args || args.roleArn === undefined) {
+            if ((!args || args.roleArn === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'roleArn'");
             }
             inputs["applicationId"] = args ? args.applicationId : undefined;

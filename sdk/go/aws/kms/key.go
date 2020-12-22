@@ -4,6 +4,7 @@
 package kms
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
@@ -17,7 +18,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/kms"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/kms"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -34,6 +35,14 @@ import (
 // 	})
 // }
 // ```
+//
+// ## Import
+//
+// KMS Keys can be imported using the `id`, e.g.
+//
+// ```sh
+//  $ pulumi import aws:kms/key:Key a 1234abcd-12ab-34cd-56ef-1234567890ab
+// ```
 type Key struct {
 	pulumi.CustomResourceState
 
@@ -42,13 +51,11 @@ type Key struct {
 	// Specifies whether the key contains a symmetric key or an asymmetric key pair and the encryption algorithms or signing algorithms that the key supports.
 	// Valid values: `SYMMETRIC_DEFAULT`,  `RSA_2048`, `RSA_3072`, `RSA_4096`, `ECC_NIST_P256`, `ECC_NIST_P384`, `ECC_NIST_P521`, or `ECC_SECG_P256K1`. Defaults to `SYMMETRIC_DEFAULT`. For help with choosing a key spec, see the [AWS KMS Developer Guide](https://docs.aws.amazon.com/kms/latest/developerguide/symm-asymm-choose.html).
 	CustomerMasterKeySpec pulumi.StringPtrOutput `pulumi:"customerMasterKeySpec"`
-	// Duration in days after which the key is deleted
-	// after destruction of the resource, must be between 7 and 30 days. Defaults to 30 days.
+	// Duration in days after which the key is deleted after destruction of the resource, must be between 7 and 30 days. Defaults to 30 days.
 	DeletionWindowInDays pulumi.IntPtrOutput `pulumi:"deletionWindowInDays"`
 	// The description of the key as viewed in AWS console.
 	Description pulumi.StringOutput `pulumi:"description"`
-	// Specifies whether [key rotation](http://docs.aws.amazon.com/kms/latest/developerguide/rotate-keys.html)
-	// is enabled. Defaults to false.
+	// Specifies whether [key rotation](http://docs.aws.amazon.com/kms/latest/developerguide/rotate-keys.html) is enabled. Defaults to false.
 	EnableKeyRotation pulumi.BoolPtrOutput `pulumi:"enableKeyRotation"`
 	// Specifies whether the key is enabled. Defaults to true.
 	IsEnabled pulumi.BoolPtrOutput `pulumi:"isEnabled"`
@@ -69,6 +76,7 @@ func NewKey(ctx *pulumi.Context,
 	if args == nil {
 		args = &KeyArgs{}
 	}
+
 	var resource Key
 	err := ctx.RegisterResource("aws:kms/key:Key", name, args, &resource, opts...)
 	if err != nil {
@@ -96,13 +104,11 @@ type keyState struct {
 	// Specifies whether the key contains a symmetric key or an asymmetric key pair and the encryption algorithms or signing algorithms that the key supports.
 	// Valid values: `SYMMETRIC_DEFAULT`,  `RSA_2048`, `RSA_3072`, `RSA_4096`, `ECC_NIST_P256`, `ECC_NIST_P384`, `ECC_NIST_P521`, or `ECC_SECG_P256K1`. Defaults to `SYMMETRIC_DEFAULT`. For help with choosing a key spec, see the [AWS KMS Developer Guide](https://docs.aws.amazon.com/kms/latest/developerguide/symm-asymm-choose.html).
 	CustomerMasterKeySpec *string `pulumi:"customerMasterKeySpec"`
-	// Duration in days after which the key is deleted
-	// after destruction of the resource, must be between 7 and 30 days. Defaults to 30 days.
+	// Duration in days after which the key is deleted after destruction of the resource, must be between 7 and 30 days. Defaults to 30 days.
 	DeletionWindowInDays *int `pulumi:"deletionWindowInDays"`
 	// The description of the key as viewed in AWS console.
 	Description *string `pulumi:"description"`
-	// Specifies whether [key rotation](http://docs.aws.amazon.com/kms/latest/developerguide/rotate-keys.html)
-	// is enabled. Defaults to false.
+	// Specifies whether [key rotation](http://docs.aws.amazon.com/kms/latest/developerguide/rotate-keys.html) is enabled. Defaults to false.
 	EnableKeyRotation *bool `pulumi:"enableKeyRotation"`
 	// Specifies whether the key is enabled. Defaults to true.
 	IsEnabled *bool `pulumi:"isEnabled"`
@@ -123,13 +129,11 @@ type KeyState struct {
 	// Specifies whether the key contains a symmetric key or an asymmetric key pair and the encryption algorithms or signing algorithms that the key supports.
 	// Valid values: `SYMMETRIC_DEFAULT`,  `RSA_2048`, `RSA_3072`, `RSA_4096`, `ECC_NIST_P256`, `ECC_NIST_P384`, `ECC_NIST_P521`, or `ECC_SECG_P256K1`. Defaults to `SYMMETRIC_DEFAULT`. For help with choosing a key spec, see the [AWS KMS Developer Guide](https://docs.aws.amazon.com/kms/latest/developerguide/symm-asymm-choose.html).
 	CustomerMasterKeySpec pulumi.StringPtrInput
-	// Duration in days after which the key is deleted
-	// after destruction of the resource, must be between 7 and 30 days. Defaults to 30 days.
+	// Duration in days after which the key is deleted after destruction of the resource, must be between 7 and 30 days. Defaults to 30 days.
 	DeletionWindowInDays pulumi.IntPtrInput
 	// The description of the key as viewed in AWS console.
 	Description pulumi.StringPtrInput
-	// Specifies whether [key rotation](http://docs.aws.amazon.com/kms/latest/developerguide/rotate-keys.html)
-	// is enabled. Defaults to false.
+	// Specifies whether [key rotation](http://docs.aws.amazon.com/kms/latest/developerguide/rotate-keys.html) is enabled. Defaults to false.
 	EnableKeyRotation pulumi.BoolPtrInput
 	// Specifies whether the key is enabled. Defaults to true.
 	IsEnabled pulumi.BoolPtrInput
@@ -152,13 +156,11 @@ type keyArgs struct {
 	// Specifies whether the key contains a symmetric key or an asymmetric key pair and the encryption algorithms or signing algorithms that the key supports.
 	// Valid values: `SYMMETRIC_DEFAULT`,  `RSA_2048`, `RSA_3072`, `RSA_4096`, `ECC_NIST_P256`, `ECC_NIST_P384`, `ECC_NIST_P521`, or `ECC_SECG_P256K1`. Defaults to `SYMMETRIC_DEFAULT`. For help with choosing a key spec, see the [AWS KMS Developer Guide](https://docs.aws.amazon.com/kms/latest/developerguide/symm-asymm-choose.html).
 	CustomerMasterKeySpec *string `pulumi:"customerMasterKeySpec"`
-	// Duration in days after which the key is deleted
-	// after destruction of the resource, must be between 7 and 30 days. Defaults to 30 days.
+	// Duration in days after which the key is deleted after destruction of the resource, must be between 7 and 30 days. Defaults to 30 days.
 	DeletionWindowInDays *int `pulumi:"deletionWindowInDays"`
 	// The description of the key as viewed in AWS console.
 	Description *string `pulumi:"description"`
-	// Specifies whether [key rotation](http://docs.aws.amazon.com/kms/latest/developerguide/rotate-keys.html)
-	// is enabled. Defaults to false.
+	// Specifies whether [key rotation](http://docs.aws.amazon.com/kms/latest/developerguide/rotate-keys.html) is enabled. Defaults to false.
 	EnableKeyRotation *bool `pulumi:"enableKeyRotation"`
 	// Specifies whether the key is enabled. Defaults to true.
 	IsEnabled *bool `pulumi:"isEnabled"`
@@ -176,13 +178,11 @@ type KeyArgs struct {
 	// Specifies whether the key contains a symmetric key or an asymmetric key pair and the encryption algorithms or signing algorithms that the key supports.
 	// Valid values: `SYMMETRIC_DEFAULT`,  `RSA_2048`, `RSA_3072`, `RSA_4096`, `ECC_NIST_P256`, `ECC_NIST_P384`, `ECC_NIST_P521`, or `ECC_SECG_P256K1`. Defaults to `SYMMETRIC_DEFAULT`. For help with choosing a key spec, see the [AWS KMS Developer Guide](https://docs.aws.amazon.com/kms/latest/developerguide/symm-asymm-choose.html).
 	CustomerMasterKeySpec pulumi.StringPtrInput
-	// Duration in days after which the key is deleted
-	// after destruction of the resource, must be between 7 and 30 days. Defaults to 30 days.
+	// Duration in days after which the key is deleted after destruction of the resource, must be between 7 and 30 days. Defaults to 30 days.
 	DeletionWindowInDays pulumi.IntPtrInput
 	// The description of the key as viewed in AWS console.
 	Description pulumi.StringPtrInput
-	// Specifies whether [key rotation](http://docs.aws.amazon.com/kms/latest/developerguide/rotate-keys.html)
-	// is enabled. Defaults to false.
+	// Specifies whether [key rotation](http://docs.aws.amazon.com/kms/latest/developerguide/rotate-keys.html) is enabled. Defaults to false.
 	EnableKeyRotation pulumi.BoolPtrInput
 	// Specifies whether the key is enabled. Defaults to true.
 	IsEnabled pulumi.BoolPtrInput
@@ -197,4 +197,43 @@ type KeyArgs struct {
 
 func (KeyArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*keyArgs)(nil)).Elem()
+}
+
+type KeyInput interface {
+	pulumi.Input
+
+	ToKeyOutput() KeyOutput
+	ToKeyOutputWithContext(ctx context.Context) KeyOutput
+}
+
+func (Key) ElementType() reflect.Type {
+	return reflect.TypeOf((*Key)(nil)).Elem()
+}
+
+func (i Key) ToKeyOutput() KeyOutput {
+	return i.ToKeyOutputWithContext(context.Background())
+}
+
+func (i Key) ToKeyOutputWithContext(ctx context.Context) KeyOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(KeyOutput)
+}
+
+type KeyOutput struct {
+	*pulumi.OutputState
+}
+
+func (KeyOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*KeyOutput)(nil)).Elem()
+}
+
+func (o KeyOutput) ToKeyOutput() KeyOutput {
+	return o
+}
+
+func (o KeyOutput) ToKeyOutputWithContext(ctx context.Context) KeyOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(KeyOutput{})
 }

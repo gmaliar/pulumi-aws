@@ -19,7 +19,7 @@ import * as utilities from "../utilities";
  * const web = new aws.ec2.Instance("web", {
  *     ami: "ami-21f78e11",
  *     availabilityZone: "us-west-2a",
- *     instanceType: "t1.micro",
+ *     instanceType: "t2.micro",
  *     tags: {
  *         Name: "HelloWorld",
  *     },
@@ -28,12 +28,22 @@ import * as utilities from "../utilities";
  *     availabilityZone: "us-west-2a",
  *     size: 1,
  * });
- * const ebsAtt = new aws.ec2.VolumeAttachment("ebs_att", {
+ * const ebsAtt = new aws.ec2.VolumeAttachment("ebsAtt", {
  *     deviceName: "/dev/sdh",
- *     instanceId: web.id,
  *     volumeId: example.id,
+ *     instanceId: web.id,
  * });
  * ```
+ *
+ * ## Import
+ *
+ * EBS Volume Attachments can be imported using `DEVICE_NAME:VOLUME_ID:INSTANCE_ID`, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:ec2/volumeAttachment:VolumeAttachment example /dev/sdh:vol-049df61146c4d7901:i-12345678
+ * ```
+ *
+ *  [1]https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/device_naming.html#available-ec2-device-names [2]https://docs.aws.amazon.com/AWSEC2/latest/WindowsGuide/device_naming.html#available-ec2-device-names [3]https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-detaching-volume.html
  */
 export class VolumeAttachment extends pulumi.CustomResource {
     /**
@@ -111,13 +121,13 @@ export class VolumeAttachment extends pulumi.CustomResource {
             inputs["volumeId"] = state ? state.volumeId : undefined;
         } else {
             const args = argsOrState as VolumeAttachmentArgs | undefined;
-            if (!args || args.deviceName === undefined) {
+            if ((!args || args.deviceName === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'deviceName'");
             }
-            if (!args || args.instanceId === undefined) {
+            if ((!args || args.instanceId === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'instanceId'");
             }
-            if (!args || args.volumeId === undefined) {
+            if ((!args || args.volumeId === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'volumeId'");
             }
             inputs["deviceName"] = args ? args.deviceName : undefined;

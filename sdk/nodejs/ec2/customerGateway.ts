@@ -22,6 +22,14 @@ import * as utilities from "../utilities";
  *     type: "ipsec.1",
  * });
  * ```
+ *
+ * ## Import
+ *
+ * Customer Gateways can be imported using the `id`, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:ec2/customerGateway:CustomerGateway main cgw-b4dc3961
+ * ```
  */
 export class CustomerGateway extends pulumi.CustomResource {
     /**
@@ -92,13 +100,13 @@ export class CustomerGateway extends pulumi.CustomResource {
             inputs["type"] = state ? state.type : undefined;
         } else {
             const args = argsOrState as CustomerGatewayArgs | undefined;
-            if (!args || args.bgpAsn === undefined) {
+            if ((!args || args.bgpAsn === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'bgpAsn'");
             }
-            if (!args || args.ipAddress === undefined) {
+            if ((!args || args.ipAddress === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'ipAddress'");
             }
-            if (!args || args.type === undefined) {
+            if ((!args || args.type === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'type'");
             }
             inputs["bgpAsn"] = args ? args.bgpAsn : undefined;

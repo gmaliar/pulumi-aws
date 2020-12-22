@@ -4,6 +4,7 @@
 package athena
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -20,9 +21,9 @@ import (
 // import (
 // 	"fmt"
 //
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/athena"
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/kms"
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/s3"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/athena"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/kms"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/s3"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -53,18 +54,18 @@ import (
 // 			return err
 // 		}
 // 		hogeDatabase, err := athena.NewDatabase(ctx, "hogeDatabase", &athena.DatabaseArgs{
-// 			Bucket: hogeBucket.ID(),
 // 			Name:   pulumi.String("users"),
+// 			Bucket: hogeBucket.ID(),
 // 		})
 // 		if err != nil {
 // 			return err
 // 		}
 // 		_, err = athena.NewNamedQuery(ctx, "foo", &athena.NamedQueryArgs{
-// 			Database: hogeDatabase.Name,
+// 			Workgroup: testWorkgroup.ID(),
+// 			Database:  hogeDatabase.Name,
 // 			Query: hogeDatabase.Name.ApplyT(func(name string) (string, error) {
 // 				return fmt.Sprintf("%v%v%v", "SELECT * FROM ", name, " limit 10;"), nil
 // 			}).(pulumi.StringOutput),
-// 			Workgroup: testWorkgroup.ID(),
 // 		})
 // 		if err != nil {
 // 			return err
@@ -72,6 +73,14 @@ import (
 // 		return nil
 // 	})
 // }
+// ```
+//
+// ## Import
+//
+// Athena Named Query can be imported using the query ID, e.g.
+//
+// ```sh
+//  $ pulumi import aws:athena/namedQuery:NamedQuery example 0123456789
 // ```
 type NamedQuery struct {
 	pulumi.CustomResourceState
@@ -91,14 +100,15 @@ type NamedQuery struct {
 // NewNamedQuery registers a new resource with the given unique name, arguments, and options.
 func NewNamedQuery(ctx *pulumi.Context,
 	name string, args *NamedQueryArgs, opts ...pulumi.ResourceOption) (*NamedQuery, error) {
-	if args == nil || args.Database == nil {
-		return nil, errors.New("missing required argument 'Database'")
-	}
-	if args == nil || args.Query == nil {
-		return nil, errors.New("missing required argument 'Query'")
-	}
 	if args == nil {
-		args = &NamedQueryArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.Database == nil {
+		return nil, errors.New("invalid value for required argument 'Database'")
+	}
+	if args.Query == nil {
+		return nil, errors.New("invalid value for required argument 'Query'")
 	}
 	var resource NamedQuery
 	err := ctx.RegisterResource("aws:athena/namedQuery:NamedQuery", name, args, &resource, opts...)
@@ -180,4 +190,43 @@ type NamedQueryArgs struct {
 
 func (NamedQueryArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*namedQueryArgs)(nil)).Elem()
+}
+
+type NamedQueryInput interface {
+	pulumi.Input
+
+	ToNamedQueryOutput() NamedQueryOutput
+	ToNamedQueryOutputWithContext(ctx context.Context) NamedQueryOutput
+}
+
+func (NamedQuery) ElementType() reflect.Type {
+	return reflect.TypeOf((*NamedQuery)(nil)).Elem()
+}
+
+func (i NamedQuery) ToNamedQueryOutput() NamedQueryOutput {
+	return i.ToNamedQueryOutputWithContext(context.Background())
+}
+
+func (i NamedQuery) ToNamedQueryOutputWithContext(ctx context.Context) NamedQueryOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(NamedQueryOutput)
+}
+
+type NamedQueryOutput struct {
+	*pulumi.OutputState
+}
+
+func (NamedQueryOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*NamedQueryOutput)(nil)).Elem()
+}
+
+func (o NamedQueryOutput) ToNamedQueryOutput() NamedQueryOutput {
+	return o
+}
+
+func (o NamedQueryOutput) ToNamedQueryOutputWithContext(ctx context.Context) NamedQueryOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(NamedQueryOutput{})
 }

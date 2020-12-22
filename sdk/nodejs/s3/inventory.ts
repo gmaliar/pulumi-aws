@@ -2,8 +2,7 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 /**
@@ -16,19 +15,19 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const testBucket = new aws.s3.Bucket("test", {});
+ * const testBucket = new aws.s3.Bucket("testBucket", {});
  * const inventory = new aws.s3.Bucket("inventory", {});
- * const testInventory = new aws.s3.Inventory("test", {
+ * const testInventory = new aws.s3.Inventory("testInventory", {
  *     bucket: testBucket.id,
- *     destination: {
- *         bucket: {
- *             bucketArn: inventory.arn,
- *             format: "ORC",
- *         },
- *     },
  *     includedObjectVersions: "All",
  *     schedule: {
  *         frequency: "Daily",
+ *     },
+ *     destination: {
+ *         bucket: {
+ *             format: "ORC",
+ *             bucketArn: inventory.arn,
+ *         },
  *     },
  * });
  * ```
@@ -42,21 +41,29 @@ import * as utilities from "../utilities";
  * const inventory = new aws.s3.Bucket("inventory", {});
  * const test_prefix = new aws.s3.Inventory("test-prefix", {
  *     bucket: test.id,
- *     destination: {
- *         bucket: {
- *             bucketArn: inventory.arn,
- *             format: "ORC",
- *             prefix: "inventory",
- *         },
- *     },
- *     filter: {
- *         prefix: "documents/",
- *     },
  *     includedObjectVersions: "All",
  *     schedule: {
  *         frequency: "Daily",
  *     },
+ *     filter: {
+ *         prefix: "documents/",
+ *     },
+ *     destination: {
+ *         bucket: {
+ *             format: "ORC",
+ *             bucketArn: inventory.arn,
+ *             prefix: "inventory",
+ *         },
+ *     },
  * });
+ * ```
+ *
+ * ## Import
+ *
+ * S3 bucket inventory configurations can be imported using `bucket:inventory`, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:s3/inventory:Inventory my-bucket-entire-bucket my-bucket:EntireBucket
  * ```
  */
 export class Inventory extends pulumi.CustomResource {
@@ -88,7 +95,7 @@ export class Inventory extends pulumi.CustomResource {
     }
 
     /**
-     * The name of the bucket where the inventory configuration will be stored.
+     * The name of the source bucket that inventory lists the objects for.
      */
     public readonly bucket!: pulumi.Output<string>;
     /**
@@ -143,16 +150,16 @@ export class Inventory extends pulumi.CustomResource {
             inputs["schedule"] = state ? state.schedule : undefined;
         } else {
             const args = argsOrState as InventoryArgs | undefined;
-            if (!args || args.bucket === undefined) {
+            if ((!args || args.bucket === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'bucket'");
             }
-            if (!args || args.destination === undefined) {
+            if ((!args || args.destination === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'destination'");
             }
-            if (!args || args.includedObjectVersions === undefined) {
+            if ((!args || args.includedObjectVersions === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'includedObjectVersions'");
             }
-            if (!args || args.schedule === undefined) {
+            if ((!args || args.schedule === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'schedule'");
             }
             inputs["bucket"] = args ? args.bucket : undefined;
@@ -180,7 +187,7 @@ export class Inventory extends pulumi.CustomResource {
  */
 export interface InventoryState {
     /**
-     * The name of the bucket where the inventory configuration will be stored.
+     * The name of the source bucket that inventory lists the objects for.
      */
     readonly bucket?: pulumi.Input<string>;
     /**
@@ -219,7 +226,7 @@ export interface InventoryState {
  */
 export interface InventoryArgs {
     /**
-     * The name of the bucket where the inventory configuration will be stored.
+     * The name of the source bucket that inventory lists the objects for.
      */
     readonly bucket: pulumi.Input<string>;
     /**

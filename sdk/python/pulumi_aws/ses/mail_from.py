@@ -5,24 +5,22 @@
 import warnings
 import pulumi
 import pulumi.runtime
-from typing import Union
-from .. import utilities, tables
+from typing import Any, Mapping, Optional, Sequence, Union
+from .. import _utilities, _tables
+
+__all__ = ['MailFrom']
 
 
 class MailFrom(pulumi.CustomResource):
-    behavior_on_mx_failure: pulumi.Output[str]
-    """
-    The action that you want Amazon SES to take if it cannot successfully read the required MX record when you send an email. Defaults to `UseDefaultValue`. See the [SES API documentation](https://docs.aws.amazon.com/ses/latest/APIReference/API_SetIdentityMailFromDomain.html) for more information.
-    """
-    domain: pulumi.Output[str]
-    """
-    Verified domain name to generate DKIM tokens for.
-    """
-    mail_from_domain: pulumi.Output[str]
-    """
-    Subdomain (of above domain) which is to be used as MAIL FROM address (Required for DMARC validation)
-    """
-    def __init__(__self__, resource_name, opts=None, behavior_on_mx_failure=None, domain=None, mail_from_domain=None, __props__=None, __name__=None, __opts__=None):
+    def __init__(__self__,
+                 resource_name: str,
+                 opts: Optional[pulumi.ResourceOptions] = None,
+                 behavior_on_mx_failure: Optional[pulumi.Input[str]] = None,
+                 domain: Optional[pulumi.Input[str]] = None,
+                 mail_from_domain: Optional[pulumi.Input[str]] = None,
+                 __props__=None,
+                 __name__=None,
+                 __opts__=None):
         """
         Provides an SES domain MAIL FROM resource.
 
@@ -41,18 +39,27 @@ class MailFrom(pulumi.CustomResource):
             mail_from_domain=example_domain_identity.domain.apply(lambda domain: f"bounce.{domain}"))
         # Example Route53 MX record
         example_ses_domain_mail_from_mx = aws.route53.Record("exampleSesDomainMailFromMx",
+            zone_id=aws_route53_zone["example"]["id"],
             name=example_mail_from.mail_from_domain,
-            records=["10 feedback-smtp.us-east-1.amazonses.com"],
-            ttl="600",
             type="MX",
-            zone_id=aws_route53_zone["example"]["id"])
+            ttl=600,
+            records=["10 feedback-smtp.us-east-1.amazonses.com"])
+        # Change to the region in which `aws_ses_domain_identity.example` is created
         # Example Route53 TXT record for SPF
         example_ses_domain_mail_from_txt = aws.route53.Record("exampleSesDomainMailFromTxt",
+            zone_id=aws_route53_zone["example"]["id"],
             name=example_mail_from.mail_from_domain,
-            records=["v=spf1 include:amazonses.com -all"],
-            ttl="600",
             type="TXT",
-            zone_id=aws_route53_zone["example"]["id"])
+            ttl=600,
+            records=["v=spf1 include:amazonses.com -all"])
+        ```
+
+        ## Import
+
+        MAIL FROM domain can be imported using the `domain` attribute, e.g.
+
+        ```sh
+         $ pulumi import aws:ses/mailFrom:MailFrom example example.com
         ```
 
         :param str resource_name: The name of the resource.
@@ -72,17 +79,17 @@ class MailFrom(pulumi.CustomResource):
         if not isinstance(opts, pulumi.ResourceOptions):
             raise TypeError('Expected resource options to be a ResourceOptions instance')
         if opts.version is None:
-            opts.version = utilities.get_version()
+            opts.version = _utilities.get_version()
         if opts.id is None:
             if __props__ is not None:
                 raise TypeError('__props__ is only valid when passed in combination with a valid opts.id to get an existing resource')
             __props__ = dict()
 
             __props__['behavior_on_mx_failure'] = behavior_on_mx_failure
-            if domain is None:
+            if domain is None and not opts.urn:
                 raise TypeError("Missing required property 'domain'")
             __props__['domain'] = domain
-            if mail_from_domain is None:
+            if mail_from_domain is None and not opts.urn:
                 raise TypeError("Missing required property 'mail_from_domain'")
             __props__['mail_from_domain'] = mail_from_domain
         super(MailFrom, __self__).__init__(
@@ -92,13 +99,18 @@ class MailFrom(pulumi.CustomResource):
             opts)
 
     @staticmethod
-    def get(resource_name, id, opts=None, behavior_on_mx_failure=None, domain=None, mail_from_domain=None):
+    def get(resource_name: str,
+            id: pulumi.Input[str],
+            opts: Optional[pulumi.ResourceOptions] = None,
+            behavior_on_mx_failure: Optional[pulumi.Input[str]] = None,
+            domain: Optional[pulumi.Input[str]] = None,
+            mail_from_domain: Optional[pulumi.Input[str]] = None) -> 'MailFrom':
         """
         Get an existing MailFrom resource's state with the given name, id, and optional extra
         properties used to qualify the lookup.
 
         :param str resource_name: The unique name of the resulting resource.
-        :param str id: The unique provider ID of the resource to lookup.
+        :param pulumi.Input[str] id: The unique provider ID of the resource to lookup.
         :param pulumi.ResourceOptions opts: Options for the resource.
         :param pulumi.Input[str] behavior_on_mx_failure: The action that you want Amazon SES to take if it cannot successfully read the required MX record when you send an email. Defaults to `UseDefaultValue`. See the [SES API documentation](https://docs.aws.amazon.com/ses/latest/APIReference/API_SetIdentityMailFromDomain.html) for more information.
         :param pulumi.Input[str] domain: Verified domain name to generate DKIM tokens for.
@@ -113,8 +125,33 @@ class MailFrom(pulumi.CustomResource):
         __props__["mail_from_domain"] = mail_from_domain
         return MailFrom(resource_name, opts=opts, __props__=__props__)
 
+    @property
+    @pulumi.getter(name="behaviorOnMxFailure")
+    def behavior_on_mx_failure(self) -> pulumi.Output[Optional[str]]:
+        """
+        The action that you want Amazon SES to take if it cannot successfully read the required MX record when you send an email. Defaults to `UseDefaultValue`. See the [SES API documentation](https://docs.aws.amazon.com/ses/latest/APIReference/API_SetIdentityMailFromDomain.html) for more information.
+        """
+        return pulumi.get(self, "behavior_on_mx_failure")
+
+    @property
+    @pulumi.getter
+    def domain(self) -> pulumi.Output[str]:
+        """
+        Verified domain name to generate DKIM tokens for.
+        """
+        return pulumi.get(self, "domain")
+
+    @property
+    @pulumi.getter(name="mailFromDomain")
+    def mail_from_domain(self) -> pulumi.Output[str]:
+        """
+        Subdomain (of above domain) which is to be used as MAIL FROM address (Required for DMARC validation)
+        """
+        return pulumi.get(self, "mail_from_domain")
+
     def translate_output_property(self, prop):
-        return tables._CAMEL_TO_SNAKE_CASE_TABLE.get(prop) or prop
+        return _tables.CAMEL_TO_SNAKE_CASE_TABLE.get(prop) or prop
 
     def translate_input_property(self, prop):
-        return tables._SNAKE_TO_CAMEL_CASE_TABLE.get(prop) or prop
+        return _tables.SNAKE_TO_CAMEL_CASE_TABLE.get(prop) or prop
+

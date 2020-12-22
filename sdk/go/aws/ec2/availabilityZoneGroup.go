@@ -4,6 +4,7 @@
 package ec2
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -20,7 +21,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/ec2"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/ec2"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -37,6 +38,14 @@ import (
 // 	})
 // }
 // ```
+//
+// ## Import
+//
+// EC2 Availability Zone Groups can be imported using the group name, e.g.
+//
+// ```sh
+//  $ pulumi import aws:ec2/availabilityZoneGroup:AvailabilityZoneGroup example us-west-2-lax-1
+// ```
 type AvailabilityZoneGroup struct {
 	pulumi.CustomResourceState
 
@@ -49,14 +58,15 @@ type AvailabilityZoneGroup struct {
 // NewAvailabilityZoneGroup registers a new resource with the given unique name, arguments, and options.
 func NewAvailabilityZoneGroup(ctx *pulumi.Context,
 	name string, args *AvailabilityZoneGroupArgs, opts ...pulumi.ResourceOption) (*AvailabilityZoneGroup, error) {
-	if args == nil || args.GroupName == nil {
-		return nil, errors.New("missing required argument 'GroupName'")
-	}
-	if args == nil || args.OptInStatus == nil {
-		return nil, errors.New("missing required argument 'OptInStatus'")
-	}
 	if args == nil {
-		args = &AvailabilityZoneGroupArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.GroupName == nil {
+		return nil, errors.New("invalid value for required argument 'GroupName'")
+	}
+	if args.OptInStatus == nil {
+		return nil, errors.New("invalid value for required argument 'OptInStatus'")
 	}
 	var resource AvailabilityZoneGroup
 	err := ctx.RegisterResource("aws:ec2/availabilityZoneGroup:AvailabilityZoneGroup", name, args, &resource, opts...)
@@ -114,4 +124,43 @@ type AvailabilityZoneGroupArgs struct {
 
 func (AvailabilityZoneGroupArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*availabilityZoneGroupArgs)(nil)).Elem()
+}
+
+type AvailabilityZoneGroupInput interface {
+	pulumi.Input
+
+	ToAvailabilityZoneGroupOutput() AvailabilityZoneGroupOutput
+	ToAvailabilityZoneGroupOutputWithContext(ctx context.Context) AvailabilityZoneGroupOutput
+}
+
+func (AvailabilityZoneGroup) ElementType() reflect.Type {
+	return reflect.TypeOf((*AvailabilityZoneGroup)(nil)).Elem()
+}
+
+func (i AvailabilityZoneGroup) ToAvailabilityZoneGroupOutput() AvailabilityZoneGroupOutput {
+	return i.ToAvailabilityZoneGroupOutputWithContext(context.Background())
+}
+
+func (i AvailabilityZoneGroup) ToAvailabilityZoneGroupOutputWithContext(ctx context.Context) AvailabilityZoneGroupOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(AvailabilityZoneGroupOutput)
+}
+
+type AvailabilityZoneGroupOutput struct {
+	*pulumi.OutputState
+}
+
+func (AvailabilityZoneGroupOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*AvailabilityZoneGroupOutput)(nil)).Elem()
+}
+
+func (o AvailabilityZoneGroupOutput) ToAvailabilityZoneGroupOutput() AvailabilityZoneGroupOutput {
+	return o
+}
+
+func (o AvailabilityZoneGroupOutput) ToAvailabilityZoneGroupOutputWithContext(ctx context.Context) AvailabilityZoneGroupOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(AvailabilityZoneGroupOutput{})
 }

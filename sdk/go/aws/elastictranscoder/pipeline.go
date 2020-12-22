@@ -4,6 +4,7 @@
 package elastictranscoder
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -18,21 +19,21 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/elastictranscoder"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/elastictranscoder"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
 // func main() {
 // 	pulumi.Run(func(ctx *pulumi.Context) error {
 // 		_, err := elastictranscoder.NewPipeline(ctx, "bar", &elastictranscoder.PipelineArgs{
+// 			InputBucket: pulumi.Any(aws_s3_bucket.Input_bucket.Bucket),
+// 			Role:        pulumi.Any(aws_iam_role.Test_role.Arn),
 // 			ContentConfig: &elastictranscoder.PipelineContentConfigArgs{
-// 				Bucket:       pulumi.String(aws_s3_bucket.Content_bucket.Bucket),
+// 				Bucket:       pulumi.Any(aws_s3_bucket.Content_bucket.Bucket),
 // 				StorageClass: pulumi.String("Standard"),
 // 			},
-// 			InputBucket: pulumi.String(aws_s3_bucket.Input_bucket.Bucket),
-// 			Role:        pulumi.String(aws_iam_role.Test_role.Arn),
 // 			ThumbnailConfig: &elastictranscoder.PipelineThumbnailConfigArgs{
-// 				Bucket:       pulumi.String(aws_s3_bucket.Thumb_bucket.Bucket),
+// 				Bucket:       pulumi.Any(aws_s3_bucket.Thumb_bucket.Bucket),
 // 				StorageClass: pulumi.String("Standard"),
 // 			},
 // 		})
@@ -42,6 +43,14 @@ import (
 // 		return nil
 // 	})
 // }
+// ```
+//
+// ## Import
+//
+// Elastic Transcoder pipelines can be imported using the `id`, e.g.
+//
+// ```sh
+//  $ pulumi import aws:elastictranscoder/pipeline:Pipeline basic_pipeline 1407981661351-cttk8b
 // ```
 type Pipeline struct {
 	pulumi.CustomResourceState
@@ -72,14 +81,15 @@ type Pipeline struct {
 // NewPipeline registers a new resource with the given unique name, arguments, and options.
 func NewPipeline(ctx *pulumi.Context,
 	name string, args *PipelineArgs, opts ...pulumi.ResourceOption) (*Pipeline, error) {
-	if args == nil || args.InputBucket == nil {
-		return nil, errors.New("missing required argument 'InputBucket'")
-	}
-	if args == nil || args.Role == nil {
-		return nil, errors.New("missing required argument 'Role'")
-	}
 	if args == nil {
-		args = &PipelineArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.InputBucket == nil {
+		return nil, errors.New("invalid value for required argument 'InputBucket'")
+	}
+	if args.Role == nil {
+		return nil, errors.New("invalid value for required argument 'Role'")
 	}
 	var resource Pipeline
 	err := ctx.RegisterResource("aws:elastictranscoder/pipeline:Pipeline", name, args, &resource, opts...)
@@ -203,4 +213,43 @@ type PipelineArgs struct {
 
 func (PipelineArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*pipelineArgs)(nil)).Elem()
+}
+
+type PipelineInput interface {
+	pulumi.Input
+
+	ToPipelineOutput() PipelineOutput
+	ToPipelineOutputWithContext(ctx context.Context) PipelineOutput
+}
+
+func (Pipeline) ElementType() reflect.Type {
+	return reflect.TypeOf((*Pipeline)(nil)).Elem()
+}
+
+func (i Pipeline) ToPipelineOutput() PipelineOutput {
+	return i.ToPipelineOutputWithContext(context.Background())
+}
+
+func (i Pipeline) ToPipelineOutputWithContext(ctx context.Context) PipelineOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(PipelineOutput)
+}
+
+type PipelineOutput struct {
+	*pulumi.OutputState
+}
+
+func (PipelineOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*PipelineOutput)(nil)).Elem()
+}
+
+func (o PipelineOutput) ToPipelineOutput() PipelineOutput {
+	return o
+}
+
+func (o PipelineOutput) ToPipelineOutputWithContext(ctx context.Context) PipelineOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(PipelineOutput{})
 }

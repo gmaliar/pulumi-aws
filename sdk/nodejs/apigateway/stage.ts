@@ -2,8 +2,7 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 import {Deployment, RestApi} from "./index";
@@ -17,43 +16,43 @@ import {Deployment, RestApi} from "./index";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const testRestApi = new aws.apigateway.RestApi("test", {
- *     description: "This is my API for demonstration purposes",
- * });
- * const testResource = new aws.apigateway.Resource("test", {
+ * const testRestApi = new aws.apigateway.RestApi("testRestApi", {description: "This is my API for demonstration purposes"});
+ * const testResource = new aws.apigateway.Resource("testResource", {
+ *     restApi: testRestApi.id,
  *     parentId: testRestApi.rootResourceId,
  *     pathPart: "mytestresource",
- *     restApi: testRestApi.id,
  * });
- * const testMethod = new aws.apigateway.Method("test", {
- *     authorization: "NONE",
+ * const testMethod = new aws.apigateway.Method("testMethod", {
+ *     restApi: testRestApi.id,
+ *     resourceId: testResource.id,
  *     httpMethod: "GET",
- *     resourceId: testResource.id,
- *     restApi: testRestApi.id,
+ *     authorization: "NONE",
  * });
- * const testIntegration = new aws.apigateway.Integration("test", {
- *     httpMethod: testMethod.httpMethod,
- *     resourceId: testResource.id,
+ * const testIntegration = new aws.apigateway.Integration("testIntegration", {
  *     restApi: testRestApi.id,
+ *     resourceId: testResource.id,
+ *     httpMethod: testMethod.httpMethod,
  *     type: "MOCK",
  * });
- * const testDeployment = new aws.apigateway.Deployment("test", {
+ * const testDeployment = new aws.apigateway.Deployment("testDeployment", {
  *     restApi: testRestApi.id,
  *     stageName: "dev",
- * }, { dependsOn: [testIntegration] });
- * const testStage = new aws.apigateway.Stage("test", {
- *     deployment: testDeployment.id,
- *     restApi: testRestApi.id,
- *     stageName: "prod",
+ * }, {
+ *     dependsOn: [testIntegration],
  * });
- * const methodSettings = new aws.apigateway.MethodSettings("s", {
- *     methodPath: pulumi.interpolate`${testResource.pathPart}/${testMethod.httpMethod}`,
+ * const testStage = new aws.apigateway.Stage("testStage", {
+ *     stageName: "prod",
  *     restApi: testRestApi.id,
- *     settings: {
- *         loggingLevel: "INFO",
- *         metricsEnabled: true,
- *     },
+ *     deployment: testDeployment.id,
+ * });
+ * const methodSettings = new aws.apigateway.MethodSettings("methodSettings", {
+ *     restApi: testRestApi.id,
  *     stageName: testStage.stageName,
+ *     methodPath: pulumi.interpolate`${testResource.pathPart}/${testMethod.httpMethod}`,
+ *     settings: {
+ *         metricsEnabled: true,
+ *         loggingLevel: "INFO",
+ *     },
  * });
  * ```
  * ### Managing the API Logging CloudWatch Log Group
@@ -68,14 +67,22 @@ import {Deployment, RestApi} from "./index";
  *
  * const config = new pulumi.Config();
  * const stageName = config.get("stageName") || "example";
- *
- * const exampleRestApi = new aws.apigateway.RestApi("example", {});
- * const exampleLogGroup = new aws.cloudwatch.LogGroup("example", {
- *     retentionInDays: 7,
+ * const exampleRestApi = new aws.apigateway.RestApi("exampleRestApi", {});
+ * // ... other configuration ...
+ * const exampleLogGroup = new aws.cloudwatch.LogGroup("exampleLogGroup", {retentionInDays: 7});
+ * // ... potentially other configuration ...
+ * const exampleStage = new aws.apigateway.Stage("exampleStage", {stageName: stageName}, {
+ *     dependsOn: [exampleLogGroup],
  * });
- * const exampleStage = new aws.apigateway.Stage("example", {
- *     name: stageName,
- * }, { dependsOn: [exampleLogGroup] });
+ * // ... other configuration ...
+ * ```
+ *
+ * ## Import
+ *
+ * `aws_api_gateway_stage` can be imported using `REST-API-ID/STAGE-NAME`, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:apigateway/stage:Stage example 12345abcde/example
  * ```
  */
 export class Stage extends pulumi.CustomResource {
@@ -119,8 +126,7 @@ export class Stage extends pulumi.CustomResource {
      */
     public readonly cacheClusterEnabled!: pulumi.Output<boolean | undefined>;
     /**
-     * The size of the cache cluster for the stage, if enabled.
-     * Allowed values include `0.5`, `1.6`, `6.1`, `13.5`, `28.4`, `58.2`, `118` and `237`.
+     * The size of the cache cluster for the stage, if enabled. Allowed values include `0.5`, `1.6`, `6.1`, `13.5`, `28.4`, `58.2`, `118` and `237`.
      */
     public readonly cacheClusterSize!: pulumi.Output<string | undefined>;
     /**
@@ -200,13 +206,13 @@ export class Stage extends pulumi.CustomResource {
             inputs["xrayTracingEnabled"] = state ? state.xrayTracingEnabled : undefined;
         } else {
             const args = argsOrState as StageArgs | undefined;
-            if (!args || args.deployment === undefined) {
+            if ((!args || args.deployment === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'deployment'");
             }
-            if (!args || args.restApi === undefined) {
+            if ((!args || args.restApi === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'restApi'");
             }
-            if (!args || args.stageName === undefined) {
+            if ((!args || args.stageName === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'stageName'");
             }
             inputs["accessLogSettings"] = args ? args.accessLogSettings : undefined;
@@ -253,8 +259,7 @@ export interface StageState {
      */
     readonly cacheClusterEnabled?: pulumi.Input<boolean>;
     /**
-     * The size of the cache cluster for the stage, if enabled.
-     * Allowed values include `0.5`, `1.6`, `6.1`, `13.5`, `28.4`, `58.2`, `118` and `237`.
+     * The size of the cache cluster for the stage, if enabled. Allowed values include `0.5`, `1.6`, `6.1`, `13.5`, `28.4`, `58.2`, `118` and `237`.
      */
     readonly cacheClusterSize?: pulumi.Input<string>;
     /**
@@ -319,8 +324,7 @@ export interface StageArgs {
      */
     readonly cacheClusterEnabled?: pulumi.Input<boolean>;
     /**
-     * The size of the cache cluster for the stage, if enabled.
-     * Allowed values include `0.5`, `1.6`, `6.1`, `13.5`, `28.4`, `58.2`, `118` and `237`.
+     * The size of the cache cluster for the stage, if enabled. Allowed values include `0.5`, `1.6`, `6.1`, `13.5`, `28.4`, `58.2`, `118` and `237`.
      */
     readonly cacheClusterSize?: pulumi.Input<string>;
     /**

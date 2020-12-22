@@ -2,8 +2,7 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 /**
@@ -16,73 +15,81 @@ import * as utilities from "../utilities";
  * import * as aws from "@pulumi/aws";
  * import * as github from "@pulumi/github";
  *
- * const barPipeline = new aws.codepipeline.Pipeline("bar", {
- *     artifactStores: {
+ * const barPipeline = new aws.codepipeline.Pipeline("barPipeline", {
+ *     roleArn: aws_iam_role.bar.arn,
+ *     artifactStore: {
+ *         location: aws_s3_bucket.bar.bucket,
+ *         type: "S3",
  *         encryptionKey: {
- *             id: aws_kms_alias_s3kmskey.arn,
+ *             id: data.aws_kms_alias.s3kmskey.arn,
  *             type: "KMS",
  *         },
- *         location: aws_s3_bucket_bar.bucket,
- *         type: "S3",
  *     },
- *     roleArn: aws_iam_role_bar.arn,
  *     stages: [
  *         {
+ *             name: "Source",
  *             actions: [{
- *                 category: "Source",
- *                 configuration: {
- *                     Branch: "master",
- *                     Owner: "my-organization",
- *                     Repo: "test",
- *                 },
  *                 name: "Source",
- *                 outputArtifacts: ["test"],
+ *                 category: "Source",
  *                 owner: "ThirdParty",
  *                 provider: "GitHub",
  *                 version: "1",
+ *                 outputArtifacts: ["test"],
+ *                 configuration: {
+ *                     Owner: "my-organization",
+ *                     Repo: "test",
+ *                     Branch: "master",
+ *                 },
  *             }],
- *             name: "Source",
  *         },
  *         {
+ *             name: "Build",
  *             actions: [{
+ *                 name: "Build",
  *                 category: "Build",
+ *                 owner: "AWS",
+ *                 provider: "CodeBuild",
+ *                 inputArtifacts: ["test"],
+ *                 version: "1",
  *                 configuration: {
  *                     ProjectName: "test",
  *                 },
- *                 inputArtifacts: ["test"],
- *                 name: "Build",
- *                 owner: "AWS",
- *                 provider: "CodeBuild",
- *                 version: "1",
  *             }],
- *             name: "Build",
  *         },
  *     ],
  * });
  * const webhookSecret = "super-secret";
- * const barWebhook = new aws.codepipeline.Webhook("bar", {
+ * const barWebhook = new aws.codepipeline.Webhook("barWebhook", {
  *     authentication: "GITHUB_HMAC",
+ *     targetAction: "Source",
+ *     targetPipeline: barPipeline.name,
  *     authenticationConfiguration: {
  *         secretToken: webhookSecret,
  *     },
  *     filters: [{
- *         jsonPath: "$.ref",
+ *         jsonPath: `$.ref`,
  *         matchEquals: "refs/heads/{Branch}",
  *     }],
- *     targetAction: "Source",
- *     targetPipeline: barPipeline.name,
  * });
  * // Wire the CodePipeline webhook into a GitHub repository.
- * const barRepositoryWebhook = new github.RepositoryWebhook("bar", {
+ * const barRepositoryWebhook = new github.RepositoryWebhook("barRepositoryWebhook", {
+ *     repository: github_repository.repo.name,
  *     configuration: {
+ *         url: barWebhook.url,
  *         contentType: "json",
  *         insecureSsl: true,
  *         secret: webhookSecret,
- *         url: barWebhook.url,
  *     },
  *     events: ["push"],
- *     repository: github_repository_repo.name,
  * });
+ * ```
+ *
+ * ## Import
+ *
+ * CodePipeline Webhooks can be imported by their ARN, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:codepipeline/webhook:Webhook example arn:aws:codepipeline:us-west-2:123456789012:webhook:example
  * ```
  */
 export class Webhook extends pulumi.CustomResource {
@@ -168,16 +175,16 @@ export class Webhook extends pulumi.CustomResource {
             inputs["url"] = state ? state.url : undefined;
         } else {
             const args = argsOrState as WebhookArgs | undefined;
-            if (!args || args.authentication === undefined) {
+            if ((!args || args.authentication === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'authentication'");
             }
-            if (!args || args.filters === undefined) {
+            if ((!args || args.filters === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'filters'");
             }
-            if (!args || args.targetAction === undefined) {
+            if ((!args || args.targetAction === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'targetAction'");
             }
-            if (!args || args.targetPipeline === undefined) {
+            if ((!args || args.targetPipeline === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'targetPipeline'");
             }
             inputs["authentication"] = args ? args.authentication : undefined;

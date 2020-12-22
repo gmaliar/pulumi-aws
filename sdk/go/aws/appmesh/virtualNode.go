@@ -4,6 +4,7 @@
 package appmesh
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -30,14 +31,14 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/appmesh"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/appmesh"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
 // func main() {
 // 	pulumi.Run(func(ctx *pulumi.Context) error {
 // 		_, err := appmesh.NewVirtualNode(ctx, "serviceb1", &appmesh.VirtualNodeArgs{
-// 			MeshName: pulumi.String(aws_appmesh_mesh.Simple.Id),
+// 			MeshName: pulumi.Any(aws_appmesh_mesh.Simple.Id),
 // 			Spec: &appmesh.VirtualNodeSpecArgs{
 // 				Backends: appmesh.VirtualNodeSpecBackendArray{
 // 					&appmesh.VirtualNodeSpecBackendArgs{
@@ -72,8 +73,8 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/appmesh"
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/servicediscovery"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/appmesh"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/servicediscovery"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -84,7 +85,7 @@ import (
 // 			return err
 // 		}
 // 		_, err = appmesh.NewVirtualNode(ctx, "serviceb1", &appmesh.VirtualNodeArgs{
-// 			MeshName: pulumi.String(aws_appmesh_mesh.Simple.Id),
+// 			MeshName: pulumi.Any(aws_appmesh_mesh.Simple.Id),
 // 			Spec: &appmesh.VirtualNodeSpecArgs{
 // 				Backends: appmesh.VirtualNodeSpecBackendArray{
 // 					&appmesh.VirtualNodeSpecBackendArgs{
@@ -104,8 +105,8 @@ import (
 // 						Attributes: pulumi.StringMap{
 // 							"stack": pulumi.String("blue"),
 // 						},
-// 						NamespaceName: example.Name,
 // 						ServiceName:   pulumi.String("serviceb1"),
+// 						NamespaceName: example.Name,
 // 					},
 // 				},
 // 			},
@@ -123,14 +124,14 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/appmesh"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/appmesh"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
 // func main() {
 // 	pulumi.Run(func(ctx *pulumi.Context) error {
 // 		_, err := appmesh.NewVirtualNode(ctx, "serviceb1", &appmesh.VirtualNodeArgs{
-// 			MeshName: pulumi.String(aws_appmesh_mesh.Simple.Id),
+// 			MeshName: pulumi.Any(aws_appmesh_mesh.Simple.Id),
 // 			Spec: &appmesh.VirtualNodeSpecArgs{
 // 				Backends: appmesh.VirtualNodeSpecBackendArray{
 // 					&appmesh.VirtualNodeSpecBackendArgs{
@@ -140,17 +141,17 @@ import (
 // 					},
 // 				},
 // 				Listener: &appmesh.VirtualNodeSpecListenerArgs{
-// 					HealthCheck: &appmesh.VirtualNodeSpecListenerHealthCheckArgs{
-// 						HealthyThreshold:   pulumi.Int(2),
-// 						IntervalMillis:     pulumi.Int(5000),
-// 						Path:               pulumi.String("/ping"),
-// 						Protocol:           pulumi.String("http"),
-// 						TimeoutMillis:      pulumi.Int(2000),
-// 						UnhealthyThreshold: pulumi.Int(2),
-// 					},
 // 					PortMapping: &appmesh.VirtualNodeSpecListenerPortMappingArgs{
 // 						Port:     pulumi.Int(8080),
 // 						Protocol: pulumi.String("http"),
+// 					},
+// 					HealthCheck: &appmesh.VirtualNodeSpecListenerHealthCheckArgs{
+// 						Protocol:           pulumi.String("http"),
+// 						Path:               pulumi.String("/ping"),
+// 						HealthyThreshold:   pulumi.Int(2),
+// 						UnhealthyThreshold: pulumi.Int(2),
+// 						TimeoutMillis:      pulumi.Int(2000),
+// 						IntervalMillis:     pulumi.Int(5000),
 // 					},
 // 				},
 // 				ServiceDiscovery: &appmesh.VirtualNodeSpecServiceDiscoveryArgs{
@@ -173,14 +174,14 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/appmesh"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/appmesh"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
 // func main() {
 // 	pulumi.Run(func(ctx *pulumi.Context) error {
 // 		_, err := appmesh.NewVirtualNode(ctx, "serviceb1", &appmesh.VirtualNodeArgs{
-// 			MeshName: pulumi.String(aws_appmesh_mesh.Simple.Id),
+// 			MeshName: pulumi.Any(aws_appmesh_mesh.Simple.Id),
 // 			Spec: &appmesh.VirtualNodeSpecArgs{
 // 				Backends: appmesh.VirtualNodeSpecBackendArray{
 // 					&appmesh.VirtualNodeSpecBackendArgs{
@@ -195,16 +196,16 @@ import (
 // 						Protocol: pulumi.String("http"),
 // 					},
 // 				},
+// 				ServiceDiscovery: &appmesh.VirtualNodeSpecServiceDiscoveryArgs{
+// 					Dns: &appmesh.VirtualNodeSpecServiceDiscoveryDnsArgs{
+// 						Hostname: pulumi.String("serviceb.simpleapp.local"),
+// 					},
+// 				},
 // 				Logging: &appmesh.VirtualNodeSpecLoggingArgs{
 // 					AccessLog: &appmesh.VirtualNodeSpecLoggingAccessLogArgs{
 // 						File: &appmesh.VirtualNodeSpecLoggingAccessLogFileArgs{
 // 							Path: pulumi.String("/dev/stdout"),
 // 						},
-// 					},
-// 				},
-// 				ServiceDiscovery: &appmesh.VirtualNodeSpecServiceDiscoveryArgs{
-// 					Dns: &appmesh.VirtualNodeSpecServiceDiscoveryDnsArgs{
-// 						Hostname: pulumi.String("serviceb.simpleapp.local"),
 // 					},
 // 				},
 // 			},
@@ -216,6 +217,16 @@ import (
 // 	})
 // }
 // ```
+//
+// ## Import
+//
+// App Mesh virtual nodes can be imported using `mesh_name` together with the virtual node's `name`, e.g.
+//
+// ```sh
+//  $ pulumi import aws:appmesh/virtualNode:VirtualNode serviceb1 simpleapp/serviceBv1
+// ```
+//
+//  [1]/docs/providers/aws/index.html
 type VirtualNode struct {
 	pulumi.CustomResourceState
 
@@ -225,10 +236,14 @@ type VirtualNode struct {
 	CreatedDate pulumi.StringOutput `pulumi:"createdDate"`
 	// The last update date of the virtual node.
 	LastUpdatedDate pulumi.StringOutput `pulumi:"lastUpdatedDate"`
-	// The name of the service mesh in which to create the virtual node.
+	// The name of the service mesh in which to create the virtual node. Must be between 1 and 255 characters in length.
 	MeshName pulumi.StringOutput `pulumi:"meshName"`
-	// The name to use for the virtual node.
+	// The AWS account ID of the service mesh's owner. Defaults to the account ID the [AWS provider](https://www.terraform.io/docs/providers/aws/index.html) is currently connected to.
+	MeshOwner pulumi.StringOutput `pulumi:"meshOwner"`
+	// The name to use for the virtual node. Must be between 1 and 255 characters in length.
 	Name pulumi.StringOutput `pulumi:"name"`
+	// The resource owner's AWS account ID.
+	ResourceOwner pulumi.StringOutput `pulumi:"resourceOwner"`
 	// The virtual node specification to apply.
 	Spec VirtualNodeSpecOutput `pulumi:"spec"`
 	// A map of tags to assign to the resource.
@@ -238,14 +253,15 @@ type VirtualNode struct {
 // NewVirtualNode registers a new resource with the given unique name, arguments, and options.
 func NewVirtualNode(ctx *pulumi.Context,
 	name string, args *VirtualNodeArgs, opts ...pulumi.ResourceOption) (*VirtualNode, error) {
-	if args == nil || args.MeshName == nil {
-		return nil, errors.New("missing required argument 'MeshName'")
-	}
-	if args == nil || args.Spec == nil {
-		return nil, errors.New("missing required argument 'Spec'")
-	}
 	if args == nil {
-		args = &VirtualNodeArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.MeshName == nil {
+		return nil, errors.New("invalid value for required argument 'MeshName'")
+	}
+	if args.Spec == nil {
+		return nil, errors.New("invalid value for required argument 'Spec'")
 	}
 	var resource VirtualNode
 	err := ctx.RegisterResource("aws:appmesh/virtualNode:VirtualNode", name, args, &resource, opts...)
@@ -275,10 +291,14 @@ type virtualNodeState struct {
 	CreatedDate *string `pulumi:"createdDate"`
 	// The last update date of the virtual node.
 	LastUpdatedDate *string `pulumi:"lastUpdatedDate"`
-	// The name of the service mesh in which to create the virtual node.
+	// The name of the service mesh in which to create the virtual node. Must be between 1 and 255 characters in length.
 	MeshName *string `pulumi:"meshName"`
-	// The name to use for the virtual node.
+	// The AWS account ID of the service mesh's owner. Defaults to the account ID the [AWS provider](https://www.terraform.io/docs/providers/aws/index.html) is currently connected to.
+	MeshOwner *string `pulumi:"meshOwner"`
+	// The name to use for the virtual node. Must be between 1 and 255 characters in length.
 	Name *string `pulumi:"name"`
+	// The resource owner's AWS account ID.
+	ResourceOwner *string `pulumi:"resourceOwner"`
 	// The virtual node specification to apply.
 	Spec *VirtualNodeSpec `pulumi:"spec"`
 	// A map of tags to assign to the resource.
@@ -292,10 +312,14 @@ type VirtualNodeState struct {
 	CreatedDate pulumi.StringPtrInput
 	// The last update date of the virtual node.
 	LastUpdatedDate pulumi.StringPtrInput
-	// The name of the service mesh in which to create the virtual node.
+	// The name of the service mesh in which to create the virtual node. Must be between 1 and 255 characters in length.
 	MeshName pulumi.StringPtrInput
-	// The name to use for the virtual node.
+	// The AWS account ID of the service mesh's owner. Defaults to the account ID the [AWS provider](https://www.terraform.io/docs/providers/aws/index.html) is currently connected to.
+	MeshOwner pulumi.StringPtrInput
+	// The name to use for the virtual node. Must be between 1 and 255 characters in length.
 	Name pulumi.StringPtrInput
+	// The resource owner's AWS account ID.
+	ResourceOwner pulumi.StringPtrInput
 	// The virtual node specification to apply.
 	Spec VirtualNodeSpecPtrInput
 	// A map of tags to assign to the resource.
@@ -307,9 +331,11 @@ func (VirtualNodeState) ElementType() reflect.Type {
 }
 
 type virtualNodeArgs struct {
-	// The name of the service mesh in which to create the virtual node.
+	// The name of the service mesh in which to create the virtual node. Must be between 1 and 255 characters in length.
 	MeshName string `pulumi:"meshName"`
-	// The name to use for the virtual node.
+	// The AWS account ID of the service mesh's owner. Defaults to the account ID the [AWS provider](https://www.terraform.io/docs/providers/aws/index.html) is currently connected to.
+	MeshOwner *string `pulumi:"meshOwner"`
+	// The name to use for the virtual node. Must be between 1 and 255 characters in length.
 	Name *string `pulumi:"name"`
 	// The virtual node specification to apply.
 	Spec VirtualNodeSpec `pulumi:"spec"`
@@ -319,9 +345,11 @@ type virtualNodeArgs struct {
 
 // The set of arguments for constructing a VirtualNode resource.
 type VirtualNodeArgs struct {
-	// The name of the service mesh in which to create the virtual node.
+	// The name of the service mesh in which to create the virtual node. Must be between 1 and 255 characters in length.
 	MeshName pulumi.StringInput
-	// The name to use for the virtual node.
+	// The AWS account ID of the service mesh's owner. Defaults to the account ID the [AWS provider](https://www.terraform.io/docs/providers/aws/index.html) is currently connected to.
+	MeshOwner pulumi.StringPtrInput
+	// The name to use for the virtual node. Must be between 1 and 255 characters in length.
 	Name pulumi.StringPtrInput
 	// The virtual node specification to apply.
 	Spec VirtualNodeSpecInput
@@ -331,4 +359,43 @@ type VirtualNodeArgs struct {
 
 func (VirtualNodeArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*virtualNodeArgs)(nil)).Elem()
+}
+
+type VirtualNodeInput interface {
+	pulumi.Input
+
+	ToVirtualNodeOutput() VirtualNodeOutput
+	ToVirtualNodeOutputWithContext(ctx context.Context) VirtualNodeOutput
+}
+
+func (VirtualNode) ElementType() reflect.Type {
+	return reflect.TypeOf((*VirtualNode)(nil)).Elem()
+}
+
+func (i VirtualNode) ToVirtualNodeOutput() VirtualNodeOutput {
+	return i.ToVirtualNodeOutputWithContext(context.Background())
+}
+
+func (i VirtualNode) ToVirtualNodeOutputWithContext(ctx context.Context) VirtualNodeOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(VirtualNodeOutput)
+}
+
+type VirtualNodeOutput struct {
+	*pulumi.OutputState
+}
+
+func (VirtualNodeOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*VirtualNodeOutput)(nil)).Elem()
+}
+
+func (o VirtualNodeOutput) ToVirtualNodeOutput() VirtualNodeOutput {
+	return o
+}
+
+func (o VirtualNodeOutput) ToVirtualNodeOutputWithContext(ctx context.Context) VirtualNodeOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(VirtualNodeOutput{})
 }

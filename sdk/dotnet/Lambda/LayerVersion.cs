@@ -28,7 +28,7 @@ namespace Pulumi.Aws.Lambda
     ///         {
     ///             CompatibleRuntimes = 
     ///             {
-    ///                 "nodejs8.10",
+    ///                 "nodejs12.x",
     ///             },
     ///             Code = new FileArchive("lambda_layer_payload.zip"),
     ///             LayerName = "lambda_layer_name",
@@ -48,6 +48,18 @@ namespace Pulumi.Aws.Lambda
     /// 
     /// For larger deployment packages it is recommended by Amazon to upload via S3, since the S3 API has better support for uploading
     /// large files efficiently.
+    /// 
+    /// ## Import
+    /// 
+    /// Lambda Layers can be imported using `arn`.
+    /// 
+    /// ```sh
+    ///  $ pulumi import aws:lambda/layerVersion:LayerVersion \
+    /// ```
+    /// 
+    ///  aws_lambda_layer_version.test_layer \
+    /// 
+    ///  arn:aws:lambda:_REGION_:_ACCOUNT_ID_:layer:_LAYER_NAME_:_LAYER_VERSION_
     /// </summary>
     public partial class LayerVersion : Pulumi.CustomResource
     {
@@ -116,6 +128,18 @@ namespace Pulumi.Aws.Lambda
         /// </summary>
         [Output("s3ObjectVersion")]
         public Output<string?> S3ObjectVersion { get; private set; } = null!;
+
+        /// <summary>
+        /// The Amazon Resource Name (ARN) of a signing job.
+        /// </summary>
+        [Output("signingJobArn")]
+        public Output<string> SigningJobArn { get; private set; } = null!;
+
+        /// <summary>
+        /// The Amazon Resource Name (ARN) for a signing profile version.
+        /// </summary>
+        [Output("signingProfileVersionArn")]
+        public Output<string> SigningProfileVersionArn { get; private set; } = null!;
 
         /// <summary>
         /// Used to trigger updates. Must be set to a base64-encoded SHA256 hash of the package file specified with either `filename` or `s3_key`. The usual way to set this is `${filebase64sha256("file.zip")}` (this provider 0.11.12 or later) or `${base64sha256(file("file.zip"))}` (this provider 0.11.11 and earlier), where "file.zip" is the local filename of the lambda layer source archive.
@@ -319,6 +343,18 @@ namespace Pulumi.Aws.Lambda
         /// </summary>
         [Input("s3ObjectVersion")]
         public Input<string>? S3ObjectVersion { get; set; }
+
+        /// <summary>
+        /// The Amazon Resource Name (ARN) of a signing job.
+        /// </summary>
+        [Input("signingJobArn")]
+        public Input<string>? SigningJobArn { get; set; }
+
+        /// <summary>
+        /// The Amazon Resource Name (ARN) for a signing profile version.
+        /// </summary>
+        [Input("signingProfileVersionArn")]
+        public Input<string>? SigningProfileVersionArn { get; set; }
 
         /// <summary>
         /// Used to trigger updates. Must be set to a base64-encoded SHA256 hash of the package file specified with either `filename` or `s3_key`. The usual way to set this is `${filebase64sha256("file.zip")}` (this provider 0.11.12 or later) or `${base64sha256(file("file.zip"))}` (this provider 0.11.11 and earlier), where "file.zip" is the local filename of the lambda layer source archive.

@@ -4,6 +4,7 @@
 package ecr
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -25,7 +26,7 @@ import (
 // import (
 // 	"fmt"
 //
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/ecr"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/ecr"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -36,8 +37,8 @@ import (
 // 			return err
 // 		}
 // 		_, err = ecr.NewLifecyclePolicy(ctx, "foopolicy", &ecr.LifecyclePolicyArgs{
-// 			Policy:     pulumi.String(fmt.Sprintf("%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v", "{\n", "    \"rules\": [\n", "        {\n", "            \"rulePriority\": 1,\n", "            \"description\": \"Expire images older than 14 days\",\n", "            \"selection\": {\n", "                \"tagStatus\": \"untagged\",\n", "                \"countType\": \"sinceImagePushed\",\n", "                \"countUnit\": \"days\",\n", "                \"countNumber\": 14\n", "            },\n", "            \"action\": {\n", "                \"type\": \"expire\"\n", "            }\n", "        }\n", "    ]\n", "}\n", "\n")),
 // 			Repository: foo.Name,
+// 			Policy:     pulumi.String(fmt.Sprintf("%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v", "{\n", "    \"rules\": [\n", "        {\n", "            \"rulePriority\": 1,\n", "            \"description\": \"Expire images older than 14 days\",\n", "            \"selection\": {\n", "                \"tagStatus\": \"untagged\",\n", "                \"countType\": \"sinceImagePushed\",\n", "                \"countUnit\": \"days\",\n", "                \"countNumber\": 14\n", "            },\n", "            \"action\": {\n", "                \"type\": \"expire\"\n", "            }\n", "        }\n", "    ]\n", "}\n")),
 // 		})
 // 		if err != nil {
 // 			return err
@@ -54,7 +55,7 @@ import (
 // import (
 // 	"fmt"
 //
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/ecr"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/ecr"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -65,8 +66,8 @@ import (
 // 			return err
 // 		}
 // 		_, err = ecr.NewLifecyclePolicy(ctx, "foopolicy", &ecr.LifecyclePolicyArgs{
-// 			Policy:     pulumi.String(fmt.Sprintf("%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v", "{\n", "    \"rules\": [\n", "        {\n", "            \"rulePriority\": 1,\n", "            \"description\": \"Keep last 30 images\",\n", "            \"selection\": {\n", "                \"tagStatus\": \"tagged\",\n", "                \"tagPrefixList\": [\"v\"],\n", "                \"countType\": \"imageCountMoreThan\",\n", "                \"countNumber\": 30\n", "            },\n", "            \"action\": {\n", "                \"type\": \"expire\"\n", "            }\n", "        }\n", "    ]\n", "}\n", "\n")),
 // 			Repository: foo.Name,
+// 			Policy:     pulumi.String(fmt.Sprintf("%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v", "{\n", "    \"rules\": [\n", "        {\n", "            \"rulePriority\": 1,\n", "            \"description\": \"Keep last 30 images\",\n", "            \"selection\": {\n", "                \"tagStatus\": \"tagged\",\n", "                \"tagPrefixList\": [\"v\"],\n", "                \"countType\": \"imageCountMoreThan\",\n", "                \"countNumber\": 30\n", "            },\n", "            \"action\": {\n", "                \"type\": \"expire\"\n", "            }\n", "        }\n", "    ]\n", "}\n")),
 // 		})
 // 		if err != nil {
 // 			return err
@@ -74,6 +75,14 @@ import (
 // 		return nil
 // 	})
 // }
+// ```
+//
+// ## Import
+//
+// ECR Lifecycle Policy can be imported using the name of the repository, e.g.
+//
+// ```sh
+//  $ pulumi import aws:ecr/lifecyclePolicy:LifecyclePolicy example tf-example
 // ```
 type LifecyclePolicy struct {
 	pulumi.CustomResourceState
@@ -89,14 +98,15 @@ type LifecyclePolicy struct {
 // NewLifecyclePolicy registers a new resource with the given unique name, arguments, and options.
 func NewLifecyclePolicy(ctx *pulumi.Context,
 	name string, args *LifecyclePolicyArgs, opts ...pulumi.ResourceOption) (*LifecyclePolicy, error) {
-	if args == nil || args.Policy == nil {
-		return nil, errors.New("missing required argument 'Policy'")
-	}
-	if args == nil || args.Repository == nil {
-		return nil, errors.New("missing required argument 'Repository'")
-	}
 	if args == nil {
-		args = &LifecyclePolicyArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.Policy == nil {
+		return nil, errors.New("invalid value for required argument 'Policy'")
+	}
+	if args.Repository == nil {
+		return nil, errors.New("invalid value for required argument 'Repository'")
 	}
 	var resource LifecyclePolicy
 	err := ctx.RegisterResource("aws:ecr/lifecyclePolicy:LifecyclePolicy", name, args, &resource, opts...)
@@ -158,4 +168,43 @@ type LifecyclePolicyArgs struct {
 
 func (LifecyclePolicyArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*lifecyclePolicyArgs)(nil)).Elem()
+}
+
+type LifecyclePolicyInput interface {
+	pulumi.Input
+
+	ToLifecyclePolicyOutput() LifecyclePolicyOutput
+	ToLifecyclePolicyOutputWithContext(ctx context.Context) LifecyclePolicyOutput
+}
+
+func (LifecyclePolicy) ElementType() reflect.Type {
+	return reflect.TypeOf((*LifecyclePolicy)(nil)).Elem()
+}
+
+func (i LifecyclePolicy) ToLifecyclePolicyOutput() LifecyclePolicyOutput {
+	return i.ToLifecyclePolicyOutputWithContext(context.Background())
+}
+
+func (i LifecyclePolicy) ToLifecyclePolicyOutputWithContext(ctx context.Context) LifecyclePolicyOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(LifecyclePolicyOutput)
+}
+
+type LifecyclePolicyOutput struct {
+	*pulumi.OutputState
+}
+
+func (LifecyclePolicyOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*LifecyclePolicyOutput)(nil)).Elem()
+}
+
+func (o LifecyclePolicyOutput) ToLifecyclePolicyOutput() LifecyclePolicyOutput {
+	return o
+}
+
+func (o LifecyclePolicyOutput) ToLifecyclePolicyOutputWithContext(ctx context.Context) LifecyclePolicyOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(LifecyclePolicyOutput{})
 }

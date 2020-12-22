@@ -20,15 +20,15 @@ import * as utilities from "../utilities";
  *         Name: "HelloWorld",
  *     },
  * });
- * const exampleSnapshot = new aws.ebs.Snapshot("example_snapshot", {
+ * const exampleSnapshot = new aws.ebs.Snapshot("exampleSnapshot", {
+ *     volumeId: example.id,
  *     tags: {
  *         Name: "HelloWorld_snap",
  *     },
- *     volumeId: example.id,
  * });
- * const exampleCopy = new aws.ebs.SnapshotCopy("example_copy", {
- *     sourceRegion: "us-west-2",
+ * const exampleCopy = new aws.ebs.SnapshotCopy("exampleCopy", {
  *     sourceSnapshotId: exampleSnapshot.id,
+ *     sourceRegion: "us-west-2",
  *     tags: {
  *         Name: "HelloWorld_copy_snap",
  *     },
@@ -137,10 +137,10 @@ export class SnapshotCopy extends pulumi.CustomResource {
             inputs["volumeSize"] = state ? state.volumeSize : undefined;
         } else {
             const args = argsOrState as SnapshotCopyArgs | undefined;
-            if (!args || args.sourceRegion === undefined) {
+            if ((!args || args.sourceRegion === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'sourceRegion'");
             }
-            if (!args || args.sourceSnapshotId === undefined) {
+            if ((!args || args.sourceSnapshotId === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'sourceSnapshotId'");
             }
             inputs["description"] = args ? args.description : undefined;

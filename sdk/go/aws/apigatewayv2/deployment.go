@@ -4,6 +4,7 @@
 package apigatewayv2
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -22,14 +23,14 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/apigatewayv2"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/apigatewayv2"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
 // func main() {
 // 	pulumi.Run(func(ctx *pulumi.Context) error {
 // 		_, err := apigatewayv2.NewDeployment(ctx, "example", &apigatewayv2.DeploymentArgs{
-// 			ApiId:       pulumi.String(aws_apigatewayv2_route.Example.Api_id),
+// 			ApiId:       pulumi.Any(aws_apigatewayv2_route.Example.Api_id),
 // 			Description: pulumi.String("Example deployment"),
 // 		})
 // 		if err != nil {
@@ -39,6 +40,16 @@ import (
 // 	})
 // }
 // ```
+//
+// ## Import
+//
+// `aws_apigatewayv2_deployment` can be imported by using the API identifier and deployment identifier, e.g.
+//
+// ```sh
+//  $ pulumi import aws:apigatewayv2/deployment:Deployment example aabbccddee/1122334
+// ```
+//
+//  The `triggers` argument cannot be imported.
 type Deployment struct {
 	pulumi.CustomResourceState
 
@@ -46,7 +57,7 @@ type Deployment struct {
 	ApiId pulumi.StringOutput `pulumi:"apiId"`
 	// Whether the deployment was automatically released.
 	AutoDeployed pulumi.BoolOutput `pulumi:"autoDeployed"`
-	// The description for the deployment resource.
+	// The description for the deployment resource. Must be less than or equal to 1024 characters in length.
 	Description pulumi.StringPtrOutput `pulumi:"description"`
 	// A map of arbitrary keys and values that, when changed, will trigger a redeployment.
 	Triggers pulumi.StringMapOutput `pulumi:"triggers"`
@@ -55,11 +66,12 @@ type Deployment struct {
 // NewDeployment registers a new resource with the given unique name, arguments, and options.
 func NewDeployment(ctx *pulumi.Context,
 	name string, args *DeploymentArgs, opts ...pulumi.ResourceOption) (*Deployment, error) {
-	if args == nil || args.ApiId == nil {
-		return nil, errors.New("missing required argument 'ApiId'")
-	}
 	if args == nil {
-		args = &DeploymentArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.ApiId == nil {
+		return nil, errors.New("invalid value for required argument 'ApiId'")
 	}
 	var resource Deployment
 	err := ctx.RegisterResource("aws:apigatewayv2/deployment:Deployment", name, args, &resource, opts...)
@@ -87,7 +99,7 @@ type deploymentState struct {
 	ApiId *string `pulumi:"apiId"`
 	// Whether the deployment was automatically released.
 	AutoDeployed *bool `pulumi:"autoDeployed"`
-	// The description for the deployment resource.
+	// The description for the deployment resource. Must be less than or equal to 1024 characters in length.
 	Description *string `pulumi:"description"`
 	// A map of arbitrary keys and values that, when changed, will trigger a redeployment.
 	Triggers map[string]string `pulumi:"triggers"`
@@ -98,7 +110,7 @@ type DeploymentState struct {
 	ApiId pulumi.StringPtrInput
 	// Whether the deployment was automatically released.
 	AutoDeployed pulumi.BoolPtrInput
-	// The description for the deployment resource.
+	// The description for the deployment resource. Must be less than or equal to 1024 characters in length.
 	Description pulumi.StringPtrInput
 	// A map of arbitrary keys and values that, when changed, will trigger a redeployment.
 	Triggers pulumi.StringMapInput
@@ -111,7 +123,7 @@ func (DeploymentState) ElementType() reflect.Type {
 type deploymentArgs struct {
 	// The API identifier.
 	ApiId string `pulumi:"apiId"`
-	// The description for the deployment resource.
+	// The description for the deployment resource. Must be less than or equal to 1024 characters in length.
 	Description *string `pulumi:"description"`
 	// A map of arbitrary keys and values that, when changed, will trigger a redeployment.
 	Triggers map[string]string `pulumi:"triggers"`
@@ -121,7 +133,7 @@ type deploymentArgs struct {
 type DeploymentArgs struct {
 	// The API identifier.
 	ApiId pulumi.StringInput
-	// The description for the deployment resource.
+	// The description for the deployment resource. Must be less than or equal to 1024 characters in length.
 	Description pulumi.StringPtrInput
 	// A map of arbitrary keys and values that, when changed, will trigger a redeployment.
 	Triggers pulumi.StringMapInput
@@ -129,4 +141,43 @@ type DeploymentArgs struct {
 
 func (DeploymentArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*deploymentArgs)(nil)).Elem()
+}
+
+type DeploymentInput interface {
+	pulumi.Input
+
+	ToDeploymentOutput() DeploymentOutput
+	ToDeploymentOutputWithContext(ctx context.Context) DeploymentOutput
+}
+
+func (Deployment) ElementType() reflect.Type {
+	return reflect.TypeOf((*Deployment)(nil)).Elem()
+}
+
+func (i Deployment) ToDeploymentOutput() DeploymentOutput {
+	return i.ToDeploymentOutputWithContext(context.Background())
+}
+
+func (i Deployment) ToDeploymentOutputWithContext(ctx context.Context) DeploymentOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(DeploymentOutput)
+}
+
+type DeploymentOutput struct {
+	*pulumi.OutputState
+}
+
+func (DeploymentOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*DeploymentOutput)(nil)).Elem()
+}
+
+func (o DeploymentOutput) ToDeploymentOutput() DeploymentOutput {
+	return o
+}
+
+func (o DeploymentOutput) ToDeploymentOutputWithContext(ctx context.Context) DeploymentOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(DeploymentOutput{})
 }

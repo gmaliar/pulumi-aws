@@ -469,7 +469,7 @@ type ProjectEnvironment struct {
 	ComputeType string `pulumi:"computeType"`
 	// A set of environment variables to make available to builds for this build project.
 	EnvironmentVariables []ProjectEnvironmentEnvironmentVariable `pulumi:"environmentVariables"`
-	// The Docker image to use for this build project. Valid values include [Docker images provided by CodeBuild](https://docs.aws.amazon.com/codebuild/latest/userguide/build-env-ref-available.html) (e.g `aws/codebuild/standard:2.0`), [Docker Hub images](https://hub.docker.com/) (e.g. `nginx:latest`), and full Docker repository URIs such as those for ECR (e.g. `137112412989.dkr.ecr.us-west-2.amazonaws.com/amazonlinux:latest`).
+	// The Docker image to use for this build project. Valid values include [Docker images provided by CodeBuild](https://docs.aws.amazon.com/codebuild/latest/userguide/build-env-ref-available.html) (e.g `aws/codebuild/standard:2.0`), [Docker Hub images](https://hub.docker.com/) (e.g. `pulumi/pulumi:latest`), and full Docker repository URIs such as those for ECR (e.g. `137112412989.dkr.ecr.us-west-2.amazonaws.com/amazonlinux:latest`).
 	Image string `pulumi:"image"`
 	// The type of credentials AWS CodeBuild uses to pull images in your build. Available values for this parameter are `CODEBUILD` or `SERVICE_ROLE`. When you use a cross-account or private registry image, you must use SERVICE_ROLE credentials. When you use an AWS CodeBuild curated image, you must use CODEBUILD credentials. Default to `CODEBUILD`
 	ImagePullCredentialsType *string `pulumi:"imagePullCredentialsType"`
@@ -477,7 +477,7 @@ type ProjectEnvironment struct {
 	PrivilegedMode *bool `pulumi:"privilegedMode"`
 	// Information about credentials for access to a private Docker registry. Registry Credential config blocks are documented below.
 	RegistryCredential *ProjectEnvironmentRegistryCredential `pulumi:"registryCredential"`
-	// The type of build environment to use for related builds. Available values are: `LINUX_CONTAINER`, `LINUX_GPU_CONTAINER`, `WINDOWS_CONTAINER` or `ARM_CONTAINER`.
+	// The type of build environment to use for related builds. Available values are: `LINUX_CONTAINER`, `LINUX_GPU_CONTAINER`, `WINDOWS_CONTAINER` (deprecated), `WINDOWS_SERVER_2019_CONTAINER` or `ARM_CONTAINER`. For additional information, see the [CodeBuild User Guide](https://docs.aws.amazon.com/codebuild/latest/userguide/build-env-ref-compute-types.html).
 	Type string `pulumi:"type"`
 }
 
@@ -499,7 +499,7 @@ type ProjectEnvironmentArgs struct {
 	ComputeType pulumi.StringInput `pulumi:"computeType"`
 	// A set of environment variables to make available to builds for this build project.
 	EnvironmentVariables ProjectEnvironmentEnvironmentVariableArrayInput `pulumi:"environmentVariables"`
-	// The Docker image to use for this build project. Valid values include [Docker images provided by CodeBuild](https://docs.aws.amazon.com/codebuild/latest/userguide/build-env-ref-available.html) (e.g `aws/codebuild/standard:2.0`), [Docker Hub images](https://hub.docker.com/) (e.g. `nginx:latest`), and full Docker repository URIs such as those for ECR (e.g. `137112412989.dkr.ecr.us-west-2.amazonaws.com/amazonlinux:latest`).
+	// The Docker image to use for this build project. Valid values include [Docker images provided by CodeBuild](https://docs.aws.amazon.com/codebuild/latest/userguide/build-env-ref-available.html) (e.g `aws/codebuild/standard:2.0`), [Docker Hub images](https://hub.docker.com/) (e.g. `pulumi/pulumi:latest`), and full Docker repository URIs such as those for ECR (e.g. `137112412989.dkr.ecr.us-west-2.amazonaws.com/amazonlinux:latest`).
 	Image pulumi.StringInput `pulumi:"image"`
 	// The type of credentials AWS CodeBuild uses to pull images in your build. Available values for this parameter are `CODEBUILD` or `SERVICE_ROLE`. When you use a cross-account or private registry image, you must use SERVICE_ROLE credentials. When you use an AWS CodeBuild curated image, you must use CODEBUILD credentials. Default to `CODEBUILD`
 	ImagePullCredentialsType pulumi.StringPtrInput `pulumi:"imagePullCredentialsType"`
@@ -507,7 +507,7 @@ type ProjectEnvironmentArgs struct {
 	PrivilegedMode pulumi.BoolPtrInput `pulumi:"privilegedMode"`
 	// Information about credentials for access to a private Docker registry. Registry Credential config blocks are documented below.
 	RegistryCredential ProjectEnvironmentRegistryCredentialPtrInput `pulumi:"registryCredential"`
-	// The type of build environment to use for related builds. Available values are: `LINUX_CONTAINER`, `LINUX_GPU_CONTAINER`, `WINDOWS_CONTAINER` or `ARM_CONTAINER`.
+	// The type of build environment to use for related builds. Available values are: `LINUX_CONTAINER`, `LINUX_GPU_CONTAINER`, `WINDOWS_CONTAINER` (deprecated), `WINDOWS_SERVER_2019_CONTAINER` or `ARM_CONTAINER`. For additional information, see the [CodeBuild User Guide](https://docs.aws.amazon.com/codebuild/latest/userguide/build-env-ref-compute-types.html).
 	Type pulumi.StringInput `pulumi:"type"`
 }
 
@@ -603,7 +603,7 @@ func (o ProjectEnvironmentOutput) EnvironmentVariables() ProjectEnvironmentEnvir
 	return o.ApplyT(func(v ProjectEnvironment) []ProjectEnvironmentEnvironmentVariable { return v.EnvironmentVariables }).(ProjectEnvironmentEnvironmentVariableArrayOutput)
 }
 
-// The Docker image to use for this build project. Valid values include [Docker images provided by CodeBuild](https://docs.aws.amazon.com/codebuild/latest/userguide/build-env-ref-available.html) (e.g `aws/codebuild/standard:2.0`), [Docker Hub images](https://hub.docker.com/) (e.g. `nginx:latest`), and full Docker repository URIs such as those for ECR (e.g. `137112412989.dkr.ecr.us-west-2.amazonaws.com/amazonlinux:latest`).
+// The Docker image to use for this build project. Valid values include [Docker images provided by CodeBuild](https://docs.aws.amazon.com/codebuild/latest/userguide/build-env-ref-available.html) (e.g `aws/codebuild/standard:2.0`), [Docker Hub images](https://hub.docker.com/) (e.g. `pulumi/pulumi:latest`), and full Docker repository URIs such as those for ECR (e.g. `137112412989.dkr.ecr.us-west-2.amazonaws.com/amazonlinux:latest`).
 func (o ProjectEnvironmentOutput) Image() pulumi.StringOutput {
 	return o.ApplyT(func(v ProjectEnvironment) string { return v.Image }).(pulumi.StringOutput)
 }
@@ -623,7 +623,7 @@ func (o ProjectEnvironmentOutput) RegistryCredential() ProjectEnvironmentRegistr
 	return o.ApplyT(func(v ProjectEnvironment) *ProjectEnvironmentRegistryCredential { return v.RegistryCredential }).(ProjectEnvironmentRegistryCredentialPtrOutput)
 }
 
-// The type of build environment to use for related builds. Available values are: `LINUX_CONTAINER`, `LINUX_GPU_CONTAINER`, `WINDOWS_CONTAINER` or `ARM_CONTAINER`.
+// The type of build environment to use for related builds. Available values are: `LINUX_CONTAINER`, `LINUX_GPU_CONTAINER`, `WINDOWS_CONTAINER` (deprecated), `WINDOWS_SERVER_2019_CONTAINER` or `ARM_CONTAINER`. For additional information, see the [CodeBuild User Guide](https://docs.aws.amazon.com/codebuild/latest/userguide/build-env-ref-compute-types.html).
 func (o ProjectEnvironmentOutput) Type() pulumi.StringOutput {
 	return o.ApplyT(func(v ProjectEnvironment) string { return v.Type }).(pulumi.StringOutput)
 }
@@ -676,7 +676,7 @@ func (o ProjectEnvironmentPtrOutput) EnvironmentVariables() ProjectEnvironmentEn
 	}).(ProjectEnvironmentEnvironmentVariableArrayOutput)
 }
 
-// The Docker image to use for this build project. Valid values include [Docker images provided by CodeBuild](https://docs.aws.amazon.com/codebuild/latest/userguide/build-env-ref-available.html) (e.g `aws/codebuild/standard:2.0`), [Docker Hub images](https://hub.docker.com/) (e.g. `nginx:latest`), and full Docker repository URIs such as those for ECR (e.g. `137112412989.dkr.ecr.us-west-2.amazonaws.com/amazonlinux:latest`).
+// The Docker image to use for this build project. Valid values include [Docker images provided by CodeBuild](https://docs.aws.amazon.com/codebuild/latest/userguide/build-env-ref-available.html) (e.g `aws/codebuild/standard:2.0`), [Docker Hub images](https://hub.docker.com/) (e.g. `pulumi/pulumi:latest`), and full Docker repository URIs such as those for ECR (e.g. `137112412989.dkr.ecr.us-west-2.amazonaws.com/amazonlinux:latest`).
 func (o ProjectEnvironmentPtrOutput) Image() pulumi.StringPtrOutput {
 	return o.ApplyT(func(v *ProjectEnvironment) *string {
 		if v == nil {
@@ -716,7 +716,7 @@ func (o ProjectEnvironmentPtrOutput) RegistryCredential() ProjectEnvironmentRegi
 	}).(ProjectEnvironmentRegistryCredentialPtrOutput)
 }
 
-// The type of build environment to use for related builds. Available values are: `LINUX_CONTAINER`, `LINUX_GPU_CONTAINER`, `WINDOWS_CONTAINER` or `ARM_CONTAINER`.
+// The type of build environment to use for related builds. Available values are: `LINUX_CONTAINER`, `LINUX_GPU_CONTAINER`, `WINDOWS_CONTAINER` (deprecated), `WINDOWS_SERVER_2019_CONTAINER` or `ARM_CONTAINER`. For additional information, see the [CodeBuild User Guide](https://docs.aws.amazon.com/codebuild/latest/userguide/build-env-ref-compute-types.html).
 func (o ProjectEnvironmentPtrOutput) Type() pulumi.StringPtrOutput {
 	return o.ApplyT(func(v *ProjectEnvironment) *string {
 		if v == nil {
@@ -729,7 +729,7 @@ func (o ProjectEnvironmentPtrOutput) Type() pulumi.StringPtrOutput {
 type ProjectEnvironmentEnvironmentVariable struct {
 	// The environment variable's name or key.
 	Name string `pulumi:"name"`
-	// The type of environment variable. Valid values: `PARAMETER_STORE`, `PLAINTEXT`.
+	// The type of environment variable. Valid values: `PARAMETER_STORE`, `PLAINTEXT`, and `SECRETS_MANAGER`.
 	Type *string `pulumi:"type"`
 	// The environment variable's value.
 	Value string `pulumi:"value"`
@@ -749,7 +749,7 @@ type ProjectEnvironmentEnvironmentVariableInput interface {
 type ProjectEnvironmentEnvironmentVariableArgs struct {
 	// The environment variable's name or key.
 	Name pulumi.StringInput `pulumi:"name"`
-	// The type of environment variable. Valid values: `PARAMETER_STORE`, `PLAINTEXT`.
+	// The type of environment variable. Valid values: `PARAMETER_STORE`, `PLAINTEXT`, and `SECRETS_MANAGER`.
 	Type pulumi.StringPtrInput `pulumi:"type"`
 	// The environment variable's value.
 	Value pulumi.StringInput `pulumi:"value"`
@@ -811,7 +811,7 @@ func (o ProjectEnvironmentEnvironmentVariableOutput) Name() pulumi.StringOutput 
 	return o.ApplyT(func(v ProjectEnvironmentEnvironmentVariable) string { return v.Name }).(pulumi.StringOutput)
 }
 
-// The type of environment variable. Valid values: `PARAMETER_STORE`, `PLAINTEXT`.
+// The type of environment variable. Valid values: `PARAMETER_STORE`, `PLAINTEXT`, and `SECRETS_MANAGER`.
 func (o ProjectEnvironmentEnvironmentVariableOutput) Type() pulumi.StringPtrOutput {
 	return o.ApplyT(func(v ProjectEnvironmentEnvironmentVariable) *string { return v.Type }).(pulumi.StringPtrOutput)
 }
@@ -1496,7 +1496,7 @@ type ProjectSecondaryArtifact struct {
 	Packaging *string `pulumi:"packaging"`
 	// If `type` is set to `S3`, this is the path to the output artifact
 	Path *string `pulumi:"path"`
-	// The build output artifact's type. Valid values for this parameter are: `CODEPIPELINE`, `NO_ARTIFACTS` or `S3`.
+	// The build output artifact's type. The only valid value is `S3`.
 	Type string `pulumi:"type"`
 }
 
@@ -1528,7 +1528,7 @@ type ProjectSecondaryArtifactArgs struct {
 	Packaging pulumi.StringPtrInput `pulumi:"packaging"`
 	// If `type` is set to `S3`, this is the path to the output artifact
 	Path pulumi.StringPtrInput `pulumi:"path"`
-	// The build output artifact's type. Valid values for this parameter are: `CODEPIPELINE`, `NO_ARTIFACTS` or `S3`.
+	// The build output artifact's type. The only valid value is `S3`.
 	Type pulumi.StringInput `pulumi:"type"`
 }
 
@@ -1623,7 +1623,7 @@ func (o ProjectSecondaryArtifactOutput) Path() pulumi.StringPtrOutput {
 	return o.ApplyT(func(v ProjectSecondaryArtifact) *string { return v.Path }).(pulumi.StringPtrOutput)
 }
 
-// The build output artifact's type. Valid values for this parameter are: `CODEPIPELINE`, `NO_ARTIFACTS` or `S3`.
+// The build output artifact's type. The only valid value is `S3`.
 func (o ProjectSecondaryArtifactOutput) Type() pulumi.StringOutput {
 	return o.ApplyT(func(v ProjectSecondaryArtifact) string { return v.Type }).(pulumi.StringOutput)
 }
@@ -2728,6 +2728,367 @@ func (o ProjectVpcConfigPtrOutput) VpcId() pulumi.StringPtrOutput {
 	}).(pulumi.StringPtrOutput)
 }
 
+type ReportGroupExportConfig struct {
+	// contains information about the S3 bucket where the run of a report is exported. see S3 Destination documented below.
+	S3Destination *ReportGroupExportConfigS3Destination `pulumi:"s3Destination"`
+	// The export configuration type. Valid values are `S3` and `NO_EXPORT`.
+	Type string `pulumi:"type"`
+}
+
+// ReportGroupExportConfigInput is an input type that accepts ReportGroupExportConfigArgs and ReportGroupExportConfigOutput values.
+// You can construct a concrete instance of `ReportGroupExportConfigInput` via:
+//
+//          ReportGroupExportConfigArgs{...}
+type ReportGroupExportConfigInput interface {
+	pulumi.Input
+
+	ToReportGroupExportConfigOutput() ReportGroupExportConfigOutput
+	ToReportGroupExportConfigOutputWithContext(context.Context) ReportGroupExportConfigOutput
+}
+
+type ReportGroupExportConfigArgs struct {
+	// contains information about the S3 bucket where the run of a report is exported. see S3 Destination documented below.
+	S3Destination ReportGroupExportConfigS3DestinationPtrInput `pulumi:"s3Destination"`
+	// The export configuration type. Valid values are `S3` and `NO_EXPORT`.
+	Type pulumi.StringInput `pulumi:"type"`
+}
+
+func (ReportGroupExportConfigArgs) ElementType() reflect.Type {
+	return reflect.TypeOf((*ReportGroupExportConfig)(nil)).Elem()
+}
+
+func (i ReportGroupExportConfigArgs) ToReportGroupExportConfigOutput() ReportGroupExportConfigOutput {
+	return i.ToReportGroupExportConfigOutputWithContext(context.Background())
+}
+
+func (i ReportGroupExportConfigArgs) ToReportGroupExportConfigOutputWithContext(ctx context.Context) ReportGroupExportConfigOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(ReportGroupExportConfigOutput)
+}
+
+func (i ReportGroupExportConfigArgs) ToReportGroupExportConfigPtrOutput() ReportGroupExportConfigPtrOutput {
+	return i.ToReportGroupExportConfigPtrOutputWithContext(context.Background())
+}
+
+func (i ReportGroupExportConfigArgs) ToReportGroupExportConfigPtrOutputWithContext(ctx context.Context) ReportGroupExportConfigPtrOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(ReportGroupExportConfigOutput).ToReportGroupExportConfigPtrOutputWithContext(ctx)
+}
+
+// ReportGroupExportConfigPtrInput is an input type that accepts ReportGroupExportConfigArgs, ReportGroupExportConfigPtr and ReportGroupExportConfigPtrOutput values.
+// You can construct a concrete instance of `ReportGroupExportConfigPtrInput` via:
+//
+//          ReportGroupExportConfigArgs{...}
+//
+//  or:
+//
+//          nil
+type ReportGroupExportConfigPtrInput interface {
+	pulumi.Input
+
+	ToReportGroupExportConfigPtrOutput() ReportGroupExportConfigPtrOutput
+	ToReportGroupExportConfigPtrOutputWithContext(context.Context) ReportGroupExportConfigPtrOutput
+}
+
+type reportGroupExportConfigPtrType ReportGroupExportConfigArgs
+
+func ReportGroupExportConfigPtr(v *ReportGroupExportConfigArgs) ReportGroupExportConfigPtrInput {
+	return (*reportGroupExportConfigPtrType)(v)
+}
+
+func (*reportGroupExportConfigPtrType) ElementType() reflect.Type {
+	return reflect.TypeOf((**ReportGroupExportConfig)(nil)).Elem()
+}
+
+func (i *reportGroupExportConfigPtrType) ToReportGroupExportConfigPtrOutput() ReportGroupExportConfigPtrOutput {
+	return i.ToReportGroupExportConfigPtrOutputWithContext(context.Background())
+}
+
+func (i *reportGroupExportConfigPtrType) ToReportGroupExportConfigPtrOutputWithContext(ctx context.Context) ReportGroupExportConfigPtrOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(ReportGroupExportConfigPtrOutput)
+}
+
+type ReportGroupExportConfigOutput struct{ *pulumi.OutputState }
+
+func (ReportGroupExportConfigOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*ReportGroupExportConfig)(nil)).Elem()
+}
+
+func (o ReportGroupExportConfigOutput) ToReportGroupExportConfigOutput() ReportGroupExportConfigOutput {
+	return o
+}
+
+func (o ReportGroupExportConfigOutput) ToReportGroupExportConfigOutputWithContext(ctx context.Context) ReportGroupExportConfigOutput {
+	return o
+}
+
+func (o ReportGroupExportConfigOutput) ToReportGroupExportConfigPtrOutput() ReportGroupExportConfigPtrOutput {
+	return o.ToReportGroupExportConfigPtrOutputWithContext(context.Background())
+}
+
+func (o ReportGroupExportConfigOutput) ToReportGroupExportConfigPtrOutputWithContext(ctx context.Context) ReportGroupExportConfigPtrOutput {
+	return o.ApplyT(func(v ReportGroupExportConfig) *ReportGroupExportConfig {
+		return &v
+	}).(ReportGroupExportConfigPtrOutput)
+}
+
+// contains information about the S3 bucket where the run of a report is exported. see S3 Destination documented below.
+func (o ReportGroupExportConfigOutput) S3Destination() ReportGroupExportConfigS3DestinationPtrOutput {
+	return o.ApplyT(func(v ReportGroupExportConfig) *ReportGroupExportConfigS3Destination { return v.S3Destination }).(ReportGroupExportConfigS3DestinationPtrOutput)
+}
+
+// The export configuration type. Valid values are `S3` and `NO_EXPORT`.
+func (o ReportGroupExportConfigOutput) Type() pulumi.StringOutput {
+	return o.ApplyT(func(v ReportGroupExportConfig) string { return v.Type }).(pulumi.StringOutput)
+}
+
+type ReportGroupExportConfigPtrOutput struct{ *pulumi.OutputState }
+
+func (ReportGroupExportConfigPtrOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((**ReportGroupExportConfig)(nil)).Elem()
+}
+
+func (o ReportGroupExportConfigPtrOutput) ToReportGroupExportConfigPtrOutput() ReportGroupExportConfigPtrOutput {
+	return o
+}
+
+func (o ReportGroupExportConfigPtrOutput) ToReportGroupExportConfigPtrOutputWithContext(ctx context.Context) ReportGroupExportConfigPtrOutput {
+	return o
+}
+
+func (o ReportGroupExportConfigPtrOutput) Elem() ReportGroupExportConfigOutput {
+	return o.ApplyT(func(v *ReportGroupExportConfig) ReportGroupExportConfig { return *v }).(ReportGroupExportConfigOutput)
+}
+
+// contains information about the S3 bucket where the run of a report is exported. see S3 Destination documented below.
+func (o ReportGroupExportConfigPtrOutput) S3Destination() ReportGroupExportConfigS3DestinationPtrOutput {
+	return o.ApplyT(func(v *ReportGroupExportConfig) *ReportGroupExportConfigS3Destination {
+		if v == nil {
+			return nil
+		}
+		return v.S3Destination
+	}).(ReportGroupExportConfigS3DestinationPtrOutput)
+}
+
+// The export configuration type. Valid values are `S3` and `NO_EXPORT`.
+func (o ReportGroupExportConfigPtrOutput) Type() pulumi.StringPtrOutput {
+	return o.ApplyT(func(v *ReportGroupExportConfig) *string {
+		if v == nil {
+			return nil
+		}
+		return &v.Type
+	}).(pulumi.StringPtrOutput)
+}
+
+type ReportGroupExportConfigS3Destination struct {
+	// The name of the S3 bucket where the raw data of a report are exported.
+	Bucket string `pulumi:"bucket"`
+	// A boolean value that specifies if the results of a report are encrypted.
+	// **Note: the API does not currently allow setting encryption as disabled**
+	EncryptionDisabled *bool `pulumi:"encryptionDisabled"`
+	// The encryption key for the report's encrypted raw data. The KMS key ARN.
+	EncryptionKey string `pulumi:"encryptionKey"`
+	// The type of build output artifact to create. Valid values are: `NONE` (default) and `ZIP`.
+	Packaging *string `pulumi:"packaging"`
+	// The path to the exported report's raw data results.
+	Path *string `pulumi:"path"`
+}
+
+// ReportGroupExportConfigS3DestinationInput is an input type that accepts ReportGroupExportConfigS3DestinationArgs and ReportGroupExportConfigS3DestinationOutput values.
+// You can construct a concrete instance of `ReportGroupExportConfigS3DestinationInput` via:
+//
+//          ReportGroupExportConfigS3DestinationArgs{...}
+type ReportGroupExportConfigS3DestinationInput interface {
+	pulumi.Input
+
+	ToReportGroupExportConfigS3DestinationOutput() ReportGroupExportConfigS3DestinationOutput
+	ToReportGroupExportConfigS3DestinationOutputWithContext(context.Context) ReportGroupExportConfigS3DestinationOutput
+}
+
+type ReportGroupExportConfigS3DestinationArgs struct {
+	// The name of the S3 bucket where the raw data of a report are exported.
+	Bucket pulumi.StringInput `pulumi:"bucket"`
+	// A boolean value that specifies if the results of a report are encrypted.
+	// **Note: the API does not currently allow setting encryption as disabled**
+	EncryptionDisabled pulumi.BoolPtrInput `pulumi:"encryptionDisabled"`
+	// The encryption key for the report's encrypted raw data. The KMS key ARN.
+	EncryptionKey pulumi.StringInput `pulumi:"encryptionKey"`
+	// The type of build output artifact to create. Valid values are: `NONE` (default) and `ZIP`.
+	Packaging pulumi.StringPtrInput `pulumi:"packaging"`
+	// The path to the exported report's raw data results.
+	Path pulumi.StringPtrInput `pulumi:"path"`
+}
+
+func (ReportGroupExportConfigS3DestinationArgs) ElementType() reflect.Type {
+	return reflect.TypeOf((*ReportGroupExportConfigS3Destination)(nil)).Elem()
+}
+
+func (i ReportGroupExportConfigS3DestinationArgs) ToReportGroupExportConfigS3DestinationOutput() ReportGroupExportConfigS3DestinationOutput {
+	return i.ToReportGroupExportConfigS3DestinationOutputWithContext(context.Background())
+}
+
+func (i ReportGroupExportConfigS3DestinationArgs) ToReportGroupExportConfigS3DestinationOutputWithContext(ctx context.Context) ReportGroupExportConfigS3DestinationOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(ReportGroupExportConfigS3DestinationOutput)
+}
+
+func (i ReportGroupExportConfigS3DestinationArgs) ToReportGroupExportConfigS3DestinationPtrOutput() ReportGroupExportConfigS3DestinationPtrOutput {
+	return i.ToReportGroupExportConfigS3DestinationPtrOutputWithContext(context.Background())
+}
+
+func (i ReportGroupExportConfigS3DestinationArgs) ToReportGroupExportConfigS3DestinationPtrOutputWithContext(ctx context.Context) ReportGroupExportConfigS3DestinationPtrOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(ReportGroupExportConfigS3DestinationOutput).ToReportGroupExportConfigS3DestinationPtrOutputWithContext(ctx)
+}
+
+// ReportGroupExportConfigS3DestinationPtrInput is an input type that accepts ReportGroupExportConfigS3DestinationArgs, ReportGroupExportConfigS3DestinationPtr and ReportGroupExportConfigS3DestinationPtrOutput values.
+// You can construct a concrete instance of `ReportGroupExportConfigS3DestinationPtrInput` via:
+//
+//          ReportGroupExportConfigS3DestinationArgs{...}
+//
+//  or:
+//
+//          nil
+type ReportGroupExportConfigS3DestinationPtrInput interface {
+	pulumi.Input
+
+	ToReportGroupExportConfigS3DestinationPtrOutput() ReportGroupExportConfigS3DestinationPtrOutput
+	ToReportGroupExportConfigS3DestinationPtrOutputWithContext(context.Context) ReportGroupExportConfigS3DestinationPtrOutput
+}
+
+type reportGroupExportConfigS3DestinationPtrType ReportGroupExportConfigS3DestinationArgs
+
+func ReportGroupExportConfigS3DestinationPtr(v *ReportGroupExportConfigS3DestinationArgs) ReportGroupExportConfigS3DestinationPtrInput {
+	return (*reportGroupExportConfigS3DestinationPtrType)(v)
+}
+
+func (*reportGroupExportConfigS3DestinationPtrType) ElementType() reflect.Type {
+	return reflect.TypeOf((**ReportGroupExportConfigS3Destination)(nil)).Elem()
+}
+
+func (i *reportGroupExportConfigS3DestinationPtrType) ToReportGroupExportConfigS3DestinationPtrOutput() ReportGroupExportConfigS3DestinationPtrOutput {
+	return i.ToReportGroupExportConfigS3DestinationPtrOutputWithContext(context.Background())
+}
+
+func (i *reportGroupExportConfigS3DestinationPtrType) ToReportGroupExportConfigS3DestinationPtrOutputWithContext(ctx context.Context) ReportGroupExportConfigS3DestinationPtrOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(ReportGroupExportConfigS3DestinationPtrOutput)
+}
+
+type ReportGroupExportConfigS3DestinationOutput struct{ *pulumi.OutputState }
+
+func (ReportGroupExportConfigS3DestinationOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*ReportGroupExportConfigS3Destination)(nil)).Elem()
+}
+
+func (o ReportGroupExportConfigS3DestinationOutput) ToReportGroupExportConfigS3DestinationOutput() ReportGroupExportConfigS3DestinationOutput {
+	return o
+}
+
+func (o ReportGroupExportConfigS3DestinationOutput) ToReportGroupExportConfigS3DestinationOutputWithContext(ctx context.Context) ReportGroupExportConfigS3DestinationOutput {
+	return o
+}
+
+func (o ReportGroupExportConfigS3DestinationOutput) ToReportGroupExportConfigS3DestinationPtrOutput() ReportGroupExportConfigS3DestinationPtrOutput {
+	return o.ToReportGroupExportConfigS3DestinationPtrOutputWithContext(context.Background())
+}
+
+func (o ReportGroupExportConfigS3DestinationOutput) ToReportGroupExportConfigS3DestinationPtrOutputWithContext(ctx context.Context) ReportGroupExportConfigS3DestinationPtrOutput {
+	return o.ApplyT(func(v ReportGroupExportConfigS3Destination) *ReportGroupExportConfigS3Destination {
+		return &v
+	}).(ReportGroupExportConfigS3DestinationPtrOutput)
+}
+
+// The name of the S3 bucket where the raw data of a report are exported.
+func (o ReportGroupExportConfigS3DestinationOutput) Bucket() pulumi.StringOutput {
+	return o.ApplyT(func(v ReportGroupExportConfigS3Destination) string { return v.Bucket }).(pulumi.StringOutput)
+}
+
+// A boolean value that specifies if the results of a report are encrypted.
+// **Note: the API does not currently allow setting encryption as disabled**
+func (o ReportGroupExportConfigS3DestinationOutput) EncryptionDisabled() pulumi.BoolPtrOutput {
+	return o.ApplyT(func(v ReportGroupExportConfigS3Destination) *bool { return v.EncryptionDisabled }).(pulumi.BoolPtrOutput)
+}
+
+// The encryption key for the report's encrypted raw data. The KMS key ARN.
+func (o ReportGroupExportConfigS3DestinationOutput) EncryptionKey() pulumi.StringOutput {
+	return o.ApplyT(func(v ReportGroupExportConfigS3Destination) string { return v.EncryptionKey }).(pulumi.StringOutput)
+}
+
+// The type of build output artifact to create. Valid values are: `NONE` (default) and `ZIP`.
+func (o ReportGroupExportConfigS3DestinationOutput) Packaging() pulumi.StringPtrOutput {
+	return o.ApplyT(func(v ReportGroupExportConfigS3Destination) *string { return v.Packaging }).(pulumi.StringPtrOutput)
+}
+
+// The path to the exported report's raw data results.
+func (o ReportGroupExportConfigS3DestinationOutput) Path() pulumi.StringPtrOutput {
+	return o.ApplyT(func(v ReportGroupExportConfigS3Destination) *string { return v.Path }).(pulumi.StringPtrOutput)
+}
+
+type ReportGroupExportConfigS3DestinationPtrOutput struct{ *pulumi.OutputState }
+
+func (ReportGroupExportConfigS3DestinationPtrOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((**ReportGroupExportConfigS3Destination)(nil)).Elem()
+}
+
+func (o ReportGroupExportConfigS3DestinationPtrOutput) ToReportGroupExportConfigS3DestinationPtrOutput() ReportGroupExportConfigS3DestinationPtrOutput {
+	return o
+}
+
+func (o ReportGroupExportConfigS3DestinationPtrOutput) ToReportGroupExportConfigS3DestinationPtrOutputWithContext(ctx context.Context) ReportGroupExportConfigS3DestinationPtrOutput {
+	return o
+}
+
+func (o ReportGroupExportConfigS3DestinationPtrOutput) Elem() ReportGroupExportConfigS3DestinationOutput {
+	return o.ApplyT(func(v *ReportGroupExportConfigS3Destination) ReportGroupExportConfigS3Destination { return *v }).(ReportGroupExportConfigS3DestinationOutput)
+}
+
+// The name of the S3 bucket where the raw data of a report are exported.
+func (o ReportGroupExportConfigS3DestinationPtrOutput) Bucket() pulumi.StringPtrOutput {
+	return o.ApplyT(func(v *ReportGroupExportConfigS3Destination) *string {
+		if v == nil {
+			return nil
+		}
+		return &v.Bucket
+	}).(pulumi.StringPtrOutput)
+}
+
+// A boolean value that specifies if the results of a report are encrypted.
+// **Note: the API does not currently allow setting encryption as disabled**
+func (o ReportGroupExportConfigS3DestinationPtrOutput) EncryptionDisabled() pulumi.BoolPtrOutput {
+	return o.ApplyT(func(v *ReportGroupExportConfigS3Destination) *bool {
+		if v == nil {
+			return nil
+		}
+		return v.EncryptionDisabled
+	}).(pulumi.BoolPtrOutput)
+}
+
+// The encryption key for the report's encrypted raw data. The KMS key ARN.
+func (o ReportGroupExportConfigS3DestinationPtrOutput) EncryptionKey() pulumi.StringPtrOutput {
+	return o.ApplyT(func(v *ReportGroupExportConfigS3Destination) *string {
+		if v == nil {
+			return nil
+		}
+		return &v.EncryptionKey
+	}).(pulumi.StringPtrOutput)
+}
+
+// The type of build output artifact to create. Valid values are: `NONE` (default) and `ZIP`.
+func (o ReportGroupExportConfigS3DestinationPtrOutput) Packaging() pulumi.StringPtrOutput {
+	return o.ApplyT(func(v *ReportGroupExportConfigS3Destination) *string {
+		if v == nil {
+			return nil
+		}
+		return v.Packaging
+	}).(pulumi.StringPtrOutput)
+}
+
+// The path to the exported report's raw data results.
+func (o ReportGroupExportConfigS3DestinationPtrOutput) Path() pulumi.StringPtrOutput {
+	return o.ApplyT(func(v *ReportGroupExportConfigS3Destination) *string {
+		if v == nil {
+			return nil
+		}
+		return v.Path
+	}).(pulumi.StringPtrOutput)
+}
+
 type WebhookFilterGroup struct {
 	// A webhook filter for the group. Filter blocks are documented below.
 	Filters []WebhookFilterGroupFilter `pulumi:"filters"`
@@ -2830,7 +3191,7 @@ type WebhookFilterGroupFilter struct {
 	ExcludeMatchedPattern *bool `pulumi:"excludeMatchedPattern"`
 	// For a filter that uses `EVENT` type, a comma-separated string that specifies one event: `PUSH`, `PULL_REQUEST_CREATED`, `PULL_REQUEST_UPDATED`, `PULL_REQUEST_REOPENED`. `PULL_REQUEST_MERGED` works with GitHub & GitHub Enterprise only. For a filter that uses any of the other filter types, a regular expression.
 	Pattern string `pulumi:"pattern"`
-	// The webhook filter group's type. Valid values for this parameter are: `EVENT`, `BASE_REF`, `HEAD_REF`, `ACTOR_ACCOUNT_ID`, `FILE_PATH`. At least one filter group must specify `EVENT` as its type.
+	// The webhook filter group's type. Valid values for this parameter are: `EVENT`, `BASE_REF`, `HEAD_REF`, `ACTOR_ACCOUNT_ID`, `FILE_PATH`, `COMMIT_MESSAGE`. At least one filter group must specify `EVENT` as its type.
 	Type string `pulumi:"type"`
 }
 
@@ -2850,7 +3211,7 @@ type WebhookFilterGroupFilterArgs struct {
 	ExcludeMatchedPattern pulumi.BoolPtrInput `pulumi:"excludeMatchedPattern"`
 	// For a filter that uses `EVENT` type, a comma-separated string that specifies one event: `PUSH`, `PULL_REQUEST_CREATED`, `PULL_REQUEST_UPDATED`, `PULL_REQUEST_REOPENED`. `PULL_REQUEST_MERGED` works with GitHub & GitHub Enterprise only. For a filter that uses any of the other filter types, a regular expression.
 	Pattern pulumi.StringInput `pulumi:"pattern"`
-	// The webhook filter group's type. Valid values for this parameter are: `EVENT`, `BASE_REF`, `HEAD_REF`, `ACTOR_ACCOUNT_ID`, `FILE_PATH`. At least one filter group must specify `EVENT` as its type.
+	// The webhook filter group's type. Valid values for this parameter are: `EVENT`, `BASE_REF`, `HEAD_REF`, `ACTOR_ACCOUNT_ID`, `FILE_PATH`, `COMMIT_MESSAGE`. At least one filter group must specify `EVENT` as its type.
 	Type pulumi.StringInput `pulumi:"type"`
 }
 
@@ -2915,7 +3276,7 @@ func (o WebhookFilterGroupFilterOutput) Pattern() pulumi.StringOutput {
 	return o.ApplyT(func(v WebhookFilterGroupFilter) string { return v.Pattern }).(pulumi.StringOutput)
 }
 
-// The webhook filter group's type. Valid values for this parameter are: `EVENT`, `BASE_REF`, `HEAD_REF`, `ACTOR_ACCOUNT_ID`, `FILE_PATH`. At least one filter group must specify `EVENT` as its type.
+// The webhook filter group's type. Valid values for this parameter are: `EVENT`, `BASE_REF`, `HEAD_REF`, `ACTOR_ACCOUNT_ID`, `FILE_PATH`, `COMMIT_MESSAGE`. At least one filter group must specify `EVENT` as its type.
 func (o WebhookFilterGroupFilterOutput) Type() pulumi.StringOutput {
 	return o.ApplyT(func(v WebhookFilterGroupFilter) string { return v.Type }).(pulumi.StringOutput)
 }
@@ -2973,6 +3334,10 @@ func init() {
 	pulumi.RegisterOutputType(ProjectSourceGitSubmodulesConfigPtrOutput{})
 	pulumi.RegisterOutputType(ProjectVpcConfigOutput{})
 	pulumi.RegisterOutputType(ProjectVpcConfigPtrOutput{})
+	pulumi.RegisterOutputType(ReportGroupExportConfigOutput{})
+	pulumi.RegisterOutputType(ReportGroupExportConfigPtrOutput{})
+	pulumi.RegisterOutputType(ReportGroupExportConfigS3DestinationOutput{})
+	pulumi.RegisterOutputType(ReportGroupExportConfigS3DestinationPtrOutput{})
 	pulumi.RegisterOutputType(WebhookFilterGroupOutput{})
 	pulumi.RegisterOutputType(WebhookFilterGroupArrayOutput{})
 	pulumi.RegisterOutputType(WebhookFilterGroupFilterOutput{})

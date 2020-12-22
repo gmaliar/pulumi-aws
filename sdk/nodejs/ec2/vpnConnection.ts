@@ -2,8 +2,7 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 /**
@@ -21,13 +20,13 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const exampleTransitGateway = new aws.ec2transitgateway.TransitGateway("example", {});
- * const exampleCustomerGateway = new aws.ec2.CustomerGateway("example", {
- *     bgpAsn: "65000",
+ * const exampleTransitGateway = new aws.ec2transitgateway.TransitGateway("exampleTransitGateway", {});
+ * const exampleCustomerGateway = new aws.ec2.CustomerGateway("exampleCustomerGateway", {
+ *     bgpAsn: 65000,
  *     ipAddress: "172.0.0.1",
  *     type: "ipsec.1",
  * });
- * const exampleVpnConnection = new aws.ec2.VpnConnection("example", {
+ * const exampleVpnConnection = new aws.ec2.VpnConnection("exampleVpnConnection", {
  *     customerGatewayId: exampleCustomerGateway.id,
  *     transitGatewayId: exampleTransitGateway.id,
  *     type: exampleCustomerGateway.type,
@@ -39,23 +38,27 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const vpc = new aws.ec2.Vpc("vpc", {
- *     cidrBlock: "10.0.0.0/16",
- * });
- * const vpnGateway = new aws.ec2.VpnGateway("vpn_gateway", {
- *     vpcId: vpc.id,
- * });
- * const customerGateway = new aws.ec2.CustomerGateway("customer_gateway", {
- *     bgpAsn: "65000",
+ * const vpc = new aws.ec2.Vpc("vpc", {cidrBlock: "10.0.0.0/16"});
+ * const vpnGateway = new aws.ec2.VpnGateway("vpnGateway", {vpcId: vpc.id});
+ * const customerGateway = new aws.ec2.CustomerGateway("customerGateway", {
+ *     bgpAsn: 65000,
  *     ipAddress: "172.0.0.1",
  *     type: "ipsec.1",
  * });
  * const main = new aws.ec2.VpnConnection("main", {
- *     customerGatewayId: customerGateway.id,
- *     staticRoutesOnly: true,
- *     type: "ipsec.1",
  *     vpnGatewayId: vpnGateway.id,
+ *     customerGatewayId: customerGateway.id,
+ *     type: "ipsec.1",
+ *     staticRoutesOnly: true,
  * });
+ * ```
+ *
+ * ## Import
+ *
+ * VPN Connections can be imported using the `vpn connection id`, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:ec2/vpnConnection:VpnConnection testvpnconnection vpn-40f41529
  * ```
  */
 export class VpnConnection extends pulumi.CustomResource {
@@ -108,7 +111,7 @@ export class VpnConnection extends pulumi.CustomResource {
      */
     public readonly tags!: pulumi.Output<{[key: string]: string} | undefined>;
     /**
-     * When associated with an EC2 Transit Gateway (`transitGatewayId` argument), the attachment ID.
+     * When associated with an EC2 Transit Gateway (`transitGatewayId` argument), the attachment ID. See also the [`aws.ec2.Tag` resource](https://www.terraform.io/docs/providers/aws/r/ec2_tag.html) for tagging the EC2 Transit Gateway VPN Attachment.
      */
     public /*out*/ readonly transitGatewayAttachmentId!: pulumi.Output<string>;
     /**
@@ -220,10 +223,10 @@ export class VpnConnection extends pulumi.CustomResource {
             inputs["vpnGatewayId"] = state ? state.vpnGatewayId : undefined;
         } else {
             const args = argsOrState as VpnConnectionArgs | undefined;
-            if (!args || args.customerGatewayId === undefined) {
+            if ((!args || args.customerGatewayId === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'customerGatewayId'");
             }
-            if (!args || args.type === undefined) {
+            if ((!args || args.type === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'type'");
             }
             inputs["customerGatewayId"] = args ? args.customerGatewayId : undefined;
@@ -289,7 +292,7 @@ export interface VpnConnectionState {
      */
     readonly tags?: pulumi.Input<{[key: string]: pulumi.Input<string>}>;
     /**
-     * When associated with an EC2 Transit Gateway (`transitGatewayId` argument), the attachment ID.
+     * When associated with an EC2 Transit Gateway (`transitGatewayId` argument), the attachment ID. See also the [`aws.ec2.Tag` resource](https://www.terraform.io/docs/providers/aws/r/ec2_tag.html) for tagging the EC2 Transit Gateway VPN Attachment.
      */
     readonly transitGatewayAttachmentId?: pulumi.Input<string>;
     /**

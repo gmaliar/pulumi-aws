@@ -5,28 +5,23 @@
 import warnings
 import pulumi
 import pulumi.runtime
-from typing import Union
-from .. import utilities, tables
+from typing import Any, Mapping, Optional, Sequence, Union
+from .. import _utilities, _tables
+
+__all__ = ['AdmChannel']
 
 
 class AdmChannel(pulumi.CustomResource):
-    application_id: pulumi.Output[str]
-    """
-    The application ID.
-    """
-    client_id: pulumi.Output[str]
-    """
-    Client ID (part of OAuth Credentials) obtained via Amazon Developer Account.
-    """
-    client_secret: pulumi.Output[str]
-    """
-    Client Secret (part of OAuth Credentials) obtained via Amazon Developer Account.
-    """
-    enabled: pulumi.Output[bool]
-    """
-    Specifies whether to enable the channel. Defaults to `true`.
-    """
-    def __init__(__self__, resource_name, opts=None, application_id=None, client_id=None, client_secret=None, enabled=None, __props__=None, __name__=None, __opts__=None):
+    def __init__(__self__,
+                 resource_name: str,
+                 opts: Optional[pulumi.ResourceOptions] = None,
+                 application_id: Optional[pulumi.Input[str]] = None,
+                 client_id: Optional[pulumi.Input[str]] = None,
+                 client_secret: Optional[pulumi.Input[str]] = None,
+                 enabled: Optional[pulumi.Input[bool]] = None,
+                 __props__=None,
+                 __name__=None,
+                 __opts__=None):
         """
         Provides a Pinpoint ADM (Amazon Device Messaging) Channel resource.
 
@@ -44,6 +39,14 @@ class AdmChannel(pulumi.CustomResource):
             client_id="",
             client_secret="",
             enabled=True)
+        ```
+
+        ## Import
+
+        Pinpoint ADM Channel can be imported using the `application-id`, e.g.
+
+        ```sh
+         $ pulumi import aws:pinpoint/admChannel:AdmChannel channel application-id
         ```
 
         :param str resource_name: The name of the resource.
@@ -64,19 +67,19 @@ class AdmChannel(pulumi.CustomResource):
         if not isinstance(opts, pulumi.ResourceOptions):
             raise TypeError('Expected resource options to be a ResourceOptions instance')
         if opts.version is None:
-            opts.version = utilities.get_version()
+            opts.version = _utilities.get_version()
         if opts.id is None:
             if __props__ is not None:
                 raise TypeError('__props__ is only valid when passed in combination with a valid opts.id to get an existing resource')
             __props__ = dict()
 
-            if application_id is None:
+            if application_id is None and not opts.urn:
                 raise TypeError("Missing required property 'application_id'")
             __props__['application_id'] = application_id
-            if client_id is None:
+            if client_id is None and not opts.urn:
                 raise TypeError("Missing required property 'client_id'")
             __props__['client_id'] = client_id
-            if client_secret is None:
+            if client_secret is None and not opts.urn:
                 raise TypeError("Missing required property 'client_secret'")
             __props__['client_secret'] = client_secret
             __props__['enabled'] = enabled
@@ -87,13 +90,19 @@ class AdmChannel(pulumi.CustomResource):
             opts)
 
     @staticmethod
-    def get(resource_name, id, opts=None, application_id=None, client_id=None, client_secret=None, enabled=None):
+    def get(resource_name: str,
+            id: pulumi.Input[str],
+            opts: Optional[pulumi.ResourceOptions] = None,
+            application_id: Optional[pulumi.Input[str]] = None,
+            client_id: Optional[pulumi.Input[str]] = None,
+            client_secret: Optional[pulumi.Input[str]] = None,
+            enabled: Optional[pulumi.Input[bool]] = None) -> 'AdmChannel':
         """
         Get an existing AdmChannel resource's state with the given name, id, and optional extra
         properties used to qualify the lookup.
 
         :param str resource_name: The unique name of the resulting resource.
-        :param str id: The unique provider ID of the resource to lookup.
+        :param pulumi.Input[str] id: The unique provider ID of the resource to lookup.
         :param pulumi.ResourceOptions opts: Options for the resource.
         :param pulumi.Input[str] application_id: The application ID.
         :param pulumi.Input[str] client_id: Client ID (part of OAuth Credentials) obtained via Amazon Developer Account.
@@ -110,8 +119,41 @@ class AdmChannel(pulumi.CustomResource):
         __props__["enabled"] = enabled
         return AdmChannel(resource_name, opts=opts, __props__=__props__)
 
+    @property
+    @pulumi.getter(name="applicationId")
+    def application_id(self) -> pulumi.Output[str]:
+        """
+        The application ID.
+        """
+        return pulumi.get(self, "application_id")
+
+    @property
+    @pulumi.getter(name="clientId")
+    def client_id(self) -> pulumi.Output[str]:
+        """
+        Client ID (part of OAuth Credentials) obtained via Amazon Developer Account.
+        """
+        return pulumi.get(self, "client_id")
+
+    @property
+    @pulumi.getter(name="clientSecret")
+    def client_secret(self) -> pulumi.Output[str]:
+        """
+        Client Secret (part of OAuth Credentials) obtained via Amazon Developer Account.
+        """
+        return pulumi.get(self, "client_secret")
+
+    @property
+    @pulumi.getter
+    def enabled(self) -> pulumi.Output[Optional[bool]]:
+        """
+        Specifies whether to enable the channel. Defaults to `true`.
+        """
+        return pulumi.get(self, "enabled")
+
     def translate_output_property(self, prop):
-        return tables._CAMEL_TO_SNAKE_CASE_TABLE.get(prop) or prop
+        return _tables.CAMEL_TO_SNAKE_CASE_TABLE.get(prop) or prop
 
     def translate_input_property(self, prop):
-        return tables._SNAKE_TO_CAMEL_CASE_TABLE.get(prop) or prop
+        return _tables.SNAKE_TO_CAMEL_CASE_TABLE.get(prop) or prop
+

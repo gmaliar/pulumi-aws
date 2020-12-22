@@ -21,12 +21,20 @@ import {Group} from "./index";
  * const group = new aws.iam.Group("group", {});
  * const policy = new aws.iam.Policy("policy", {
  *     description: "A test policy",
- *     policy: "", // insert policy here
+ *     policy: "{ ... policy JSON ... }",
  * });
  * const test_attach = new aws.iam.GroupPolicyAttachment("test-attach", {
  *     group: group.name,
  *     policyArn: policy.arn,
  * });
+ * ```
+ *
+ * ## Import
+ *
+ * IAM group policy attachments can be imported using the group name and policy arn separated by `/`.
+ *
+ * ```sh
+ *  $ pulumi import aws:iam/groupPolicyAttachment:GroupPolicyAttachment test-attach test-group/arn:aws:iam::xxxxxxxxxxxx:policy/test-policy
  * ```
  */
 export class GroupPolicyAttachment extends pulumi.CustomResource {
@@ -82,10 +90,10 @@ export class GroupPolicyAttachment extends pulumi.CustomResource {
             inputs["policyArn"] = state ? state.policyArn : undefined;
         } else {
             const args = argsOrState as GroupPolicyAttachmentArgs | undefined;
-            if (!args || args.group === undefined) {
+            if ((!args || args.group === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'group'");
             }
-            if (!args || args.policyArn === undefined) {
+            if ((!args || args.policyArn === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'policyArn'");
             }
             inputs["group"] = args ? args.group : undefined;

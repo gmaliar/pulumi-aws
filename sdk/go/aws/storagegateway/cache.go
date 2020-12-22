@@ -4,6 +4,7 @@
 package storagegateway
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -20,15 +21,15 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/storagegateway"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/storagegateway"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
 // func main() {
 // 	pulumi.Run(func(ctx *pulumi.Context) error {
 // 		_, err := storagegateway.NewCache(ctx, "example", &storagegateway.CacheArgs{
-// 			DiskId:     pulumi.String(data.Aws_storagegateway_local_disk.Example.Id),
-// 			GatewayArn: pulumi.String(aws_storagegateway_gateway.Example.Arn),
+// 			DiskId:     pulumi.Any(data.Aws_storagegateway_local_disk.Example.Id),
+// 			GatewayArn: pulumi.Any(aws_storagegateway_gateway.Example.Arn),
 // 		})
 // 		if err != nil {
 // 			return err
@@ -36,6 +37,14 @@ import (
 // 		return nil
 // 	})
 // }
+// ```
+//
+// ## Import
+//
+// `aws_storagegateway_cache` can be imported by using the gateway Amazon Resource Name (ARN) and local disk identifier separated with a colon (`:`), e.g.
+//
+// ```sh
+//  $ pulumi import aws:storagegateway/cache:Cache example arn:aws:storagegateway:us-east-1:123456789012:gateway/sgw-12345678:pci-0000:03:00.0-scsi-0:0:0:0
 // ```
 type Cache struct {
 	pulumi.CustomResourceState
@@ -49,14 +58,15 @@ type Cache struct {
 // NewCache registers a new resource with the given unique name, arguments, and options.
 func NewCache(ctx *pulumi.Context,
 	name string, args *CacheArgs, opts ...pulumi.ResourceOption) (*Cache, error) {
-	if args == nil || args.DiskId == nil {
-		return nil, errors.New("missing required argument 'DiskId'")
-	}
-	if args == nil || args.GatewayArn == nil {
-		return nil, errors.New("missing required argument 'GatewayArn'")
-	}
 	if args == nil {
-		args = &CacheArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.DiskId == nil {
+		return nil, errors.New("invalid value for required argument 'DiskId'")
+	}
+	if args.GatewayArn == nil {
+		return nil, errors.New("invalid value for required argument 'GatewayArn'")
 	}
 	var resource Cache
 	err := ctx.RegisterResource("aws:storagegateway/cache:Cache", name, args, &resource, opts...)
@@ -114,4 +124,43 @@ type CacheArgs struct {
 
 func (CacheArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*cacheArgs)(nil)).Elem()
+}
+
+type CacheInput interface {
+	pulumi.Input
+
+	ToCacheOutput() CacheOutput
+	ToCacheOutputWithContext(ctx context.Context) CacheOutput
+}
+
+func (Cache) ElementType() reflect.Type {
+	return reflect.TypeOf((*Cache)(nil)).Elem()
+}
+
+func (i Cache) ToCacheOutput() CacheOutput {
+	return i.ToCacheOutputWithContext(context.Background())
+}
+
+func (i Cache) ToCacheOutputWithContext(ctx context.Context) CacheOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(CacheOutput)
+}
+
+type CacheOutput struct {
+	*pulumi.OutputState
+}
+
+func (CacheOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*CacheOutput)(nil)).Elem()
+}
+
+func (o CacheOutput) ToCacheOutput() CacheOutput {
+	return o
+}
+
+func (o CacheOutput) ToCacheOutputWithContext(ctx context.Context) CacheOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(CacheOutput{})
 }

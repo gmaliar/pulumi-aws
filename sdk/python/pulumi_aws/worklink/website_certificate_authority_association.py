@@ -5,28 +5,22 @@
 import warnings
 import pulumi
 import pulumi.runtime
-from typing import Union
-from .. import utilities, tables
+from typing import Any, Mapping, Optional, Sequence, Union
+from .. import _utilities, _tables
+
+__all__ = ['WebsiteCertificateAuthorityAssociation']
 
 
 class WebsiteCertificateAuthorityAssociation(pulumi.CustomResource):
-    certificate: pulumi.Output[str]
-    """
-    The root certificate of the Certificate Authority.
-    """
-    display_name: pulumi.Output[str]
-    """
-    The certificate name to display.
-    """
-    fleet_arn: pulumi.Output[str]
-    """
-    The ARN of the fleet.
-    """
-    website_ca_id: pulumi.Output[str]
-    """
-    A unique identifier for the Certificate Authority.
-    """
-    def __init__(__self__, resource_name, opts=None, certificate=None, display_name=None, fleet_arn=None, __props__=None, __name__=None, __opts__=None):
+    def __init__(__self__,
+                 resource_name: str,
+                 opts: Optional[pulumi.ResourceOptions] = None,
+                 certificate: Optional[pulumi.Input[str]] = None,
+                 display_name: Optional[pulumi.Input[str]] = None,
+                 fleet_arn: Optional[pulumi.Input[str]] = None,
+                 __props__=None,
+                 __name__=None,
+                 __opts__=None):
         """
         ## Example Usage
 
@@ -36,8 +30,16 @@ class WebsiteCertificateAuthorityAssociation(pulumi.CustomResource):
 
         example = aws.worklink.Fleet("example")
         test = aws.worklink.WebsiteCertificateAuthorityAssociation("test",
-            certificate=(lambda path: open(path).read())("certificate.pem"),
-            fleet_arn=aws_worklink_fleet["test"]["arn"])
+            fleet_arn=aws_worklink_fleet["test"]["arn"],
+            certificate=(lambda path: open(path).read())("certificate.pem"))
+        ```
+
+        ## Import
+
+        WorkLink Website Certificate Authority can be imported using `FLEET-ARN,WEBSITE-CA-ID`, e.g.
+
+        ```sh
+         $ pulumi import aws:worklink/websiteCertificateAuthorityAssociation:WebsiteCertificateAuthorityAssociation example arn:aws:worklink::123456789012:fleet/example,abcdefghijk
         ```
 
         :param str resource_name: The name of the resource.
@@ -57,17 +59,17 @@ class WebsiteCertificateAuthorityAssociation(pulumi.CustomResource):
         if not isinstance(opts, pulumi.ResourceOptions):
             raise TypeError('Expected resource options to be a ResourceOptions instance')
         if opts.version is None:
-            opts.version = utilities.get_version()
+            opts.version = _utilities.get_version()
         if opts.id is None:
             if __props__ is not None:
                 raise TypeError('__props__ is only valid when passed in combination with a valid opts.id to get an existing resource')
             __props__ = dict()
 
-            if certificate is None:
+            if certificate is None and not opts.urn:
                 raise TypeError("Missing required property 'certificate'")
             __props__['certificate'] = certificate
             __props__['display_name'] = display_name
-            if fleet_arn is None:
+            if fleet_arn is None and not opts.urn:
                 raise TypeError("Missing required property 'fleet_arn'")
             __props__['fleet_arn'] = fleet_arn
             __props__['website_ca_id'] = None
@@ -78,13 +80,19 @@ class WebsiteCertificateAuthorityAssociation(pulumi.CustomResource):
             opts)
 
     @staticmethod
-    def get(resource_name, id, opts=None, certificate=None, display_name=None, fleet_arn=None, website_ca_id=None):
+    def get(resource_name: str,
+            id: pulumi.Input[str],
+            opts: Optional[pulumi.ResourceOptions] = None,
+            certificate: Optional[pulumi.Input[str]] = None,
+            display_name: Optional[pulumi.Input[str]] = None,
+            fleet_arn: Optional[pulumi.Input[str]] = None,
+            website_ca_id: Optional[pulumi.Input[str]] = None) -> 'WebsiteCertificateAuthorityAssociation':
         """
         Get an existing WebsiteCertificateAuthorityAssociation resource's state with the given name, id, and optional extra
         properties used to qualify the lookup.
 
         :param str resource_name: The unique name of the resulting resource.
-        :param str id: The unique provider ID of the resource to lookup.
+        :param pulumi.Input[str] id: The unique provider ID of the resource to lookup.
         :param pulumi.ResourceOptions opts: Options for the resource.
         :param pulumi.Input[str] certificate: The root certificate of the Certificate Authority.
         :param pulumi.Input[str] display_name: The certificate name to display.
@@ -101,8 +109,41 @@ class WebsiteCertificateAuthorityAssociation(pulumi.CustomResource):
         __props__["website_ca_id"] = website_ca_id
         return WebsiteCertificateAuthorityAssociation(resource_name, opts=opts, __props__=__props__)
 
+    @property
+    @pulumi.getter
+    def certificate(self) -> pulumi.Output[str]:
+        """
+        The root certificate of the Certificate Authority.
+        """
+        return pulumi.get(self, "certificate")
+
+    @property
+    @pulumi.getter(name="displayName")
+    def display_name(self) -> pulumi.Output[Optional[str]]:
+        """
+        The certificate name to display.
+        """
+        return pulumi.get(self, "display_name")
+
+    @property
+    @pulumi.getter(name="fleetArn")
+    def fleet_arn(self) -> pulumi.Output[str]:
+        """
+        The ARN of the fleet.
+        """
+        return pulumi.get(self, "fleet_arn")
+
+    @property
+    @pulumi.getter(name="websiteCaId")
+    def website_ca_id(self) -> pulumi.Output[str]:
+        """
+        A unique identifier for the Certificate Authority.
+        """
+        return pulumi.get(self, "website_ca_id")
+
     def translate_output_property(self, prop):
-        return tables._CAMEL_TO_SNAKE_CASE_TABLE.get(prop) or prop
+        return _tables.CAMEL_TO_SNAKE_CASE_TABLE.get(prop) or prop
 
     def translate_input_property(self, prop):
-        return tables._SNAKE_TO_CAMEL_CASE_TABLE.get(prop) or prop
+        return _tables.SNAKE_TO_CAMEL_CASE_TABLE.get(prop) or prop
+

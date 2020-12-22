@@ -4,6 +4,7 @@
 package rds
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -23,16 +24,16 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/rds"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/rds"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
 // func main() {
 // 	pulumi.Run(func(ctx *pulumi.Context) error {
 // 		_, err := rds.NewRoleAssociation(ctx, "example", &rds.RoleAssociationArgs{
-// 			DbInstanceIdentifier: pulumi.String(aws_db_instance.Example.Id),
+// 			DbInstanceIdentifier: pulumi.Any(aws_db_instance.Example.Id),
 // 			FeatureName:          pulumi.String("S3_INTEGRATION"),
-// 			RoleArn:              pulumi.String(aws_iam_role.Example.Id),
+// 			RoleArn:              pulumi.Any(aws_iam_role.Example.Arn),
 // 		})
 // 		if err != nil {
 // 			return err
@@ -40,6 +41,14 @@ import (
 // 		return nil
 // 	})
 // }
+// ```
+//
+// ## Import
+//
+// `aws_db_instance_role_association` can be imported using the DB Instance Identifier and IAM Role ARN separated by a comma (`,`), e.g.
+//
+// ```sh
+//  $ pulumi import aws:rds/roleAssociation:RoleAssociation example my-db-instance,arn:aws:iam::123456789012:role/my-role
 // ```
 type RoleAssociation struct {
 	pulumi.CustomResourceState
@@ -55,17 +64,18 @@ type RoleAssociation struct {
 // NewRoleAssociation registers a new resource with the given unique name, arguments, and options.
 func NewRoleAssociation(ctx *pulumi.Context,
 	name string, args *RoleAssociationArgs, opts ...pulumi.ResourceOption) (*RoleAssociation, error) {
-	if args == nil || args.DbInstanceIdentifier == nil {
-		return nil, errors.New("missing required argument 'DbInstanceIdentifier'")
-	}
-	if args == nil || args.FeatureName == nil {
-		return nil, errors.New("missing required argument 'FeatureName'")
-	}
-	if args == nil || args.RoleArn == nil {
-		return nil, errors.New("missing required argument 'RoleArn'")
-	}
 	if args == nil {
-		args = &RoleAssociationArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.DbInstanceIdentifier == nil {
+		return nil, errors.New("invalid value for required argument 'DbInstanceIdentifier'")
+	}
+	if args.FeatureName == nil {
+		return nil, errors.New("invalid value for required argument 'FeatureName'")
+	}
+	if args.RoleArn == nil {
+		return nil, errors.New("invalid value for required argument 'RoleArn'")
 	}
 	var resource RoleAssociation
 	err := ctx.RegisterResource("aws:rds/roleAssociation:RoleAssociation", name, args, &resource, opts...)
@@ -131,4 +141,43 @@ type RoleAssociationArgs struct {
 
 func (RoleAssociationArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*roleAssociationArgs)(nil)).Elem()
+}
+
+type RoleAssociationInput interface {
+	pulumi.Input
+
+	ToRoleAssociationOutput() RoleAssociationOutput
+	ToRoleAssociationOutputWithContext(ctx context.Context) RoleAssociationOutput
+}
+
+func (RoleAssociation) ElementType() reflect.Type {
+	return reflect.TypeOf((*RoleAssociation)(nil)).Elem()
+}
+
+func (i RoleAssociation) ToRoleAssociationOutput() RoleAssociationOutput {
+	return i.ToRoleAssociationOutputWithContext(context.Background())
+}
+
+func (i RoleAssociation) ToRoleAssociationOutputWithContext(ctx context.Context) RoleAssociationOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(RoleAssociationOutput)
+}
+
+type RoleAssociationOutput struct {
+	*pulumi.OutputState
+}
+
+func (RoleAssociationOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*RoleAssociationOutput)(nil)).Elem()
+}
+
+func (o RoleAssociationOutput) ToRoleAssociationOutput() RoleAssociationOutput {
+	return o
+}
+
+func (o RoleAssociationOutput) ToRoleAssociationOutputWithContext(ctx context.Context) RoleAssociationOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(RoleAssociationOutput{})
 }

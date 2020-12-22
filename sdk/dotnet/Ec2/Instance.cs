@@ -25,6 +25,7 @@ namespace Pulumi.Aws.Ec2
     ///     {
     ///         var ubuntu = Output.Create(Aws.GetAmi.InvokeAsync(new Aws.GetAmiArgs
     ///         {
+    ///             MostRecent = true,
     ///             Filters = 
     ///             {
     ///                 new Aws.Inputs.GetAmiFilterArgs
@@ -32,7 +33,7 @@ namespace Pulumi.Aws.Ec2
     ///                     Name = "name",
     ///                     Values = 
     ///                     {
-    ///                         "ubuntu/images/hvm-ssd/ubuntu-trusty-14.04-amd64-server-*",
+    ///                         "ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-*",
     ///                     },
     ///                 },
     ///                 new Aws.Inputs.GetAmiFilterArgs
@@ -44,7 +45,6 @@ namespace Pulumi.Aws.Ec2
     ///                     },
     ///                 },
     ///             },
-    ///             MostRecent = true,
     ///             Owners = 
     ///             {
     ///                 "099720109477",
@@ -53,7 +53,7 @@ namespace Pulumi.Aws.Ec2
     ///         var web = new Aws.Ec2.Instance("web", new Aws.Ec2.InstanceArgs
     ///         {
     ///             Ami = ubuntu.Apply(ubuntu =&gt; ubuntu.Id),
-    ///             InstanceType = "t2.micro",
+    ///             InstanceType = "t3.micro",
     ///             Tags = 
     ///             {
     ///                 { "Name", "HelloWorld" },
@@ -62,6 +62,14 @@ namespace Pulumi.Aws.Ec2
     ///     }
     /// 
     /// }
+    /// ```
+    /// 
+    /// ## Import
+    /// 
+    /// Instances can be imported using the `id`, e.g.
+    /// 
+    /// ```sh
+    ///  $ pulumi import aws:ec2/instance:Instance web i-12345678
     /// ```
     /// </summary>
     public partial class Instance : Pulumi.CustomResource
@@ -287,6 +295,12 @@ namespace Pulumi.Aws.Ec2
         public Output<Outputs.InstanceRootBlockDevice> RootBlockDevice { get; private set; } = null!;
 
         /// <summary>
+        /// A list of secondary private IPv4 addresses to assign to the instance's primary network interface (eth0) in a VPC. Can only be assigned to the primary network interface (eth0) attached at instance creation, not a pre-existing network interface i.e. referenced in a `network_interface` block. Refer to the [Elastic network interfaces documentation](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using-eni.html#AvailableIpPerENI) to see the maximum number of private IP addresses allowed per instance type.
+        /// </summary>
+        [Output("secondaryPrivateIps")]
+        public Output<ImmutableArray<string>> SecondaryPrivateIps { get; private set; } = null!;
+
+        /// <summary>
         /// A list of security group names (EC2-Classic) or IDs (default VPC) to associate with.
         /// </summary>
         [Output("securityGroups")]
@@ -506,7 +520,7 @@ namespace Pulumi.Aws.Ec2
         /// The type of instance to start. Updates to this field will trigger a stop/start of the EC2 instance.
         /// </summary>
         [Input("instanceType", required: true)]
-        public Input<string> InstanceType { get; set; } = null!;
+        public InputUnion<string, Pulumi.Aws.Ec2.InstanceType> InstanceType { get; set; } = null!;
 
         /// <summary>
         /// A number of IPv6 addresses to associate with the primary network interface. Amazon EC2 chooses the IPv6 addresses from the range of your subnet.
@@ -576,6 +590,18 @@ namespace Pulumi.Aws.Ec2
         [Input("rootBlockDevice")]
         public Input<Inputs.InstanceRootBlockDeviceArgs>? RootBlockDevice { get; set; }
 
+        [Input("secondaryPrivateIps")]
+        private InputList<string>? _secondaryPrivateIps;
+
+        /// <summary>
+        /// A list of secondary private IPv4 addresses to assign to the instance's primary network interface (eth0) in a VPC. Can only be assigned to the primary network interface (eth0) attached at instance creation, not a pre-existing network interface i.e. referenced in a `network_interface` block. Refer to the [Elastic network interfaces documentation](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using-eni.html#AvailableIpPerENI) to see the maximum number of private IP addresses allowed per instance type.
+        /// </summary>
+        public InputList<string> SecondaryPrivateIps
+        {
+            get => _secondaryPrivateIps ?? (_secondaryPrivateIps = new InputList<string>());
+            set => _secondaryPrivateIps = value;
+        }
+
         [Input("securityGroups")]
         private InputList<string>? _securityGroups;
 
@@ -618,7 +644,7 @@ namespace Pulumi.Aws.Ec2
         /// The tenancy of the instance (if the instance is running in a VPC). An instance with a tenancy of dedicated runs on single-tenant hardware. The host tenancy is not supported for the import-instance command.
         /// </summary>
         [Input("tenancy")]
-        public Input<string>? Tenancy { get; set; }
+        public InputUnion<string, Pulumi.Aws.Ec2.Tenancy>? Tenancy { get; set; }
 
         /// <summary>
         /// The user data to provide when launching the instance. Do not pass gzip-compressed data via this argument; see `user_data_base64` instead.
@@ -794,7 +820,7 @@ namespace Pulumi.Aws.Ec2
         /// The type of instance to start. Updates to this field will trigger a stop/start of the EC2 instance.
         /// </summary>
         [Input("instanceType")]
-        public Input<string>? InstanceType { get; set; }
+        public InputUnion<string, Pulumi.Aws.Ec2.InstanceType>? InstanceType { get; set; }
 
         /// <summary>
         /// A number of IPv6 addresses to associate with the primary network interface. Amazon EC2 chooses the IPv6 addresses from the range of your subnet.
@@ -907,6 +933,18 @@ namespace Pulumi.Aws.Ec2
         [Input("rootBlockDevice")]
         public Input<Inputs.InstanceRootBlockDeviceGetArgs>? RootBlockDevice { get; set; }
 
+        [Input("secondaryPrivateIps")]
+        private InputList<string>? _secondaryPrivateIps;
+
+        /// <summary>
+        /// A list of secondary private IPv4 addresses to assign to the instance's primary network interface (eth0) in a VPC. Can only be assigned to the primary network interface (eth0) attached at instance creation, not a pre-existing network interface i.e. referenced in a `network_interface` block. Refer to the [Elastic network interfaces documentation](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using-eni.html#AvailableIpPerENI) to see the maximum number of private IP addresses allowed per instance type.
+        /// </summary>
+        public InputList<string> SecondaryPrivateIps
+        {
+            get => _secondaryPrivateIps ?? (_secondaryPrivateIps = new InputList<string>());
+            set => _secondaryPrivateIps = value;
+        }
+
         [Input("securityGroups")]
         private InputList<string>? _securityGroups;
 
@@ -949,7 +987,7 @@ namespace Pulumi.Aws.Ec2
         /// The tenancy of the instance (if the instance is running in a VPC). An instance with a tenancy of dedicated runs on single-tenant hardware. The host tenancy is not supported for the import-instance command.
         /// </summary>
         [Input("tenancy")]
-        public Input<string>? Tenancy { get; set; }
+        public InputUnion<string, Pulumi.Aws.Ec2.Tenancy>? Tenancy { get; set; }
 
         /// <summary>
         /// The user data to provide when launching the instance. Do not pass gzip-compressed data via this argument; see `user_data_base64` instead.

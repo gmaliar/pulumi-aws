@@ -4,6 +4,7 @@
 package ec2transitgateway
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -18,7 +19,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/ec2transitgateway"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/ec2transitgateway"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -26,10 +27,10 @@ import (
 // 	pulumi.Run(func(ctx *pulumi.Context) error {
 // 		_, err := ec2transitgateway.NewVpcAttachment(ctx, "example", &ec2transitgateway.VpcAttachmentArgs{
 // 			SubnetIds: pulumi.StringArray{
-// 				pulumi.String(aws_subnet.Example.Id),
+// 				pulumi.Any(aws_subnet.Example.Id),
 // 			},
-// 			TransitGatewayId: pulumi.String(aws_ec2_transit_gateway.Example.Id),
-// 			VpcId:            pulumi.String(aws_vpc.Example.Id),
+// 			TransitGatewayId: pulumi.Any(aws_ec2_transit_gateway.Example.Id),
+// 			VpcId:            pulumi.Any(aws_vpc.Example.Id),
 // 		})
 // 		if err != nil {
 // 			return err
@@ -39,10 +40,18 @@ import (
 // }
 // ```
 //
-// A full example of how to create a Transit Gateway in one AWS account, share it with a second AWS account, and attach a VPC in the second account to the Transit Gateway via the `ec2transitgateway.VpcAttachment` and `ec2transitgateway.VpcAttachmentAccepter` resources can be found in [the `./examples/transit-gateway-cross-account-vpc-attachment` directory within the Github Repository](https://github.com/providers/provider-aws/tree/master/examples/transit-gateway-cross-account-vpc-attachment).
+// ## Import
+//
+// `aws_ec2_transit_gateway_vpc_attachment` can be imported by using the EC2 Transit Gateway Attachment identifier, e.g.
+//
+// ```sh
+//  $ pulumi import aws:ec2transitgateway/vpcAttachment:VpcAttachment example tgw-attach-12345678
+// ```
 type VpcAttachment struct {
 	pulumi.CustomResourceState
 
+	// Whether Appliance Mode support is enabled. If enabled, a traffic flow between a source and destination uses the same Availability Zone for the VPC attachment for the lifetime of that flow. Valid values: `disable`, `enable`. Default value: `disable`.
+	ApplianceModeSupport pulumi.StringPtrOutput `pulumi:"applianceModeSupport"`
 	// Whether DNS support is enabled. Valid values: `disable`, `enable`. Default value: `enable`.
 	DnsSupport pulumi.StringPtrOutput `pulumi:"dnsSupport"`
 	// Whether IPv6 support is enabled. Valid values: `disable`, `enable`. Default value: `disable`.
@@ -66,17 +75,18 @@ type VpcAttachment struct {
 // NewVpcAttachment registers a new resource with the given unique name, arguments, and options.
 func NewVpcAttachment(ctx *pulumi.Context,
 	name string, args *VpcAttachmentArgs, opts ...pulumi.ResourceOption) (*VpcAttachment, error) {
-	if args == nil || args.SubnetIds == nil {
-		return nil, errors.New("missing required argument 'SubnetIds'")
-	}
-	if args == nil || args.TransitGatewayId == nil {
-		return nil, errors.New("missing required argument 'TransitGatewayId'")
-	}
-	if args == nil || args.VpcId == nil {
-		return nil, errors.New("missing required argument 'VpcId'")
-	}
 	if args == nil {
-		args = &VpcAttachmentArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.SubnetIds == nil {
+		return nil, errors.New("invalid value for required argument 'SubnetIds'")
+	}
+	if args.TransitGatewayId == nil {
+		return nil, errors.New("invalid value for required argument 'TransitGatewayId'")
+	}
+	if args.VpcId == nil {
+		return nil, errors.New("invalid value for required argument 'VpcId'")
 	}
 	var resource VpcAttachment
 	err := ctx.RegisterResource("aws:ec2transitgateway/vpcAttachment:VpcAttachment", name, args, &resource, opts...)
@@ -100,6 +110,8 @@ func GetVpcAttachment(ctx *pulumi.Context,
 
 // Input properties used for looking up and filtering VpcAttachment resources.
 type vpcAttachmentState struct {
+	// Whether Appliance Mode support is enabled. If enabled, a traffic flow between a source and destination uses the same Availability Zone for the VPC attachment for the lifetime of that flow. Valid values: `disable`, `enable`. Default value: `disable`.
+	ApplianceModeSupport *string `pulumi:"applianceModeSupport"`
 	// Whether DNS support is enabled. Valid values: `disable`, `enable`. Default value: `enable`.
 	DnsSupport *string `pulumi:"dnsSupport"`
 	// Whether IPv6 support is enabled. Valid values: `disable`, `enable`. Default value: `disable`.
@@ -121,6 +133,8 @@ type vpcAttachmentState struct {
 }
 
 type VpcAttachmentState struct {
+	// Whether Appliance Mode support is enabled. If enabled, a traffic flow between a source and destination uses the same Availability Zone for the VPC attachment for the lifetime of that flow. Valid values: `disable`, `enable`. Default value: `disable`.
+	ApplianceModeSupport pulumi.StringPtrInput
 	// Whether DNS support is enabled. Valid values: `disable`, `enable`. Default value: `enable`.
 	DnsSupport pulumi.StringPtrInput
 	// Whether IPv6 support is enabled. Valid values: `disable`, `enable`. Default value: `disable`.
@@ -146,6 +160,8 @@ func (VpcAttachmentState) ElementType() reflect.Type {
 }
 
 type vpcAttachmentArgs struct {
+	// Whether Appliance Mode support is enabled. If enabled, a traffic flow between a source and destination uses the same Availability Zone for the VPC attachment for the lifetime of that flow. Valid values: `disable`, `enable`. Default value: `disable`.
+	ApplianceModeSupport *string `pulumi:"applianceModeSupport"`
 	// Whether DNS support is enabled. Valid values: `disable`, `enable`. Default value: `enable`.
 	DnsSupport *string `pulumi:"dnsSupport"`
 	// Whether IPv6 support is enabled. Valid values: `disable`, `enable`. Default value: `disable`.
@@ -166,6 +182,8 @@ type vpcAttachmentArgs struct {
 
 // The set of arguments for constructing a VpcAttachment resource.
 type VpcAttachmentArgs struct {
+	// Whether Appliance Mode support is enabled. If enabled, a traffic flow between a source and destination uses the same Availability Zone for the VPC attachment for the lifetime of that flow. Valid values: `disable`, `enable`. Default value: `disable`.
+	ApplianceModeSupport pulumi.StringPtrInput
 	// Whether DNS support is enabled. Valid values: `disable`, `enable`. Default value: `enable`.
 	DnsSupport pulumi.StringPtrInput
 	// Whether IPv6 support is enabled. Valid values: `disable`, `enable`. Default value: `disable`.
@@ -186,4 +204,43 @@ type VpcAttachmentArgs struct {
 
 func (VpcAttachmentArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*vpcAttachmentArgs)(nil)).Elem()
+}
+
+type VpcAttachmentInput interface {
+	pulumi.Input
+
+	ToVpcAttachmentOutput() VpcAttachmentOutput
+	ToVpcAttachmentOutputWithContext(ctx context.Context) VpcAttachmentOutput
+}
+
+func (VpcAttachment) ElementType() reflect.Type {
+	return reflect.TypeOf((*VpcAttachment)(nil)).Elem()
+}
+
+func (i VpcAttachment) ToVpcAttachmentOutput() VpcAttachmentOutput {
+	return i.ToVpcAttachmentOutputWithContext(context.Background())
+}
+
+func (i VpcAttachment) ToVpcAttachmentOutputWithContext(ctx context.Context) VpcAttachmentOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(VpcAttachmentOutput)
+}
+
+type VpcAttachmentOutput struct {
+	*pulumi.OutputState
+}
+
+func (VpcAttachmentOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*VpcAttachmentOutput)(nil)).Elem()
+}
+
+func (o VpcAttachmentOutput) ToVpcAttachmentOutput() VpcAttachmentOutput {
+	return o
+}
+
+func (o VpcAttachmentOutput) ToVpcAttachmentOutputWithContext(ctx context.Context) VpcAttachmentOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(VpcAttachmentOutput{})
 }

@@ -14,16 +14,22 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const exampleGateway = new aws.directconnect.Gateway("example", {
- *     amazonSideAsn: "64512",
- * });
- * const exampleTransitVirtualInterface = new aws.directconnect.TransitVirtualInterface("example", {
- *     addressFamily: "ipv4",
- *     bgpAsn: 65352,
- *     connectionId: aws_dx_connection_example.id,
+ * const exampleGateway = new aws.directconnect.Gateway("exampleGateway", {amazonSideAsn: 64512});
+ * const exampleTransitVirtualInterface = new aws.directconnect.TransitVirtualInterface("exampleTransitVirtualInterface", {
+ *     connectionId: aws_dx_connection.example.id,
  *     dxGatewayId: exampleGateway.id,
  *     vlan: 4094,
+ *     addressFamily: "ipv4",
+ *     bgpAsn: 65352,
  * });
+ * ```
+ *
+ * ## Import
+ *
+ * Direct Connect transit virtual interfaces can be imported using the `vif id`, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:directconnect/transitVirtualInterface:TransitVirtualInterface test dxvif-33cc44dd
  * ```
  */
 export class TransitVirtualInterface extends pulumi.CustomResource {
@@ -142,19 +148,19 @@ export class TransitVirtualInterface extends pulumi.CustomResource {
             inputs["vlan"] = state ? state.vlan : undefined;
         } else {
             const args = argsOrState as TransitVirtualInterfaceArgs | undefined;
-            if (!args || args.addressFamily === undefined) {
+            if ((!args || args.addressFamily === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'addressFamily'");
             }
-            if (!args || args.bgpAsn === undefined) {
+            if ((!args || args.bgpAsn === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'bgpAsn'");
             }
-            if (!args || args.connectionId === undefined) {
+            if ((!args || args.connectionId === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'connectionId'");
             }
-            if (!args || args.dxGatewayId === undefined) {
+            if ((!args || args.dxGatewayId === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'dxGatewayId'");
             }
-            if (!args || args.vlan === undefined) {
+            if ((!args || args.vlan === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'vlan'");
             }
             inputs["addressFamily"] = args ? args.addressFamily : undefined;

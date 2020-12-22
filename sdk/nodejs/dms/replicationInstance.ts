@@ -13,7 +13,7 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const dmsAssumeRole = pulumi.output(aws.iam.getPolicyDocument({
+ * const dmsAssumeRole = aws.iam.getPolicyDocument({
  *     statements: [{
  *         actions: ["sts:AssumeRole"],
  *         principals: [{
@@ -21,24 +21,18 @@ import * as utilities from "../utilities";
  *             type: "Service",
  *         }],
  *     }],
- * }, { async: true }));
- * const dms_access_for_endpoint = new aws.iam.Role("dms-access-for-endpoint", {
- *     assumeRolePolicy: dmsAssumeRole.json,
  * });
+ * const dms_access_for_endpoint = new aws.iam.Role("dms-access-for-endpoint", {assumeRolePolicy: dmsAssumeRole.then(dmsAssumeRole => dmsAssumeRole.json)});
  * const dms_access_for_endpoint_AmazonDMSRedshiftS3Role = new aws.iam.RolePolicyAttachment("dms-access-for-endpoint-AmazonDMSRedshiftS3Role", {
  *     policyArn: "arn:aws:iam::aws:policy/service-role/AmazonDMSRedshiftS3Role",
  *     role: dms_access_for_endpoint.name,
  * });
- * const dms_cloudwatch_logs_role = new aws.iam.Role("dms-cloudwatch-logs-role", {
- *     assumeRolePolicy: dmsAssumeRole.json,
- * });
+ * const dms_cloudwatch_logs_role = new aws.iam.Role("dms-cloudwatch-logs-role", {assumeRolePolicy: dmsAssumeRole.then(dmsAssumeRole => dmsAssumeRole.json)});
  * const dms_cloudwatch_logs_role_AmazonDMSCloudWatchLogsRole = new aws.iam.RolePolicyAttachment("dms-cloudwatch-logs-role-AmazonDMSCloudWatchLogsRole", {
  *     policyArn: "arn:aws:iam::aws:policy/service-role/AmazonDMSCloudWatchLogsRole",
  *     role: dms_cloudwatch_logs_role.name,
  * });
- * const dms_vpc_role = new aws.iam.Role("dms-vpc-role", {
- *     assumeRolePolicy: dmsAssumeRole.json,
- * });
+ * const dms_vpc_role = new aws.iam.Role("dms-vpc-role", {assumeRolePolicy: dmsAssumeRole.then(dmsAssumeRole => dmsAssumeRole.json)});
  * const dms_vpc_role_AmazonDMSVPCManagementRole = new aws.iam.RolePolicyAttachment("dms-vpc-role-AmazonDMSVPCManagementRole", {
  *     policyArn: "arn:aws:iam::aws:policy/service-role/AmazonDMSVPCManagementRole",
  *     role: dms_vpc_role.name,
@@ -56,12 +50,20 @@ import * as utilities from "../utilities";
  *     publiclyAccessible: true,
  *     replicationInstanceClass: "dms.t2.micro",
  *     replicationInstanceId: "test-dms-replication-instance-tf",
- *     replicationSubnetGroupId: aws_dms_replication_subnet_group_test_dms_replication_subnet_group_tf.id,
+ *     replicationSubnetGroupId: aws_dms_replication_subnet_group["test-dms-replication-subnet-group-tf"].id,
  *     tags: {
  *         Name: "test",
  *     },
  *     vpcSecurityGroupIds: ["sg-12345678"],
  * });
+ * ```
+ *
+ * ## Import
+ *
+ * Replication instances can be imported using the `replication_instance_id`, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:dms/replicationInstance:ReplicationInstance test test-dms-replication-instance-tf
  * ```
  */
 export class ReplicationInstance extends pulumi.CustomResource {
@@ -96,6 +98,10 @@ export class ReplicationInstance extends pulumi.CustomResource {
      * The amount of storage (in gigabytes) to be initially allocated for the replication instance.
      */
     public readonly allocatedStorage!: pulumi.Output<number>;
+    /**
+     * Indicates that major version upgrades are allowed.
+     */
+    public readonly allowMajorVersionUpgrade!: pulumi.Output<boolean | undefined>;
     /**
      * Indicates whether the changes should be applied immediately or during the next maintenance window. Only used when updating an existing resource.
      */
@@ -174,6 +180,7 @@ export class ReplicationInstance extends pulumi.CustomResource {
         if (opts && opts.id) {
             const state = argsOrState as ReplicationInstanceState | undefined;
             inputs["allocatedStorage"] = state ? state.allocatedStorage : undefined;
+            inputs["allowMajorVersionUpgrade"] = state ? state.allowMajorVersionUpgrade : undefined;
             inputs["applyImmediately"] = state ? state.applyImmediately : undefined;
             inputs["autoMinorVersionUpgrade"] = state ? state.autoMinorVersionUpgrade : undefined;
             inputs["availabilityZone"] = state ? state.availabilityZone : undefined;
@@ -192,13 +199,14 @@ export class ReplicationInstance extends pulumi.CustomResource {
             inputs["vpcSecurityGroupIds"] = state ? state.vpcSecurityGroupIds : undefined;
         } else {
             const args = argsOrState as ReplicationInstanceArgs | undefined;
-            if (!args || args.replicationInstanceClass === undefined) {
+            if ((!args || args.replicationInstanceClass === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'replicationInstanceClass'");
             }
-            if (!args || args.replicationInstanceId === undefined) {
+            if ((!args || args.replicationInstanceId === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'replicationInstanceId'");
             }
             inputs["allocatedStorage"] = args ? args.allocatedStorage : undefined;
+            inputs["allowMajorVersionUpgrade"] = args ? args.allowMajorVersionUpgrade : undefined;
             inputs["applyImmediately"] = args ? args.applyImmediately : undefined;
             inputs["autoMinorVersionUpgrade"] = args ? args.autoMinorVersionUpgrade : undefined;
             inputs["availabilityZone"] = args ? args.availabilityZone : undefined;
@@ -235,6 +243,10 @@ export interface ReplicationInstanceState {
      * The amount of storage (in gigabytes) to be initially allocated for the replication instance.
      */
     readonly allocatedStorage?: pulumi.Input<number>;
+    /**
+     * Indicates that major version upgrades are allowed.
+     */
+    readonly allowMajorVersionUpgrade?: pulumi.Input<boolean>;
     /**
      * Indicates whether the changes should be applied immediately or during the next maintenance window. Only used when updating an existing resource.
      */
@@ -309,6 +321,10 @@ export interface ReplicationInstanceArgs {
      * The amount of storage (in gigabytes) to be initially allocated for the replication instance.
      */
     readonly allocatedStorage?: pulumi.Input<number>;
+    /**
+     * Indicates that major version upgrades are allowed.
+     */
+    readonly allowMajorVersionUpgrade?: pulumi.Input<boolean>;
     /**
      * Indicates whether the changes should be applied immediately or during the next maintenance window. Only used when updating an existing resource.
      */

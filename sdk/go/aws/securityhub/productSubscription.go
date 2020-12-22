@@ -4,6 +4,7 @@
 package securityhub
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -20,14 +21,14 @@ import (
 // import (
 // 	"fmt"
 //
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws"
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/securityhub"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/securityhub"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
 // func main() {
 // 	pulumi.Run(func(ctx *pulumi.Context) error {
-// 		_, err := securityhub.NewAccount(ctx, "exampleAccount", nil)
+// 		exampleAccount, err := securityhub.NewAccount(ctx, "exampleAccount", nil)
 // 		if err != nil {
 // 			return err
 // 		}
@@ -38,7 +39,7 @@ import (
 // 		_, err = securityhub.NewProductSubscription(ctx, "exampleProductSubscription", &securityhub.ProductSubscriptionArgs{
 // 			ProductArn: pulumi.String(fmt.Sprintf("%v%v%v", "arn:aws:securityhub:", current.Name, ":733251395267:product/alertlogic/althreatmanagement")),
 // 		}, pulumi.DependsOn([]pulumi.Resource{
-// 			"aws_securityhub_account.example",
+// 			exampleAccount,
 // 		}))
 // 		if err != nil {
 // 			return err
@@ -46,6 +47,14 @@ import (
 // 		return nil
 // 	})
 // }
+// ```
+//
+// ## Import
+//
+// Security Hub product subscriptions can be imported in the form `product_arn,arn`, e.g.
+//
+// ```sh
+//  $ pulumi import aws:securityhub/productSubscription:ProductSubscription example arn:aws:securityhub:eu-west-1:733251395267:product/alertlogic/althreatmanagement,arn:aws:securityhub:eu-west-1:123456789012:product-subscription/alertlogic/althreatmanagement
 // ```
 type ProductSubscription struct {
 	pulumi.CustomResourceState
@@ -59,11 +68,12 @@ type ProductSubscription struct {
 // NewProductSubscription registers a new resource with the given unique name, arguments, and options.
 func NewProductSubscription(ctx *pulumi.Context,
 	name string, args *ProductSubscriptionArgs, opts ...pulumi.ResourceOption) (*ProductSubscription, error) {
-	if args == nil || args.ProductArn == nil {
-		return nil, errors.New("missing required argument 'ProductArn'")
-	}
 	if args == nil {
-		args = &ProductSubscriptionArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.ProductArn == nil {
+		return nil, errors.New("invalid value for required argument 'ProductArn'")
 	}
 	var resource ProductSubscription
 	err := ctx.RegisterResource("aws:securityhub/productSubscription:ProductSubscription", name, args, &resource, opts...)
@@ -117,4 +127,43 @@ type ProductSubscriptionArgs struct {
 
 func (ProductSubscriptionArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*productSubscriptionArgs)(nil)).Elem()
+}
+
+type ProductSubscriptionInput interface {
+	pulumi.Input
+
+	ToProductSubscriptionOutput() ProductSubscriptionOutput
+	ToProductSubscriptionOutputWithContext(ctx context.Context) ProductSubscriptionOutput
+}
+
+func (ProductSubscription) ElementType() reflect.Type {
+	return reflect.TypeOf((*ProductSubscription)(nil)).Elem()
+}
+
+func (i ProductSubscription) ToProductSubscriptionOutput() ProductSubscriptionOutput {
+	return i.ToProductSubscriptionOutputWithContext(context.Background())
+}
+
+func (i ProductSubscription) ToProductSubscriptionOutputWithContext(ctx context.Context) ProductSubscriptionOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(ProductSubscriptionOutput)
+}
+
+type ProductSubscriptionOutput struct {
+	*pulumi.OutputState
+}
+
+func (ProductSubscriptionOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*ProductSubscriptionOutput)(nil)).Elem()
+}
+
+func (o ProductSubscriptionOutput) ToProductSubscriptionOutput() ProductSubscriptionOutput {
+	return o
+}
+
+func (o ProductSubscriptionOutput) ToProductSubscriptionOutputWithContext(ctx context.Context) ProductSubscriptionOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(ProductSubscriptionOutput{})
 }

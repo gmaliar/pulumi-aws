@@ -4,6 +4,7 @@
 package autoscaling
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -18,7 +19,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/autoscaling"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/autoscaling"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -28,11 +29,11 @@ import (
 // 			AvailabilityZones: pulumi.StringArray{
 // 				pulumi.String("us-west-2a"),
 // 			},
-// 			ForceDelete:            pulumi.Bool(true),
-// 			HealthCheckGracePeriod: pulumi.Int(300),
-// 			HealthCheckType:        pulumi.String("ELB"),
 // 			MaxSize:                pulumi.Int(1),
 // 			MinSize:                pulumi.Int(1),
+// 			HealthCheckGracePeriod: pulumi.Int(300),
+// 			HealthCheckType:        pulumi.String("ELB"),
+// 			ForceDelete:            pulumi.Bool(true),
 // 			TerminationPolicies: pulumi.StringArray{
 // 				pulumi.String("OldestInstance"),
 // 			},
@@ -41,13 +42,13 @@ import (
 // 			return err
 // 		}
 // 		_, err = autoscaling.NewSchedule(ctx, "foobarSchedule", &autoscaling.ScheduleArgs{
-// 			AutoscalingGroupName: foobarGroup.Name,
-// 			DesiredCapacity:      pulumi.Int(0),
-// 			EndTime:              pulumi.String("2016-12-12T06:00:00Z"),
-// 			MaxSize:              pulumi.Int(1),
-// 			MinSize:              pulumi.Int(0),
 // 			ScheduledActionName:  pulumi.String("foobar"),
+// 			MinSize:              pulumi.Int(0),
+// 			MaxSize:              pulumi.Int(1),
+// 			DesiredCapacity:      pulumi.Int(0),
 // 			StartTime:            pulumi.String("2016-12-11T18:00:00Z"),
+// 			EndTime:              pulumi.String("2016-12-12T06:00:00Z"),
+// 			AutoscalingGroupName: foobarGroup.Name,
 // 		})
 // 		if err != nil {
 // 			return err
@@ -55,6 +56,14 @@ import (
 // 		return nil
 // 	})
 // }
+// ```
+//
+// ## Import
+//
+// AutoScaling ScheduledAction can be imported using the `auto-scaling-group-name` and `scheduled-action-name`, e.g.
+//
+// ```sh
+//  $ pulumi import aws:autoscaling/schedule:Schedule resource-name auto-scaling-group-name/scheduled-action-name
 // ```
 type Schedule struct {
 	pulumi.CustomResourceState
@@ -86,14 +95,15 @@ type Schedule struct {
 // NewSchedule registers a new resource with the given unique name, arguments, and options.
 func NewSchedule(ctx *pulumi.Context,
 	name string, args *ScheduleArgs, opts ...pulumi.ResourceOption) (*Schedule, error) {
-	if args == nil || args.AutoscalingGroupName == nil {
-		return nil, errors.New("missing required argument 'AutoscalingGroupName'")
-	}
-	if args == nil || args.ScheduledActionName == nil {
-		return nil, errors.New("missing required argument 'ScheduledActionName'")
-	}
 	if args == nil {
-		args = &ScheduleArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.AutoscalingGroupName == nil {
+		return nil, errors.New("invalid value for required argument 'AutoscalingGroupName'")
+	}
+	if args.ScheduledActionName == nil {
+		return nil, errors.New("invalid value for required argument 'ScheduledActionName'")
 	}
 	var resource Schedule
 	err := ctx.RegisterResource("aws:autoscaling/schedule:Schedule", name, args, &resource, opts...)
@@ -219,4 +229,43 @@ type ScheduleArgs struct {
 
 func (ScheduleArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*scheduleArgs)(nil)).Elem()
+}
+
+type ScheduleInput interface {
+	pulumi.Input
+
+	ToScheduleOutput() ScheduleOutput
+	ToScheduleOutputWithContext(ctx context.Context) ScheduleOutput
+}
+
+func (Schedule) ElementType() reflect.Type {
+	return reflect.TypeOf((*Schedule)(nil)).Elem()
+}
+
+func (i Schedule) ToScheduleOutput() ScheduleOutput {
+	return i.ToScheduleOutputWithContext(context.Background())
+}
+
+func (i Schedule) ToScheduleOutputWithContext(ctx context.Context) ScheduleOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(ScheduleOutput)
+}
+
+type ScheduleOutput struct {
+	*pulumi.OutputState
+}
+
+func (ScheduleOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*ScheduleOutput)(nil)).Elem()
+}
+
+func (o ScheduleOutput) ToScheduleOutput() ScheduleOutput {
+	return o
+}
+
+func (o ScheduleOutput) ToScheduleOutputWithContext(ctx context.Context) ScheduleOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(ScheduleOutput{})
 }

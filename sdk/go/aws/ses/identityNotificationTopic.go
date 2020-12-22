@@ -4,6 +4,7 @@
 package ses
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -18,17 +19,17 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/ses"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/ses"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
 // func main() {
 // 	pulumi.Run(func(ctx *pulumi.Context) error {
 // 		_, err := ses.NewIdentityNotificationTopic(ctx, "test", &ses.IdentityNotificationTopicArgs{
-// 			Identity:               pulumi.String(aws_ses_domain_identity.Example.Domain),
-// 			IncludeOriginalHeaders: pulumi.Bool(true),
+// 			TopicArn:               pulumi.Any(aws_sns_topic.Example.Arn),
 // 			NotificationType:       pulumi.String("Bounce"),
-// 			TopicArn:               pulumi.String(aws_sns_topic.Example.Arn),
+// 			Identity:               pulumi.Any(aws_ses_domain_identity.Example.Domain),
+// 			IncludeOriginalHeaders: pulumi.Bool(true),
 // 		})
 // 		if err != nil {
 // 			return err
@@ -36,6 +37,14 @@ import (
 // 		return nil
 // 	})
 // }
+// ```
+//
+// ## Import
+//
+// Identity Notification Topics can be imported using ID of the record. The ID is made up as IDENTITY|TYPE where IDENTITY is the SES Identity and TYPE is the Notification Type. e.g. example.com|Bounce In this example, `example.com` is the SES Identity and `Bounce` is the Notification Type. To import the ID above, it would look as follows
+//
+// ```sh
+//  $ pulumi import aws:ses/identityNotificationTopic:IdentityNotificationTopic test 'example.com|Bounce'
 // ```
 type IdentityNotificationTopic struct {
 	pulumi.CustomResourceState
@@ -53,14 +62,15 @@ type IdentityNotificationTopic struct {
 // NewIdentityNotificationTopic registers a new resource with the given unique name, arguments, and options.
 func NewIdentityNotificationTopic(ctx *pulumi.Context,
 	name string, args *IdentityNotificationTopicArgs, opts ...pulumi.ResourceOption) (*IdentityNotificationTopic, error) {
-	if args == nil || args.Identity == nil {
-		return nil, errors.New("missing required argument 'Identity'")
-	}
-	if args == nil || args.NotificationType == nil {
-		return nil, errors.New("missing required argument 'NotificationType'")
-	}
 	if args == nil {
-		args = &IdentityNotificationTopicArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.Identity == nil {
+		return nil, errors.New("invalid value for required argument 'Identity'")
+	}
+	if args.NotificationType == nil {
+		return nil, errors.New("invalid value for required argument 'NotificationType'")
 	}
 	var resource IdentityNotificationTopic
 	err := ctx.RegisterResource("aws:ses/identityNotificationTopic:IdentityNotificationTopic", name, args, &resource, opts...)
@@ -134,4 +144,43 @@ type IdentityNotificationTopicArgs struct {
 
 func (IdentityNotificationTopicArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*identityNotificationTopicArgs)(nil)).Elem()
+}
+
+type IdentityNotificationTopicInput interface {
+	pulumi.Input
+
+	ToIdentityNotificationTopicOutput() IdentityNotificationTopicOutput
+	ToIdentityNotificationTopicOutputWithContext(ctx context.Context) IdentityNotificationTopicOutput
+}
+
+func (IdentityNotificationTopic) ElementType() reflect.Type {
+	return reflect.TypeOf((*IdentityNotificationTopic)(nil)).Elem()
+}
+
+func (i IdentityNotificationTopic) ToIdentityNotificationTopicOutput() IdentityNotificationTopicOutput {
+	return i.ToIdentityNotificationTopicOutputWithContext(context.Background())
+}
+
+func (i IdentityNotificationTopic) ToIdentityNotificationTopicOutputWithContext(ctx context.Context) IdentityNotificationTopicOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(IdentityNotificationTopicOutput)
+}
+
+type IdentityNotificationTopicOutput struct {
+	*pulumi.OutputState
+}
+
+func (IdentityNotificationTopicOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*IdentityNotificationTopicOutput)(nil)).Elem()
+}
+
+func (o IdentityNotificationTopicOutput) ToIdentityNotificationTopicOutput() IdentityNotificationTopicOutput {
+	return o
+}
+
+func (o IdentityNotificationTopicOutput) ToIdentityNotificationTopicOutputWithContext(ctx context.Context) IdentityNotificationTopicOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(IdentityNotificationTopicOutput{})
 }

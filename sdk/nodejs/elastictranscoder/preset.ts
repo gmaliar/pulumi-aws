@@ -2,8 +2,7 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 /**
@@ -69,6 +68,14 @@ import * as utilities from "../utilities";
  *         verticalOffset: "10px",
  *     }],
  * });
+ * ```
+ *
+ * ## Import
+ *
+ * Elastic Transcoder presets can be imported using the `id`, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:elastictranscoder/preset:Preset basic_preset 1407981661351-cttk8b
  * ```
  */
 export class Preset extends pulumi.CustomResource {
@@ -163,7 +170,7 @@ export class Preset extends pulumi.CustomResource {
             inputs["videoWatermarks"] = state ? state.videoWatermarks : undefined;
         } else {
             const args = argsOrState as PresetArgs | undefined;
-            if (!args || args.container === undefined) {
+            if ((!args || args.container === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'container'");
             }
             inputs["audio"] = args ? args.audio : undefined;

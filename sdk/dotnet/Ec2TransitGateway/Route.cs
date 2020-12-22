@@ -45,13 +45,21 @@ namespace Pulumi.Aws.Ec2TransitGateway
     ///     {
     ///         var example = new Aws.Ec2TransitGateway.Route("example", new Aws.Ec2TransitGateway.RouteArgs
     ///         {
-    ///             Blackhole = true,
     ///             DestinationCidrBlock = "0.0.0.0/0",
+    ///             Blackhole = true,
     ///             TransitGatewayRouteTableId = aws_ec2_transit_gateway.Example.Association_default_route_table_id,
     ///         });
     ///     }
     /// 
     /// }
+    /// ```
+    /// 
+    /// ## Import
+    /// 
+    /// `aws_ec2_transit_gateway_route` can be imported by using the EC2 Transit Gateway Route Table, an underscore, and the destination, e.g.
+    /// 
+    /// ```sh
+    ///  $ pulumi import aws:ec2transitgateway/route:Route example tgw-rtb-12345678_0.0.0.0/0
     /// ```
     /// </summary>
     public partial class Route : Pulumi.CustomResource
@@ -63,7 +71,7 @@ namespace Pulumi.Aws.Ec2TransitGateway
         public Output<bool?> Blackhole { get; private set; } = null!;
 
         /// <summary>
-        /// IPv4 CIDR range used for destination matches. Routing decisions are based on the most specific match.
+        /// IPv4 or IPv6 RFC1924 CIDR used for destination matches. Routing decisions are based on the most specific match.
         /// </summary>
         [Output("destinationCidrBlock")]
         public Output<string> DestinationCidrBlock { get; private set; } = null!;
@@ -133,7 +141,7 @@ namespace Pulumi.Aws.Ec2TransitGateway
         public Input<bool>? Blackhole { get; set; }
 
         /// <summary>
-        /// IPv4 CIDR range used for destination matches. Routing decisions are based on the most specific match.
+        /// IPv4 or IPv6 RFC1924 CIDR used for destination matches. Routing decisions are based on the most specific match.
         /// </summary>
         [Input("destinationCidrBlock", required: true)]
         public Input<string> DestinationCidrBlock { get; set; } = null!;
@@ -164,7 +172,7 @@ namespace Pulumi.Aws.Ec2TransitGateway
         public Input<bool>? Blackhole { get; set; }
 
         /// <summary>
-        /// IPv4 CIDR range used for destination matches. Routing decisions are based on the most specific match.
+        /// IPv4 or IPv6 RFC1924 CIDR used for destination matches. Routing decisions are based on the most specific match.
         /// </summary>
         [Input("destinationCidrBlock")]
         public Input<string>? DestinationCidrBlock { get; set; }

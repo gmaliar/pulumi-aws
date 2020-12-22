@@ -4,6 +4,7 @@
 package neptune
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -23,20 +24,20 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/neptune"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/neptune"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
 // func main() {
 // 	pulumi.Run(func(ctx *pulumi.Context) error {
 // 		_, err := neptune.NewCluster(ctx, "_default", &neptune.ClusterArgs{
-// 			ApplyImmediately:                 pulumi.Bool(true),
-// 			BackupRetentionPeriod:            pulumi.Int(5),
 // 			ClusterIdentifier:                pulumi.String("neptune-cluster-demo"),
 // 			Engine:                           pulumi.String("neptune"),
-// 			IamDatabaseAuthenticationEnabled: pulumi.Bool(true),
+// 			BackupRetentionPeriod:            pulumi.Int(5),
 // 			PreferredBackupWindow:            pulumi.String("07:00-09:00"),
 // 			SkipFinalSnapshot:                pulumi.Bool(true),
+// 			IamDatabaseAuthenticationEnabled: pulumi.Bool(true),
+// 			ApplyImmediately:                 pulumi.Bool(true),
 // 		})
 // 		if err != nil {
 // 			return err
@@ -44,10 +45,10 @@ import (
 // 		var example []*neptune.ClusterInstance
 // 		for key0, _ := range 2 {
 // 			__res, err := neptune.NewClusterInstance(ctx, fmt.Sprintf("example-%v", key0), &neptune.ClusterInstanceArgs{
-// 				ApplyImmediately:  pulumi.Bool(true),
 // 				ClusterIdentifier: _default.ID(),
 // 				Engine:            pulumi.String("neptune"),
 // 				InstanceClass:     pulumi.String("db.r4.large"),
+// 				ApplyImmediately:  pulumi.Bool(true),
 // 			})
 // 			if err != nil {
 // 				return err
@@ -57,6 +58,14 @@ import (
 // 		return nil
 // 	})
 // }
+// ```
+//
+// ## Import
+//
+// `aws_neptune_cluster_instance` can be imported by using the instance identifier, e.g.
+//
+// ```sh
+//  $ pulumi import aws:neptune/clusterInstance:ClusterInstance example my-instance
 // ```
 type ClusterInstance struct {
 	pulumi.CustomResourceState
@@ -82,7 +91,7 @@ type ClusterInstance struct {
 	Engine pulumi.StringPtrOutput `pulumi:"engine"`
 	// The neptune engine version.
 	EngineVersion pulumi.StringOutput `pulumi:"engineVersion"`
-	// The indentifier for the neptune instance, if omitted, this provider will assign a random, unique identifier.
+	// The identifier for the neptune instance, if omitted, this provider will assign a random, unique identifier.
 	Identifier pulumi.StringOutput `pulumi:"identifier"`
 	// Creates a unique identifier beginning with the specified prefix. Conflicts with `identifier`.
 	IdentifierPrefix pulumi.StringOutput `pulumi:"identifierPrefix"`
@@ -116,14 +125,15 @@ type ClusterInstance struct {
 // NewClusterInstance registers a new resource with the given unique name, arguments, and options.
 func NewClusterInstance(ctx *pulumi.Context,
 	name string, args *ClusterInstanceArgs, opts ...pulumi.ResourceOption) (*ClusterInstance, error) {
-	if args == nil || args.ClusterIdentifier == nil {
-		return nil, errors.New("missing required argument 'ClusterIdentifier'")
-	}
-	if args == nil || args.InstanceClass == nil {
-		return nil, errors.New("missing required argument 'InstanceClass'")
-	}
 	if args == nil {
-		args = &ClusterInstanceArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.ClusterIdentifier == nil {
+		return nil, errors.New("invalid value for required argument 'ClusterIdentifier'")
+	}
+	if args.InstanceClass == nil {
+		return nil, errors.New("invalid value for required argument 'InstanceClass'")
 	}
 	var resource ClusterInstance
 	err := ctx.RegisterResource("aws:neptune/clusterInstance:ClusterInstance", name, args, &resource, opts...)
@@ -168,7 +178,7 @@ type clusterInstanceState struct {
 	Engine *string `pulumi:"engine"`
 	// The neptune engine version.
 	EngineVersion *string `pulumi:"engineVersion"`
-	// The indentifier for the neptune instance, if omitted, this provider will assign a random, unique identifier.
+	// The identifier for the neptune instance, if omitted, this provider will assign a random, unique identifier.
 	Identifier *string `pulumi:"identifier"`
 	// Creates a unique identifier beginning with the specified prefix. Conflicts with `identifier`.
 	IdentifierPrefix *string `pulumi:"identifierPrefix"`
@@ -221,7 +231,7 @@ type ClusterInstanceState struct {
 	Engine pulumi.StringPtrInput
 	// The neptune engine version.
 	EngineVersion pulumi.StringPtrInput
-	// The indentifier for the neptune instance, if omitted, this provider will assign a random, unique identifier.
+	// The identifier for the neptune instance, if omitted, this provider will assign a random, unique identifier.
 	Identifier pulumi.StringPtrInput
 	// Creates a unique identifier beginning with the specified prefix. Conflicts with `identifier`.
 	IdentifierPrefix pulumi.StringPtrInput
@@ -270,7 +280,7 @@ type clusterInstanceArgs struct {
 	Engine *string `pulumi:"engine"`
 	// The neptune engine version.
 	EngineVersion *string `pulumi:"engineVersion"`
-	// The indentifier for the neptune instance, if omitted, this provider will assign a random, unique identifier.
+	// The identifier for the neptune instance, if omitted, this provider will assign a random, unique identifier.
 	Identifier *string `pulumi:"identifier"`
 	// Creates a unique identifier beginning with the specified prefix. Conflicts with `identifier`.
 	IdentifierPrefix *string `pulumi:"identifierPrefix"`
@@ -310,7 +320,7 @@ type ClusterInstanceArgs struct {
 	Engine pulumi.StringPtrInput
 	// The neptune engine version.
 	EngineVersion pulumi.StringPtrInput
-	// The indentifier for the neptune instance, if omitted, this provider will assign a random, unique identifier.
+	// The identifier for the neptune instance, if omitted, this provider will assign a random, unique identifier.
 	Identifier pulumi.StringPtrInput
 	// Creates a unique identifier beginning with the specified prefix. Conflicts with `identifier`.
 	IdentifierPrefix pulumi.StringPtrInput
@@ -337,4 +347,43 @@ type ClusterInstanceArgs struct {
 
 func (ClusterInstanceArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*clusterInstanceArgs)(nil)).Elem()
+}
+
+type ClusterInstanceInput interface {
+	pulumi.Input
+
+	ToClusterInstanceOutput() ClusterInstanceOutput
+	ToClusterInstanceOutputWithContext(ctx context.Context) ClusterInstanceOutput
+}
+
+func (ClusterInstance) ElementType() reflect.Type {
+	return reflect.TypeOf((*ClusterInstance)(nil)).Elem()
+}
+
+func (i ClusterInstance) ToClusterInstanceOutput() ClusterInstanceOutput {
+	return i.ToClusterInstanceOutputWithContext(context.Background())
+}
+
+func (i ClusterInstance) ToClusterInstanceOutputWithContext(ctx context.Context) ClusterInstanceOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(ClusterInstanceOutput)
+}
+
+type ClusterInstanceOutput struct {
+	*pulumi.OutputState
+}
+
+func (ClusterInstanceOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*ClusterInstanceOutput)(nil)).Elem()
+}
+
+func (o ClusterInstanceOutput) ToClusterInstanceOutput() ClusterInstanceOutput {
+	return o
+}
+
+func (o ClusterInstanceOutput) ToClusterInstanceOutputWithContext(ctx context.Context) ClusterInstanceOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(ClusterInstanceOutput{})
 }

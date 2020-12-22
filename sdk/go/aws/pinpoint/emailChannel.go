@@ -4,6 +4,7 @@
 package pinpoint
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -20,9 +21,9 @@ import (
 // import (
 // 	"fmt"
 //
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/iam"
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/pinpoint"
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/ses"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/iam"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/pinpoint"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/ses"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -39,7 +40,7 @@ import (
 // 			return err
 // 		}
 // 		role, err := iam.NewRole(ctx, "role", &iam.RoleArgs{
-// 			AssumeRolePolicy: pulumi.String(fmt.Sprintf("%v%v%v%v%v%v%v%v%v%v%v%v%v%v", "{\n", "  \"Version\": \"2012-10-17\",\n", "  \"Statement\": [\n", "    {\n", "      \"Action\": \"sts:AssumeRole\",\n", "      \"Principal\": {\n", "        \"Service\": \"pinpoint.amazonaws.com\"\n", "      },\n", "      \"Effect\": \"Allow\",\n", "      \"Sid\": \"\"\n", "    }\n", "  ]\n", "}\n", "\n")),
+// 			AssumeRolePolicy: pulumi.String(fmt.Sprintf("%v%v%v%v%v%v%v%v%v%v%v%v%v", "{\n", "  \"Version\": \"2012-10-17\",\n", "  \"Statement\": [\n", "    {\n", "      \"Action\": \"sts:AssumeRole\",\n", "      \"Principal\": {\n", "        \"Service\": \"pinpoint.amazonaws.com\"\n", "      },\n", "      \"Effect\": \"Allow\",\n", "      \"Sid\": \"\"\n", "    }\n", "  ]\n", "}\n")),
 // 		})
 // 		if err != nil {
 // 			return err
@@ -54,8 +55,8 @@ import (
 // 			return err
 // 		}
 // 		_, err = iam.NewRolePolicy(ctx, "rolePolicy", &iam.RolePolicyArgs{
-// 			Policy: pulumi.String(fmt.Sprintf("%v%v%v%v%v%v%v%v%v%v%v%v%v%v", "{\n", "  \"Version\": \"2012-10-17\",\n", "  \"Statement\": {\n", "    \"Action\": [\n", "      \"mobileanalytics:PutEvents\",\n", "      \"mobileanalytics:PutItems\"\n", "    ],\n", "    \"Effect\": \"Allow\",\n", "    \"Resource\": [\n", "      \"*\"\n", "    ]\n", "  }\n", "}\n", "\n")),
 // 			Role:   role.ID(),
+// 			Policy: pulumi.String(fmt.Sprintf("%v%v%v%v%v%v%v%v%v%v%v%v%v", "{\n", "  \"Version\": \"2012-10-17\",\n", "  \"Statement\": {\n", "    \"Action\": [\n", "      \"mobileanalytics:PutEvents\",\n", "      \"mobileanalytics:PutItems\"\n", "    ],\n", "    \"Effect\": \"Allow\",\n", "    \"Resource\": [\n", "      \"*\"\n", "    ]\n", "  }\n", "}\n")),
 // 		})
 // 		if err != nil {
 // 			return err
@@ -63,6 +64,14 @@ import (
 // 		return nil
 // 	})
 // }
+// ```
+//
+// ## Import
+//
+// Pinpoint Email Channel can be imported using the `application-id`, e.g.
+//
+// ```sh
+//  $ pulumi import aws:pinpoint/emailChannel:EmailChannel email application-id
 // ```
 type EmailChannel struct {
 	pulumi.CustomResourceState
@@ -84,20 +93,21 @@ type EmailChannel struct {
 // NewEmailChannel registers a new resource with the given unique name, arguments, and options.
 func NewEmailChannel(ctx *pulumi.Context,
 	name string, args *EmailChannelArgs, opts ...pulumi.ResourceOption) (*EmailChannel, error) {
-	if args == nil || args.ApplicationId == nil {
-		return nil, errors.New("missing required argument 'ApplicationId'")
-	}
-	if args == nil || args.FromAddress == nil {
-		return nil, errors.New("missing required argument 'FromAddress'")
-	}
-	if args == nil || args.Identity == nil {
-		return nil, errors.New("missing required argument 'Identity'")
-	}
-	if args == nil || args.RoleArn == nil {
-		return nil, errors.New("missing required argument 'RoleArn'")
-	}
 	if args == nil {
-		args = &EmailChannelArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.ApplicationId == nil {
+		return nil, errors.New("invalid value for required argument 'ApplicationId'")
+	}
+	if args.FromAddress == nil {
+		return nil, errors.New("invalid value for required argument 'FromAddress'")
+	}
+	if args.Identity == nil {
+		return nil, errors.New("invalid value for required argument 'Identity'")
+	}
+	if args.RoleArn == nil {
+		return nil, errors.New("invalid value for required argument 'RoleArn'")
 	}
 	var resource EmailChannel
 	err := ctx.RegisterResource("aws:pinpoint/emailChannel:EmailChannel", name, args, &resource, opts...)
@@ -183,4 +193,43 @@ type EmailChannelArgs struct {
 
 func (EmailChannelArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*emailChannelArgs)(nil)).Elem()
+}
+
+type EmailChannelInput interface {
+	pulumi.Input
+
+	ToEmailChannelOutput() EmailChannelOutput
+	ToEmailChannelOutputWithContext(ctx context.Context) EmailChannelOutput
+}
+
+func (EmailChannel) ElementType() reflect.Type {
+	return reflect.TypeOf((*EmailChannel)(nil)).Elem()
+}
+
+func (i EmailChannel) ToEmailChannelOutput() EmailChannelOutput {
+	return i.ToEmailChannelOutputWithContext(context.Background())
+}
+
+func (i EmailChannel) ToEmailChannelOutputWithContext(ctx context.Context) EmailChannelOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(EmailChannelOutput)
+}
+
+type EmailChannelOutput struct {
+	*pulumi.OutputState
+}
+
+func (EmailChannelOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*EmailChannelOutput)(nil)).Elem()
+}
+
+func (o EmailChannelOutput) ToEmailChannelOutput() EmailChannelOutput {
+	return o
+}
+
+func (o EmailChannelOutput) ToEmailChannelOutputWithContext(ctx context.Context) EmailChannelOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(EmailChannelOutput{})
 }

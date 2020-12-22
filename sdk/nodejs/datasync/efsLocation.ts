@@ -2,8 +2,7 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 import {ARN} from "..";
@@ -20,14 +19,20 @@ import {ARN} from "..";
  * import * as aws from "@pulumi/aws";
  *
  * const example = new aws.datasync.EfsLocation("example", {
+ *     efsFileSystemArn: aws_efs_mount_target.example.file_system_arn,
  *     ec2Config: {
- *         securityGroupArns: [aws_security_group_example.arn],
- *         subnetArn: aws_subnet_example.arn,
+ *         securityGroupArns: [aws_security_group.example.arn],
+ *         subnetArn: aws_subnet.example.arn,
  *     },
- *     // The below example uses aws_efs_mount_target as a reference to ensure a mount target already exists when resource creation occurs.
- *     // You can accomplish the same behavior with depends_on or an aws_efs_mount_target data source reference.
- *     efsFileSystemArn: aws_efs_mount_target_example.fileSystemArn,
  * });
+ * ```
+ *
+ * ## Import
+ *
+ * `aws_datasync_location_efs` can be imported by using the DataSync Task Amazon Resource Name (ARN), e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:datasync/efsLocation:EfsLocation example arn:aws:datasync:us-east-1:123456789012:location/loc-12345678901234567
  * ```
  */
 export class EfsLocation extends pulumi.CustomResource {
@@ -100,10 +105,10 @@ export class EfsLocation extends pulumi.CustomResource {
             inputs["uri"] = state ? state.uri : undefined;
         } else {
             const args = argsOrState as EfsLocationArgs | undefined;
-            if (!args || args.ec2Config === undefined) {
+            if ((!args || args.ec2Config === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'ec2Config'");
             }
-            if (!args || args.efsFileSystemArn === undefined) {
+            if ((!args || args.efsFileSystemArn === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'efsFileSystemArn'");
             }
             inputs["ec2Config"] = args ? args.ec2Config : undefined;

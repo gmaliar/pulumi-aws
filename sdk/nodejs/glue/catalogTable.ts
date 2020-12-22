@@ -2,8 +2,7 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 /**
@@ -74,6 +73,14 @@ import * as utilities from "../utilities";
  *     tableType: "EXTERNAL_TABLE",
  * });
  * ```
+ *
+ * ## Import
+ *
+ * Glue Tables can be imported with their catalog ID (usually AWS account ID), database name, and table name, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:glue/catalogTable:CatalogTable MyTable 123456789012:MyDatabase:MyTable
+ * ```
  */
 export class CatalogTable extends pulumi.CustomResource {
     /**
@@ -132,7 +139,11 @@ export class CatalogTable extends pulumi.CustomResource {
      */
     public readonly parameters!: pulumi.Output<{[key: string]: string} | undefined>;
     /**
-     * A list of columns by which the table is partitioned. Only primitive types are supported as partition keys.
+     * A list of partition indexes. see Partition Index below.
+     */
+    public readonly partitionIndices!: pulumi.Output<outputs.glue.CatalogTablePartitionIndex[] | undefined>;
+    /**
+     * A list of columns by which the table is partitioned. Only primitive types are supported as partition keys. see Partition Keys below.
      */
     public readonly partitionKeys!: pulumi.Output<outputs.glue.CatalogTablePartitionKey[] | undefined>;
     /**
@@ -144,7 +155,7 @@ export class CatalogTable extends pulumi.CustomResource {
      */
     public readonly storageDescriptor!: pulumi.Output<outputs.glue.CatalogTableStorageDescriptor | undefined>;
     /**
-     * The type of this table (EXTERNAL_TABLE, VIRTUAL_VIEW, etc.).
+     * The type of this table (EXTERNAL_TABLE, VIRTUAL_VIEW, etc.). While optional, some Athena DDL queries such as `ALTER TABLE` and `SHOW CREATE TABLE` will fail if this argument is empty.
      */
     public readonly tableType!: pulumi.Output<string | undefined>;
     /**
@@ -175,6 +186,7 @@ export class CatalogTable extends pulumi.CustomResource {
             inputs["name"] = state ? state.name : undefined;
             inputs["owner"] = state ? state.owner : undefined;
             inputs["parameters"] = state ? state.parameters : undefined;
+            inputs["partitionIndices"] = state ? state.partitionIndices : undefined;
             inputs["partitionKeys"] = state ? state.partitionKeys : undefined;
             inputs["retention"] = state ? state.retention : undefined;
             inputs["storageDescriptor"] = state ? state.storageDescriptor : undefined;
@@ -183,7 +195,7 @@ export class CatalogTable extends pulumi.CustomResource {
             inputs["viewOriginalText"] = state ? state.viewOriginalText : undefined;
         } else {
             const args = argsOrState as CatalogTableArgs | undefined;
-            if (!args || args.databaseName === undefined) {
+            if ((!args || args.databaseName === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'databaseName'");
             }
             inputs["catalogId"] = args ? args.catalogId : undefined;
@@ -192,6 +204,7 @@ export class CatalogTable extends pulumi.CustomResource {
             inputs["name"] = args ? args.name : undefined;
             inputs["owner"] = args ? args.owner : undefined;
             inputs["parameters"] = args ? args.parameters : undefined;
+            inputs["partitionIndices"] = args ? args.partitionIndices : undefined;
             inputs["partitionKeys"] = args ? args.partitionKeys : undefined;
             inputs["retention"] = args ? args.retention : undefined;
             inputs["storageDescriptor"] = args ? args.storageDescriptor : undefined;
@@ -244,7 +257,11 @@ export interface CatalogTableState {
      */
     readonly parameters?: pulumi.Input<{[key: string]: pulumi.Input<string>}>;
     /**
-     * A list of columns by which the table is partitioned. Only primitive types are supported as partition keys.
+     * A list of partition indexes. see Partition Index below.
+     */
+    readonly partitionIndices?: pulumi.Input<pulumi.Input<inputs.glue.CatalogTablePartitionIndex>[]>;
+    /**
+     * A list of columns by which the table is partitioned. Only primitive types are supported as partition keys. see Partition Keys below.
      */
     readonly partitionKeys?: pulumi.Input<pulumi.Input<inputs.glue.CatalogTablePartitionKey>[]>;
     /**
@@ -256,7 +273,7 @@ export interface CatalogTableState {
      */
     readonly storageDescriptor?: pulumi.Input<inputs.glue.CatalogTableStorageDescriptor>;
     /**
-     * The type of this table (EXTERNAL_TABLE, VIRTUAL_VIEW, etc.).
+     * The type of this table (EXTERNAL_TABLE, VIRTUAL_VIEW, etc.). While optional, some Athena DDL queries such as `ALTER TABLE` and `SHOW CREATE TABLE` will fail if this argument is empty.
      */
     readonly tableType?: pulumi.Input<string>;
     /**
@@ -298,7 +315,11 @@ export interface CatalogTableArgs {
      */
     readonly parameters?: pulumi.Input<{[key: string]: pulumi.Input<string>}>;
     /**
-     * A list of columns by which the table is partitioned. Only primitive types are supported as partition keys.
+     * A list of partition indexes. see Partition Index below.
+     */
+    readonly partitionIndices?: pulumi.Input<pulumi.Input<inputs.glue.CatalogTablePartitionIndex>[]>;
+    /**
+     * A list of columns by which the table is partitioned. Only primitive types are supported as partition keys. see Partition Keys below.
      */
     readonly partitionKeys?: pulumi.Input<pulumi.Input<inputs.glue.CatalogTablePartitionKey>[]>;
     /**
@@ -310,7 +331,7 @@ export interface CatalogTableArgs {
      */
     readonly storageDescriptor?: pulumi.Input<inputs.glue.CatalogTableStorageDescriptor>;
     /**
-     * The type of this table (EXTERNAL_TABLE, VIRTUAL_VIEW, etc.).
+     * The type of this table (EXTERNAL_TABLE, VIRTUAL_VIEW, etc.). While optional, some Athena DDL queries such as `ALTER TABLE` and `SHOW CREATE TABLE` will fail if this argument is empty.
      */
     readonly tableType?: pulumi.Input<string>;
     /**

@@ -2,6 +2,7 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 /**
@@ -32,13 +33,13 @@ import * as utilities from "../utilities";
  *     fromPort: 0,
  *     toPort: 65535,
  *     protocol: "tcp",
- *     cidrBlocks: aws_vpc.example.cidr_block,
+ *     cidrBlocks: [aws_vpc.example.cidr_block],
  *     securityGroupId: "sg-123456",
  * });
  * ```
  * ## Usage with prefix list IDs
  *
- * Prefix list IDs are manged by AWS internally. Prefix list IDs
+ * Prefix list IDs are managed by AWS internally. Prefix list IDs
  * are associated with a prefix list name, or service name, that is linked to a specific region.
  * Prefix list IDs are exported on VPC Endpoints, so you can use this format:
  *
@@ -47,15 +48,54 @@ import * as utilities from "../utilities";
  * import * as aws from "@pulumi/aws";
  *
  * // ...
- * const myEndpoint = new aws.ec2.VpcEndpoint("my_endpoint", {});
- * const allowAll = new aws.ec2.SecurityGroupRule("allow_all", {
- *     fromPort: 0,
- *     prefixListIds: [myEndpoint.prefixListId],
- *     protocol: "-1",
- *     securityGroupId: "sg-123456",
- *     toPort: 0,
+ * const myEndpoint = new aws.ec2.VpcEndpoint("myEndpoint", {});
+ * // ...
+ * const allowAll = new aws.ec2.SecurityGroupRule("allowAll", {
  *     type: "egress",
+ *     toPort: 0,
+ *     protocol: "-1",
+ *     prefixListIds: [myEndpoint.prefixListId],
+ *     fromPort: 0,
+ *     securityGroupId: "sg-123456",
  * });
+ * ```
+ *
+ * ## Import
+ *
+ * ### Examples Import an ingress rule in security group `sg-6e616f6d69` for TCP port 8000 with an IPv4 destination CIDR of `10.0.3.0/24`console
+ *
+ * ```sh
+ *  $ pulumi import aws:ec2/securityGroupRule:SecurityGroupRule ingress sg-6e616f6d69_ingress_tcp_8000_8000_10.0.3.0/24
+ * ```
+ *
+ *  Import a rule with various IPv4 and IPv6 source CIDR blocksconsole
+ *
+ * ```sh
+ *  $ pulumi import aws:ec2/securityGroupRule:SecurityGroupRule ingress sg-4973616163_ingress_tcp_100_121_10.1.0.0/16_2001:db8::/48_10.2.0.0/16_2002:db8::/48
+ * ```
+ *
+ *  Import a rule, applicable to all ports, with a protocol other than TCP/UDP/ICMP/ALL, e.g., Multicast Transport Protocol (MTP), using the IANA protocol number, e.g., 92. console
+ *
+ * ```sh
+ *  $ pulumi import aws:ec2/securityGroupRule:SecurityGroupRule ingress sg-6777656e646f6c796e_ingress_92_0_65536_10.0.3.0/24_10.0.4.0/24
+ * ```
+ *
+ *  Import an egress rule with a prefix list ID destinationconsole
+ *
+ * ```sh
+ *  $ pulumi import aws:ec2/securityGroupRule:SecurityGroupRule egress sg-62726f6479_egress_tcp_8000_8000_pl-6469726b
+ * ```
+ *
+ *  Import a rule applicable to all protocols and ports with a security group sourceconsole
+ *
+ * ```sh
+ *  $ pulumi import aws:ec2/securityGroupRule:SecurityGroupRule ingress_rule sg-7472697374616e_ingress_all_0_65536_sg-6176657279
+ * ```
+ *
+ *  Import a rule that has itself and an IPv6 CIDR block as sourcesconsole
+ *
+ * ```sh
+ *  $ pulumi import aws:ec2/securityGroupRule:SecurityGroupRule rule_name sg-656c65616e6f72_ingress_tcp_80_80_self_2001:db8::/48
  * ```
  */
 export class SecurityGroupRule extends pulumi.CustomResource {
@@ -160,19 +200,19 @@ export class SecurityGroupRule extends pulumi.CustomResource {
             inputs["type"] = state ? state.type : undefined;
         } else {
             const args = argsOrState as SecurityGroupRuleArgs | undefined;
-            if (!args || args.fromPort === undefined) {
+            if ((!args || args.fromPort === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'fromPort'");
             }
-            if (!args || args.protocol === undefined) {
+            if ((!args || args.protocol === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'protocol'");
             }
-            if (!args || args.securityGroupId === undefined) {
+            if ((!args || args.securityGroupId === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'securityGroupId'");
             }
-            if (!args || args.toPort === undefined) {
+            if ((!args || args.toPort === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'toPort'");
             }
-            if (!args || args.type === undefined) {
+            if ((!args || args.type === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'type'");
             }
             inputs["cidrBlocks"] = args ? args.cidrBlocks : undefined;
@@ -226,7 +266,7 @@ export interface SecurityGroupRuleState {
     /**
      * The protocol. If not icmp, icmpv6, tcp, udp, or all use the [protocol number](https://www.iana.org/assignments/protocol-numbers/protocol-numbers.xhtml)
      */
-    readonly protocol?: pulumi.Input<string>;
+    readonly protocol?: pulumi.Input<string | enums.ec2.ProtocolType>;
     /**
      * The security group to apply this rule to.
      */
@@ -280,7 +320,7 @@ export interface SecurityGroupRuleArgs {
     /**
      * The protocol. If not icmp, icmpv6, tcp, udp, or all use the [protocol number](https://www.iana.org/assignments/protocol-numbers/protocol-numbers.xhtml)
      */
-    readonly protocol: pulumi.Input<string>;
+    readonly protocol: pulumi.Input<string | enums.ec2.ProtocolType>;
     /**
      * The security group to apply this rule to.
      */

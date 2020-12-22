@@ -12,11 +12,11 @@ import * as utilities from "../utilities";
  * ```typescript
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
- * import * as fs from "fs";
+ * import * from "fs";
  *
  * const example = new aws.cloudfront.PublicKey("example", {
  *     comment: "test public key",
- *     encodedKey: fs.readFileSync("public_key.pem", "utf-8"),
+ *     encodedKey: fs.readFileSync("public_key.pem"),
  * });
  * ```
  */
@@ -93,7 +93,7 @@ export class PublicKey extends pulumi.CustomResource {
             inputs["namePrefix"] = state ? state.namePrefix : undefined;
         } else {
             const args = argsOrState as PublicKeyArgs | undefined;
-            if (!args || args.encodedKey === undefined) {
+            if ((!args || args.encodedKey === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'encodedKey'");
             }
             inputs["comment"] = args ? args.comment : undefined;

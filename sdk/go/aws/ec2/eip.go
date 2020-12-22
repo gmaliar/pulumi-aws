@@ -4,6 +4,7 @@
 package ec2
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
@@ -23,14 +24,14 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/ec2"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/ec2"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
 // func main() {
 // 	pulumi.Run(func(ctx *pulumi.Context) error {
 // 		_, err := ec2.NewEip(ctx, "lb", &ec2.EipArgs{
-// 			Instance: pulumi.String(aws_instance.Web.Id),
+// 			Instance: pulumi.Any(aws_instance.Web.Id),
 // 			Vpc:      pulumi.Bool(true),
 // 		})
 // 		if err != nil {
@@ -47,34 +48,34 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/ec2"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/ec2"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
 // func main() {
 // 	pulumi.Run(func(ctx *pulumi.Context) error {
 // 		_, err := ec2.NewNetworkInterface(ctx, "multi_ip", &ec2.NetworkInterfaceArgs{
+// 			SubnetId: pulumi.Any(aws_subnet.Main.Id),
 // 			PrivateIps: pulumi.StringArray{
 // 				pulumi.String("10.0.0.10"),
 // 				pulumi.String("10.0.0.11"),
 // 			},
-// 			SubnetId: pulumi.String(aws_subnet.Main.Id),
 // 		})
 // 		if err != nil {
 // 			return err
 // 		}
 // 		_, err = ec2.NewEip(ctx, "one", &ec2.EipArgs{
-// 			AssociateWithPrivateIp: pulumi.String("10.0.0.10"),
-// 			NetworkInterface:       multi_ip.ID(),
 // 			Vpc:                    pulumi.Bool(true),
+// 			NetworkInterface:       multi_ip.ID(),
+// 			AssociateWithPrivateIp: pulumi.String("10.0.0.10"),
 // 		})
 // 		if err != nil {
 // 			return err
 // 		}
 // 		_, err = ec2.NewEip(ctx, "two", &ec2.EipArgs{
-// 			AssociateWithPrivateIp: pulumi.String("10.0.0.11"),
-// 			NetworkInterface:       multi_ip.ID(),
 // 			Vpc:                    pulumi.Bool(true),
+// 			NetworkInterface:       multi_ip.ID(),
+// 			AssociateWithPrivateIp: pulumi.String("10.0.0.11"),
 // 		})
 // 		if err != nil {
 // 			return err
@@ -90,7 +91,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/ec2"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/ec2"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -103,18 +104,18 @@ import (
 // 		if err != nil {
 // 			return err
 // 		}
-// 		_, err = ec2.NewInternetGateway(ctx, "gw", &ec2.InternetGatewayArgs{
+// 		gw, err := ec2.NewInternetGateway(ctx, "gw", &ec2.InternetGatewayArgs{
 // 			VpcId: _default.ID(),
 // 		})
 // 		if err != nil {
 // 			return err
 // 		}
 // 		tfTestSubnet, err := ec2.NewSubnet(ctx, "tfTestSubnet", &ec2.SubnetArgs{
+// 			VpcId:               _default.ID(),
 // 			CidrBlock:           pulumi.String("10.0.0.0/24"),
 // 			MapPublicIpOnLaunch: pulumi.Bool(true),
-// 			VpcId:               _default.ID(),
 // 		}, pulumi.DependsOn([]pulumi.Resource{
-// 			"aws_internet_gateway.gw",
+// 			gw,
 // 		}))
 // 		if err != nil {
 // 			return err
@@ -129,11 +130,11 @@ import (
 // 			return err
 // 		}
 // 		_, err = ec2.NewEip(ctx, "bar", &ec2.EipArgs{
-// 			AssociateWithPrivateIp: pulumi.String("10.0.0.12"),
-// 			Instance:               foo.ID(),
 // 			Vpc:                    pulumi.Bool(true),
+// 			Instance:               foo.ID(),
+// 			AssociateWithPrivateIp: pulumi.String("10.0.0.12"),
 // 		}, pulumi.DependsOn([]pulumi.Resource{
-// 			"aws_internet_gateway.gw",
+// 			gw,
 // 		}))
 // 		if err != nil {
 // 			return err
@@ -149,7 +150,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/ec2"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/ec2"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -166,6 +167,22 @@ import (
 // 	})
 // }
 // ```
+//
+// ## Import
+//
+// EIPs in a VPC can be imported using their Allocation ID, e.g.
+//
+// ```sh
+//  $ pulumi import aws:ec2/eip:Eip bar eipalloc-00a10e96
+// ```
+//
+//  EIPs in EC2 Classic can be imported using their Public IP, e.g.
+//
+// ```sh
+//  $ pulumi import aws:ec2/eip:Eip bar 52.0.0.0
+// ```
+//
+//  [1]https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_AssociateAddress.html
 type Eip struct {
 	pulumi.CustomResourceState
 
@@ -179,9 +196,12 @@ type Eip struct {
 	CustomerOwnedIp pulumi.StringOutput `pulumi:"customerOwnedIp"`
 	// The  ID  of a customer-owned address pool. For more on customer owned IP addressed check out [Customer-owned IP addresses guide](https://docs.aws.amazon.com/outposts/latest/userguide/outposts-networking-components.html#ip-addressing)
 	CustomerOwnedIpv4Pool pulumi.StringPtrOutput `pulumi:"customerOwnedIpv4Pool"`
-	Domain                pulumi.StringOutput    `pulumi:"domain"`
+	// Indicates if this EIP is for use in VPC (`vpc`) or EC2 Classic (`standard`).
+	Domain pulumi.StringOutput `pulumi:"domain"`
 	// EC2 instance ID.
 	Instance pulumi.StringOutput `pulumi:"instance"`
+	// The location from which the IP address is advertised. Use this parameter to limit the address to this location.
+	NetworkBorderGroup pulumi.StringOutput `pulumi:"networkBorderGroup"`
 	// Network interface ID to associate with.
 	NetworkInterface pulumi.StringOutput `pulumi:"networkInterface"`
 	// The Private DNS associated with the Elastic IP address (if in VPC).
@@ -194,7 +214,7 @@ type Eip struct {
 	PublicIp pulumi.StringOutput `pulumi:"publicIp"`
 	// EC2 IPv4 address pool identifier or `amazon`. This option is only available for VPC EIPs.
 	PublicIpv4Pool pulumi.StringOutput `pulumi:"publicIpv4Pool"`
-	// A map of tags to assign to the resource.
+	// A map of tags to assign to the resource. Tags can only be applied to EIPs in a VPC.
 	Tags pulumi.StringMapOutput `pulumi:"tags"`
 	// Boolean if the EIP is in a VPC or not.
 	Vpc pulumi.BoolOutput `pulumi:"vpc"`
@@ -206,6 +226,7 @@ func NewEip(ctx *pulumi.Context,
 	if args == nil {
 		args = &EipArgs{}
 	}
+
 	var resource Eip
 	err := ctx.RegisterResource("aws:ec2/eip:Eip", name, args, &resource, opts...)
 	if err != nil {
@@ -238,9 +259,12 @@ type eipState struct {
 	CustomerOwnedIp *string `pulumi:"customerOwnedIp"`
 	// The  ID  of a customer-owned address pool. For more on customer owned IP addressed check out [Customer-owned IP addresses guide](https://docs.aws.amazon.com/outposts/latest/userguide/outposts-networking-components.html#ip-addressing)
 	CustomerOwnedIpv4Pool *string `pulumi:"customerOwnedIpv4Pool"`
-	Domain                *string `pulumi:"domain"`
+	// Indicates if this EIP is for use in VPC (`vpc`) or EC2 Classic (`standard`).
+	Domain *string `pulumi:"domain"`
 	// EC2 instance ID.
 	Instance *string `pulumi:"instance"`
+	// The location from which the IP address is advertised. Use this parameter to limit the address to this location.
+	NetworkBorderGroup *string `pulumi:"networkBorderGroup"`
 	// Network interface ID to associate with.
 	NetworkInterface *string `pulumi:"networkInterface"`
 	// The Private DNS associated with the Elastic IP address (if in VPC).
@@ -253,7 +277,7 @@ type eipState struct {
 	PublicIp *string `pulumi:"publicIp"`
 	// EC2 IPv4 address pool identifier or `amazon`. This option is only available for VPC EIPs.
 	PublicIpv4Pool *string `pulumi:"publicIpv4Pool"`
-	// A map of tags to assign to the resource.
+	// A map of tags to assign to the resource. Tags can only be applied to EIPs in a VPC.
 	Tags map[string]string `pulumi:"tags"`
 	// Boolean if the EIP is in a VPC or not.
 	Vpc *bool `pulumi:"vpc"`
@@ -270,9 +294,12 @@ type EipState struct {
 	CustomerOwnedIp pulumi.StringPtrInput
 	// The  ID  of a customer-owned address pool. For more on customer owned IP addressed check out [Customer-owned IP addresses guide](https://docs.aws.amazon.com/outposts/latest/userguide/outposts-networking-components.html#ip-addressing)
 	CustomerOwnedIpv4Pool pulumi.StringPtrInput
-	Domain                pulumi.StringPtrInput
+	// Indicates if this EIP is for use in VPC (`vpc`) or EC2 Classic (`standard`).
+	Domain pulumi.StringPtrInput
 	// EC2 instance ID.
 	Instance pulumi.StringPtrInput
+	// The location from which the IP address is advertised. Use this parameter to limit the address to this location.
+	NetworkBorderGroup pulumi.StringPtrInput
 	// Network interface ID to associate with.
 	NetworkInterface pulumi.StringPtrInput
 	// The Private DNS associated with the Elastic IP address (if in VPC).
@@ -285,7 +312,7 @@ type EipState struct {
 	PublicIp pulumi.StringPtrInput
 	// EC2 IPv4 address pool identifier or `amazon`. This option is only available for VPC EIPs.
 	PublicIpv4Pool pulumi.StringPtrInput
-	// A map of tags to assign to the resource.
+	// A map of tags to assign to the resource. Tags can only be applied to EIPs in a VPC.
 	Tags pulumi.StringMapInput
 	// Boolean if the EIP is in a VPC or not.
 	Vpc pulumi.BoolPtrInput
@@ -304,11 +331,13 @@ type eipArgs struct {
 	CustomerOwnedIpv4Pool *string `pulumi:"customerOwnedIpv4Pool"`
 	// EC2 instance ID.
 	Instance *string `pulumi:"instance"`
+	// The location from which the IP address is advertised. Use this parameter to limit the address to this location.
+	NetworkBorderGroup *string `pulumi:"networkBorderGroup"`
 	// Network interface ID to associate with.
 	NetworkInterface *string `pulumi:"networkInterface"`
 	// EC2 IPv4 address pool identifier or `amazon`. This option is only available for VPC EIPs.
 	PublicIpv4Pool *string `pulumi:"publicIpv4Pool"`
-	// A map of tags to assign to the resource.
+	// A map of tags to assign to the resource. Tags can only be applied to EIPs in a VPC.
 	Tags map[string]string `pulumi:"tags"`
 	// Boolean if the EIP is in a VPC or not.
 	Vpc *bool `pulumi:"vpc"`
@@ -324,11 +353,13 @@ type EipArgs struct {
 	CustomerOwnedIpv4Pool pulumi.StringPtrInput
 	// EC2 instance ID.
 	Instance pulumi.StringPtrInput
+	// The location from which the IP address is advertised. Use this parameter to limit the address to this location.
+	NetworkBorderGroup pulumi.StringPtrInput
 	// Network interface ID to associate with.
 	NetworkInterface pulumi.StringPtrInput
 	// EC2 IPv4 address pool identifier or `amazon`. This option is only available for VPC EIPs.
 	PublicIpv4Pool pulumi.StringPtrInput
-	// A map of tags to assign to the resource.
+	// A map of tags to assign to the resource. Tags can only be applied to EIPs in a VPC.
 	Tags pulumi.StringMapInput
 	// Boolean if the EIP is in a VPC or not.
 	Vpc pulumi.BoolPtrInput
@@ -336,4 +367,43 @@ type EipArgs struct {
 
 func (EipArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*eipArgs)(nil)).Elem()
+}
+
+type EipInput interface {
+	pulumi.Input
+
+	ToEipOutput() EipOutput
+	ToEipOutputWithContext(ctx context.Context) EipOutput
+}
+
+func (Eip) ElementType() reflect.Type {
+	return reflect.TypeOf((*Eip)(nil)).Elem()
+}
+
+func (i Eip) ToEipOutput() EipOutput {
+	return i.ToEipOutputWithContext(context.Background())
+}
+
+func (i Eip) ToEipOutputWithContext(ctx context.Context) EipOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(EipOutput)
+}
+
+type EipOutput struct {
+	*pulumi.OutputState
+}
+
+func (EipOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*EipOutput)(nil)).Elem()
+}
+
+func (o EipOutput) ToEipOutput() EipOutput {
+	return o
+}
+
+func (o EipOutput) ToEipOutputWithContext(ctx context.Context) EipOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(EipOutput{})
 }

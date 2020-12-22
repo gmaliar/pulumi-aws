@@ -4,6 +4,7 @@
 package ssm
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -20,22 +21,20 @@ import (
 // import (
 // 	"fmt"
 //
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/s3"
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/ssm"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/s3"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/ssm"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
 // func main() {
 // 	pulumi.Run(func(ctx *pulumi.Context) error {
-// 		hogeBucket, err := s3.NewBucket(ctx, "hogeBucket", &s3.BucketArgs{
-// 			Region: pulumi.String("us-east-1"),
-// 		})
+// 		hogeBucket, err := s3.NewBucket(ctx, "hogeBucket", nil)
 // 		if err != nil {
 // 			return err
 // 		}
 // 		_, err = s3.NewBucketPolicy(ctx, "hogeBucketPolicy", &s3.BucketPolicyArgs{
 // 			Bucket: hogeBucket.Bucket,
-// 			Policy: pulumi.String(fmt.Sprintf("%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v", "{\n", "    \"Version\": \"2012-10-17\",\n", "    \"Statement\": [\n", "        {\n", "            \"Sid\": \"SSMBucketPermissionsCheck\",\n", "            \"Effect\": \"Allow\",\n", "            \"Principal\": {\n", "                \"Service\": \"ssm.amazonaws.com\"\n", "            },\n", "            \"Action\": \"s3:GetBucketAcl\",\n", "            \"Resource\": \"arn:aws:s3:::tf-test-bucket-1234\"\n", "        },\n", "        {\n", "            \"Sid\": \" SSMBucketDelivery\",\n", "            \"Effect\": \"Allow\",\n", "            \"Principal\": {\n", "                \"Service\": \"ssm.amazonaws.com\"\n", "            },\n", "            \"Action\": \"s3:PutObject\",\n", "            \"Resource\": [\"arn:aws:s3:::tf-test-bucket-1234/*\"],\n", "            \"Condition\": {\n", "                \"StringEquals\": {\n", "                    \"s3:x-amz-acl\": \"bucket-owner-full-control\"\n", "                }\n", "            }\n", "        }\n", "    ]\n", "}\n", "\n")),
+// 			Policy: pulumi.String(fmt.Sprintf("%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v", "{\n", "    \"Version\": \"2012-10-17\",\n", "    \"Statement\": [\n", "        {\n", "            \"Sid\": \"SSMBucketPermissionsCheck\",\n", "            \"Effect\": \"Allow\",\n", "            \"Principal\": {\n", "                \"Service\": \"ssm.amazonaws.com\"\n", "            },\n", "            \"Action\": \"s3:GetBucketAcl\",\n", "            \"Resource\": \"arn:aws:s3:::tf-test-bucket-1234\"\n", "        },\n", "        {\n", "            \"Sid\": \" SSMBucketDelivery\",\n", "            \"Effect\": \"Allow\",\n", "            \"Principal\": {\n", "                \"Service\": \"ssm.amazonaws.com\"\n", "            },\n", "            \"Action\": \"s3:PutObject\",\n", "            \"Resource\": [\"arn:aws:s3:::tf-test-bucket-1234/*\"],\n", "            \"Condition\": {\n", "                \"StringEquals\": {\n", "                    \"s3:x-amz-acl\": \"bucket-owner-full-control\"\n", "                }\n", "            }\n", "        }\n", "    ]\n", "}\n")),
 // 		})
 // 		if err != nil {
 // 			return err
@@ -53,6 +52,14 @@ import (
 // 	})
 // }
 // ```
+//
+// ## Import
+//
+// SSM resource data sync can be imported using the `name`, e.g.
+//
+// ```sh
+//  $ pulumi import aws:ssm/resourceDataSync:ResourceDataSync example example-name
+// ```
 type ResourceDataSync struct {
 	pulumi.CustomResourceState
 
@@ -65,11 +72,12 @@ type ResourceDataSync struct {
 // NewResourceDataSync registers a new resource with the given unique name, arguments, and options.
 func NewResourceDataSync(ctx *pulumi.Context,
 	name string, args *ResourceDataSyncArgs, opts ...pulumi.ResourceOption) (*ResourceDataSync, error) {
-	if args == nil || args.S3Destination == nil {
-		return nil, errors.New("missing required argument 'S3Destination'")
-	}
 	if args == nil {
-		args = &ResourceDataSyncArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.S3Destination == nil {
+		return nil, errors.New("invalid value for required argument 'S3Destination'")
 	}
 	var resource ResourceDataSync
 	err := ctx.RegisterResource("aws:ssm/resourceDataSync:ResourceDataSync", name, args, &resource, opts...)
@@ -127,4 +135,43 @@ type ResourceDataSyncArgs struct {
 
 func (ResourceDataSyncArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*resourceDataSyncArgs)(nil)).Elem()
+}
+
+type ResourceDataSyncInput interface {
+	pulumi.Input
+
+	ToResourceDataSyncOutput() ResourceDataSyncOutput
+	ToResourceDataSyncOutputWithContext(ctx context.Context) ResourceDataSyncOutput
+}
+
+func (ResourceDataSync) ElementType() reflect.Type {
+	return reflect.TypeOf((*ResourceDataSync)(nil)).Elem()
+}
+
+func (i ResourceDataSync) ToResourceDataSyncOutput() ResourceDataSyncOutput {
+	return i.ToResourceDataSyncOutputWithContext(context.Background())
+}
+
+func (i ResourceDataSync) ToResourceDataSyncOutputWithContext(ctx context.Context) ResourceDataSyncOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(ResourceDataSyncOutput)
+}
+
+type ResourceDataSyncOutput struct {
+	*pulumi.OutputState
+}
+
+func (ResourceDataSyncOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*ResourceDataSyncOutput)(nil)).Elem()
+}
+
+func (o ResourceDataSyncOutput) ToResourceDataSyncOutput() ResourceDataSyncOutput {
+	return o
+}
+
+func (o ResourceDataSyncOutput) ToResourceDataSyncOutputWithContext(ctx context.Context) ResourceDataSyncOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(ResourceDataSyncOutput{})
 }

@@ -34,11 +34,19 @@ namespace Pulumi.Aws.CloudWatch
     /// 
     /// }
     /// ```
+    /// 
+    /// ## Import
+    /// 
+    /// Cloudwatch Log Groups can be imported using the `name`, e.g.
+    /// 
+    /// ```sh
+    ///  $ pulumi import aws:cloudwatch/logGroup:LogGroup test_group yada
+    /// ```
     /// </summary>
     public partial class LogGroup : Pulumi.CustomResource
     {
         /// <summary>
-        /// The Amazon Resource Name (ARN) specifying the log group.
+        /// The Amazon Resource Name (ARN) specifying the log group. Any `:*` suffix added by the API, denoting all CloudWatch Log Streams under the CloudWatch Log Group, is removed for greater compatibility with other AWS services that do not accept the suffix.
         /// </summary>
         [Output("arn")]
         public Output<string> Arn { get; private set; } = null!;
@@ -65,7 +73,8 @@ namespace Pulumi.Aws.CloudWatch
 
         /// <summary>
         /// Specifies the number of days
-        /// you want to retain log events in the specified log group.  Possible values are: 1, 3, 5, 7, 14, 30, 60, 90, 120, 150, 180, 365, 400, 545, 731, 1827, and 3653.
+        /// you want to retain log events in the specified log group.  Possible values are: 1, 3, 5, 7, 14, 30, 60, 90, 120, 150, 180, 365, 400, 545, 731, 1827, 3653, and 0.
+        /// If you select 0, the events in the log group are always retained and never expire.
         /// </summary>
         [Output("retentionInDays")]
         public Output<int?> RetentionInDays { get; private set; } = null!;
@@ -144,7 +153,8 @@ namespace Pulumi.Aws.CloudWatch
 
         /// <summary>
         /// Specifies the number of days
-        /// you want to retain log events in the specified log group.  Possible values are: 1, 3, 5, 7, 14, 30, 60, 90, 120, 150, 180, 365, 400, 545, 731, 1827, and 3653.
+        /// you want to retain log events in the specified log group.  Possible values are: 1, 3, 5, 7, 14, 30, 60, 90, 120, 150, 180, 365, 400, 545, 731, 1827, 3653, and 0.
+        /// If you select 0, the events in the log group are always retained and never expire.
         /// </summary>
         [Input("retentionInDays")]
         public Input<int>? RetentionInDays { get; set; }
@@ -169,7 +179,7 @@ namespace Pulumi.Aws.CloudWatch
     public sealed class LogGroupState : Pulumi.ResourceArgs
     {
         /// <summary>
-        /// The Amazon Resource Name (ARN) specifying the log group.
+        /// The Amazon Resource Name (ARN) specifying the log group. Any `:*` suffix added by the API, denoting all CloudWatch Log Streams under the CloudWatch Log Group, is removed for greater compatibility with other AWS services that do not accept the suffix.
         /// </summary>
         [Input("arn")]
         public Input<string>? Arn { get; set; }
@@ -196,7 +206,8 @@ namespace Pulumi.Aws.CloudWatch
 
         /// <summary>
         /// Specifies the number of days
-        /// you want to retain log events in the specified log group.  Possible values are: 1, 3, 5, 7, 14, 30, 60, 90, 120, 150, 180, 365, 400, 545, 731, 1827, and 3653.
+        /// you want to retain log events in the specified log group.  Possible values are: 1, 3, 5, 7, 14, 30, 60, 90, 120, 150, 180, 365, 400, 545, 731, 1827, 3653, and 0.
+        /// If you select 0, the events in the log group are always retained and never expire.
         /// </summary>
         [Input("retentionInDays")]
         public Input<int>? RetentionInDays { get; set; }

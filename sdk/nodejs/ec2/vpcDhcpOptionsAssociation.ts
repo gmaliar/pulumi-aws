@@ -13,15 +13,23 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const dnsResolver = new aws.ec2.VpcDhcpOptionsAssociation("dns_resolver", {
- *     dhcpOptionsId: aws_vpc_dhcp_options_foo.id,
- *     vpcId: aws_vpc_foo.id,
+ * const dnsResolver = new aws.ec2.VpcDhcpOptionsAssociation("dnsResolver", {
+ *     vpcId: aws_vpc.foo.id,
+ *     dhcpOptionsId: aws_vpc_dhcp_options.foo.id,
  * });
  * ```
  * ## Remarks
  *
  * * You can only associate one DHCP Options Set to a given VPC ID.
  * * Removing the DHCP Options Association automatically sets AWS's `default` DHCP Options Set to the VPC.
+ *
+ * ## Import
+ *
+ * DHCP associations can be imported by providing the VPC ID associated with the options
+ *
+ * ```sh
+ *  $ pulumi import aws:ec2/vpcDhcpOptionsAssociation:VpcDhcpOptionsAssociation imported vpc-0f001273ec18911b1
+ * ```
  */
 export class VpcDhcpOptionsAssociation extends pulumi.CustomResource {
     /**
@@ -76,10 +84,10 @@ export class VpcDhcpOptionsAssociation extends pulumi.CustomResource {
             inputs["vpcId"] = state ? state.vpcId : undefined;
         } else {
             const args = argsOrState as VpcDhcpOptionsAssociationArgs | undefined;
-            if (!args || args.dhcpOptionsId === undefined) {
+            if ((!args || args.dhcpOptionsId === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'dhcpOptionsId'");
             }
-            if (!args || args.vpcId === undefined) {
+            if ((!args || args.vpcId === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'vpcId'");
             }
             inputs["dhcpOptionsId"] = args ? args.dhcpOptionsId : undefined;

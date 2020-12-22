@@ -22,18 +22,24 @@ import * as utilities from "../utilities";
  * const web = new aws.ec2.Instance("web", {
  *     ami: "ami-21f78e11",
  *     availabilityZone: "us-west-2a",
- *     instanceType: "t1.micro",
+ *     instanceType: "t2.micro",
  *     tags: {
  *         Name: "HelloWorld",
  *     },
  * });
- * const example = new aws.ec2.Eip("example", {
- *     vpc: true,
- * });
- * const eipAssoc = new aws.ec2.EipAssociation("eip_assoc", {
- *     allocationId: example.id,
+ * const example = new aws.ec2.Eip("example", {vpc: true});
+ * const eipAssoc = new aws.ec2.EipAssociation("eipAssoc", {
  *     instanceId: web.id,
+ *     allocationId: example.id,
  * });
+ * ```
+ *
+ * ## Import
+ *
+ * EIP Assocations can be imported using their association ID.
+ *
+ * ```sh
+ *  $ pulumi import aws:ec2/eipAssociation:EipAssociation test eipassoc-ab12c345
  * ```
  */
 export class EipAssociation extends pulumi.CustomResource {

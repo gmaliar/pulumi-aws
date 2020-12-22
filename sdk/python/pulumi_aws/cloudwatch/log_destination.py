@@ -5,28 +5,22 @@
 import warnings
 import pulumi
 import pulumi.runtime
-from typing import Union
-from .. import utilities, tables
+from typing import Any, Mapping, Optional, Sequence, Union
+from .. import _utilities, _tables
+
+__all__ = ['LogDestination']
 
 
 class LogDestination(pulumi.CustomResource):
-    arn: pulumi.Output[str]
-    """
-    The Amazon Resource Name (ARN) specifying the log destination.
-    """
-    name: pulumi.Output[str]
-    """
-    A name for the log destination
-    """
-    role_arn: pulumi.Output[str]
-    """
-    The ARN of an IAM role that grants Amazon CloudWatch Logs permissions to put data into the target
-    """
-    target_arn: pulumi.Output[str]
-    """
-    The ARN of the target Amazon Kinesis stream resource for the destination
-    """
-    def __init__(__self__, resource_name, opts=None, name=None, role_arn=None, target_arn=None, __props__=None, __name__=None, __opts__=None):
+    def __init__(__self__,
+                 resource_name: str,
+                 opts: Optional[pulumi.ResourceOptions] = None,
+                 name: Optional[pulumi.Input[str]] = None,
+                 role_arn: Optional[pulumi.Input[str]] = None,
+                 target_arn: Optional[pulumi.Input[str]] = None,
+                 __props__=None,
+                 __name__=None,
+                 __opts__=None):
         """
         Provides a CloudWatch Logs destination resource.
 
@@ -39,6 +33,14 @@ class LogDestination(pulumi.CustomResource):
         test_destination = aws.cloudwatch.LogDestination("testDestination",
             role_arn=aws_iam_role["iam_for_cloudwatch"]["arn"],
             target_arn=aws_kinesis_stream["kinesis_for_cloudwatch"]["arn"])
+        ```
+
+        ## Import
+
+        CloudWatch Logs destinations can be imported using the `name`, e.g.
+
+        ```sh
+         $ pulumi import aws:cloudwatch/logDestination:LogDestination test_destination test_destination
         ```
 
         :param str resource_name: The name of the resource.
@@ -58,17 +60,17 @@ class LogDestination(pulumi.CustomResource):
         if not isinstance(opts, pulumi.ResourceOptions):
             raise TypeError('Expected resource options to be a ResourceOptions instance')
         if opts.version is None:
-            opts.version = utilities.get_version()
+            opts.version = _utilities.get_version()
         if opts.id is None:
             if __props__ is not None:
                 raise TypeError('__props__ is only valid when passed in combination with a valid opts.id to get an existing resource')
             __props__ = dict()
 
             __props__['name'] = name
-            if role_arn is None:
+            if role_arn is None and not opts.urn:
                 raise TypeError("Missing required property 'role_arn'")
             __props__['role_arn'] = role_arn
-            if target_arn is None:
+            if target_arn is None and not opts.urn:
                 raise TypeError("Missing required property 'target_arn'")
             __props__['target_arn'] = target_arn
             __props__['arn'] = None
@@ -79,13 +81,19 @@ class LogDestination(pulumi.CustomResource):
             opts)
 
     @staticmethod
-    def get(resource_name, id, opts=None, arn=None, name=None, role_arn=None, target_arn=None):
+    def get(resource_name: str,
+            id: pulumi.Input[str],
+            opts: Optional[pulumi.ResourceOptions] = None,
+            arn: Optional[pulumi.Input[str]] = None,
+            name: Optional[pulumi.Input[str]] = None,
+            role_arn: Optional[pulumi.Input[str]] = None,
+            target_arn: Optional[pulumi.Input[str]] = None) -> 'LogDestination':
         """
         Get an existing LogDestination resource's state with the given name, id, and optional extra
         properties used to qualify the lookup.
 
         :param str resource_name: The unique name of the resulting resource.
-        :param str id: The unique provider ID of the resource to lookup.
+        :param pulumi.Input[str] id: The unique provider ID of the resource to lookup.
         :param pulumi.ResourceOptions opts: Options for the resource.
         :param pulumi.Input[str] arn: The Amazon Resource Name (ARN) specifying the log destination.
         :param pulumi.Input[str] name: A name for the log destination
@@ -102,8 +110,41 @@ class LogDestination(pulumi.CustomResource):
         __props__["target_arn"] = target_arn
         return LogDestination(resource_name, opts=opts, __props__=__props__)
 
+    @property
+    @pulumi.getter
+    def arn(self) -> pulumi.Output[str]:
+        """
+        The Amazon Resource Name (ARN) specifying the log destination.
+        """
+        return pulumi.get(self, "arn")
+
+    @property
+    @pulumi.getter
+    def name(self) -> pulumi.Output[str]:
+        """
+        A name for the log destination
+        """
+        return pulumi.get(self, "name")
+
+    @property
+    @pulumi.getter(name="roleArn")
+    def role_arn(self) -> pulumi.Output[str]:
+        """
+        The ARN of an IAM role that grants Amazon CloudWatch Logs permissions to put data into the target
+        """
+        return pulumi.get(self, "role_arn")
+
+    @property
+    @pulumi.getter(name="targetArn")
+    def target_arn(self) -> pulumi.Output[str]:
+        """
+        The ARN of the target Amazon Kinesis stream resource for the destination
+        """
+        return pulumi.get(self, "target_arn")
+
     def translate_output_property(self, prop):
-        return tables._CAMEL_TO_SNAKE_CASE_TABLE.get(prop) or prop
+        return _tables.CAMEL_TO_SNAKE_CASE_TABLE.get(prop) or prop
 
     def translate_input_property(self, prop):
-        return tables._SNAKE_TO_CAMEL_CASE_TABLE.get(prop) or prop
+        return _tables.SNAKE_TO_CAMEL_CASE_TABLE.get(prop) or prop
+

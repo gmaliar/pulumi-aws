@@ -14,11 +14,33 @@ import * as utilities from "../utilities";
  * import * as aws from "@pulumi/aws";
  *
  * const example = new aws.fsx.LustreFileSystem("example", {
- *     importPath: pulumi.interpolate`s3://${aws_s3_bucket_example.bucket}`,
+ *     importPath: `s3://${aws_s3_bucket.example.bucket}`,
  *     storageCapacity: 1200,
- *     subnetIds: aws_subnet_example.id,
+ *     subnetIds: [aws_subnet.example.id],
  * });
  * ```
+ *
+ * ## Import
+ *
+ * FSx File Systems can be imported using the `id`, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:fsx/lustreFileSystem:LustreFileSystem example fs-543ab12b1ca672f33
+ * ```
+ *
+ *  Certain resource arguments, like `security_group_ids`, do not have a FSx API method for reading the information after creation. If the argument is set in the provider configuration on an imported resource, this provider will always show a difference. To workaround this behavior, either omit the argument from the provider configuration or use [`ignoreChanges`](https://www.pulumi.com/docs/intro/concepts/programming-model/#ignorechanges) to hide the difference, e.g. hcl resource "aws_fsx_lustre_file_system" "example" {
+ *
+ * # ... other configuration ...
+ *
+ *  security_group_ids = [aws_security_group.example.id]
+ *
+ * # There is no FSx API for reading security_group_ids
+ *
+ *  lifecycle {
+ *
+ *  ignore_changes = [security_group_ids]
+ *
+ *  } }
  */
 export class LustreFileSystem extends pulumi.CustomResource {
     /**
@@ -53,9 +75,33 @@ export class LustreFileSystem extends pulumi.CustomResource {
      */
     public /*out*/ readonly arn!: pulumi.Output<string>;
     /**
+     * How Amazon FSx keeps your file and directory listings up to date as you add or modify objects in your linked S3 bucket. see [Auto Import Data Repo](https://docs.aws.amazon.com/fsx/latest/LustreGuide/autoimport-data-repo.html) for more details.
+     */
+    public readonly autoImportPolicy!: pulumi.Output<string>;
+    /**
+     * The number of days to retain automatic backups. Setting this to 0 disables automatic backups. You can retain automatic backups for a maximum of 90 days. only valid for `PERSISTENT_1` deployment_type.
+     */
+    public readonly automaticBackupRetentionDays!: pulumi.Output<number>;
+    /**
+     * A boolean flag indicating whether tags for the file system should be copied to backups. Applicable for `PERSISTENT_1` deployment_type. The default value is false.
+     */
+    public readonly copyTagsToBackups!: pulumi.Output<boolean | undefined>;
+    /**
+     * A recurring daily time, in the format HH:MM. HH is the zero-padded hour of the day (0-23), and MM is the zero-padded minute of the hour. For example, 05:00 specifies 5 AM daily. only valid for `PERSISTENT_1` deployment_type. Requires `automaticBackupRetentionDays` to be set.
+     */
+    public readonly dailyAutomaticBackupStartTime!: pulumi.Output<string>;
+    /**
+     * - The filesystem deployment type. One of: `SCRATCH_1`, `SCRATCH_2`, `PERSISTENT_1`.
+     */
+    public readonly deploymentType!: pulumi.Output<string | undefined>;
+    /**
      * DNS name for the file system, e.g. `fs-12345678.fsx.us-west-2.amazonaws.com`
      */
     public /*out*/ readonly dnsName!: pulumi.Output<string>;
+    /**
+     * - The type of drive cache used by `PERSISTENT_1` filesystems that are provisioned with `HDD` storage_type. Required for `HDD` storage_type, set to either `READ` or `NONE`.
+     */
+    public readonly driveCacheType!: pulumi.Output<string | undefined>;
     /**
      * S3 URI (with optional prefix) where the root of your Amazon FSx file system is exported. Can only be specified with `importPath` argument and the path must use the same Amazon S3 bucket as specified in `importPath`. Set equal to `importPath` to overwrite files on export. Defaults to `s3://{IMPORT BUCKET}/FSxLustre{CREATION TIMESTAMP}`.
      */
@@ -69,13 +115,25 @@ export class LustreFileSystem extends pulumi.CustomResource {
      */
     public readonly importedFileChunkSize!: pulumi.Output<number>;
     /**
-     * Set of Elastic Network Interface identifiers from which the file system is accessible.
+     * ARN for the KMS Key to encrypt the file system at rest, applicable for `PERSISTENT_1` deployment_type. Defaults to an AWS managed KMS Key.
+     */
+    public readonly kmsKeyId!: pulumi.Output<string>;
+    /**
+     * The value to be used when mounting the filesystem.
+     */
+    public /*out*/ readonly mountName!: pulumi.Output<string>;
+    /**
+     * Set of Elastic Network Interface identifiers from which the file system is accessible. As explained in the [documentation](https://docs.aws.amazon.com/fsx/latest/LustreGuide/mounting-on-premises.html), the first network interface returned is the primary network interface.
      */
     public /*out*/ readonly networkInterfaceIds!: pulumi.Output<string[]>;
     /**
      * AWS account identifier that created the file system.
      */
     public /*out*/ readonly ownerId!: pulumi.Output<string>;
+    /**
+     * - Describes the amount of read and write throughput for each 1 tebibyte of storage, in MB/s/TiB, required for the `PERSISTENT_1` deployment_type. Valid values for `SSD` storageType are 50, 100, 200. Valid values for `HDD` storageType are 12, 40.
+     */
+    public readonly perUnitStorageThroughput!: pulumi.Output<number | undefined>;
     /**
      * A list of IDs for the security groups that apply to the specified network interfaces created for file system access. These security groups will apply to all network interfaces.
      */
@@ -84,6 +142,10 @@ export class LustreFileSystem extends pulumi.CustomResource {
      * The storage capacity (GiB) of the file system. Minimum of `1200`. Storage capacity is provisioned in increments of 3,600 GiB.
      */
     public readonly storageCapacity!: pulumi.Output<number>;
+    /**
+     * - The filesystem storage type. Either `SSD` or `HDD`, defaults to `SSD`. `HDD` is only supported on `PERSISTENT_1` deployment types.
+     */
+    public readonly storageType!: pulumi.Output<string | undefined>;
     /**
      * A list of IDs for the subnets that the file system will be accessible from. File systems currently support only one subnet. The file server is also launched in that subnet's Availability Zone.
      */
@@ -114,36 +176,56 @@ export class LustreFileSystem extends pulumi.CustomResource {
         if (opts && opts.id) {
             const state = argsOrState as LustreFileSystemState | undefined;
             inputs["arn"] = state ? state.arn : undefined;
+            inputs["autoImportPolicy"] = state ? state.autoImportPolicy : undefined;
+            inputs["automaticBackupRetentionDays"] = state ? state.automaticBackupRetentionDays : undefined;
+            inputs["copyTagsToBackups"] = state ? state.copyTagsToBackups : undefined;
+            inputs["dailyAutomaticBackupStartTime"] = state ? state.dailyAutomaticBackupStartTime : undefined;
+            inputs["deploymentType"] = state ? state.deploymentType : undefined;
             inputs["dnsName"] = state ? state.dnsName : undefined;
+            inputs["driveCacheType"] = state ? state.driveCacheType : undefined;
             inputs["exportPath"] = state ? state.exportPath : undefined;
             inputs["importPath"] = state ? state.importPath : undefined;
             inputs["importedFileChunkSize"] = state ? state.importedFileChunkSize : undefined;
+            inputs["kmsKeyId"] = state ? state.kmsKeyId : undefined;
+            inputs["mountName"] = state ? state.mountName : undefined;
             inputs["networkInterfaceIds"] = state ? state.networkInterfaceIds : undefined;
             inputs["ownerId"] = state ? state.ownerId : undefined;
+            inputs["perUnitStorageThroughput"] = state ? state.perUnitStorageThroughput : undefined;
             inputs["securityGroupIds"] = state ? state.securityGroupIds : undefined;
             inputs["storageCapacity"] = state ? state.storageCapacity : undefined;
+            inputs["storageType"] = state ? state.storageType : undefined;
             inputs["subnetIds"] = state ? state.subnetIds : undefined;
             inputs["tags"] = state ? state.tags : undefined;
             inputs["vpcId"] = state ? state.vpcId : undefined;
             inputs["weeklyMaintenanceStartTime"] = state ? state.weeklyMaintenanceStartTime : undefined;
         } else {
             const args = argsOrState as LustreFileSystemArgs | undefined;
-            if (!args || args.storageCapacity === undefined) {
+            if ((!args || args.storageCapacity === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'storageCapacity'");
             }
-            if (!args || args.subnetIds === undefined) {
+            if ((!args || args.subnetIds === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'subnetIds'");
             }
+            inputs["autoImportPolicy"] = args ? args.autoImportPolicy : undefined;
+            inputs["automaticBackupRetentionDays"] = args ? args.automaticBackupRetentionDays : undefined;
+            inputs["copyTagsToBackups"] = args ? args.copyTagsToBackups : undefined;
+            inputs["dailyAutomaticBackupStartTime"] = args ? args.dailyAutomaticBackupStartTime : undefined;
+            inputs["deploymentType"] = args ? args.deploymentType : undefined;
+            inputs["driveCacheType"] = args ? args.driveCacheType : undefined;
             inputs["exportPath"] = args ? args.exportPath : undefined;
             inputs["importPath"] = args ? args.importPath : undefined;
             inputs["importedFileChunkSize"] = args ? args.importedFileChunkSize : undefined;
+            inputs["kmsKeyId"] = args ? args.kmsKeyId : undefined;
+            inputs["perUnitStorageThroughput"] = args ? args.perUnitStorageThroughput : undefined;
             inputs["securityGroupIds"] = args ? args.securityGroupIds : undefined;
             inputs["storageCapacity"] = args ? args.storageCapacity : undefined;
+            inputs["storageType"] = args ? args.storageType : undefined;
             inputs["subnetIds"] = args ? args.subnetIds : undefined;
             inputs["tags"] = args ? args.tags : undefined;
             inputs["weeklyMaintenanceStartTime"] = args ? args.weeklyMaintenanceStartTime : undefined;
             inputs["arn"] = undefined /*out*/;
             inputs["dnsName"] = undefined /*out*/;
+            inputs["mountName"] = undefined /*out*/;
             inputs["networkInterfaceIds"] = undefined /*out*/;
             inputs["ownerId"] = undefined /*out*/;
             inputs["vpcId"] = undefined /*out*/;
@@ -168,9 +250,33 @@ export interface LustreFileSystemState {
      */
     readonly arn?: pulumi.Input<string>;
     /**
+     * How Amazon FSx keeps your file and directory listings up to date as you add or modify objects in your linked S3 bucket. see [Auto Import Data Repo](https://docs.aws.amazon.com/fsx/latest/LustreGuide/autoimport-data-repo.html) for more details.
+     */
+    readonly autoImportPolicy?: pulumi.Input<string>;
+    /**
+     * The number of days to retain automatic backups. Setting this to 0 disables automatic backups. You can retain automatic backups for a maximum of 90 days. only valid for `PERSISTENT_1` deployment_type.
+     */
+    readonly automaticBackupRetentionDays?: pulumi.Input<number>;
+    /**
+     * A boolean flag indicating whether tags for the file system should be copied to backups. Applicable for `PERSISTENT_1` deployment_type. The default value is false.
+     */
+    readonly copyTagsToBackups?: pulumi.Input<boolean>;
+    /**
+     * A recurring daily time, in the format HH:MM. HH is the zero-padded hour of the day (0-23), and MM is the zero-padded minute of the hour. For example, 05:00 specifies 5 AM daily. only valid for `PERSISTENT_1` deployment_type. Requires `automaticBackupRetentionDays` to be set.
+     */
+    readonly dailyAutomaticBackupStartTime?: pulumi.Input<string>;
+    /**
+     * - The filesystem deployment type. One of: `SCRATCH_1`, `SCRATCH_2`, `PERSISTENT_1`.
+     */
+    readonly deploymentType?: pulumi.Input<string>;
+    /**
      * DNS name for the file system, e.g. `fs-12345678.fsx.us-west-2.amazonaws.com`
      */
     readonly dnsName?: pulumi.Input<string>;
+    /**
+     * - The type of drive cache used by `PERSISTENT_1` filesystems that are provisioned with `HDD` storage_type. Required for `HDD` storage_type, set to either `READ` or `NONE`.
+     */
+    readonly driveCacheType?: pulumi.Input<string>;
     /**
      * S3 URI (with optional prefix) where the root of your Amazon FSx file system is exported. Can only be specified with `importPath` argument and the path must use the same Amazon S3 bucket as specified in `importPath`. Set equal to `importPath` to overwrite files on export. Defaults to `s3://{IMPORT BUCKET}/FSxLustre{CREATION TIMESTAMP}`.
      */
@@ -184,13 +290,25 @@ export interface LustreFileSystemState {
      */
     readonly importedFileChunkSize?: pulumi.Input<number>;
     /**
-     * Set of Elastic Network Interface identifiers from which the file system is accessible.
+     * ARN for the KMS Key to encrypt the file system at rest, applicable for `PERSISTENT_1` deployment_type. Defaults to an AWS managed KMS Key.
+     */
+    readonly kmsKeyId?: pulumi.Input<string>;
+    /**
+     * The value to be used when mounting the filesystem.
+     */
+    readonly mountName?: pulumi.Input<string>;
+    /**
+     * Set of Elastic Network Interface identifiers from which the file system is accessible. As explained in the [documentation](https://docs.aws.amazon.com/fsx/latest/LustreGuide/mounting-on-premises.html), the first network interface returned is the primary network interface.
      */
     readonly networkInterfaceIds?: pulumi.Input<pulumi.Input<string>[]>;
     /**
      * AWS account identifier that created the file system.
      */
     readonly ownerId?: pulumi.Input<string>;
+    /**
+     * - Describes the amount of read and write throughput for each 1 tebibyte of storage, in MB/s/TiB, required for the `PERSISTENT_1` deployment_type. Valid values for `SSD` storageType are 50, 100, 200. Valid values for `HDD` storageType are 12, 40.
+     */
+    readonly perUnitStorageThroughput?: pulumi.Input<number>;
     /**
      * A list of IDs for the security groups that apply to the specified network interfaces created for file system access. These security groups will apply to all network interfaces.
      */
@@ -199,6 +317,10 @@ export interface LustreFileSystemState {
      * The storage capacity (GiB) of the file system. Minimum of `1200`. Storage capacity is provisioned in increments of 3,600 GiB.
      */
     readonly storageCapacity?: pulumi.Input<number>;
+    /**
+     * - The filesystem storage type. Either `SSD` or `HDD`, defaults to `SSD`. `HDD` is only supported on `PERSISTENT_1` deployment types.
+     */
+    readonly storageType?: pulumi.Input<string>;
     /**
      * A list of IDs for the subnets that the file system will be accessible from. File systems currently support only one subnet. The file server is also launched in that subnet's Availability Zone.
      */
@@ -222,6 +344,30 @@ export interface LustreFileSystemState {
  */
 export interface LustreFileSystemArgs {
     /**
+     * How Amazon FSx keeps your file and directory listings up to date as you add or modify objects in your linked S3 bucket. see [Auto Import Data Repo](https://docs.aws.amazon.com/fsx/latest/LustreGuide/autoimport-data-repo.html) for more details.
+     */
+    readonly autoImportPolicy?: pulumi.Input<string>;
+    /**
+     * The number of days to retain automatic backups. Setting this to 0 disables automatic backups. You can retain automatic backups for a maximum of 90 days. only valid for `PERSISTENT_1` deployment_type.
+     */
+    readonly automaticBackupRetentionDays?: pulumi.Input<number>;
+    /**
+     * A boolean flag indicating whether tags for the file system should be copied to backups. Applicable for `PERSISTENT_1` deployment_type. The default value is false.
+     */
+    readonly copyTagsToBackups?: pulumi.Input<boolean>;
+    /**
+     * A recurring daily time, in the format HH:MM. HH is the zero-padded hour of the day (0-23), and MM is the zero-padded minute of the hour. For example, 05:00 specifies 5 AM daily. only valid for `PERSISTENT_1` deployment_type. Requires `automaticBackupRetentionDays` to be set.
+     */
+    readonly dailyAutomaticBackupStartTime?: pulumi.Input<string>;
+    /**
+     * - The filesystem deployment type. One of: `SCRATCH_1`, `SCRATCH_2`, `PERSISTENT_1`.
+     */
+    readonly deploymentType?: pulumi.Input<string>;
+    /**
+     * - The type of drive cache used by `PERSISTENT_1` filesystems that are provisioned with `HDD` storage_type. Required for `HDD` storage_type, set to either `READ` or `NONE`.
+     */
+    readonly driveCacheType?: pulumi.Input<string>;
+    /**
      * S3 URI (with optional prefix) where the root of your Amazon FSx file system is exported. Can only be specified with `importPath` argument and the path must use the same Amazon S3 bucket as specified in `importPath`. Set equal to `importPath` to overwrite files on export. Defaults to `s3://{IMPORT BUCKET}/FSxLustre{CREATION TIMESTAMP}`.
      */
     readonly exportPath?: pulumi.Input<string>;
@@ -234,6 +380,14 @@ export interface LustreFileSystemArgs {
      */
     readonly importedFileChunkSize?: pulumi.Input<number>;
     /**
+     * ARN for the KMS Key to encrypt the file system at rest, applicable for `PERSISTENT_1` deployment_type. Defaults to an AWS managed KMS Key.
+     */
+    readonly kmsKeyId?: pulumi.Input<string>;
+    /**
+     * - Describes the amount of read and write throughput for each 1 tebibyte of storage, in MB/s/TiB, required for the `PERSISTENT_1` deployment_type. Valid values for `SSD` storageType are 50, 100, 200. Valid values for `HDD` storageType are 12, 40.
+     */
+    readonly perUnitStorageThroughput?: pulumi.Input<number>;
+    /**
      * A list of IDs for the security groups that apply to the specified network interfaces created for file system access. These security groups will apply to all network interfaces.
      */
     readonly securityGroupIds?: pulumi.Input<pulumi.Input<string>[]>;
@@ -241,6 +395,10 @@ export interface LustreFileSystemArgs {
      * The storage capacity (GiB) of the file system. Minimum of `1200`. Storage capacity is provisioned in increments of 3,600 GiB.
      */
     readonly storageCapacity: pulumi.Input<number>;
+    /**
+     * - The filesystem storage type. Either `SSD` or `HDD`, defaults to `SSD`. `HDD` is only supported on `PERSISTENT_1` deployment types.
+     */
+    readonly storageType?: pulumi.Input<string>;
     /**
      * A list of IDs for the subnets that the file system will be accessible from. File systems currently support only one subnet. The file server is also launched in that subnet's Availability Zone.
      */

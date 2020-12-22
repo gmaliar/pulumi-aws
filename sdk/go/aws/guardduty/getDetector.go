@@ -15,7 +15,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/guardduty"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/guardduty"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -47,8 +47,8 @@ type LookupDetectorArgs struct {
 // A collection of values returned by getDetector.
 type LookupDetectorResult struct {
 	// The frequency of notifications sent about subsequent finding occurrences.
-	FindingPublishingFrequency string  `pulumi:"findingPublishingFrequency"`
-	Id                         *string `pulumi:"id"`
+	FindingPublishingFrequency string `pulumi:"findingPublishingFrequency"`
+	Id                         string `pulumi:"id"`
 	// The service-linked role that grants GuardDuty access to the resources in the AWS account.
 	ServiceRoleArn string `pulumi:"serviceRoleArn"`
 	// The current status of the detector.

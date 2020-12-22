@@ -4,6 +4,7 @@
 package cloudwatch
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -20,14 +21,14 @@ import (
 // import (
 // 	"fmt"
 //
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/cloudwatch"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/cloudwatch"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
 // func main() {
 // 	pulumi.Run(func(ctx *pulumi.Context) error {
 // 		_, err := cloudwatch.NewDashboard(ctx, "main", &cloudwatch.DashboardArgs{
-// 			DashboardBody: pulumi.String(fmt.Sprintf("%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v", " {\n", "   \"widgets\": [\n", "       {\n", "          \"type\":\"metric\",\n", "          \"x\":0,\n", "          \"y\":0,\n", "          \"width\":12,\n", "          \"height\":6,\n", "          \"properties\":{\n", "             \"metrics\":[\n", "                [\n", "                   \"AWS/EC2\",\n", "                   \"CPUUtilization\",\n", "                   \"InstanceId\",\n", "                   \"i-012345\"\n", "                ]\n", "             ],\n", "             \"period\":300,\n", "             \"stat\":\"Average\",\n", "             \"region\":\"us-east-1\",\n", "             \"title\":\"EC2 Instance CPU\"\n", "          }\n", "       },\n", "       {\n", "          \"type\":\"text\",\n", "          \"x\":0,\n", "          \"y\":7,\n", "          \"width\":3,\n", "          \"height\":3,\n", "          \"properties\":{\n", "             \"markdown\":\"Hello world\"\n", "          }\n", "       }\n", "   ]\n", " }\n", " \n")),
+// 			DashboardBody: pulumi.String(fmt.Sprintf("%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v", "{\n", "  \"widgets\": [\n", "    {\n", "      \"type\": \"metric\",\n", "      \"x\": 0,\n", "      \"y\": 0,\n", "      \"width\": 12,\n", "      \"height\": 6,\n", "      \"properties\": {\n", "        \"metrics\": [\n", "          [\n", "            \"AWS/EC2\",\n", "            \"CPUUtilization\",\n", "            \"InstanceId\",\n", "            \"i-012345\"\n", "          ]\n", "        ],\n", "        \"period\": 300,\n", "        \"stat\": \"Average\",\n", "        \"region\": \"us-east-1\",\n", "        \"title\": \"EC2 Instance CPU\"\n", "      }\n", "    },\n", "    {\n", "      \"type\": \"text\",\n", "      \"x\": 0,\n", "      \"y\": 7,\n", "      \"width\": 3,\n", "      \"height\": 3,\n", "      \"properties\": {\n", "        \"markdown\": \"Hello world\"\n", "      }\n", "    }\n", "  ]\n", "}\n", "\n")),
 // 			DashboardName: pulumi.String("my-dashboard"),
 // 		})
 // 		if err != nil {
@@ -36,6 +37,14 @@ import (
 // 		return nil
 // 	})
 // }
+// ```
+//
+// ## Import
+//
+// CloudWatch dashboards can be imported using the `dashboard_name`, e.g.
+//
+// ```sh
+//  $ pulumi import aws:cloudwatch/dashboard:Dashboard sample <dashboard_name>
 // ```
 type Dashboard struct {
 	pulumi.CustomResourceState
@@ -51,14 +60,15 @@ type Dashboard struct {
 // NewDashboard registers a new resource with the given unique name, arguments, and options.
 func NewDashboard(ctx *pulumi.Context,
 	name string, args *DashboardArgs, opts ...pulumi.ResourceOption) (*Dashboard, error) {
-	if args == nil || args.DashboardBody == nil {
-		return nil, errors.New("missing required argument 'DashboardBody'")
-	}
-	if args == nil || args.DashboardName == nil {
-		return nil, errors.New("missing required argument 'DashboardName'")
-	}
 	if args == nil {
-		args = &DashboardArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.DashboardBody == nil {
+		return nil, errors.New("invalid value for required argument 'DashboardBody'")
+	}
+	if args.DashboardName == nil {
+		return nil, errors.New("invalid value for required argument 'DashboardName'")
 	}
 	var resource Dashboard
 	err := ctx.RegisterResource("aws:cloudwatch/dashboard:Dashboard", name, args, &resource, opts...)
@@ -120,4 +130,43 @@ type DashboardArgs struct {
 
 func (DashboardArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*dashboardArgs)(nil)).Elem()
+}
+
+type DashboardInput interface {
+	pulumi.Input
+
+	ToDashboardOutput() DashboardOutput
+	ToDashboardOutputWithContext(ctx context.Context) DashboardOutput
+}
+
+func (Dashboard) ElementType() reflect.Type {
+	return reflect.TypeOf((*Dashboard)(nil)).Elem()
+}
+
+func (i Dashboard) ToDashboardOutput() DashboardOutput {
+	return i.ToDashboardOutputWithContext(context.Background())
+}
+
+func (i Dashboard) ToDashboardOutputWithContext(ctx context.Context) DashboardOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(DashboardOutput)
+}
+
+type DashboardOutput struct {
+	*pulumi.OutputState
+}
+
+func (DashboardOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*DashboardOutput)(nil)).Elem()
+}
+
+func (o DashboardOutput) ToDashboardOutput() DashboardOutput {
+	return o
+}
+
+func (o DashboardOutput) ToDashboardOutputWithContext(ctx context.Context) DashboardOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(DashboardOutput{})
 }

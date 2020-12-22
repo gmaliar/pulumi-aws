@@ -2,8 +2,7 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 /**
@@ -119,6 +118,14 @@ import * as utilities from "../utilities";
  *     limitUnit: "PERCENTAGE",
  * });
  * ```
+ *
+ * ## Import
+ *
+ * Budgets can be imported using `AccountID:BudgetName`, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:budgets/budget:Budget myBudget 123456789012:myBudget`
+ * ```
  */
 export class Budget extends pulumi.CustomResource {
     /**
@@ -223,19 +230,19 @@ export class Budget extends pulumi.CustomResource {
             inputs["timeUnit"] = state ? state.timeUnit : undefined;
         } else {
             const args = argsOrState as BudgetArgs | undefined;
-            if (!args || args.budgetType === undefined) {
+            if ((!args || args.budgetType === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'budgetType'");
             }
-            if (!args || args.limitAmount === undefined) {
+            if ((!args || args.limitAmount === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'limitAmount'");
             }
-            if (!args || args.limitUnit === undefined) {
+            if ((!args || args.limitUnit === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'limitUnit'");
             }
-            if (!args || args.timePeriodStart === undefined) {
+            if ((!args || args.timePeriodStart === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'timePeriodStart'");
             }
-            if (!args || args.timeUnit === undefined) {
+            if ((!args || args.timeUnit === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'timeUnit'");
             }
             inputs["accountId"] = args ? args.accountId : undefined;

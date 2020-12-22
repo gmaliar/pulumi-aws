@@ -4,6 +4,7 @@
 package route53
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -20,44 +21,44 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/route53"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/route53"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
 // func main() {
 // 	pulumi.Run(func(ctx *pulumi.Context) error {
 // 		_, err := route53.NewRecord(ctx, "www_dev", &route53.RecordArgs{
-// 			Name: pulumi.String("www"),
-// 			Records: pulumi.StringArray{
-// 				pulumi.String("dev.example.com"),
-// 			},
-// 			SetIdentifier: pulumi.String("dev"),
-// 			Ttl:           pulumi.Int(5),
-// 			Type:          pulumi.String("CNAME"),
+// 			ZoneId: pulumi.Any(aws_route53_zone.Primary.Zone_id),
+// 			Name:   pulumi.String("www"),
+// 			Type:   pulumi.String("CNAME"),
+// 			Ttl:    pulumi.Int(5),
 // 			WeightedRoutingPolicies: route53.RecordWeightedRoutingPolicyArray{
 // 				&route53.RecordWeightedRoutingPolicyArgs{
 // 					Weight: pulumi.Int(10),
 // 				},
 // 			},
-// 			ZoneId: pulumi.String(aws_route53_zone.Primary.Zone_id),
+// 			SetIdentifier: pulumi.String("dev"),
+// 			Records: pulumi.StringArray{
+// 				pulumi.String("dev.example.com"),
+// 			},
 // 		})
 // 		if err != nil {
 // 			return err
 // 		}
 // 		_, err = route53.NewRecord(ctx, "www_live", &route53.RecordArgs{
-// 			Name: pulumi.String("www"),
-// 			Records: pulumi.StringArray{
-// 				pulumi.String("live.example.com"),
-// 			},
-// 			SetIdentifier: pulumi.String("live"),
-// 			Ttl:           pulumi.Int(5),
-// 			Type:          pulumi.String("CNAME"),
+// 			ZoneId: pulumi.Any(aws_route53_zone.Primary.Zone_id),
+// 			Name:   pulumi.String("www"),
+// 			Type:   pulumi.String("CNAME"),
+// 			Ttl:    pulumi.Int(5),
 // 			WeightedRoutingPolicies: route53.RecordWeightedRoutingPolicyArray{
 // 				&route53.RecordWeightedRoutingPolicyArgs{
 // 					Weight: pulumi.Int(90),
 // 				},
 // 			},
-// 			ZoneId: pulumi.String(aws_route53_zone.Primary.Zone_id),
+// 			SetIdentifier: pulumi.String("live"),
+// 			Records: pulumi.StringArray{
+// 				pulumi.String("live.example.com"),
+// 			},
 // 		})
 // 		if err != nil {
 // 			return err
@@ -77,8 +78,8 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/elb"
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/route53"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/elb"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/route53"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -101,16 +102,16 @@ import (
 // 			return err
 // 		}
 // 		_, err = route53.NewRecord(ctx, "www", &route53.RecordArgs{
-// 			Aliases: route53.RecordAliasArray{
-// 				&route53.RecordAliasArgs{
-// 					EvaluateTargetHealth: pulumi.Bool(true),
-// 					Name:                 main.DnsName,
-// 					ZoneId:               main.ZoneId,
-// 				},
-// 			},
+// 			ZoneId: pulumi.Any(aws_route53_zone.Primary.Zone_id),
 // 			Name:   pulumi.String("example.com"),
 // 			Type:   pulumi.String("A"),
-// 			ZoneId: pulumi.String(aws_route53_zone.Primary.Zone_id),
+// 			Aliases: route53.RecordAliasArray{
+// 				&route53.RecordAliasArgs{
+// 					Name:                 main.DnsName,
+// 					ZoneId:               main.ZoneId,
+// 					EvaluateTargetHealth: pulumi.Bool(true),
+// 				},
+// 			},
 // 		})
 // 		if err != nil {
 // 			return err
@@ -127,7 +128,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/route53"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/route53"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -140,6 +141,9 @@ import (
 // 		_, err = route53.NewRecord(ctx, "exampleRecord", &route53.RecordArgs{
 // 			AllowOverwrite: pulumi.Bool(true),
 // 			Name:           pulumi.String("test.example.com"),
+// 			Ttl:            pulumi.Int(30),
+// 			Type:           pulumi.String("NS"),
+// 			ZoneId:         exampleZone.ZoneId,
 // 			Records: pulumi.StringArray{
 // 				exampleZone.NameServers.ApplyT(func(nameServers []string) (string, error) {
 // 					return nameServers[0], nil
@@ -154,9 +158,6 @@ import (
 // 					return nameServers[3], nil
 // 				}).(pulumi.StringOutput),
 // 			},
-// 			Ttl:    pulumi.Int(30),
-// 			Type:   pulumi.String("NS"),
-// 			ZoneId: exampleZone.ZoneId,
 // 		})
 // 		if err != nil {
 // 			return err
@@ -164,6 +165,20 @@ import (
 // 		return nil
 // 	})
 // }
+// ```
+//
+// ## Import
+//
+// Route53 Records can be imported using ID of the record, which is the zone identifier, record name, and record type, separated by underscores (`_`). e.g.
+//
+// ```sh
+//  $ pulumi import aws:route53/record:Record myrecord Z4KAPRWWNC7JR_dev.example.com_NS
+// ```
+//
+//  If the record also contains a delegated set identifier, it can be appended
+//
+// ```sh
+//  $ pulumi import aws:route53/record:Record myrecord Z4KAPRWWNC7JR_dev.example.com_NS_dev
 // ```
 type Record struct {
 	pulumi.CustomResourceState
@@ -204,17 +219,18 @@ type Record struct {
 // NewRecord registers a new resource with the given unique name, arguments, and options.
 func NewRecord(ctx *pulumi.Context,
 	name string, args *RecordArgs, opts ...pulumi.ResourceOption) (*Record, error) {
-	if args == nil || args.Name == nil {
-		return nil, errors.New("missing required argument 'Name'")
-	}
-	if args == nil || args.Type == nil {
-		return nil, errors.New("missing required argument 'Type'")
-	}
-	if args == nil || args.ZoneId == nil {
-		return nil, errors.New("missing required argument 'ZoneId'")
-	}
 	if args == nil {
-		args = &RecordArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.Name == nil {
+		return nil, errors.New("invalid value for required argument 'Name'")
+	}
+	if args.Type == nil {
+		return nil, errors.New("invalid value for required argument 'Type'")
+	}
+	if args.ZoneId == nil {
+		return nil, errors.New("invalid value for required argument 'ZoneId'")
 	}
 	var resource Record
 	err := ctx.RegisterResource("aws:route53/record:Record", name, args, &resource, opts...)
@@ -334,7 +350,7 @@ type recordArgs struct {
 	// The TTL of the record.
 	Ttl *int `pulumi:"ttl"`
 	// `PRIMARY` or `SECONDARY`. A `PRIMARY` record will be served if its healthcheck is passing, otherwise the `SECONDARY` will be served. See http://docs.aws.amazon.com/Route53/latest/DeveloperGuide/dns-failover-configuring-options.html#dns-failover-failover-rrsets
-	Type interface{} `pulumi:"type"`
+	Type string `pulumi:"type"`
 	// A block indicating a weighted routing policy. Conflicts with any other routing policy. Documented below.
 	WeightedRoutingPolicies []RecordWeightedRoutingPolicy `pulumi:"weightedRoutingPolicies"`
 	// Hosted zone ID for a CloudFront distribution, S3 bucket, ELB, or Route 53 hosted zone. See `resource_elb.zone_id` for example.
@@ -367,7 +383,7 @@ type RecordArgs struct {
 	// The TTL of the record.
 	Ttl pulumi.IntPtrInput
 	// `PRIMARY` or `SECONDARY`. A `PRIMARY` record will be served if its healthcheck is passing, otherwise the `SECONDARY` will be served. See http://docs.aws.amazon.com/Route53/latest/DeveloperGuide/dns-failover-configuring-options.html#dns-failover-failover-rrsets
-	Type pulumi.Input
+	Type pulumi.StringInput
 	// A block indicating a weighted routing policy. Conflicts with any other routing policy. Documented below.
 	WeightedRoutingPolicies RecordWeightedRoutingPolicyArrayInput
 	// Hosted zone ID for a CloudFront distribution, S3 bucket, ELB, or Route 53 hosted zone. See `resource_elb.zone_id` for example.
@@ -376,4 +392,43 @@ type RecordArgs struct {
 
 func (RecordArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*recordArgs)(nil)).Elem()
+}
+
+type RecordInput interface {
+	pulumi.Input
+
+	ToRecordOutput() RecordOutput
+	ToRecordOutputWithContext(ctx context.Context) RecordOutput
+}
+
+func (Record) ElementType() reflect.Type {
+	return reflect.TypeOf((*Record)(nil)).Elem()
+}
+
+func (i Record) ToRecordOutput() RecordOutput {
+	return i.ToRecordOutputWithContext(context.Background())
+}
+
+func (i Record) ToRecordOutputWithContext(ctx context.Context) RecordOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(RecordOutput)
+}
+
+type RecordOutput struct {
+	*pulumi.OutputState
+}
+
+func (RecordOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*RecordOutput)(nil)).Elem()
+}
+
+func (o RecordOutput) ToRecordOutput() RecordOutput {
+	return o
+}
+
+func (o RecordOutput) ToRecordOutputWithContext(ctx context.Context) RecordOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(RecordOutput{})
 }

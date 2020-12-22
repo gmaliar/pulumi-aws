@@ -4,6 +4,7 @@
 package iot
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -20,7 +21,7 @@ import (
 // import (
 // 	"fmt"
 //
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/iot"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/iot"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -35,6 +36,14 @@ import (
 // 		return nil
 // 	})
 // }
+// ```
+//
+// ## Import
+//
+// IoT policies can be imported using the `name`, e.g.
+//
+// ```sh
+//  $ pulumi import aws:iot/policy:Policy pubsub PubSubToAnyTopic
 // ```
 type Policy struct {
 	pulumi.CustomResourceState
@@ -52,11 +61,12 @@ type Policy struct {
 // NewPolicy registers a new resource with the given unique name, arguments, and options.
 func NewPolicy(ctx *pulumi.Context,
 	name string, args *PolicyArgs, opts ...pulumi.ResourceOption) (*Policy, error) {
-	if args == nil || args.Policy == nil {
-		return nil, errors.New("missing required argument 'Policy'")
-	}
 	if args == nil {
-		args = &PolicyArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.Policy == nil {
+		return nil, errors.New("invalid value for required argument 'Policy'")
 	}
 	var resource Policy
 	err := ctx.RegisterResource("aws:iot/policy:Policy", name, args, &resource, opts...)
@@ -122,4 +132,43 @@ type PolicyArgs struct {
 
 func (PolicyArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*policyArgs)(nil)).Elem()
+}
+
+type PolicyInput interface {
+	pulumi.Input
+
+	ToPolicyOutput() PolicyOutput
+	ToPolicyOutputWithContext(ctx context.Context) PolicyOutput
+}
+
+func (Policy) ElementType() reflect.Type {
+	return reflect.TypeOf((*Policy)(nil)).Elem()
+}
+
+func (i Policy) ToPolicyOutput() PolicyOutput {
+	return i.ToPolicyOutputWithContext(context.Background())
+}
+
+func (i Policy) ToPolicyOutputWithContext(ctx context.Context) PolicyOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(PolicyOutput)
+}
+
+type PolicyOutput struct {
+	*pulumi.OutputState
+}
+
+func (PolicyOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*PolicyOutput)(nil)).Elem()
+}
+
+func (o PolicyOutput) ToPolicyOutput() PolicyOutput {
+	return o
+}
+
+func (o PolicyOutput) ToPolicyOutputWithContext(ctx context.Context) PolicyOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(PolicyOutput{})
 }

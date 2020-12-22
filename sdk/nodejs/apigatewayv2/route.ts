@@ -16,9 +16,17 @@ import * as utilities from "../utilities";
  * import * as aws from "@pulumi/aws";
  *
  * const example = new aws.apigatewayv2.Route("example", {
- *     apiId: aws_apigatewayv2_api_example.id,
- *     routeKey: "$default",
+ *     apiId: aws_apigatewayv2_api.example.id,
+ *     routeKey: `$default`,
  * });
+ * ```
+ *
+ * ## Import
+ *
+ * `aws_apigatewayv2_route` can be imported by using the API identifier and route identifier, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:apigatewayv2/route:Route example aabbccddee/1122334
  * ```
  */
 export class Route extends pulumi.CustomResource {
@@ -77,7 +85,7 @@ export class Route extends pulumi.CustomResource {
      */
     public readonly modelSelectionExpression!: pulumi.Output<string | undefined>;
     /**
-     * The operation name for the route.
+     * The operation name for the route. Must be between 1 and 64 characters in length.
      */
     public readonly operationName!: pulumi.Output<string | undefined>;
     /**
@@ -85,7 +93,7 @@ export class Route extends pulumi.CustomResource {
      */
     public readonly requestModels!: pulumi.Output<{[key: string]: string} | undefined>;
     /**
-     * The route key for the route.
+     * The route key for the route. For HTTP APIs, the route key can be either `$default`, or a combination of an HTTP method and resource path, for example, `GET /pets`.
      */
     public readonly routeKey!: pulumi.Output<string>;
     /**
@@ -93,7 +101,7 @@ export class Route extends pulumi.CustomResource {
      */
     public readonly routeResponseSelectionExpression!: pulumi.Output<string | undefined>;
     /**
-     * The target for the route.
+     * The target for the route. Must be between 1 and 128 characters in length.
      */
     public readonly target!: pulumi.Output<string | undefined>;
 
@@ -122,10 +130,10 @@ export class Route extends pulumi.CustomResource {
             inputs["target"] = state ? state.target : undefined;
         } else {
             const args = argsOrState as RouteArgs | undefined;
-            if (!args || args.apiId === undefined) {
+            if ((!args || args.apiId === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'apiId'");
             }
-            if (!args || args.routeKey === undefined) {
+            if ((!args || args.routeKey === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'routeKey'");
             }
             inputs["apiId"] = args ? args.apiId : undefined;
@@ -183,7 +191,7 @@ export interface RouteState {
      */
     readonly modelSelectionExpression?: pulumi.Input<string>;
     /**
-     * The operation name for the route.
+     * The operation name for the route. Must be between 1 and 64 characters in length.
      */
     readonly operationName?: pulumi.Input<string>;
     /**
@@ -191,7 +199,7 @@ export interface RouteState {
      */
     readonly requestModels?: pulumi.Input<{[key: string]: pulumi.Input<string>}>;
     /**
-     * The route key for the route.
+     * The route key for the route. For HTTP APIs, the route key can be either `$default`, or a combination of an HTTP method and resource path, for example, `GET /pets`.
      */
     readonly routeKey?: pulumi.Input<string>;
     /**
@@ -199,7 +207,7 @@ export interface RouteState {
      */
     readonly routeResponseSelectionExpression?: pulumi.Input<string>;
     /**
-     * The target for the route.
+     * The target for the route. Must be between 1 and 128 characters in length.
      */
     readonly target?: pulumi.Input<string>;
 }
@@ -236,7 +244,7 @@ export interface RouteArgs {
      */
     readonly modelSelectionExpression?: pulumi.Input<string>;
     /**
-     * The operation name for the route.
+     * The operation name for the route. Must be between 1 and 64 characters in length.
      */
     readonly operationName?: pulumi.Input<string>;
     /**
@@ -244,7 +252,7 @@ export interface RouteArgs {
      */
     readonly requestModels?: pulumi.Input<{[key: string]: pulumi.Input<string>}>;
     /**
-     * The route key for the route.
+     * The route key for the route. For HTTP APIs, the route key can be either `$default`, or a combination of an HTTP method and resource path, for example, `GET /pets`.
      */
     readonly routeKey: pulumi.Input<string>;
     /**
@@ -252,7 +260,7 @@ export interface RouteArgs {
      */
     readonly routeResponseSelectionExpression?: pulumi.Input<string>;
     /**
-     * The target for the route.
+     * The target for the route. Must be between 1 and 128 characters in length.
      */
     readonly target?: pulumi.Input<string>;
 }

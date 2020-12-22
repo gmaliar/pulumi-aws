@@ -21,12 +21,20 @@ import {User} from "./index";
  * const user = new aws.iam.User("user", {});
  * const policy = new aws.iam.Policy("policy", {
  *     description: "A test policy",
- *     policy: "", // insert policy here
+ *     policy: "{ ... policy JSON ... }",
  * });
  * const test_attach = new aws.iam.UserPolicyAttachment("test-attach", {
- *     policyArn: policy.arn,
  *     user: user.name,
+ *     policyArn: policy.arn,
  * });
+ * ```
+ *
+ * ## Import
+ *
+ * IAM user policy attachments can be imported using the user name and policy arn separated by `/`.
+ *
+ * ```sh
+ *  $ pulumi import aws:iam/userPolicyAttachment:UserPolicyAttachment test-attach test-user/arn:aws:iam::xxxxxxxxxxxx:policy/test-policy
  * ```
  */
 export class UserPolicyAttachment extends pulumi.CustomResource {
@@ -82,10 +90,10 @@ export class UserPolicyAttachment extends pulumi.CustomResource {
             inputs["user"] = state ? state.user : undefined;
         } else {
             const args = argsOrState as UserPolicyAttachmentArgs | undefined;
-            if (!args || args.policyArn === undefined) {
+            if ((!args || args.policyArn === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'policyArn'");
             }
-            if (!args || args.user === undefined) {
+            if ((!args || args.user === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'user'");
             }
             inputs["policyArn"] = args ? args.policyArn : undefined;

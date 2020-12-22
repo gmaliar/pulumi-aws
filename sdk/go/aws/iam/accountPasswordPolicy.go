@@ -4,6 +4,7 @@
 package iam
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
@@ -21,7 +22,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/iam"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/iam"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -42,17 +43,22 @@ import (
 // 	})
 // }
 // ```
+//
+// ## Import
+//
+// IAM Account Password Policy can be imported using the word `iam-account-password-policy`, e.g.
+//
+// ```sh
+//  $ pulumi import aws:iam/accountPasswordPolicy:AccountPasswordPolicy strict iam-account-password-policy
+// ```
 type AccountPasswordPolicy struct {
 	pulumi.CustomResourceState
 
 	// Whether to allow users to change their own password
 	AllowUsersToChangePassword pulumi.BoolPtrOutput `pulumi:"allowUsersToChangePassword"`
-	// Indicates whether passwords in the account expire.
-	// Returns `true` if `maxPasswordAge` contains a value greater than `0`.
-	// Returns `false` if it is `0` or _not present_.
+	// Indicates whether passwords in the account expire. Returns `true` if `maxPasswordAge` contains a value greater than `0`. Returns `false` if it is `0` or _not present_.
 	ExpirePasswords pulumi.BoolOutput `pulumi:"expirePasswords"`
-	// Whether users are prevented from setting a new password after their password has expired
-	// (i.e. require administrator reset)
+	// Whether users are prevented from setting a new password after their password has expired (i.e. require administrator reset)
 	HardExpiry pulumi.BoolOutput `pulumi:"hardExpiry"`
 	// The number of days that an user password is valid.
 	MaxPasswordAge pulumi.IntOutput `pulumi:"maxPasswordAge"`
@@ -76,6 +82,7 @@ func NewAccountPasswordPolicy(ctx *pulumi.Context,
 	if args == nil {
 		args = &AccountPasswordPolicyArgs{}
 	}
+
 	var resource AccountPasswordPolicy
 	err := ctx.RegisterResource("aws:iam/accountPasswordPolicy:AccountPasswordPolicy", name, args, &resource, opts...)
 	if err != nil {
@@ -100,12 +107,9 @@ func GetAccountPasswordPolicy(ctx *pulumi.Context,
 type accountPasswordPolicyState struct {
 	// Whether to allow users to change their own password
 	AllowUsersToChangePassword *bool `pulumi:"allowUsersToChangePassword"`
-	// Indicates whether passwords in the account expire.
-	// Returns `true` if `maxPasswordAge` contains a value greater than `0`.
-	// Returns `false` if it is `0` or _not present_.
+	// Indicates whether passwords in the account expire. Returns `true` if `maxPasswordAge` contains a value greater than `0`. Returns `false` if it is `0` or _not present_.
 	ExpirePasswords *bool `pulumi:"expirePasswords"`
-	// Whether users are prevented from setting a new password after their password has expired
-	// (i.e. require administrator reset)
+	// Whether users are prevented from setting a new password after their password has expired (i.e. require administrator reset)
 	HardExpiry *bool `pulumi:"hardExpiry"`
 	// The number of days that an user password is valid.
 	MaxPasswordAge *int `pulumi:"maxPasswordAge"`
@@ -126,12 +130,9 @@ type accountPasswordPolicyState struct {
 type AccountPasswordPolicyState struct {
 	// Whether to allow users to change their own password
 	AllowUsersToChangePassword pulumi.BoolPtrInput
-	// Indicates whether passwords in the account expire.
-	// Returns `true` if `maxPasswordAge` contains a value greater than `0`.
-	// Returns `false` if it is `0` or _not present_.
+	// Indicates whether passwords in the account expire. Returns `true` if `maxPasswordAge` contains a value greater than `0`. Returns `false` if it is `0` or _not present_.
 	ExpirePasswords pulumi.BoolPtrInput
-	// Whether users are prevented from setting a new password after their password has expired
-	// (i.e. require administrator reset)
+	// Whether users are prevented from setting a new password after their password has expired (i.e. require administrator reset)
 	HardExpiry pulumi.BoolPtrInput
 	// The number of days that an user password is valid.
 	MaxPasswordAge pulumi.IntPtrInput
@@ -156,8 +157,7 @@ func (AccountPasswordPolicyState) ElementType() reflect.Type {
 type accountPasswordPolicyArgs struct {
 	// Whether to allow users to change their own password
 	AllowUsersToChangePassword *bool `pulumi:"allowUsersToChangePassword"`
-	// Whether users are prevented from setting a new password after their password has expired
-	// (i.e. require administrator reset)
+	// Whether users are prevented from setting a new password after their password has expired (i.e. require administrator reset)
 	HardExpiry *bool `pulumi:"hardExpiry"`
 	// The number of days that an user password is valid.
 	MaxPasswordAge *int `pulumi:"maxPasswordAge"`
@@ -179,8 +179,7 @@ type accountPasswordPolicyArgs struct {
 type AccountPasswordPolicyArgs struct {
 	// Whether to allow users to change their own password
 	AllowUsersToChangePassword pulumi.BoolPtrInput
-	// Whether users are prevented from setting a new password after their password has expired
-	// (i.e. require administrator reset)
+	// Whether users are prevented from setting a new password after their password has expired (i.e. require administrator reset)
 	HardExpiry pulumi.BoolPtrInput
 	// The number of days that an user password is valid.
 	MaxPasswordAge pulumi.IntPtrInput
@@ -200,4 +199,43 @@ type AccountPasswordPolicyArgs struct {
 
 func (AccountPasswordPolicyArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*accountPasswordPolicyArgs)(nil)).Elem()
+}
+
+type AccountPasswordPolicyInput interface {
+	pulumi.Input
+
+	ToAccountPasswordPolicyOutput() AccountPasswordPolicyOutput
+	ToAccountPasswordPolicyOutputWithContext(ctx context.Context) AccountPasswordPolicyOutput
+}
+
+func (AccountPasswordPolicy) ElementType() reflect.Type {
+	return reflect.TypeOf((*AccountPasswordPolicy)(nil)).Elem()
+}
+
+func (i AccountPasswordPolicy) ToAccountPasswordPolicyOutput() AccountPasswordPolicyOutput {
+	return i.ToAccountPasswordPolicyOutputWithContext(context.Background())
+}
+
+func (i AccountPasswordPolicy) ToAccountPasswordPolicyOutputWithContext(ctx context.Context) AccountPasswordPolicyOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(AccountPasswordPolicyOutput)
+}
+
+type AccountPasswordPolicyOutput struct {
+	*pulumi.OutputState
+}
+
+func (AccountPasswordPolicyOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*AccountPasswordPolicyOutput)(nil)).Elem()
+}
+
+func (o AccountPasswordPolicyOutput) ToAccountPasswordPolicyOutput() AccountPasswordPolicyOutput {
+	return o
+}
+
+func (o AccountPasswordPolicyOutput) ToAccountPasswordPolicyOutputWithContext(ctx context.Context) AccountPasswordPolicyOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(AccountPasswordPolicyOutput{})
 }

@@ -2,8 +2,7 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 /**
@@ -15,11 +14,10 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const exampleNetworkAcls = pulumi.output(aws.ec2.getNetworkAcls({
- *     vpcId: var_vpc_id,
- * }, { async: true }));
- *
- * export const example = exampleNetworkAcls.ids;
+ * const exampleNetworkAcls = aws.ec2.getNetworkAcls({
+ *     vpcId: _var.vpc_id,
+ * });
+ * export const example = exampleNetworkAcls.then(exampleNetworkAcls => exampleNetworkAcls.ids);
  * ```
  *
  * The following example retrieves a list of all network ACL ids in a VPC with a custom
@@ -29,12 +27,12 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const example = pulumi.output(aws.ec2.getNetworkAcls({
+ * const example = aws.ec2.getNetworkAcls({
+ *     vpcId: _var.vpc_id,
  *     tags: {
  *         Tier: "Private",
  *     },
- *     vpcId: var_vpc_id,
- * }, { async: true }));
+ * });
  * ```
  *
  * The following example retrieves a network ACL id in a VPC which associated
@@ -44,13 +42,13 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const example = aws_subnet_test.id.apply(id => aws.ec2.getNetworkAcls({
+ * const example = aws.ec2.getNetworkAcls({
+ *     vpcId: _var.vpc_id,
  *     filters: [{
  *         name: "association.subnet-id",
- *         values: [id],
+ *         values: [aws_subnet.test.id],
  *     }],
- *     vpcId: var_vpc_id,
- * }, { async: true }));
+ * });
  * ```
  */
 export function getNetworkAcls(args?: GetNetworkAclsArgs, opts?: pulumi.InvokeOptions): Promise<GetNetworkAclsResult> {

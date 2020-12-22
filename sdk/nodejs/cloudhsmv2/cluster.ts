@@ -2,8 +2,7 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 /**
@@ -13,46 +12,10 @@ import * as utilities from "../utilities";
  * [AWS CloudHSM User Guide](https://docs.aws.amazon.com/cloudhsm/latest/userguide/introduction.html) and the [Amazon
  * CloudHSM API Reference][2].
  *
- * > **NOTE:** CloudHSM can take up to several minutes to be set up.
- * Practically no single attribute can be updated except TAGS.
+ * > **NOTE:** A CloudHSM Cluster can take several minutes to set up.
+ * Practically no single attribute can be updated, except for `tags`.
  * If you need to delete a cluster, you have to remove its HSM modules first.
- * To initialize cluster, you have to add an hsm instance to the cluster then sign CSR and upload it.
- *
- * ## Example Usage
- *
- * The following example below creates a CloudHSM cluster.
- *
- * ```typescript
- * import * as pulumi from "@pulumi/pulumi";
- * import * as aws from "@pulumi/aws";
- *
- * const available = pulumi.output(aws.getAvailabilityZones({ async: true }));
- * const cloudhsmV2Vpc = new aws.ec2.Vpc("cloudhsm_v2_vpc", {
- *     cidrBlock: "10.0.0.0/16",
- *     tags: {
- *         Name: "example-aws_cloudhsm_v2_cluster",
- *     },
- * });
- * const cloudhsmV2Subnets: aws.ec2.Subnet[] = [];
- * for (let i = 0; i < 2; i++) {
- *     cloudhsmV2Subnets.push(new aws.ec2.Subnet(`cloudhsm_v2_subnets-${i}`, {
- *         availabilityZone: available.apply(available => available.names[i]),
- *         cidrBlock: var_subnets[i],
- *         mapPublicIpOnLaunch: false,
- *         tags: {
- *             Name: "example-aws_cloudhsm_v2_cluster",
- *         },
- *         vpcId: cloudhsmV2Vpc.id,
- *     }));
- * }
- * const cloudhsmV2Cluster = new aws.cloudhsmv2.Cluster("cloudhsm_v2_cluster", {
- *     hsmType: "hsm1.medium",
- *     subnetIds: cloudhsmV2Subnets.map(v => v.id),
- *     tags: {
- *         Name: "example-aws_cloudhsm_v2_cluster",
- *     },
- * });
- * ```
+ * To initialize cluster, you have to add an HSM instance to the cluster, then sign CSR and upload it.
  */
 export class Cluster extends pulumi.CustomResource {
     /**
@@ -85,7 +48,7 @@ export class Cluster extends pulumi.CustomResource {
     /**
      * The list of cluster certificates.
      * * `cluster_certificates.0.cluster_certificate` - The cluster certificate issued (signed) by the issuing certificate authority (CA) of the cluster's owner.
-     * * `cluster_certificates.0.cluster_csr` - The certificate signing request (CSR). Available only in UNINITIALIZED state after an hsm instance is added to the cluster.
+     * * `cluster_certificates.0.cluster_csr` - The certificate signing request (CSR). Available only in `UNINITIALIZED` state after an HSM instance is added to the cluster.
      * * `cluster_certificates.0.aws_hardware_certificate` - The HSM hardware certificate issued (signed) by AWS CloudHSM.
      * * `cluster_certificates.0.hsm_certificate` - The HSM certificate issued (signed) by the HSM hardware.
      * * `cluster_certificates.0.manufacturer_hardware_certificate` - The HSM hardware certificate issued (signed) by the hardware manufacturer.
@@ -96,11 +59,11 @@ export class Cluster extends pulumi.CustomResource {
      */
     public /*out*/ readonly clusterId!: pulumi.Output<string>;
     /**
-     * The state of the cluster.
+     * The state of the CloudHSM cluster.
      */
     public /*out*/ readonly clusterState!: pulumi.Output<string>;
     /**
-     * The type of HSM module in the cluster. Currently, only hsm1.medium is supported.
+     * The type of HSM module in the cluster. Currently, only `hsm1.medium` is supported.
      */
     public readonly hsmType!: pulumi.Output<string>;
     /**
@@ -147,10 +110,10 @@ export class Cluster extends pulumi.CustomResource {
             inputs["vpcId"] = state ? state.vpcId : undefined;
         } else {
             const args = argsOrState as ClusterArgs | undefined;
-            if (!args || args.hsmType === undefined) {
+            if ((!args || args.hsmType === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'hsmType'");
             }
-            if (!args || args.subnetIds === undefined) {
+            if ((!args || args.subnetIds === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'subnetIds'");
             }
             inputs["hsmType"] = args ? args.hsmType : undefined;
@@ -181,7 +144,7 @@ export interface ClusterState {
     /**
      * The list of cluster certificates.
      * * `cluster_certificates.0.cluster_certificate` - The cluster certificate issued (signed) by the issuing certificate authority (CA) of the cluster's owner.
-     * * `cluster_certificates.0.cluster_csr` - The certificate signing request (CSR). Available only in UNINITIALIZED state after an hsm instance is added to the cluster.
+     * * `cluster_certificates.0.cluster_csr` - The certificate signing request (CSR). Available only in `UNINITIALIZED` state after an HSM instance is added to the cluster.
      * * `cluster_certificates.0.aws_hardware_certificate` - The HSM hardware certificate issued (signed) by AWS CloudHSM.
      * * `cluster_certificates.0.hsm_certificate` - The HSM certificate issued (signed) by the HSM hardware.
      * * `cluster_certificates.0.manufacturer_hardware_certificate` - The HSM hardware certificate issued (signed) by the hardware manufacturer.
@@ -192,11 +155,11 @@ export interface ClusterState {
      */
     readonly clusterId?: pulumi.Input<string>;
     /**
-     * The state of the cluster.
+     * The state of the CloudHSM cluster.
      */
     readonly clusterState?: pulumi.Input<string>;
     /**
-     * The type of HSM module in the cluster. Currently, only hsm1.medium is supported.
+     * The type of HSM module in the cluster. Currently, only `hsm1.medium` is supported.
      */
     readonly hsmType?: pulumi.Input<string>;
     /**
@@ -226,7 +189,7 @@ export interface ClusterState {
  */
 export interface ClusterArgs {
     /**
-     * The type of HSM module in the cluster. Currently, only hsm1.medium is supported.
+     * The type of HSM module in the cluster. Currently, only `hsm1.medium` is supported.
      */
     readonly hsmType: pulumi.Input<string>;
     /**

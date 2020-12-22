@@ -31,29 +31,27 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const ami = pulumi.output(aws.getAmi({
+ * const ami = aws.getAmi({
+ *     mostRecent: true,
  *     filters: [{
  *         name: "name",
  *         values: ["amzn-ami-hvm-*"],
  *     }],
- *     mostRecent: true,
  *     owners: ["amazon"],
- * }, { async: true }));
+ * });
  * const instance = new aws.ec2.Instance("instance", {
- *     ami: ami.id,
  *     instanceType: "t2.micro",
+ *     ami: ami.then(ami => ami.id),
  *     tags: {
  *         type: "test-instance",
  *     },
  * });
- * const sg = new aws.ec2.SecurityGroup("sg", {
- *     tags: {
- *         type: "test-security-group",
- *     },
- * });
- * const sgAttachment = new aws.ec2.NetworkInterfaceSecurityGroupAttachment("sg_attachment", {
- *     networkInterfaceId: instance.primaryNetworkInterfaceId,
+ * const sg = new aws.ec2.SecurityGroup("sg", {tags: {
+ *     type: "test-security-group",
+ * }});
+ * const sgAttachment = new aws.ec2.NetworkInterfaceSecurityGroupAttachment("sgAttachment", {
  *     securityGroupId: sg.id,
+ *     networkInterfaceId: instance.primaryNetworkInterfaceId,
  * });
  * ```
  *
@@ -65,17 +63,15 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const instance = pulumi.output(aws.ec2.getInstance({
+ * const instance = aws.ec2.getInstance({
  *     instanceId: "i-1234567890abcdef0",
- * }, { async: true }));
- * const sg = new aws.ec2.SecurityGroup("sg", {
- *     tags: {
- *         type: "test-security-group",
- *     },
  * });
- * const sgAttachment = new aws.ec2.NetworkInterfaceSecurityGroupAttachment("sg_attachment", {
- *     networkInterfaceId: instance.networkInterfaceId,
+ * const sg = new aws.ec2.SecurityGroup("sg", {tags: {
+ *     type: "test-security-group",
+ * }});
+ * const sgAttachment = new aws.ec2.NetworkInterfaceSecurityGroupAttachment("sgAttachment", {
  *     securityGroupId: sg.id,
+ *     networkInterfaceId: instance.then(instance => instance.networkInterfaceId),
  * });
  * ```
  * ## Output Reference
@@ -135,10 +131,10 @@ export class NetworkInterfaceSecurityGroupAttachment extends pulumi.CustomResour
             inputs["securityGroupId"] = state ? state.securityGroupId : undefined;
         } else {
             const args = argsOrState as NetworkInterfaceSecurityGroupAttachmentArgs | undefined;
-            if (!args || args.networkInterfaceId === undefined) {
+            if ((!args || args.networkInterfaceId === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'networkInterfaceId'");
             }
-            if (!args || args.securityGroupId === undefined) {
+            if ((!args || args.securityGroupId === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'securityGroupId'");
             }
             inputs["networkInterfaceId"] = args ? args.networkInterfaceId : undefined;

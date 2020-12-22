@@ -28,6 +28,7 @@ namespace Pulumi.Aws.Iam
     ///         });
     ///         var lbRo = new Aws.Iam.UserPolicy("lbRo", new Aws.Iam.UserPolicyArgs
     ///         {
+    ///             User = lbUser.Name,
     ///             Policy = @"{
     ///   ""Version"": ""2012-10-17"",
     ///   ""Statement"": [
@@ -40,9 +41,7 @@ namespace Pulumi.Aws.Iam
     ///     }
     ///   ]
     /// }
-    /// 
     /// ",
-    ///             User = lbUser.Name,
     ///         });
     ///         var lbAccessKey = new Aws.Iam.AccessKey("lbAccessKey", new Aws.Iam.AccessKeyArgs
     ///         {
@@ -51,6 +50,14 @@ namespace Pulumi.Aws.Iam
     ///     }
     /// 
     /// }
+    /// ```
+    /// 
+    /// ## Import
+    /// 
+    /// IAM User Policies can be imported using the `user_name:user_policy_name`, e.g.
+    /// 
+    /// ```sh
+    ///  $ pulumi import aws:iam/userPolicy:UserPolicy mypolicy user_of_mypolicy_name:mypolicy_name
     /// ```
     /// </summary>
     public partial class UserPolicy : Pulumi.CustomResource

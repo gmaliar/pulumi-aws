@@ -34,6 +34,14 @@ import * as utilities from "../utilities";
  *
  * ```typescript
  * import * as pulumi from "@pulumi/pulumi";
+ * import * as aws from "@pulumi/aws";
+ *
+ * // ... other configuration ...
+ * const example = new aws.cloudfront.Distribution("example", {origins: [{
+ *     s3OriginConfig: {
+ *         originAccessIdentity: aws_cloudfront_origin_access_identity.example.cloudfront_access_identity_path,
+ *     },
+ * }]});
  * ```
  *
  * ### Updating your bucket policy
@@ -47,29 +55,19 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const s3Policy = pulumi.all([aws_cloudfront_origin_access_identity_origin_access_identity.iamArn, aws_s3_bucket_example.arn, aws_cloudfront_origin_access_identity_origin_access_identity.iamArn, aws_s3_bucket_example.arn]).apply(([aws_cloudfront_origin_access_identity_origin_access_identityIamArn, aws_s3_bucket_exampleArn, aws_cloudfront_origin_access_identity_origin_access_identityIamArn1, aws_s3_bucket_exampleArn1]) => aws.iam.getPolicyDocument({
- *     statements: [
- *         {
- *             actions: ["s3:GetObject"],
- *             principals: [{
- *                 identifiers: [aws_cloudfront_origin_access_identity_origin_access_identityIamArn],
- *                 type: "AWS",
- *             }],
- *             resources: [`${aws_s3_bucket_exampleArn}/*`],
- *         },
- *         {
- *             actions: ["s3:ListBucket"],
- *             principals: [{
- *                 identifiers: [aws_cloudfront_origin_access_identity_origin_access_identityIamArn1],
- *                 type: "AWS",
- *             }],
- *             resources: [aws_s3_bucket_exampleArn1],
- *         },
- *     ],
- * }, { async: true }));
+ * const s3Policy = aws.iam.getPolicyDocument({
+ *     statements: [{
+ *         actions: ["s3:GetObject"],
+ *         resources: [`${aws_s3_bucket.example.arn}/*`],
+ *         principals: [{
+ *             type: "AWS",
+ *             identifiers: [aws_cloudfront_origin_access_identity.origin_access_identity.iam_arn],
+ *         }],
+ *     }],
+ * });
  * const example = new aws.s3.BucketPolicy("example", {
- *     bucket: aws_s3_bucket_example.id,
- *     policy: s3Policy.json,
+ *     bucket: aws_s3_bucket.example.id,
+ *     policy: s3Policy.then(s3Policy => s3Policy.json),
  * });
  * ```
  *
@@ -77,6 +75,14 @@ import * as utilities from "../utilities";
  * [2]: http://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/private-content-restricting-access-to-s3.html
  * [3]: https://www.terraform.io/docs/providers/aws/r/cloudfront_distribution.html
  * [4]: https://www.terraform.io/docs/providers/aws/r/s3_bucket.html
+ *
+ * ## Import
+ *
+ * Cloudfront Origin Access Identities can be imported using the `id`, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:cloudfront/originAccessIdentity:OriginAccessIdentity origin_access E74FTE3AEXAMPLE
+ * ```
  */
 export class OriginAccessIdentity extends pulumi.CustomResource {
     /**

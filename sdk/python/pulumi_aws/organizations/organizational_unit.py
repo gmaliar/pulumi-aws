@@ -5,33 +5,23 @@
 import warnings
 import pulumi
 import pulumi.runtime
-from typing import Union
-from .. import utilities, tables
+from typing import Any, Mapping, Optional, Sequence, Union
+from .. import _utilities, _tables
+from . import outputs
+from ._inputs import *
+
+__all__ = ['OrganizationalUnit']
 
 
 class OrganizationalUnit(pulumi.CustomResource):
-    accounts: pulumi.Output[list]
-    """
-    List of child accounts for this Organizational Unit. Does not return account information for child Organizational Units. All elements have these attributes:
-
-      * `arn` (`str`) - ARN of the organizational unit
-      * `email` (`str`) - Email of the account
-      * `id` (`str`) - Identifier of the organization unit
-      * `name` (`str`) - The name for the organizational unit
-    """
-    arn: pulumi.Output[str]
-    """
-    ARN of the organizational unit
-    """
-    name: pulumi.Output[str]
-    """
-    The name for the organizational unit
-    """
-    parent_id: pulumi.Output[str]
-    """
-    ID of the parent organizational unit, which may be the root
-    """
-    def __init__(__self__, resource_name, opts=None, name=None, parent_id=None, __props__=None, __name__=None, __opts__=None):
+    def __init__(__self__,
+                 resource_name: str,
+                 opts: Optional[pulumi.ResourceOptions] = None,
+                 name: Optional[pulumi.Input[str]] = None,
+                 parent_id: Optional[pulumi.Input[str]] = None,
+                 __props__=None,
+                 __name__=None,
+                 __opts__=None):
         """
         Provides a resource to create an organizational unit.
 
@@ -42,6 +32,14 @@ class OrganizationalUnit(pulumi.CustomResource):
         import pulumi_aws as aws
 
         example = aws.organizations.OrganizationalUnit("example", parent_id=aws_organizations_organization["example"]["roots"][0]["id"])
+        ```
+
+        ## Import
+
+        AWS Organizations Organizational Units can be imported by using the `id`, e.g.
+
+        ```sh
+         $ pulumi import aws:organizations/organizationalUnit:OrganizationalUnit example ou-1234567
         ```
 
         :param str resource_name: The name of the resource.
@@ -60,14 +58,14 @@ class OrganizationalUnit(pulumi.CustomResource):
         if not isinstance(opts, pulumi.ResourceOptions):
             raise TypeError('Expected resource options to be a ResourceOptions instance')
         if opts.version is None:
-            opts.version = utilities.get_version()
+            opts.version = _utilities.get_version()
         if opts.id is None:
             if __props__ is not None:
                 raise TypeError('__props__ is only valid when passed in combination with a valid opts.id to get an existing resource')
             __props__ = dict()
 
             __props__['name'] = name
-            if parent_id is None:
+            if parent_id is None and not opts.urn:
                 raise TypeError("Missing required property 'parent_id'")
             __props__['parent_id'] = parent_id
             __props__['accounts'] = None
@@ -79,25 +77,24 @@ class OrganizationalUnit(pulumi.CustomResource):
             opts)
 
     @staticmethod
-    def get(resource_name, id, opts=None, accounts=None, arn=None, name=None, parent_id=None):
+    def get(resource_name: str,
+            id: pulumi.Input[str],
+            opts: Optional[pulumi.ResourceOptions] = None,
+            accounts: Optional[pulumi.Input[Sequence[pulumi.Input[pulumi.InputType['OrganizationalUnitAccountArgs']]]]] = None,
+            arn: Optional[pulumi.Input[str]] = None,
+            name: Optional[pulumi.Input[str]] = None,
+            parent_id: Optional[pulumi.Input[str]] = None) -> 'OrganizationalUnit':
         """
         Get an existing OrganizationalUnit resource's state with the given name, id, and optional extra
         properties used to qualify the lookup.
 
         :param str resource_name: The unique name of the resulting resource.
-        :param str id: The unique provider ID of the resource to lookup.
+        :param pulumi.Input[str] id: The unique provider ID of the resource to lookup.
         :param pulumi.ResourceOptions opts: Options for the resource.
-        :param pulumi.Input[list] accounts: List of child accounts for this Organizational Unit. Does not return account information for child Organizational Units. All elements have these attributes:
+        :param pulumi.Input[Sequence[pulumi.Input[pulumi.InputType['OrganizationalUnitAccountArgs']]]] accounts: List of child accounts for this Organizational Unit. Does not return account information for child Organizational Units. All elements have these attributes:
         :param pulumi.Input[str] arn: ARN of the organizational unit
         :param pulumi.Input[str] name: The name for the organizational unit
         :param pulumi.Input[str] parent_id: ID of the parent organizational unit, which may be the root
-
-        The **accounts** object supports the following:
-
-          * `arn` (`pulumi.Input[str]`) - ARN of the organizational unit
-          * `email` (`pulumi.Input[str]`) - Email of the account
-          * `id` (`pulumi.Input[str]`) - Identifier of the organization unit
-          * `name` (`pulumi.Input[str]`) - The name for the organizational unit
         """
         opts = pulumi.ResourceOptions.merge(opts, pulumi.ResourceOptions(id=id))
 
@@ -109,8 +106,41 @@ class OrganizationalUnit(pulumi.CustomResource):
         __props__["parent_id"] = parent_id
         return OrganizationalUnit(resource_name, opts=opts, __props__=__props__)
 
+    @property
+    @pulumi.getter
+    def accounts(self) -> pulumi.Output[Sequence['outputs.OrganizationalUnitAccount']]:
+        """
+        List of child accounts for this Organizational Unit. Does not return account information for child Organizational Units. All elements have these attributes:
+        """
+        return pulumi.get(self, "accounts")
+
+    @property
+    @pulumi.getter
+    def arn(self) -> pulumi.Output[str]:
+        """
+        ARN of the organizational unit
+        """
+        return pulumi.get(self, "arn")
+
+    @property
+    @pulumi.getter
+    def name(self) -> pulumi.Output[str]:
+        """
+        The name for the organizational unit
+        """
+        return pulumi.get(self, "name")
+
+    @property
+    @pulumi.getter(name="parentId")
+    def parent_id(self) -> pulumi.Output[str]:
+        """
+        ID of the parent organizational unit, which may be the root
+        """
+        return pulumi.get(self, "parent_id")
+
     def translate_output_property(self, prop):
-        return tables._CAMEL_TO_SNAKE_CASE_TABLE.get(prop) or prop
+        return _tables.CAMEL_TO_SNAKE_CASE_TABLE.get(prop) or prop
 
     def translate_input_property(self, prop):
-        return tables._SNAKE_TO_CAMEL_CASE_TABLE.get(prop) or prop
+        return _tables.SNAKE_TO_CAMEL_CASE_TABLE.get(prop) or prop
+

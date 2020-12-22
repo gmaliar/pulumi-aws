@@ -20,9 +20,12 @@ import {NotificationType} from "./index";
  * import * as aws from "@pulumi/aws";
  *
  * const example = new aws.sns.Topic("example", {});
+ * // arn is an exported attribute
  * const bar = new aws.autoscaling.Group("bar", {});
+ * // ...
  * const foo = new aws.autoscaling.Group("foo", {});
- * const exampleNotifications = new aws.autoscaling.Notification("example_notifications", {
+ * // ...
+ * const exampleNotifications = new aws.autoscaling.Notification("exampleNotifications", {
  *     groupNames: [
  *         bar.name,
  *         foo.name,
@@ -96,13 +99,13 @@ export class Notification extends pulumi.CustomResource {
             inputs["topicArn"] = state ? state.topicArn : undefined;
         } else {
             const args = argsOrState as NotificationArgs | undefined;
-            if (!args || args.groupNames === undefined) {
+            if ((!args || args.groupNames === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'groupNames'");
             }
-            if (!args || args.notifications === undefined) {
+            if ((!args || args.notifications === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'notifications'");
             }
-            if (!args || args.topicArn === undefined) {
+            if ((!args || args.topicArn === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'topicArn'");
             }
             inputs["groupNames"] = args ? args.groupNames : undefined;

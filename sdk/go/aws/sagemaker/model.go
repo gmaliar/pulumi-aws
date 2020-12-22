@@ -4,6 +4,7 @@
 package sagemaker
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -20,22 +21,13 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/iam"
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/sagemaker"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/iam"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/sagemaker"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
 // func main() {
 // 	pulumi.Run(func(ctx *pulumi.Context) error {
-// 		_, err := sagemaker.NewModel(ctx, "model", &sagemaker.ModelArgs{
-// 			ExecutionRoleArn: pulumi.String(aws_iam_role.Foo.Arn),
-// 			PrimaryContainer: &sagemaker.ModelPrimaryContainerArgs{
-// 				Image: pulumi.String("174872318107.dkr.ecr.us-west-2.amazonaws.com/kmeans:1"),
-// 			},
-// 		})
-// 		if err != nil {
-// 			return err
-// 		}
 // 		assumeRole, err := iam.GetPolicyDocument(ctx, &iam.GetPolicyDocumentArgs{
 // 			Statements: []iam.GetPolicyDocumentStatement{
 // 				iam.GetPolicyDocumentStatement{
@@ -44,10 +36,10 @@ import (
 // 					},
 // 					Principals: []iam.GetPolicyDocumentStatementPrincipal{
 // 						iam.GetPolicyDocumentStatementPrincipal{
+// 							Type: "Service",
 // 							Identifiers: []string{
 // 								"sagemaker.amazonaws.com",
 // 							},
-// 							Type: "Service",
 // 						},
 // 					},
 // 				},
@@ -56,8 +48,17 @@ import (
 // 		if err != nil {
 // 			return err
 // 		}
-// 		_, err = iam.NewRole(ctx, "role", &iam.RoleArgs{
+// 		exampleRole, err := iam.NewRole(ctx, "exampleRole", &iam.RoleArgs{
 // 			AssumeRolePolicy: pulumi.String(assumeRole.Json),
+// 		})
+// 		if err != nil {
+// 			return err
+// 		}
+// 		_, err = sagemaker.NewModel(ctx, "exampleModel", &sagemaker.ModelArgs{
+// 			ExecutionRoleArn: exampleRole.Arn,
+// 			PrimaryContainer: &sagemaker.ModelPrimaryContainerArgs{
+// 				Image: pulumi.String("174872318107.dkr.ecr.us-west-2.amazonaws.com/kmeans:1"),
+// 			},
 // 		})
 // 		if err != nil {
 // 			return err
@@ -65,6 +66,14 @@ import (
 // 		return nil
 // 	})
 // }
+// ```
+//
+// ## Import
+//
+// Models can be imported using the `name`, e.g.
+//
+// ```sh
+//  $ pulumi import aws:sagemaker/model:Model test_model model-foo
 // ```
 type Model struct {
 	pulumi.CustomResourceState
@@ -90,11 +99,12 @@ type Model struct {
 // NewModel registers a new resource with the given unique name, arguments, and options.
 func NewModel(ctx *pulumi.Context,
 	name string, args *ModelArgs, opts ...pulumi.ResourceOption) (*Model, error) {
-	if args == nil || args.ExecutionRoleArn == nil {
-		return nil, errors.New("missing required argument 'ExecutionRoleArn'")
-	}
 	if args == nil {
-		args = &ModelArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.ExecutionRoleArn == nil {
+		return nil, errors.New("invalid value for required argument 'ExecutionRoleArn'")
 	}
 	var resource Model
 	err := ctx.RegisterResource("aws:sagemaker/model:Model", name, args, &resource, opts...)
@@ -196,4 +206,43 @@ type ModelArgs struct {
 
 func (ModelArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*modelArgs)(nil)).Elem()
+}
+
+type ModelInput interface {
+	pulumi.Input
+
+	ToModelOutput() ModelOutput
+	ToModelOutputWithContext(ctx context.Context) ModelOutput
+}
+
+func (Model) ElementType() reflect.Type {
+	return reflect.TypeOf((*Model)(nil)).Elem()
+}
+
+func (i Model) ToModelOutput() ModelOutput {
+	return i.ToModelOutputWithContext(context.Background())
+}
+
+func (i Model) ToModelOutputWithContext(ctx context.Context) ModelOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(ModelOutput)
+}
+
+type ModelOutput struct {
+	*pulumi.OutputState
+}
+
+func (ModelOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*ModelOutput)(nil)).Elem()
+}
+
+func (o ModelOutput) ToModelOutput() ModelOutput {
+	return o
+}
+
+func (o ModelOutput) ToModelOutputWithContext(ctx context.Context) ModelOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(ModelOutput{})
 }

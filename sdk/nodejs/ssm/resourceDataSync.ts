@@ -2,8 +2,7 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 /**
@@ -15,10 +14,8 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const hogeBucket = new aws.s3.Bucket("hoge", {
- *     region: "us-east-1",
- * });
- * const hogeBucketPolicy = new aws.s3.BucketPolicy("hoge", {
+ * const hogeBucket = new aws.s3.Bucket("hogeBucket", {});
+ * const hogeBucketPolicy = new aws.s3.BucketPolicy("hogeBucketPolicy", {
  *     bucket: hogeBucket.bucket,
  *     policy: `{
  *     "Version": "2012-10-17",
@@ -50,12 +47,18 @@ import * as utilities from "../utilities";
  * }
  * `,
  * });
- * const foo = new aws.ssm.ResourceDataSync("foo", {
- *     s3Destination: {
- *         bucketName: hogeBucket.bucket,
- *         region: hogeBucket.region,
- *     },
- * });
+ * const foo = new aws.ssm.ResourceDataSync("foo", {s3Destination: {
+ *     bucketName: hogeBucket.bucket,
+ *     region: hogeBucket.region,
+ * }});
+ * ```
+ *
+ * ## Import
+ *
+ * SSM resource data sync can be imported using the `name`, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:ssm/resourceDataSync:ResourceDataSync example example-name
  * ```
  */
 export class ResourceDataSync extends pulumi.CustomResource {
@@ -111,7 +114,7 @@ export class ResourceDataSync extends pulumi.CustomResource {
             inputs["s3Destination"] = state ? state.s3Destination : undefined;
         } else {
             const args = argsOrState as ResourceDataSyncArgs | undefined;
-            if (!args || args.s3Destination === undefined) {
+            if ((!args || args.s3Destination === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 's3Destination'");
             }
             inputs["name"] = args ? args.name : undefined;

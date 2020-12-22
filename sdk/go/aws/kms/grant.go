@@ -4,6 +4,7 @@
 package kms
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -20,8 +21,8 @@ import (
 // import (
 // 	"fmt"
 //
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/iam"
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/kms"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/iam"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/kms"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -32,25 +33,25 @@ import (
 // 			return err
 // 		}
 // 		role, err := iam.NewRole(ctx, "role", &iam.RoleArgs{
-// 			AssumeRolePolicy: pulumi.String(fmt.Sprintf("%v%v%v%v%v%v%v%v%v%v%v%v%v%v", "{\n", "  \"Version\": \"2012-10-17\",\n", "  \"Statement\": [\n", "    {\n", "      \"Action\": \"sts:AssumeRole\",\n", "      \"Principal\": {\n", "        \"Service\": \"lambda.amazonaws.com\"\n", "      },\n", "      \"Effect\": \"Allow\",\n", "      \"Sid\": \"\"\n", "    }\n", "  ]\n", "}\n", "\n")),
+// 			AssumeRolePolicy: pulumi.String(fmt.Sprintf("%v%v%v%v%v%v%v%v%v%v%v%v%v", "{\n", "  \"Version\": \"2012-10-17\",\n", "  \"Statement\": [\n", "    {\n", "      \"Action\": \"sts:AssumeRole\",\n", "      \"Principal\": {\n", "        \"Service\": \"lambda.amazonaws.com\"\n", "      },\n", "      \"Effect\": \"Allow\",\n", "      \"Sid\": \"\"\n", "    }\n", "  ]\n", "}\n")),
 // 		})
 // 		if err != nil {
 // 			return err
 // 		}
 // 		_, err = kms.NewGrant(ctx, "grant", &kms.GrantArgs{
+// 			KeyId:            key.KeyId,
+// 			GranteePrincipal: role.Arn,
+// 			Operations: pulumi.StringArray{
+// 				pulumi.String("Encrypt"),
+// 				pulumi.String("Decrypt"),
+// 				pulumi.String("GenerateDataKey"),
+// 			},
 // 			Constraints: kms.GrantConstraintArray{
 // 				&kms.GrantConstraintArgs{
 // 					EncryptionContextEquals: pulumi.StringMap{
 // 						"Department": pulumi.String("Finance"),
 // 					},
 // 				},
-// 			},
-// 			GranteePrincipal: role.Arn,
-// 			KeyId:            key.KeyId,
-// 			Operations: pulumi.StringArray{
-// 				pulumi.String("Encrypt"),
-// 				pulumi.String("Decrypt"),
-// 				pulumi.String("GenerateDataKey"),
 // 			},
 // 		})
 // 		if err != nil {
@@ -59,6 +60,14 @@ import (
 // 		return nil
 // 	})
 // }
+// ```
+//
+// ## Import
+//
+// KMS Grants can be imported using the Key ID and Grant ID separated by a colon (`:`), e.g.
+//
+// ```sh
+//  $ pulumi import aws:kms/grant:Grant test 1234abcd-12ab-34cd-56ef-1234567890ababcde1237f76e4ba7987489ac329fbfba6ad343d6f7075dbd1ef191f0120514
 // ```
 type Grant struct {
 	pulumi.CustomResourceState
@@ -89,17 +98,18 @@ type Grant struct {
 // NewGrant registers a new resource with the given unique name, arguments, and options.
 func NewGrant(ctx *pulumi.Context,
 	name string, args *GrantArgs, opts ...pulumi.ResourceOption) (*Grant, error) {
-	if args == nil || args.GranteePrincipal == nil {
-		return nil, errors.New("missing required argument 'GranteePrincipal'")
-	}
-	if args == nil || args.KeyId == nil {
-		return nil, errors.New("missing required argument 'KeyId'")
-	}
-	if args == nil || args.Operations == nil {
-		return nil, errors.New("missing required argument 'Operations'")
-	}
 	if args == nil {
-		args = &GrantArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.GranteePrincipal == nil {
+		return nil, errors.New("invalid value for required argument 'GranteePrincipal'")
+	}
+	if args.KeyId == nil {
+		return nil, errors.New("invalid value for required argument 'KeyId'")
+	}
+	if args.Operations == nil {
+		return nil, errors.New("invalid value for required argument 'Operations'")
 	}
 	var resource Grant
 	err := ctx.RegisterResource("aws:kms/grant:Grant", name, args, &resource, opts...)
@@ -217,4 +227,43 @@ type GrantArgs struct {
 
 func (GrantArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*grantArgs)(nil)).Elem()
+}
+
+type GrantInput interface {
+	pulumi.Input
+
+	ToGrantOutput() GrantOutput
+	ToGrantOutputWithContext(ctx context.Context) GrantOutput
+}
+
+func (Grant) ElementType() reflect.Type {
+	return reflect.TypeOf((*Grant)(nil)).Elem()
+}
+
+func (i Grant) ToGrantOutput() GrantOutput {
+	return i.ToGrantOutputWithContext(context.Background())
+}
+
+func (i Grant) ToGrantOutputWithContext(ctx context.Context) GrantOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(GrantOutput)
+}
+
+type GrantOutput struct {
+	*pulumi.OutputState
+}
+
+func (GrantOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*GrantOutput)(nil)).Elem()
+}
+
+func (o GrantOutput) ToGrantOutput() GrantOutput {
+	return o
+}
+
+func (o GrantOutput) ToGrantOutputWithContext(ctx context.Context) GrantOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(GrantOutput{})
 }

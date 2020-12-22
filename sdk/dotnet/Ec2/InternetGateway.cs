@@ -24,15 +24,23 @@ namespace Pulumi.Aws.Ec2
     ///     {
     ///         var gw = new Aws.Ec2.InternetGateway("gw", new Aws.Ec2.InternetGatewayArgs
     ///         {
+    ///             VpcId = aws_vpc.Main.Id,
     ///             Tags = 
     ///             {
     ///                 { "Name", "main" },
     ///             },
-    ///             VpcId = aws_vpc.Main.Id,
     ///         });
     ///     }
     /// 
     /// }
+    /// ```
+    /// 
+    /// ## Import
+    /// 
+    /// Internet Gateways can be imported using the `id`, e.g.
+    /// 
+    /// ```sh
+    ///  $ pulumi import aws:ec2/internetGateway:InternetGateway gw igw-c0a643a9
     /// ```
     /// </summary>
     public partial class InternetGateway : Pulumi.CustomResource

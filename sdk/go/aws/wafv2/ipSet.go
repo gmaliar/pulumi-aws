@@ -4,6 +4,7 @@
 package wafv2
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -18,7 +19,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/wafv2"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/wafv2"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -44,6 +45,14 @@ import (
 // 	})
 // }
 // ```
+//
+// ## Import
+//
+// WAFv2 IP Sets can be imported using `ID/name/scope`
+//
+// ```sh
+//  $ pulumi import aws:wafv2/ipSet:IpSet example a1b2c3d4-d5f6-7777-8888-9999aaaabbbbcccc/example/REGIONAL
+// ```
 type IpSet struct {
 	pulumi.CustomResourceState
 
@@ -67,14 +76,15 @@ type IpSet struct {
 // NewIpSet registers a new resource with the given unique name, arguments, and options.
 func NewIpSet(ctx *pulumi.Context,
 	name string, args *IpSetArgs, opts ...pulumi.ResourceOption) (*IpSet, error) {
-	if args == nil || args.IpAddressVersion == nil {
-		return nil, errors.New("missing required argument 'IpAddressVersion'")
-	}
-	if args == nil || args.Scope == nil {
-		return nil, errors.New("missing required argument 'Scope'")
-	}
 	if args == nil {
-		args = &IpSetArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.IpAddressVersion == nil {
+		return nil, errors.New("invalid value for required argument 'IpAddressVersion'")
+	}
+	if args.Scope == nil {
+		return nil, errors.New("invalid value for required argument 'Scope'")
 	}
 	var resource IpSet
 	err := ctx.RegisterResource("aws:wafv2/ipSet:IpSet", name, args, &resource, opts...)
@@ -170,4 +180,43 @@ type IpSetArgs struct {
 
 func (IpSetArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*ipSetArgs)(nil)).Elem()
+}
+
+type IpSetInput interface {
+	pulumi.Input
+
+	ToIpSetOutput() IpSetOutput
+	ToIpSetOutputWithContext(ctx context.Context) IpSetOutput
+}
+
+func (IpSet) ElementType() reflect.Type {
+	return reflect.TypeOf((*IpSet)(nil)).Elem()
+}
+
+func (i IpSet) ToIpSetOutput() IpSetOutput {
+	return i.ToIpSetOutputWithContext(context.Background())
+}
+
+func (i IpSet) ToIpSetOutputWithContext(ctx context.Context) IpSetOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(IpSetOutput)
+}
+
+type IpSetOutput struct {
+	*pulumi.OutputState
+}
+
+func (IpSetOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*IpSetOutput)(nil)).Elem()
+}
+
+func (o IpSetOutput) ToIpSetOutput() IpSetOutput {
+	return o
+}
+
+func (o IpSetOutput) ToIpSetOutputWithContext(ctx context.Context) IpSetOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(IpSetOutput{})
 }

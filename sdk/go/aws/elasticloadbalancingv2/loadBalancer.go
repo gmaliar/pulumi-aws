@@ -4,6 +4,7 @@
 package elasticloadbalancingv2
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
@@ -20,7 +21,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/lb"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/lb"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -30,12 +31,12 @@ import (
 // 			LoadBalancerType: pulumi.String("network"),
 // 			SubnetMappings: lb.LoadBalancerSubnetMappingArray{
 // 				&lb.LoadBalancerSubnetMappingArgs{
-// 					AllocationId: pulumi.String(aws_eip.Example1.Id),
-// 					SubnetId:     pulumi.String(aws_subnet.Example1.Id),
+// 					SubnetId:     pulumi.Any(aws_subnet.Example1.Id),
+// 					AllocationId: pulumi.Any(aws_eip.Example1.Id),
 // 				},
 // 				&lb.LoadBalancerSubnetMappingArgs{
-// 					AllocationId: pulumi.String(aws_eip.Example2.Id),
-// 					SubnetId:     pulumi.String(aws_subnet.Example2.Id),
+// 					SubnetId:     pulumi.Any(aws_subnet.Example2.Id),
+// 					AllocationId: pulumi.Any(aws_eip.Example2.Id),
 // 				},
 // 			},
 // 		})
@@ -45,6 +46,46 @@ import (
 // 		return nil
 // 	})
 // }
+// ```
+// ### Specifying private IP addresses for an internal-facing load balancer
+//
+// ```go
+// package main
+//
+// import (
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/lb"
+// 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
+// )
+//
+// func main() {
+// 	pulumi.Run(func(ctx *pulumi.Context) error {
+// 		_, err := lb.NewLoadBalancer(ctx, "example", &lb.LoadBalancerArgs{
+// 			LoadBalancerType: pulumi.String("network"),
+// 			SubnetMappings: lb.LoadBalancerSubnetMappingArray{
+// 				&lb.LoadBalancerSubnetMappingArgs{
+// 					SubnetId:           pulumi.Any(aws_subnet.Example1.Id),
+// 					PrivateIpv4Address: pulumi.String("10.0.1.15"),
+// 				},
+// 				&lb.LoadBalancerSubnetMappingArgs{
+// 					SubnetId:           pulumi.Any(aws_subnet.Example2.Id),
+// 					PrivateIpv4Address: pulumi.String("10.0.2.15"),
+// 				},
+// 			},
+// 		})
+// 		if err != nil {
+// 			return err
+// 		}
+// 		return nil
+// 	})
+// }
+// ```
+//
+// ## Import
+//
+// LBs can be imported using their ARN, e.g.
+//
+// ```sh
+//  $ pulumi import aws:elasticloadbalancingv2/loadBalancer:LoadBalancer bar arn:aws:elasticloadbalancing:us-west-2:123456789012:loadbalancer/app/my-load-balancer/50dc6c495c0c9188
 // ```
 //
 // Deprecated: aws.elasticloadbalancingv2.LoadBalancer has been deprecated in favor of aws.lb.LoadBalancer
@@ -57,6 +98,8 @@ type LoadBalancer struct {
 	Arn pulumi.StringOutput `pulumi:"arn"`
 	// The ARN suffix for use with CloudWatch Metrics.
 	ArnSuffix pulumi.StringOutput `pulumi:"arnSuffix"`
+	// The ID of the customer owned ipv4 pool to use for this load balancer.
+	CustomerOwnedIpv4Pool pulumi.StringPtrOutput `pulumi:"customerOwnedIpv4Pool"`
 	// The DNS name of the load balancer.
 	DnsName pulumi.StringOutput `pulumi:"dnsName"`
 	// Indicates whether HTTP headers with header fields that are not valid are removed by the load balancer (true) or routed to targets (false). The default is false. Elastic Load Balancing requires that message header names contain only alphanumeric characters and hyphens. Only valid for Load Balancers of type `application`.
@@ -75,7 +118,7 @@ type LoadBalancer struct {
 	Internal pulumi.BoolOutput `pulumi:"internal"`
 	// The type of IP addresses used by the subnets for your load balancer. The possible values are `ipv4` and `dualstack`
 	IpAddressType pulumi.StringOutput `pulumi:"ipAddressType"`
-	// The type of load balancer to create. Possible values are `application` or `network`. The default value is `application`.
+	// The type of load balancer to create. Possible values are `application`, `gateway`, or `network`. The default value is `application`.
 	LoadBalancerType pulumi.StringPtrOutput `pulumi:"loadBalancerType"`
 	// The name of the LB. This name must be unique within your AWS account, can have a maximum of 32 characters,
 	// must contain only alphanumeric characters or hyphens, and must not begin or end with a hyphen. If not specified,
@@ -95,6 +138,7 @@ type LoadBalancer struct {
 	Tags  pulumi.StringMapOutput `pulumi:"tags"`
 	VpcId pulumi.StringOutput    `pulumi:"vpcId"`
 	// The canonical hosted zone ID of the load balancer (to be used in a Route 53 Alias record).
+	// * `subnet_mapping.*.outpost_id` - ID of the Outpost containing the load balancer.
 	ZoneId pulumi.StringOutput `pulumi:"zoneId"`
 }
 
@@ -104,6 +148,7 @@ func NewLoadBalancer(ctx *pulumi.Context,
 	if args == nil {
 		args = &LoadBalancerArgs{}
 	}
+
 	var resource LoadBalancer
 	err := ctx.RegisterResource("aws:elasticloadbalancingv2/loadBalancer:LoadBalancer", name, args, &resource, opts...)
 	if err != nil {
@@ -132,6 +177,8 @@ type loadBalancerState struct {
 	Arn *string `pulumi:"arn"`
 	// The ARN suffix for use with CloudWatch Metrics.
 	ArnSuffix *string `pulumi:"arnSuffix"`
+	// The ID of the customer owned ipv4 pool to use for this load balancer.
+	CustomerOwnedIpv4Pool *string `pulumi:"customerOwnedIpv4Pool"`
 	// The DNS name of the load balancer.
 	DnsName *string `pulumi:"dnsName"`
 	// Indicates whether HTTP headers with header fields that are not valid are removed by the load balancer (true) or routed to targets (false). The default is false. Elastic Load Balancing requires that message header names contain only alphanumeric characters and hyphens. Only valid for Load Balancers of type `application`.
@@ -150,7 +197,7 @@ type loadBalancerState struct {
 	Internal *bool `pulumi:"internal"`
 	// The type of IP addresses used by the subnets for your load balancer. The possible values are `ipv4` and `dualstack`
 	IpAddressType *string `pulumi:"ipAddressType"`
-	// The type of load balancer to create. Possible values are `application` or `network`. The default value is `application`.
+	// The type of load balancer to create. Possible values are `application`, `gateway`, or `network`. The default value is `application`.
 	LoadBalancerType *string `pulumi:"loadBalancerType"`
 	// The name of the LB. This name must be unique within your AWS account, can have a maximum of 32 characters,
 	// must contain only alphanumeric characters or hyphens, and must not begin or end with a hyphen. If not specified,
@@ -170,6 +217,7 @@ type loadBalancerState struct {
 	Tags  map[string]string `pulumi:"tags"`
 	VpcId *string           `pulumi:"vpcId"`
 	// The canonical hosted zone ID of the load balancer (to be used in a Route 53 Alias record).
+	// * `subnet_mapping.*.outpost_id` - ID of the Outpost containing the load balancer.
 	ZoneId *string `pulumi:"zoneId"`
 }
 
@@ -180,6 +228,8 @@ type LoadBalancerState struct {
 	Arn pulumi.StringPtrInput
 	// The ARN suffix for use with CloudWatch Metrics.
 	ArnSuffix pulumi.StringPtrInput
+	// The ID of the customer owned ipv4 pool to use for this load balancer.
+	CustomerOwnedIpv4Pool pulumi.StringPtrInput
 	// The DNS name of the load balancer.
 	DnsName pulumi.StringPtrInput
 	// Indicates whether HTTP headers with header fields that are not valid are removed by the load balancer (true) or routed to targets (false). The default is false. Elastic Load Balancing requires that message header names contain only alphanumeric characters and hyphens. Only valid for Load Balancers of type `application`.
@@ -198,7 +248,7 @@ type LoadBalancerState struct {
 	Internal pulumi.BoolPtrInput
 	// The type of IP addresses used by the subnets for your load balancer. The possible values are `ipv4` and `dualstack`
 	IpAddressType pulumi.StringPtrInput
-	// The type of load balancer to create. Possible values are `application` or `network`. The default value is `application`.
+	// The type of load balancer to create. Possible values are `application`, `gateway`, or `network`. The default value is `application`.
 	LoadBalancerType pulumi.StringPtrInput
 	// The name of the LB. This name must be unique within your AWS account, can have a maximum of 32 characters,
 	// must contain only alphanumeric characters or hyphens, and must not begin or end with a hyphen. If not specified,
@@ -218,6 +268,7 @@ type LoadBalancerState struct {
 	Tags  pulumi.StringMapInput
 	VpcId pulumi.StringPtrInput
 	// The canonical hosted zone ID of the load balancer (to be used in a Route 53 Alias record).
+	// * `subnet_mapping.*.outpost_id` - ID of the Outpost containing the load balancer.
 	ZoneId pulumi.StringPtrInput
 }
 
@@ -228,6 +279,8 @@ func (LoadBalancerState) ElementType() reflect.Type {
 type loadBalancerArgs struct {
 	// An Access Logs block. Access Logs documented below.
 	AccessLogs *LoadBalancerAccessLogs `pulumi:"accessLogs"`
+	// The ID of the customer owned ipv4 pool to use for this load balancer.
+	CustomerOwnedIpv4Pool *string `pulumi:"customerOwnedIpv4Pool"`
 	// Indicates whether HTTP headers with header fields that are not valid are removed by the load balancer (true) or routed to targets (false). The default is false. Elastic Load Balancing requires that message header names contain only alphanumeric characters and hyphens. Only valid for Load Balancers of type `application`.
 	DropInvalidHeaderFields *bool `pulumi:"dropInvalidHeaderFields"`
 	// If true, cross-zone load balancing of the load balancer will be enabled.
@@ -244,7 +297,7 @@ type loadBalancerArgs struct {
 	Internal *bool `pulumi:"internal"`
 	// The type of IP addresses used by the subnets for your load balancer. The possible values are `ipv4` and `dualstack`
 	IpAddressType *string `pulumi:"ipAddressType"`
-	// The type of load balancer to create. Possible values are `application` or `network`. The default value is `application`.
+	// The type of load balancer to create. Possible values are `application`, `gateway`, or `network`. The default value is `application`.
 	LoadBalancerType *string `pulumi:"loadBalancerType"`
 	// The name of the LB. This name must be unique within your AWS account, can have a maximum of 32 characters,
 	// must contain only alphanumeric characters or hyphens, and must not begin or end with a hyphen. If not specified,
@@ -268,6 +321,8 @@ type loadBalancerArgs struct {
 type LoadBalancerArgs struct {
 	// An Access Logs block. Access Logs documented below.
 	AccessLogs LoadBalancerAccessLogsPtrInput
+	// The ID of the customer owned ipv4 pool to use for this load balancer.
+	CustomerOwnedIpv4Pool pulumi.StringPtrInput
 	// Indicates whether HTTP headers with header fields that are not valid are removed by the load balancer (true) or routed to targets (false). The default is false. Elastic Load Balancing requires that message header names contain only alphanumeric characters and hyphens. Only valid for Load Balancers of type `application`.
 	DropInvalidHeaderFields pulumi.BoolPtrInput
 	// If true, cross-zone load balancing of the load balancer will be enabled.
@@ -284,7 +339,7 @@ type LoadBalancerArgs struct {
 	Internal pulumi.BoolPtrInput
 	// The type of IP addresses used by the subnets for your load balancer. The possible values are `ipv4` and `dualstack`
 	IpAddressType pulumi.StringPtrInput
-	// The type of load balancer to create. Possible values are `application` or `network`. The default value is `application`.
+	// The type of load balancer to create. Possible values are `application`, `gateway`, or `network`. The default value is `application`.
 	LoadBalancerType pulumi.StringPtrInput
 	// The name of the LB. This name must be unique within your AWS account, can have a maximum of 32 characters,
 	// must contain only alphanumeric characters or hyphens, and must not begin or end with a hyphen. If not specified,
@@ -306,4 +361,43 @@ type LoadBalancerArgs struct {
 
 func (LoadBalancerArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*loadBalancerArgs)(nil)).Elem()
+}
+
+type LoadBalancerInput interface {
+	pulumi.Input
+
+	ToLoadBalancerOutput() LoadBalancerOutput
+	ToLoadBalancerOutputWithContext(ctx context.Context) LoadBalancerOutput
+}
+
+func (LoadBalancer) ElementType() reflect.Type {
+	return reflect.TypeOf((*LoadBalancer)(nil)).Elem()
+}
+
+func (i LoadBalancer) ToLoadBalancerOutput() LoadBalancerOutput {
+	return i.ToLoadBalancerOutputWithContext(context.Background())
+}
+
+func (i LoadBalancer) ToLoadBalancerOutputWithContext(ctx context.Context) LoadBalancerOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(LoadBalancerOutput)
+}
+
+type LoadBalancerOutput struct {
+	*pulumi.OutputState
+}
+
+func (LoadBalancerOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*LoadBalancerOutput)(nil)).Elem()
+}
+
+func (o LoadBalancerOutput) ToLoadBalancerOutput() LoadBalancerOutput {
+	return o
+}
+
+func (o LoadBalancerOutput) ToLoadBalancerOutputWithContext(ctx context.Context) LoadBalancerOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(LoadBalancerOutput{})
 }

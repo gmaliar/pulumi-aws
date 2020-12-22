@@ -50,8 +50,8 @@ namespace Pulumi.Aws.Cognito
     ///         });
     ///         var main = new Aws.Cognito.UserPoolDomain("main", new Aws.Cognito.UserPoolDomainArgs
     ///         {
-    ///             CertificateArn = aws_acm_certificate.Cert.Arn,
     ///             Domain = "example-domain.example.com",
+    ///             CertificateArn = aws_acm_certificate.Cert.Arn,
     ///             UserPoolId = exampleUserPool.Id,
     ///         });
     ///         var exampleZone = Output.Create(Aws.Route53.GetZone.InvokeAsync(new Aws.Route53.GetZoneArgs
@@ -60,6 +60,9 @@ namespace Pulumi.Aws.Cognito
     ///         }));
     ///         var auth_cognito_A = new Aws.Route53.Record("auth-cognito-A", new Aws.Route53.RecordArgs
     ///         {
+    ///             Name = main.Domain,
+    ///             Type = "A",
+    ///             ZoneId = exampleZone.Apply(exampleZone =&gt; exampleZone.ZoneId),
     ///             Aliases = 
     ///             {
     ///                 new Aws.Route53.Inputs.RecordAliasArgs
@@ -69,13 +72,18 @@ namespace Pulumi.Aws.Cognito
     ///                     ZoneId = "Z2FDTNDATAQYW2",
     ///                 },
     ///             },
-    ///             Name = main.Domain,
-    ///             Type = "A",
-    ///             ZoneId = exampleZone.Apply(exampleZone =&gt; exampleZone.ZoneId),
     ///         });
     ///     }
     /// 
     /// }
+    /// ```
+    /// 
+    /// ## Import
+    /// 
+    /// Cognito User Pool Domains can be imported using the `domain`, e.g.
+    /// 
+    /// ```sh
+    ///  $ pulumi import aws:cognito/userPoolDomain:UserPoolDomain main &lt;domain&gt;
     /// ```
     /// </summary>
     public partial class UserPoolDomain : Pulumi.CustomResource

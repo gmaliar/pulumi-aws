@@ -15,12 +15,20 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const endpoint = new aws.sagemaker.Endpoint("e", {
- *     endpointConfigName: aws_sagemaker_endpoint_configuration_ec.name,
+ * const endpoint = new aws.sagemaker.Endpoint("endpoint", {
+ *     endpointConfigName: aws_sagemaker_endpoint_configuration.ec.name,
  *     tags: {
  *         Name: "foo",
  *     },
  * });
+ * ```
+ *
+ * ## Import
+ *
+ * Endpoints can be imported using the `name`, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:sagemaker/endpoint:Endpoint test_endpoint my-endpoint
  * ```
  */
 export class Endpoint extends pulumi.CustomResource {
@@ -86,7 +94,7 @@ export class Endpoint extends pulumi.CustomResource {
             inputs["tags"] = state ? state.tags : undefined;
         } else {
             const args = argsOrState as EndpointArgs | undefined;
-            if (!args || args.endpointConfigName === undefined) {
+            if ((!args || args.endpointConfigName === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'endpointConfigName'");
             }
             inputs["endpointConfigName"] = args ? args.endpointConfigName : undefined;

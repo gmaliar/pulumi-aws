@@ -17,6 +17,14 @@ import * as utilities from "../utilities";
  *     groupName: "tf-example",
  * });
  * ```
+ *
+ * ## Import
+ *
+ * QuickSight Group can be imported using the aws account id, namespace and group name separated by `/`.
+ *
+ * ```sh
+ *  $ pulumi import aws:quicksight/group:Group example 123456789123/default/tf-example
+ * ```
  */
 export class Group extends pulumi.CustomResource {
     /**
@@ -86,7 +94,7 @@ export class Group extends pulumi.CustomResource {
             inputs["namespace"] = state ? state.namespace : undefined;
         } else {
             const args = argsOrState as GroupArgs | undefined;
-            if (!args || args.groupName === undefined) {
+            if ((!args || args.groupName === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'groupName'");
             }
             inputs["awsAccountId"] = args ? args.awsAccountId : undefined;

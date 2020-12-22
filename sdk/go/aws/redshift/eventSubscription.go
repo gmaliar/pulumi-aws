@@ -4,6 +4,7 @@
 package redshift
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -18,8 +19,8 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/redshift"
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/sns"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/redshift"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/sns"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -37,18 +38,18 @@ import (
 // 			return err
 // 		}
 // 		_, err = redshift.NewEventSubscription(ctx, "defaultEventSubscription", &redshift.EventSubscriptionArgs{
+// 			SnsTopicArn: defaultTopic.Arn,
+// 			SourceType:  pulumi.String("cluster"),
+// 			SourceIds: pulumi.StringArray{
+// 				defaultCluster.ID(),
+// 			},
+// 			Severity: pulumi.String("INFO"),
 // 			EventCategories: pulumi.StringArray{
 // 				pulumi.String("configuration"),
 // 				pulumi.String("management"),
 // 				pulumi.String("monitoring"),
 // 				pulumi.String("security"),
 // 			},
-// 			Severity:    pulumi.String("INFO"),
-// 			SnsTopicArn: defaultTopic.Arn,
-// 			SourceIds: pulumi.StringArray{
-// 				defaultCluster.ID(),
-// 			},
-// 			SourceType: pulumi.String("cluster"),
 // 			Tags: pulumi.StringMap{
 // 				"Name": pulumi.String("default"),
 // 			},
@@ -67,6 +68,14 @@ import (
 // * `arn` - Amazon Resource Name (ARN) of the Redshift event notification subscription
 // * `id` - The name of the Redshift event notification subscription
 // * `customerAwsId` - The AWS customer account associated with the Redshift event notification subscription
+//
+// ## Import
+//
+// Redshift Event Subscriptions can be imported using the `name`, e.g.
+//
+// ```sh
+//  $ pulumi import aws:redshift/eventSubscription:EventSubscription default redshift-event-sub
+// ```
 type EventSubscription struct {
 	pulumi.CustomResourceState
 
@@ -94,11 +103,12 @@ type EventSubscription struct {
 // NewEventSubscription registers a new resource with the given unique name, arguments, and options.
 func NewEventSubscription(ctx *pulumi.Context,
 	name string, args *EventSubscriptionArgs, opts ...pulumi.ResourceOption) (*EventSubscription, error) {
-	if args == nil || args.SnsTopicArn == nil {
-		return nil, errors.New("missing required argument 'SnsTopicArn'")
-	}
 	if args == nil {
-		args = &EventSubscriptionArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.SnsTopicArn == nil {
+		return nil, errors.New("invalid value for required argument 'SnsTopicArn'")
 	}
 	var resource EventSubscription
 	err := ctx.RegisterResource("aws:redshift/eventSubscription:EventSubscription", name, args, &resource, opts...)
@@ -210,4 +220,43 @@ type EventSubscriptionArgs struct {
 
 func (EventSubscriptionArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*eventSubscriptionArgs)(nil)).Elem()
+}
+
+type EventSubscriptionInput interface {
+	pulumi.Input
+
+	ToEventSubscriptionOutput() EventSubscriptionOutput
+	ToEventSubscriptionOutputWithContext(ctx context.Context) EventSubscriptionOutput
+}
+
+func (EventSubscription) ElementType() reflect.Type {
+	return reflect.TypeOf((*EventSubscription)(nil)).Elem()
+}
+
+func (i EventSubscription) ToEventSubscriptionOutput() EventSubscriptionOutput {
+	return i.ToEventSubscriptionOutputWithContext(context.Background())
+}
+
+func (i EventSubscription) ToEventSubscriptionOutputWithContext(ctx context.Context) EventSubscriptionOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(EventSubscriptionOutput)
+}
+
+type EventSubscriptionOutput struct {
+	*pulumi.OutputState
+}
+
+func (EventSubscriptionOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*EventSubscriptionOutput)(nil)).Elem()
+}
+
+func (o EventSubscriptionOutput) ToEventSubscriptionOutput() EventSubscriptionOutput {
+	return o
+}
+
+func (o EventSubscriptionOutput) ToEventSubscriptionOutputWithContext(ctx context.Context) EventSubscriptionOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(EventSubscriptionOutput{})
 }

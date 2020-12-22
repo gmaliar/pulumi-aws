@@ -4,6 +4,7 @@
 package opsworks
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -18,7 +19,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/opsworks"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/opsworks"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -26,7 +27,7 @@ import (
 // 	pulumi.Run(func(ctx *pulumi.Context) error {
 // 		_, err := opsworks.NewCustomLayer(ctx, "custlayer", &opsworks.CustomLayerArgs{
 // 			ShortName: pulumi.String("awesome"),
-// 			StackId:   pulumi.String(aws_opsworks_stack.Main.Id),
+// 			StackId:   pulumi.Any(aws_opsworks_stack.Main.Id),
 // 		})
 // 		if err != nil {
 // 			return err
@@ -34,6 +35,14 @@ import (
 // 		return nil
 // 	})
 // }
+// ```
+//
+// ## Import
+//
+// OpsWorks Custom Layers can be imported using the `id`, e.g.
+//
+// ```sh
+//  $ pulumi import aws:opsworks/customLayer:CustomLayer bar 00000000-0000-0000-0000-000000000000
 // ```
 type CustomLayer struct {
 	pulumi.CustomResourceState
@@ -84,14 +93,15 @@ type CustomLayer struct {
 // NewCustomLayer registers a new resource with the given unique name, arguments, and options.
 func NewCustomLayer(ctx *pulumi.Context,
 	name string, args *CustomLayerArgs, opts ...pulumi.ResourceOption) (*CustomLayer, error) {
-	if args == nil || args.ShortName == nil {
-		return nil, errors.New("missing required argument 'ShortName'")
-	}
-	if args == nil || args.StackId == nil {
-		return nil, errors.New("missing required argument 'StackId'")
-	}
 	if args == nil {
-		args = &CustomLayerArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.ShortName == nil {
+		return nil, errors.New("invalid value for required argument 'ShortName'")
+	}
+	if args.StackId == nil {
+		return nil, errors.New("invalid value for required argument 'StackId'")
 	}
 	var resource CustomLayer
 	err := ctx.RegisterResource("aws:opsworks/customLayer:CustomLayer", name, args, &resource, opts...)
@@ -293,4 +303,43 @@ type CustomLayerArgs struct {
 
 func (CustomLayerArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*customLayerArgs)(nil)).Elem()
+}
+
+type CustomLayerInput interface {
+	pulumi.Input
+
+	ToCustomLayerOutput() CustomLayerOutput
+	ToCustomLayerOutputWithContext(ctx context.Context) CustomLayerOutput
+}
+
+func (CustomLayer) ElementType() reflect.Type {
+	return reflect.TypeOf((*CustomLayer)(nil)).Elem()
+}
+
+func (i CustomLayer) ToCustomLayerOutput() CustomLayerOutput {
+	return i.ToCustomLayerOutputWithContext(context.Background())
+}
+
+func (i CustomLayer) ToCustomLayerOutputWithContext(ctx context.Context) CustomLayerOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(CustomLayerOutput)
+}
+
+type CustomLayerOutput struct {
+	*pulumi.OutputState
+}
+
+func (CustomLayerOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*CustomLayerOutput)(nil)).Elem()
+}
+
+func (o CustomLayerOutput) ToCustomLayerOutput() CustomLayerOutput {
+	return o
+}
+
+func (o CustomLayerOutput) ToCustomLayerOutputWithContext(ctx context.Context) CustomLayerOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(CustomLayerOutput{})
 }

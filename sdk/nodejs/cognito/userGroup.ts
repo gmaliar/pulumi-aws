@@ -13,9 +13,8 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const mainUserPool = new aws.cognito.UserPool("main", {});
- * const groupRole = new aws.iam.Role("group_role", {
- *     assumeRolePolicy: `{
+ * const mainUserPool = new aws.cognito.UserPool("mainUserPool", {});
+ * const groupRole = new aws.iam.Role("groupRole", {assumeRolePolicy: `{
  *   "Version": "2012-10-17",
  *   "Statement": [
  *     {
@@ -36,14 +35,21 @@ import * as utilities from "../utilities";
  *     }
  *   ]
  * }
- * `,
- * });
- * const mainUserGroup = new aws.cognito.UserGroup("main", {
+ * `});
+ * const mainUserGroup = new aws.cognito.UserGroup("mainUserGroup", {
+ *     userPoolId: mainUserPool.id,
  *     description: "Managed by Pulumi",
  *     precedence: 42,
  *     roleArn: groupRole.arn,
- *     userPoolId: mainUserPool.id,
  * });
+ * ```
+ *
+ * ## Import
+ *
+ * Cognito User Groups can be imported using the `user_pool_id`/`name` attributes concatenated, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:cognito/userGroup:UserGroup group us-east-1_vG78M4goG/user-group
  * ```
  */
 export class UserGroup extends pulumi.CustomResource {
@@ -114,7 +120,7 @@ export class UserGroup extends pulumi.CustomResource {
             inputs["userPoolId"] = state ? state.userPoolId : undefined;
         } else {
             const args = argsOrState as UserGroupArgs | undefined;
-            if (!args || args.userPoolId === undefined) {
+            if ((!args || args.userPoolId === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'userPoolId'");
             }
             inputs["description"] = args ? args.description : undefined;

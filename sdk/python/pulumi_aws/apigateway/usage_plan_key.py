@@ -5,32 +5,22 @@
 import warnings
 import pulumi
 import pulumi.runtime
-from typing import Union
-from .. import utilities, tables
+from typing import Any, Mapping, Optional, Sequence, Union
+from .. import _utilities, _tables
+
+__all__ = ['UsagePlanKey']
 
 
 class UsagePlanKey(pulumi.CustomResource):
-    key_id: pulumi.Output[str]
-    """
-    The identifier of the API key resource.
-    """
-    key_type: pulumi.Output[str]
-    """
-    The type of the API key resource. Currently, the valid key type is API_KEY.
-    """
-    name: pulumi.Output[str]
-    """
-    The name of a usage plan key.
-    """
-    usage_plan_id: pulumi.Output[str]
-    """
-    The Id of the usage plan resource representing to associate the key to.
-    """
-    value: pulumi.Output[str]
-    """
-    The value of a usage plan key.
-    """
-    def __init__(__self__, resource_name, opts=None, key_id=None, key_type=None, usage_plan_id=None, __props__=None, __name__=None, __opts__=None):
+    def __init__(__self__,
+                 resource_name: str,
+                 opts: Optional[pulumi.ResourceOptions] = None,
+                 key_id: Optional[pulumi.Input[str]] = None,
+                 key_type: Optional[pulumi.Input[str]] = None,
+                 usage_plan_id: Optional[pulumi.Input[str]] = None,
+                 __props__=None,
+                 __name__=None,
+                 __opts__=None):
         """
         Provides an API Gateway Usage Plan Key.
 
@@ -41,15 +31,24 @@ class UsagePlanKey(pulumi.CustomResource):
         import pulumi_aws as aws
 
         test = aws.apigateway.RestApi("test")
-        myusageplan = aws.apigateway.UsagePlan("myusageplan", api_stages=[{
-            "api_id": test.id,
-            "stage": aws_api_gateway_deployment["foo"]["stage_name"],
-        }])
+        # ...
+        myusageplan = aws.apigateway.UsagePlan("myusageplan", api_stages=[aws.apigateway.UsagePlanApiStageArgs(
+            api_id=test.id,
+            stage=aws_api_gateway_deployment["foo"]["stage_name"],
+        )])
         mykey = aws.apigateway.ApiKey("mykey")
         main = aws.apigateway.UsagePlanKey("main",
             key_id=mykey.id,
             key_type="API_KEY",
             usage_plan_id=myusageplan.id)
+        ```
+
+        ## Import
+
+        AWS API Gateway Usage Plan Key can be imported using the `USAGE-PLAN-ID/USAGE-PLAN-KEY-ID`, e.g.
+
+        ```sh
+         $ pulumi import aws:apigateway/usagePlanKey:UsagePlanKey key 12345abcde/zzz
         ```
 
         :param str resource_name: The name of the resource.
@@ -69,19 +68,19 @@ class UsagePlanKey(pulumi.CustomResource):
         if not isinstance(opts, pulumi.ResourceOptions):
             raise TypeError('Expected resource options to be a ResourceOptions instance')
         if opts.version is None:
-            opts.version = utilities.get_version()
+            opts.version = _utilities.get_version()
         if opts.id is None:
             if __props__ is not None:
                 raise TypeError('__props__ is only valid when passed in combination with a valid opts.id to get an existing resource')
             __props__ = dict()
 
-            if key_id is None:
+            if key_id is None and not opts.urn:
                 raise TypeError("Missing required property 'key_id'")
             __props__['key_id'] = key_id
-            if key_type is None:
+            if key_type is None and not opts.urn:
                 raise TypeError("Missing required property 'key_type'")
             __props__['key_type'] = key_type
-            if usage_plan_id is None:
+            if usage_plan_id is None and not opts.urn:
                 raise TypeError("Missing required property 'usage_plan_id'")
             __props__['usage_plan_id'] = usage_plan_id
             __props__['name'] = None
@@ -93,13 +92,20 @@ class UsagePlanKey(pulumi.CustomResource):
             opts)
 
     @staticmethod
-    def get(resource_name, id, opts=None, key_id=None, key_type=None, name=None, usage_plan_id=None, value=None):
+    def get(resource_name: str,
+            id: pulumi.Input[str],
+            opts: Optional[pulumi.ResourceOptions] = None,
+            key_id: Optional[pulumi.Input[str]] = None,
+            key_type: Optional[pulumi.Input[str]] = None,
+            name: Optional[pulumi.Input[str]] = None,
+            usage_plan_id: Optional[pulumi.Input[str]] = None,
+            value: Optional[pulumi.Input[str]] = None) -> 'UsagePlanKey':
         """
         Get an existing UsagePlanKey resource's state with the given name, id, and optional extra
         properties used to qualify the lookup.
 
         :param str resource_name: The unique name of the resulting resource.
-        :param str id: The unique provider ID of the resource to lookup.
+        :param pulumi.Input[str] id: The unique provider ID of the resource to lookup.
         :param pulumi.ResourceOptions opts: Options for the resource.
         :param pulumi.Input[str] key_id: The identifier of the API key resource.
         :param pulumi.Input[str] key_type: The type of the API key resource. Currently, the valid key type is API_KEY.
@@ -118,8 +124,49 @@ class UsagePlanKey(pulumi.CustomResource):
         __props__["value"] = value
         return UsagePlanKey(resource_name, opts=opts, __props__=__props__)
 
+    @property
+    @pulumi.getter(name="keyId")
+    def key_id(self) -> pulumi.Output[str]:
+        """
+        The identifier of the API key resource.
+        """
+        return pulumi.get(self, "key_id")
+
+    @property
+    @pulumi.getter(name="keyType")
+    def key_type(self) -> pulumi.Output[str]:
+        """
+        The type of the API key resource. Currently, the valid key type is API_KEY.
+        """
+        return pulumi.get(self, "key_type")
+
+    @property
+    @pulumi.getter
+    def name(self) -> pulumi.Output[str]:
+        """
+        The name of a usage plan key.
+        """
+        return pulumi.get(self, "name")
+
+    @property
+    @pulumi.getter(name="usagePlanId")
+    def usage_plan_id(self) -> pulumi.Output[str]:
+        """
+        The Id of the usage plan resource representing to associate the key to.
+        """
+        return pulumi.get(self, "usage_plan_id")
+
+    @property
+    @pulumi.getter
+    def value(self) -> pulumi.Output[str]:
+        """
+        The value of a usage plan key.
+        """
+        return pulumi.get(self, "value")
+
     def translate_output_property(self, prop):
-        return tables._CAMEL_TO_SNAKE_CASE_TABLE.get(prop) or prop
+        return _tables.CAMEL_TO_SNAKE_CASE_TABLE.get(prop) or prop
 
     def translate_input_property(self, prop):
-        return tables._SNAKE_TO_CAMEL_CASE_TABLE.get(prop) or prop
+        return _tables.SNAKE_TO_CAMEL_CASE_TABLE.get(prop) or prop
+

@@ -30,6 +30,14 @@ import * as utilities from "../utilities";
  *     engineVersion: "5.15.0",
  * });
  * ```
+ *
+ * ## Import
+ *
+ * MQ Configurations can be imported using the configuration ID, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:mq/configuration:Configuration example c-0187d1eb-88c8-475a-9b79-16ef5a10c94f
+ * ```
  */
 export class Configuration extends pulumi.CustomResource {
     /**
@@ -116,13 +124,13 @@ export class Configuration extends pulumi.CustomResource {
             inputs["tags"] = state ? state.tags : undefined;
         } else {
             const args = argsOrState as ConfigurationArgs | undefined;
-            if (!args || args.data === undefined) {
+            if ((!args || args.data === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'data'");
             }
-            if (!args || args.engineType === undefined) {
+            if ((!args || args.engineType === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'engineType'");
             }
-            if (!args || args.engineVersion === undefined) {
+            if ((!args || args.engineVersion === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'engineVersion'");
             }
             inputs["data"] = args ? args.data : undefined;

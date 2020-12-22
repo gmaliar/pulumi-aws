@@ -2,8 +2,7 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "./types/input";
-import * as outputs from "./types/output";
+import { input as inputs, output as outputs, enums } from "./types";
 import * as utilities from "./utilities";
 
 /**
@@ -16,9 +15,8 @@ import * as utilities from "./utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const current = pulumi.output(aws.getCanonicalUserId({ async: true }));
- *
- * export const canonicalUserId = current.id;
+ * const current = aws.getCanonicalUserId({});
+ * export const canonicalUserId = current.then(current => current.id);
  * ```
  */
 export function getCanonicalUserId(opts?: pulumi.InvokeOptions): Promise<GetCanonicalUserIdResult> {

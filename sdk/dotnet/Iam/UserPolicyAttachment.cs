@@ -30,17 +30,24 @@ namespace Pulumi.Aws.Iam
     ///         var policy = new Aws.Iam.Policy("policy", new Aws.Iam.PolicyArgs
     ///         {
     ///             Description = "A test policy",
-    ///             Policy = "",
+    ///             Policy = "{ ... policy JSON ... }",
     ///         });
-    ///         // insert policy here
     ///         var test_attach = new Aws.Iam.UserPolicyAttachment("test-attach", new Aws.Iam.UserPolicyAttachmentArgs
     ///         {
-    ///             PolicyArn = policy.Arn,
     ///             User = user.Name,
+    ///             PolicyArn = policy.Arn,
     ///         });
     ///     }
     /// 
     /// }
+    /// ```
+    /// 
+    /// ## Import
+    /// 
+    /// IAM user policy attachments can be imported using the user name and policy arn separated by `/`.
+    /// 
+    /// ```sh
+    ///  $ pulumi import aws:iam/userPolicyAttachment:UserPolicyAttachment test-attach test-user/arn:aws:iam::xxxxxxxxxxxx:policy/test-policy
     /// ```
     /// </summary>
     public partial class UserPolicyAttachment : Pulumi.CustomResource

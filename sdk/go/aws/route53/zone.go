@@ -4,6 +4,7 @@
 package route53
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
@@ -18,7 +19,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/route53"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/route53"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -42,7 +43,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/route53"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/route53"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -61,24 +62,11 @@ import (
 // 			return err
 // 		}
 // 		_, err = route53.NewRecord(ctx, "dev_ns", &route53.RecordArgs{
-// 			Name: pulumi.String("dev.example.com"),
-// 			Records: pulumi.StringArray{
-// 				dev.NameServers.ApplyT(func(nameServers []string) (string, error) {
-// 					return nameServers[0], nil
-// 				}).(pulumi.StringOutput),
-// 				dev.NameServers.ApplyT(func(nameServers []string) (string, error) {
-// 					return nameServers[1], nil
-// 				}).(pulumi.StringOutput),
-// 				dev.NameServers.ApplyT(func(nameServers []string) (string, error) {
-// 					return nameServers[2], nil
-// 				}).(pulumi.StringOutput),
-// 				dev.NameServers.ApplyT(func(nameServers []string) (string, error) {
-// 					return nameServers[3], nil
-// 				}).(pulumi.StringOutput),
-// 			},
-// 			Ttl:    pulumi.Int(30),
-// 			Type:   pulumi.String("NS"),
-// 			ZoneId: main.ZoneId,
+// 			ZoneId:  main.ZoneId,
+// 			Name:    pulumi.String("dev.example.com"),
+// 			Type:    pulumi.String("NS"),
+// 			Ttl:     pulumi.Int(30),
+// 			Records: dev.NameServers,
 // 		})
 // 		if err != nil {
 // 			return err
@@ -97,7 +85,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/route53"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/route53"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -106,7 +94,7 @@ import (
 // 		_, err := route53.NewZone(ctx, "private", &route53.ZoneArgs{
 // 			Vpcs: route53.ZoneVpcArray{
 // 				&route53.ZoneVpcArgs{
-// 					VpcId: pulumi.String(aws_vpc.Example.Id),
+// 					VpcId: pulumi.Any(aws_vpc.Example.Id),
 // 				},
 // 			},
 // 		})
@@ -116,6 +104,14 @@ import (
 // 		return nil
 // 	})
 // }
+// ```
+//
+// ## Import
+//
+// Route53 Zones can be imported using the `zone id`, e.g.
+//
+// ```sh
+//  $ pulumi import aws:route53/zone:Zone myzone Z1D633PJN98FT9
 // ```
 type Zone struct {
 	pulumi.CustomResourceState
@@ -145,6 +141,7 @@ func NewZone(ctx *pulumi.Context,
 	if args == nil {
 		args = &ZoneArgs{}
 	}
+
 	if args.Comment == nil {
 		args.Comment = pulumi.StringPtr("Managed by Pulumi")
 	}
@@ -246,4 +243,43 @@ type ZoneArgs struct {
 
 func (ZoneArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*zoneArgs)(nil)).Elem()
+}
+
+type ZoneInput interface {
+	pulumi.Input
+
+	ToZoneOutput() ZoneOutput
+	ToZoneOutputWithContext(ctx context.Context) ZoneOutput
+}
+
+func (Zone) ElementType() reflect.Type {
+	return reflect.TypeOf((*Zone)(nil)).Elem()
+}
+
+func (i Zone) ToZoneOutput() ZoneOutput {
+	return i.ToZoneOutputWithContext(context.Background())
+}
+
+func (i Zone) ToZoneOutputWithContext(ctx context.Context) ZoneOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(ZoneOutput)
+}
+
+type ZoneOutput struct {
+	*pulumi.OutputState
+}
+
+func (ZoneOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*ZoneOutput)(nil)).Elem()
+}
+
+func (o ZoneOutput) ToZoneOutput() ZoneOutput {
+	return o
+}
+
+func (o ZoneOutput) ToZoneOutputWithContext(ctx context.Context) ZoneOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(ZoneOutput{})
 }

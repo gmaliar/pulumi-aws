@@ -4,6 +4,7 @@
 package ecs
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
@@ -21,17 +22,17 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/ecs"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/ecs"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
 // func main() {
 // 	pulumi.Run(func(ctx *pulumi.Context) error {
 // 		_, err := ecs.NewService(ctx, "mongo", &ecs.ServiceArgs{
-// 			Cluster:        pulumi.String(aws_ecs_cluster.Foo.Id),
-// 			TaskDefinition: pulumi.String(aws_ecs_task_definition.Mongo.Arn),
+// 			Cluster:        pulumi.Any(aws_ecs_cluster.Foo.Id),
+// 			TaskDefinition: pulumi.Any(aws_ecs_task_definition.Mongo.Arn),
 // 			DesiredCount:   pulumi.Int(3),
-// 			IamRole:        pulumi.String(aws_iam_role.Foo.Arn),
+// 			IamRole:        pulumi.Any(aws_iam_role.Foo.Arn),
 // 			OrderedPlacementStrategies: ecs.ServiceOrderedPlacementStrategyArray{
 // 				&ecs.ServiceOrderedPlacementStrategyArgs{
 // 					Type:  pulumi.String("binpack"),
@@ -40,7 +41,7 @@ import (
 // 			},
 // 			LoadBalancers: ecs.ServiceLoadBalancerArray{
 // 				&ecs.ServiceLoadBalancerArgs{
-// 					TargetGroupArn: pulumi.String(aws_lb_target_group.Foo.Arn),
+// 					TargetGroupArn: pulumi.Any(aws_lb_target_group.Foo.Arn),
 // 					ContainerName:  pulumi.String("mongo"),
 // 					ContainerPort:  pulumi.Int(8080),
 // 				},
@@ -52,8 +53,32 @@ import (
 // 				},
 // 			},
 // 		}, pulumi.DependsOn([]pulumi.Resource{
-// 			"aws_iam_role_policy.foo",
+// 			aws_iam_role_policy.Foo,
 // 		}))
+// 		if err != nil {
+// 			return err
+// 		}
+// 		return nil
+// 	})
+// }
+// ```
+// ### Ignoring Changes to Desired Count
+//
+// You can use [`ignoreChanges`](https://www.pulumi.com/docs/intro/concepts/programming-model/#ignorechanges) to create an ECS service with an initial count of running instances, then ignore any changes to that count caused externally (e.g. Application Autoscaling).
+//
+// ```go
+// package main
+//
+// import (
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/ecs"
+// 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
+// )
+//
+// func main() {
+// 	pulumi.Run(func(ctx *pulumi.Context) error {
+// 		_, err := ecs.NewService(ctx, "example", &ecs.ServiceArgs{
+// 			DesiredCount: pulumi.Int(2),
+// 		})
 // 		if err != nil {
 // 			return err
 // 		}
@@ -67,16 +92,16 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/ecs"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/ecs"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
 // func main() {
 // 	pulumi.Run(func(ctx *pulumi.Context) error {
 // 		_, err := ecs.NewService(ctx, "bar", &ecs.ServiceArgs{
-// 			Cluster:            pulumi.String(aws_ecs_cluster.Foo.Id),
+// 			Cluster:            pulumi.Any(aws_ecs_cluster.Foo.Id),
+// 			TaskDefinition:     pulumi.Any(aws_ecs_task_definition.Bar.Arn),
 // 			SchedulingStrategy: pulumi.String("DAEMON"),
-// 			TaskDefinition:     pulumi.String(aws_ecs_task_definition.Bar.Arn),
 // 		})
 // 		if err != nil {
 // 			return err
@@ -91,14 +116,14 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/ecs"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/ecs"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
 // func main() {
 // 	pulumi.Run(func(ctx *pulumi.Context) error {
 // 		_, err := ecs.NewService(ctx, "example", &ecs.ServiceArgs{
-// 			Cluster: pulumi.String(aws_ecs_cluster.Example.Id),
+// 			Cluster: pulumi.Any(aws_ecs_cluster.Example.Id),
 // 			DeploymentController: &ecs.ServiceDeploymentControllerArgs{
 // 				Type: pulumi.String("EXTERNAL"),
 // 			},
@@ -109,6 +134,14 @@ import (
 // 		return nil
 // 	})
 // }
+// ```
+//
+// ## Import
+//
+// ECS services can be imported using the `name` together with ecs cluster `name`, e.g.
+//
+// ```sh
+//  $ pulumi import aws:ecs/service:Service imported cluster-name/service-name
 // ```
 type Service struct {
 	pulumi.CustomResourceState
@@ -166,6 +199,7 @@ func NewService(ctx *pulumi.Context,
 	if args == nil {
 		args = &ServiceArgs{}
 	}
+
 	var resource Service
 	err := ctx.RegisterResource("aws:ecs/service:Service", name, args, &resource, opts...)
 	if err != nil {
@@ -386,4 +420,43 @@ type ServiceArgs struct {
 
 func (ServiceArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*serviceArgs)(nil)).Elem()
+}
+
+type ServiceInput interface {
+	pulumi.Input
+
+	ToServiceOutput() ServiceOutput
+	ToServiceOutputWithContext(ctx context.Context) ServiceOutput
+}
+
+func (Service) ElementType() reflect.Type {
+	return reflect.TypeOf((*Service)(nil)).Elem()
+}
+
+func (i Service) ToServiceOutput() ServiceOutput {
+	return i.ToServiceOutputWithContext(context.Background())
+}
+
+func (i Service) ToServiceOutputWithContext(ctx context.Context) ServiceOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(ServiceOutput)
+}
+
+type ServiceOutput struct {
+	*pulumi.OutputState
+}
+
+func (ServiceOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*ServiceOutput)(nil)).Elem()
+}
+
+func (o ServiceOutput) ToServiceOutput() ServiceOutput {
+	return o
+}
+
+func (o ServiceOutput) ToServiceOutputWithContext(ctx context.Context) ServiceOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(ServiceOutput{})
 }

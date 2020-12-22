@@ -29,6 +29,7 @@ namespace Pulumi.Aws.Ecr
     ///         });
     ///         var foopolicy = new Aws.Ecr.RepositoryPolicy("foopolicy", new Aws.Ecr.RepositoryPolicyArgs
     ///         {
+    ///             Repository = foo.Name,
     ///             Policy = @"{
     ///     ""Version"": ""2008-10-17"",
     ///     ""Statement"": [
@@ -55,13 +56,19 @@ namespace Pulumi.Aws.Ecr
     ///         }
     ///     ]
     /// }
-    /// 
     /// ",
-    ///             Repository = foo.Name,
     ///         });
     ///     }
     /// 
     /// }
+    /// ```
+    /// 
+    /// ## Import
+    /// 
+    /// ECR Repository Policy can be imported using the repository name, e.g.
+    /// 
+    /// ```sh
+    ///  $ pulumi import aws:ecr/repositoryPolicy:RepositoryPolicy example example
     /// ```
     /// </summary>
     public partial class RepositoryPolicy : Pulumi.CustomResource

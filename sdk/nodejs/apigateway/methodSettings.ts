@@ -2,8 +2,7 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 import {RestApi} from "./index";
@@ -17,50 +16,58 @@ import {RestApi} from "./index";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const testRestApi = new aws.apigateway.RestApi("test", {
- *     description: "This is my API for demonstration purposes",
- * });
- * const testResource = new aws.apigateway.Resource("test", {
+ * const testRestApi = new aws.apigateway.RestApi("testRestApi", {description: "This is my API for demonstration purposes"});
+ * const testResource = new aws.apigateway.Resource("testResource", {
+ *     restApi: testRestApi.id,
  *     parentId: testRestApi.rootResourceId,
  *     pathPart: "mytestresource",
- *     restApi: testRestApi.id,
  * });
- * const testMethod = new aws.apigateway.Method("test", {
- *     authorization: "NONE",
- *     httpMethod: "GET",
+ * const testMethod = new aws.apigateway.Method("testMethod", {
+ *     restApi: testRestApi.id,
  *     resourceId: testResource.id,
- *     restApi: testRestApi.id,
+ *     httpMethod: "GET",
+ *     authorization: "NONE",
  * });
- * const testIntegration = new aws.apigateway.Integration("test", {
+ * const testIntegration = new aws.apigateway.Integration("testIntegration", {
+ *     restApi: testRestApi.id,
+ *     resourceId: testResource.id,
  *     httpMethod: testMethod.httpMethod,
+ *     type: "MOCK",
  *     requestTemplates: {
  *         "application/xml": `{
  *    "body" : $input.json('$')
  * }
  * `,
  *     },
- *     resourceId: testResource.id,
- *     restApi: testRestApi.id,
- *     type: "MOCK",
  * });
- * const testDeployment = new aws.apigateway.Deployment("test", {
+ * const testDeployment = new aws.apigateway.Deployment("testDeployment", {
  *     restApi: testRestApi.id,
  *     stageName: "dev",
- * }, { dependsOn: [testIntegration] });
- * const testStage = new aws.apigateway.Stage("test", {
- *     deployment: testDeployment.id,
- *     restApi: testRestApi.id,
+ * }, {
+ *     dependsOn: [testIntegration],
+ * });
+ * const testStage = new aws.apigateway.Stage("testStage", {
  *     stageName: "prod",
- * });
- * const methodSettings = new aws.apigateway.MethodSettings("s", {
- *     methodPath: pulumi.interpolate`${testResource.pathPart}/${testMethod.httpMethod}`,
  *     restApi: testRestApi.id,
- *     settings: {
- *         loggingLevel: "INFO",
- *         metricsEnabled: true,
- *     },
- *     stageName: testStage.stageName,
+ *     deployment: testDeployment.id,
  * });
+ * const methodSettings = new aws.apigateway.MethodSettings("methodSettings", {
+ *     restApi: testRestApi.id,
+ *     stageName: testStage.stageName,
+ *     methodPath: pulumi.interpolate`${testResource.pathPart}/${testMethod.httpMethod}`,
+ *     settings: {
+ *         metricsEnabled: true,
+ *         loggingLevel: "INFO",
+ *     },
+ * });
+ * ```
+ *
+ * ## Import
+ *
+ * `aws_api_gateway_method_settings` can be imported using `REST-API-ID/STAGE-NAME/METHOD-PATH`, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:apigateway/methodSettings:MethodSettings example 12345abcde/example/test/GET
  * ```
  */
 export class MethodSettings extends pulumi.CustomResource {
@@ -126,16 +133,16 @@ export class MethodSettings extends pulumi.CustomResource {
             inputs["stageName"] = state ? state.stageName : undefined;
         } else {
             const args = argsOrState as MethodSettingsArgs | undefined;
-            if (!args || args.methodPath === undefined) {
+            if ((!args || args.methodPath === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'methodPath'");
             }
-            if (!args || args.restApi === undefined) {
+            if ((!args || args.restApi === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'restApi'");
             }
-            if (!args || args.settings === undefined) {
+            if ((!args || args.settings === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'settings'");
             }
-            if (!args || args.stageName === undefined) {
+            if ((!args || args.stageName === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'stageName'");
             }
             inputs["methodPath"] = args ? args.methodPath : undefined;

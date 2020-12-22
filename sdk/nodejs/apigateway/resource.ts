@@ -15,14 +15,20 @@ import {RestApi} from "./index";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const myDemoAPI = new aws.apigateway.RestApi("MyDemoAPI", {
- *     description: "This is my API for demonstration purposes",
- * });
- * const myDemoResource = new aws.apigateway.Resource("MyDemoResource", {
+ * const myDemoAPI = new aws.apigateway.RestApi("myDemoAPI", {description: "This is my API for demonstration purposes"});
+ * const myDemoResource = new aws.apigateway.Resource("myDemoResource", {
+ *     restApi: myDemoAPI.id,
  *     parentId: myDemoAPI.rootResourceId,
  *     pathPart: "mydemoresource",
- *     restApi: myDemoAPI.id,
  * });
+ * ```
+ *
+ * ## Import
+ *
+ * `aws_api_gateway_resource` can be imported using `REST-API-ID/RESOURCE-ID`, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:apigateway/resource:Resource example 12345abcde/67890fghij
  * ```
  */
 export class Resource extends pulumi.CustomResource {
@@ -88,13 +94,13 @@ export class Resource extends pulumi.CustomResource {
             inputs["restApi"] = state ? state.restApi : undefined;
         } else {
             const args = argsOrState as ResourceArgs | undefined;
-            if (!args || args.parentId === undefined) {
+            if ((!args || args.parentId === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'parentId'");
             }
-            if (!args || args.pathPart === undefined) {
+            if ((!args || args.pathPart === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'pathPart'");
             }
-            if (!args || args.restApi === undefined) {
+            if ((!args || args.restApi === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'restApi'");
             }
             inputs["parentId"] = args ? args.parentId : undefined;

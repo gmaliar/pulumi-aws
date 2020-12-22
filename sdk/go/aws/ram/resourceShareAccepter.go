@@ -4,6 +4,7 @@
 package ram
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -22,9 +23,9 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws"
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/providers"
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/ram"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/providers"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/ram"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -41,7 +42,7 @@ import (
 // 			Tags: pulumi.StringMap{
 // 				"Name": pulumi.String("tf-test-resource-share"),
 // 			},
-// 		}, pulumi.Provider("aws.alternate"))
+// 		}, pulumi.Provider(aws.Alternate))
 // 		if err != nil {
 // 			return err
 // 		}
@@ -52,7 +53,7 @@ import (
 // 		senderInvite, err := ram.NewPrincipalAssociation(ctx, "senderInvite", &ram.PrincipalAssociationArgs{
 // 			Principal:        pulumi.String(receiver.AccountId),
 // 			ResourceShareArn: senderShare.Arn,
-// 		}, pulumi.Provider("aws.alternate"))
+// 		}, pulumi.Provider(aws.Alternate))
 // 		if err != nil {
 // 			return err
 // 		}
@@ -65,6 +66,14 @@ import (
 // 		return nil
 // 	})
 // }
+// ```
+//
+// ## Import
+//
+// Resource share accepters can be imported using the resource share ARN, e.g.
+//
+// ```sh
+//  $ pulumi import aws:ram/resourceShareAccepter:ResourceShareAccepter example arn:aws:ram:us-east-1:123456789012:resource-share/c4b56393-e8d9-89d9-6dc9-883752de4767
 // ```
 type ResourceShareAccepter struct {
 	pulumi.CustomResourceState
@@ -90,11 +99,12 @@ type ResourceShareAccepter struct {
 // NewResourceShareAccepter registers a new resource with the given unique name, arguments, and options.
 func NewResourceShareAccepter(ctx *pulumi.Context,
 	name string, args *ResourceShareAccepterArgs, opts ...pulumi.ResourceOption) (*ResourceShareAccepter, error) {
-	if args == nil || args.ShareArn == nil {
-		return nil, errors.New("missing required argument 'ShareArn'")
-	}
 	if args == nil {
-		args = &ResourceShareAccepterArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.ShareArn == nil {
+		return nil, errors.New("invalid value for required argument 'ShareArn'")
 	}
 	var resource ResourceShareAccepter
 	err := ctx.RegisterResource("aws:ram/resourceShareAccepter:ResourceShareAccepter", name, args, &resource, opts...)
@@ -172,4 +182,43 @@ type ResourceShareAccepterArgs struct {
 
 func (ResourceShareAccepterArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*resourceShareAccepterArgs)(nil)).Elem()
+}
+
+type ResourceShareAccepterInput interface {
+	pulumi.Input
+
+	ToResourceShareAccepterOutput() ResourceShareAccepterOutput
+	ToResourceShareAccepterOutputWithContext(ctx context.Context) ResourceShareAccepterOutput
+}
+
+func (ResourceShareAccepter) ElementType() reflect.Type {
+	return reflect.TypeOf((*ResourceShareAccepter)(nil)).Elem()
+}
+
+func (i ResourceShareAccepter) ToResourceShareAccepterOutput() ResourceShareAccepterOutput {
+	return i.ToResourceShareAccepterOutputWithContext(context.Background())
+}
+
+func (i ResourceShareAccepter) ToResourceShareAccepterOutputWithContext(ctx context.Context) ResourceShareAccepterOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(ResourceShareAccepterOutput)
+}
+
+type ResourceShareAccepterOutput struct {
+	*pulumi.OutputState
+}
+
+func (ResourceShareAccepterOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*ResourceShareAccepterOutput)(nil)).Elem()
+}
+
+func (o ResourceShareAccepterOutput) ToResourceShareAccepterOutput() ResourceShareAccepterOutput {
+	return o
+}
+
+func (o ResourceShareAccepterOutput) ToResourceShareAccepterOutputWithContext(ctx context.Context) ResourceShareAccepterOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(ResourceShareAccepterOutput{})
 }

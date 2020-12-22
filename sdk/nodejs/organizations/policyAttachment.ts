@@ -15,7 +15,7 @@ import * as utilities from "../utilities";
  * import * as aws from "@pulumi/aws";
  *
  * const account = new aws.organizations.PolicyAttachment("account", {
- *     policyId: aws_organizations_policy_example.id,
+ *     policyId: aws_organizations_policy.example.id,
  *     targetId: "123456789012",
  * });
  * ```
@@ -26,8 +26,8 @@ import * as utilities from "../utilities";
  * import * as aws from "@pulumi/aws";
  *
  * const root = new aws.organizations.PolicyAttachment("root", {
- *     policyId: aws_organizations_policy_example.id,
- *     targetId: aws_organizations_organization_example.roots.0.id,
+ *     policyId: aws_organizations_policy.example.id,
+ *     targetId: aws_organizations_organization.example.roots[0].id,
  * });
  * ```
  * ### Organization Unit
@@ -37,9 +37,17 @@ import * as utilities from "../utilities";
  * import * as aws from "@pulumi/aws";
  *
  * const unit = new aws.organizations.PolicyAttachment("unit", {
- *     policyId: aws_organizations_policy_example.id,
- *     targetId: aws_organizations_organizational_unit_example.id,
+ *     policyId: aws_organizations_policy.example.id,
+ *     targetId: aws_organizations_organizational_unit.example.id,
  * });
+ * ```
+ *
+ * ## Import
+ *
+ * `aws_organizations_policy_attachment` can be imported by using the target ID and policy ID, e.g. with an account target
+ *
+ * ```sh
+ *  $ pulumi import aws:organizations/policyAttachment:PolicyAttachment account 123456789012:p-12345678
  * ```
  */
 export class PolicyAttachment extends pulumi.CustomResource {
@@ -95,10 +103,10 @@ export class PolicyAttachment extends pulumi.CustomResource {
             inputs["targetId"] = state ? state.targetId : undefined;
         } else {
             const args = argsOrState as PolicyAttachmentArgs | undefined;
-            if (!args || args.policyId === undefined) {
+            if ((!args || args.policyId === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'policyId'");
             }
-            if (!args || args.targetId === undefined) {
+            if ((!args || args.targetId === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'targetId'");
             }
             inputs["policyId"] = args ? args.policyId : undefined;

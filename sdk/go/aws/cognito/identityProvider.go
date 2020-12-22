@@ -4,6 +4,7 @@
 package cognito
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -18,7 +19,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/cognito"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/cognito"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -33,18 +34,18 @@ import (
 // 			return err
 // 		}
 // 		_, err = cognito.NewIdentityProvider(ctx, "exampleProvider", &cognito.IdentityProviderArgs{
-// 			AttributeMapping: pulumi.StringMap{
-// 				"email":    pulumi.String("email"),
-// 				"username": pulumi.String("sub"),
-// 			},
+// 			UserPoolId:   example.ID(),
+// 			ProviderName: pulumi.String("Google"),
+// 			ProviderType: pulumi.String("Google"),
 // 			ProviderDetails: pulumi.StringMap{
 // 				"authorize_scopes": pulumi.String("email"),
 // 				"client_id":        pulumi.String("your client_id"),
 // 				"client_secret":    pulumi.String("your client_secret"),
 // 			},
-// 			ProviderName: pulumi.String("Google"),
-// 			ProviderType: pulumi.String("Google"),
-// 			UserPoolId:   example.ID(),
+// 			AttributeMapping: pulumi.StringMap{
+// 				"email":    pulumi.String("email"),
+// 				"username": pulumi.String("sub"),
+// 			},
 // 		})
 // 		if err != nil {
 // 			return err
@@ -52,6 +53,14 @@ import (
 // 		return nil
 // 	})
 // }
+// ```
+//
+// ## Import
+//
+// `aws_cognito_identity_provider` resources can be imported using their User Pool ID and Provider Name, e.g.
+//
+// ```sh
+//  $ pulumi import aws:cognito/identityProvider:IdentityProvider example xxx_yyyyy:example
 // ```
 type IdentityProvider struct {
 	pulumi.CustomResourceState
@@ -73,20 +82,21 @@ type IdentityProvider struct {
 // NewIdentityProvider registers a new resource with the given unique name, arguments, and options.
 func NewIdentityProvider(ctx *pulumi.Context,
 	name string, args *IdentityProviderArgs, opts ...pulumi.ResourceOption) (*IdentityProvider, error) {
-	if args == nil || args.ProviderDetails == nil {
-		return nil, errors.New("missing required argument 'ProviderDetails'")
-	}
-	if args == nil || args.ProviderName == nil {
-		return nil, errors.New("missing required argument 'ProviderName'")
-	}
-	if args == nil || args.ProviderType == nil {
-		return nil, errors.New("missing required argument 'ProviderType'")
-	}
-	if args == nil || args.UserPoolId == nil {
-		return nil, errors.New("missing required argument 'UserPoolId'")
-	}
 	if args == nil {
-		args = &IdentityProviderArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.ProviderDetails == nil {
+		return nil, errors.New("invalid value for required argument 'ProviderDetails'")
+	}
+	if args.ProviderName == nil {
+		return nil, errors.New("invalid value for required argument 'ProviderName'")
+	}
+	if args.ProviderType == nil {
+		return nil, errors.New("invalid value for required argument 'ProviderType'")
+	}
+	if args.UserPoolId == nil {
+		return nil, errors.New("invalid value for required argument 'UserPoolId'")
 	}
 	var resource IdentityProvider
 	err := ctx.RegisterResource("aws:cognito/identityProvider:IdentityProvider", name, args, &resource, opts...)
@@ -176,4 +186,43 @@ type IdentityProviderArgs struct {
 
 func (IdentityProviderArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*identityProviderArgs)(nil)).Elem()
+}
+
+type IdentityProviderInput interface {
+	pulumi.Input
+
+	ToIdentityProviderOutput() IdentityProviderOutput
+	ToIdentityProviderOutputWithContext(ctx context.Context) IdentityProviderOutput
+}
+
+func (IdentityProvider) ElementType() reflect.Type {
+	return reflect.TypeOf((*IdentityProvider)(nil)).Elem()
+}
+
+func (i IdentityProvider) ToIdentityProviderOutput() IdentityProviderOutput {
+	return i.ToIdentityProviderOutputWithContext(context.Background())
+}
+
+func (i IdentityProvider) ToIdentityProviderOutputWithContext(ctx context.Context) IdentityProviderOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(IdentityProviderOutput)
+}
+
+type IdentityProviderOutput struct {
+	*pulumi.OutputState
+}
+
+func (IdentityProviderOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*IdentityProviderOutput)(nil)).Elem()
+}
+
+func (o IdentityProviderOutput) ToIdentityProviderOutput() IdentityProviderOutput {
+	return o
+}
+
+func (o IdentityProviderOutput) ToIdentityProviderOutputWithContext(ctx context.Context) IdentityProviderOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(IdentityProviderOutput{})
 }

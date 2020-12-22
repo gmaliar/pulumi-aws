@@ -2,8 +2,7 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 /**
@@ -16,17 +15,25 @@ import * as utilities from "../utilities";
  * import * as aws from "@pulumi/aws";
  *
  * const bar = new aws.elastictranscoder.Pipeline("bar", {
+ *     inputBucket: aws_s3_bucket.input_bucket.bucket,
+ *     role: aws_iam_role.test_role.arn,
  *     contentConfig: {
- *         bucket: aws_s3_bucket_content_bucket.bucket,
+ *         bucket: aws_s3_bucket.content_bucket.bucket,
  *         storageClass: "Standard",
  *     },
- *     inputBucket: aws_s3_bucket_input_bucket.bucket,
- *     role: aws_iam_role_test_role.arn,
  *     thumbnailConfig: {
- *         bucket: aws_s3_bucket_thumb_bucket.bucket,
+ *         bucket: aws_s3_bucket.thumb_bucket.bucket,
  *         storageClass: "Standard",
  *     },
  * });
+ * ```
+ *
+ * ## Import
+ *
+ * Elastic Transcoder pipelines can be imported using the `id`, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:elastictranscoder/pipeline:Pipeline basic_pipeline 1407981661351-cttk8b
  * ```
  */
 export class Pipeline extends pulumi.CustomResource {
@@ -124,10 +131,10 @@ export class Pipeline extends pulumi.CustomResource {
             inputs["thumbnailConfigPermissions"] = state ? state.thumbnailConfigPermissions : undefined;
         } else {
             const args = argsOrState as PipelineArgs | undefined;
-            if (!args || args.inputBucket === undefined) {
+            if ((!args || args.inputBucket === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'inputBucket'");
             }
-            if (!args || args.role === undefined) {
+            if ((!args || args.role === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'role'");
             }
             inputs["awsKmsKeyArn"] = args ? args.awsKmsKeyArn : undefined;

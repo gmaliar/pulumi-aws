@@ -62,14 +62,13 @@ namespace Pulumi.Aws.CloudTrail
     ///         }}
     ///     ]
     /// }}
-    /// 
     /// "),
     ///         });
     ///         var foobar = new Aws.CloudTrail.Trail("foobar", new Aws.CloudTrail.TrailArgs
     ///         {
-    ///             IncludeGlobalServiceEvents = false,
     ///             S3BucketName = foo.Id,
     ///             S3KeyPrefix = "prefix",
+    ///             IncludeGlobalServiceEvents = false,
     ///         });
     ///     }
     /// 
@@ -190,6 +189,36 @@ namespace Pulumi.Aws.CloudTrail
     /// 
     /// }
     /// ```
+    /// ### Sending Events to CloudWatch Logs
+    /// 
+    /// ```csharp
+    /// using Pulumi;
+    /// using Aws = Pulumi.Aws;
+    /// 
+    /// class MyStack : Stack
+    /// {
+    ///     public MyStack()
+    ///     {
+    ///         var exampleLogGroup = new Aws.CloudWatch.LogGroup("exampleLogGroup", new Aws.CloudWatch.LogGroupArgs
+    ///         {
+    ///         });
+    ///         var exampleTrail = new Aws.CloudTrail.Trail("exampleTrail", new Aws.CloudTrail.TrailArgs
+    ///         {
+    ///             CloudWatchLogsGroupArn = exampleLogGroup.Arn.Apply(arn =&gt; $"{arn}:*"),
+    ///         });
+    ///         // CloudTrail requires the Log Stream wildcard
+    ///     }
+    /// 
+    /// }
+    /// ```
+    /// 
+    /// ## Import
+    /// 
+    /// Cloudtrails can be imported using the `name`, e.g.
+    /// 
+    /// ```sh
+    ///  $ pulumi import aws:cloudtrail/trail:Trail sample my-sample-trail
+    /// ```
     /// </summary>
     public partial class Trail : Pulumi.CustomResource
     {
@@ -201,7 +230,7 @@ namespace Pulumi.Aws.CloudTrail
 
         /// <summary>
         /// Specifies a log group name using an Amazon Resource Name (ARN),
-        /// that represents the log group to which CloudTrail logs will be delivered.
+        /// that represents the log group to which CloudTrail logs will be delivered. Note that CloudTrail requires the Log Stream wildcard.
         /// </summary>
         [Output("cloudWatchLogsGroupArn")]
         public Output<string?> CloudWatchLogsGroupArn { get; private set; } = null!;
@@ -245,6 +274,12 @@ namespace Pulumi.Aws.CloudTrail
         /// </summary>
         [Output("includeGlobalServiceEvents")]
         public Output<bool?> IncludeGlobalServiceEvents { get; private set; } = null!;
+
+        /// <summary>
+        /// Specifies an insight selector for identifying unusual operational activity. Fields documented below.
+        /// </summary>
+        [Output("insightSelectors")]
+        public Output<ImmutableArray<Outputs.TrailInsightSelector>> InsightSelectors { get; private set; } = null!;
 
         /// <summary>
         /// Specifies whether the trail is created in the current
@@ -345,7 +380,7 @@ namespace Pulumi.Aws.CloudTrail
     {
         /// <summary>
         /// Specifies a log group name using an Amazon Resource Name (ARN),
-        /// that represents the log group to which CloudTrail logs will be delivered.
+        /// that represents the log group to which CloudTrail logs will be delivered. Note that CloudTrail requires the Log Stream wildcard.
         /// </summary>
         [Input("cloudWatchLogsGroupArn")]
         public Input<string>? CloudWatchLogsGroupArn { get; set; }
@@ -389,6 +424,18 @@ namespace Pulumi.Aws.CloudTrail
         /// </summary>
         [Input("includeGlobalServiceEvents")]
         public Input<bool>? IncludeGlobalServiceEvents { get; set; }
+
+        [Input("insightSelectors")]
+        private InputList<Inputs.TrailInsightSelectorArgs>? _insightSelectors;
+
+        /// <summary>
+        /// Specifies an insight selector for identifying unusual operational activity. Fields documented below.
+        /// </summary>
+        public InputList<Inputs.TrailInsightSelectorArgs> InsightSelectors
+        {
+            get => _insightSelectors ?? (_insightSelectors = new InputList<Inputs.TrailInsightSelectorArgs>());
+            set => _insightSelectors = value;
+        }
 
         /// <summary>
         /// Specifies whether the trail is created in the current
@@ -462,7 +509,7 @@ namespace Pulumi.Aws.CloudTrail
 
         /// <summary>
         /// Specifies a log group name using an Amazon Resource Name (ARN),
-        /// that represents the log group to which CloudTrail logs will be delivered.
+        /// that represents the log group to which CloudTrail logs will be delivered. Note that CloudTrail requires the Log Stream wildcard.
         /// </summary>
         [Input("cloudWatchLogsGroupArn")]
         public Input<string>? CloudWatchLogsGroupArn { get; set; }
@@ -512,6 +559,18 @@ namespace Pulumi.Aws.CloudTrail
         /// </summary>
         [Input("includeGlobalServiceEvents")]
         public Input<bool>? IncludeGlobalServiceEvents { get; set; }
+
+        [Input("insightSelectors")]
+        private InputList<Inputs.TrailInsightSelectorGetArgs>? _insightSelectors;
+
+        /// <summary>
+        /// Specifies an insight selector for identifying unusual operational activity. Fields documented below.
+        /// </summary>
+        public InputList<Inputs.TrailInsightSelectorGetArgs> InsightSelectors
+        {
+            get => _insightSelectors ?? (_insightSelectors = new InputList<Inputs.TrailInsightSelectorGetArgs>());
+            set => _insightSelectors = value;
+        }
 
         /// <summary>
         /// Specifies whether the trail is created in the current

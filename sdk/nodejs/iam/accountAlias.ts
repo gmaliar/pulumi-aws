@@ -19,6 +19,14 @@ import * as utilities from "../utilities";
  *     accountAlias: "my-account-alias",
  * });
  * ```
+ *
+ * ## Import
+ *
+ * The current Account Alias can be imported using the `account_alias`, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:iam/accountAlias:AccountAlias alias my-account-alias
+ * ```
  */
 export class AccountAlias extends pulumi.CustomResource {
     /**
@@ -68,7 +76,7 @@ export class AccountAlias extends pulumi.CustomResource {
             inputs["accountAlias"] = state ? state.accountAlias : undefined;
         } else {
             const args = argsOrState as AccountAliasArgs | undefined;
-            if (!args || args.accountAlias === undefined) {
+            if ((!args || args.accountAlias === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'accountAlias'");
             }
             inputs["accountAlias"] = args ? args.accountAlias : undefined;

@@ -95,8 +95,7 @@ namespace Pulumi.Aws.Msk
     ///         });
     ///         var example = new Aws.Msk.Cluster("example", new Aws.Msk.ClusterArgs
     ///         {
-    ///             ClusterName = "example",
-    ///             KafkaVersion = "2.1.0",
+    ///             KafkaVersion = "2.4.1",
     ///             NumberOfBrokerNodes = 3,
     ///             BrokerNodeGroupInfo = new Aws.Msk.Inputs.ClusterBrokerNodeGroupInfoArgs
     ///             {
@@ -159,17 +158,22 @@ namespace Pulumi.Aws.Msk
     ///             },
     ///         });
     ///         this.ZookeeperConnectString = example.ZookeeperConnectString;
-    ///         this.BootstrapBrokers = example.BootstrapBrokers;
     ///         this.BootstrapBrokersTls = example.BootstrapBrokersTls;
     ///     }
     /// 
     ///     [Output("zookeeperConnectString")]
     ///     public Output&lt;string&gt; ZookeeperConnectString { get; set; }
-    ///     [Output("bootstrapBrokers")]
-    ///     public Output&lt;string&gt; BootstrapBrokers { get; set; }
     ///     [Output("bootstrapBrokersTls")]
     ///     public Output&lt;string&gt; BootstrapBrokersTls { get; set; }
     /// }
+    /// ```
+    /// 
+    /// ## Import
+    /// 
+    /// MSK clusters can be imported using the cluster `arn`, e.g.
+    /// 
+    /// ```sh
+    ///  $ pulumi import aws:msk/cluster:Cluster example arn:aws:kafka:us-west-2:123456789012:cluster/example/279c0212-d057-4dba-9aa9-1c4e5a25bfc7-3
     /// ```
     /// </summary>
     public partial class Cluster : Pulumi.CustomResource
@@ -185,6 +189,12 @@ namespace Pulumi.Aws.Msk
         /// </summary>
         [Output("bootstrapBrokers")]
         public Output<string> BootstrapBrokers { get; private set; } = null!;
+
+        /// <summary>
+        /// A comma separated list of one or more DNS names (or IPs) and TLS port pairs kafka brokers suitable to boostrap connectivity using SASL/SCRAM to the kafka cluster. Only contains value if `client_broker` encryption in transit is set to `TLS_PLAINTEXT` or `TLS` and `client_authentication` is set to `sasl`.
+        /// </summary>
+        [Output("bootstrapBrokersSaslScram")]
+        public Output<string> BootstrapBrokersSaslScram { get; private set; } = null!;
 
         /// <summary>
         /// A comma separated list of one or more DNS names (or IPs) and TLS port pairs kafka brokers suitable to boostrap connectivity to the kafka cluster. Only contains value if `client_broker` encryption in transit is set to `TLS_PLAINTEXT` or `TLS`.
@@ -332,8 +342,8 @@ namespace Pulumi.Aws.Msk
         /// <summary>
         /// Name of the MSK cluster.
         /// </summary>
-        [Input("clusterName", required: true)]
-        public Input<string> ClusterName { get; set; } = null!;
+        [Input("clusterName")]
+        public Input<string>? ClusterName { get; set; }
 
         /// <summary>
         /// Configuration block for specifying a MSK Configuration to attach to Kafka brokers. See below.
@@ -407,6 +417,12 @@ namespace Pulumi.Aws.Msk
         /// </summary>
         [Input("bootstrapBrokers")]
         public Input<string>? BootstrapBrokers { get; set; }
+
+        /// <summary>
+        /// A comma separated list of one or more DNS names (or IPs) and TLS port pairs kafka brokers suitable to boostrap connectivity using SASL/SCRAM to the kafka cluster. Only contains value if `client_broker` encryption in transit is set to `TLS_PLAINTEXT` or `TLS` and `client_authentication` is set to `sasl`.
+        /// </summary>
+        [Input("bootstrapBrokersSaslScram")]
+        public Input<string>? BootstrapBrokersSaslScram { get; set; }
 
         /// <summary>
         /// A comma separated list of one or more DNS names (or IPs) and TLS port pairs kafka brokers suitable to boostrap connectivity to the kafka cluster. Only contains value if `client_broker` encryption in transit is set to `TLS_PLAINTEXT` or `TLS`.

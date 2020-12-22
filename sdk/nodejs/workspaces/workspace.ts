@@ -2,15 +2,13 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 /**
  * Provides a workspace in [AWS Workspaces](https://docs.aws.amazon.com/workspaces/latest/adminguide/amazon-workspaces.html) Service
  *
- * > **NOTE:** During deletion of an `aws.workspaces.Workspace` resource, the service role `workspaces_DefaultRole` must be attached to the
- * policy `arn:aws:iam::aws:policy/AmazonWorkSpacesServiceAccess`, or it will leak the ENI that the Workspaces service creates for the Workspace.
+ * > **NOTE:** AWS WorkSpaces service requires [`workspaces_DefaultRole`](https://docs.aws.amazon.com/workspaces/latest/adminguide/workspaces-access-control.html#create-default-role) IAM role to operate normally.
  *
  * ## Example Usage
  *
@@ -18,30 +16,35 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const main = pulumi.output(aws.WorkspacesDirectory({
- *     directoryId: "d-ten5h0y19",
- * }, { async: true }));
- * const valueWindows10 = pulumi.output(aws.workspaces.getBundle({
- *     bundleId: "wsb-bh8rsxt14", // Value with Windows 10 (English)
- * }, { async: true }));
- * const jhon_doe = new aws.workspaces.Workspace("jhon.doe", {
- *     bundleId: valueWindows10.id,
- *     directoryId: main.id,
+ * const valueWindows10 = aws.workspaces.getBundle({
+ *     bundleId: "wsb-bh8rsxt14",
+ * });
+ * const example = new aws.workspaces.Workspace("example", {
+ *     directoryId: aws_workspaces_directory.example.id,
+ *     bundleId: valueWindows10.then(valueWindows10 => valueWindows10.id),
+ *     userName: "john.doe",
  *     rootVolumeEncryptionEnabled: true,
- *     tags: {
- *         Department: "IT",
- *     },
- *     userName: "jhon.doe",
  *     userVolumeEncryptionEnabled: true,
  *     volumeEncryptionKey: "alias/aws/workspaces",
  *     workspaceProperties: {
  *         computeTypeName: "VALUE",
+ *         userVolumeSizeGib: 10,
  *         rootVolumeSizeGib: 80,
  *         runningMode: "AUTO_STOP",
  *         runningModeAutoStopTimeoutInMinutes: 60,
- *         userVolumeSizeGib: 10,
+ *     },
+ *     tags: {
+ *         Department: "IT",
  *     },
  * });
+ * ```
+ *
+ * ## Import
+ *
+ * Workspaces can be imported using their ID, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:workspaces/workspace:Workspace example ws-9z9zmbkhv
  * ```
  */
 export class Workspace extends pulumi.CustomResource {
@@ -142,13 +145,13 @@ export class Workspace extends pulumi.CustomResource {
             inputs["workspaceProperties"] = state ? state.workspaceProperties : undefined;
         } else {
             const args = argsOrState as WorkspaceArgs | undefined;
-            if (!args || args.bundleId === undefined) {
+            if ((!args || args.bundleId === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'bundleId'");
             }
-            if (!args || args.directoryId === undefined) {
+            if ((!args || args.directoryId === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'directoryId'");
             }
-            if (!args || args.userName === undefined) {
+            if ((!args || args.userName === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'userName'");
             }
             inputs["bundleId"] = args ? args.bundleId : undefined;

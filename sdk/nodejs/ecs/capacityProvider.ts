@@ -2,12 +2,13 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 /**
  * Provides an ECS cluster capacity provider. More information can be found on the [ECS Developer Guide](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/cluster-capacity-providers.html).
+ *
+ * > **NOTE:** Associating an ECS Capacity Provider to an Auto Scaling Group will automatically add the `AmazonECSManaged` tag to the Auto Scaling Group. This tag should be included in the `aws.autoscaling.Group` resource configuration to prevent the provider from removing it in subsequent executions as well as ensuring the `AmazonECSManaged` tag is propagated to all EC2 Instances in the Auto Scaling Group if `minSize` is above 0 on creation. Any EC2 Instances in the Auto Scaling Group without this tag must be manually be updated, otherwise they may cause unexpected scaling behavior and metrics.
  *
  * ## Example Usage
  *
@@ -15,8 +16,14 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const test = new aws.ecs.CapacityProvider("test", {autoScalingGroupProvider: {
- *     autoScalingGroupArn: aws_autoscaling_group.test.arn,
+ * // ... other configuration, including potentially other tags ...
+ * const testGroup = new aws.autoscaling.Group("testGroup", {tags: [{
+ *     key: "AmazonECSManaged",
+ *     value: "",
+ *     propagateAtLaunch: true,
+ * }]});
+ * const testCapacityProvider = new aws.ecs.CapacityProvider("testCapacityProvider", {autoScalingGroupProvider: {
+ *     autoScalingGroupArn: testGroup.arn,
  *     managedTerminationProtection: "ENABLED",
  *     managedScaling: {
  *         maximumScalingStepSize: 1000,
@@ -25,6 +32,14 @@ import * as utilities from "../utilities";
  *         targetCapacity: 10,
  *     },
  * }});
+ * ```
+ *
+ * ## Import
+ *
+ * ECS Capacity Providers can be imported using the `name`, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:ecs/capacityProvider:CapacityProvider example example
  * ```
  */
 export class CapacityProvider extends pulumi.CustomResource {
@@ -90,7 +105,7 @@ export class CapacityProvider extends pulumi.CustomResource {
             inputs["tags"] = state ? state.tags : undefined;
         } else {
             const args = argsOrState as CapacityProviderArgs | undefined;
-            if (!args || args.autoScalingGroupProvider === undefined) {
+            if ((!args || args.autoScalingGroupProvider === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'autoScalingGroupProvider'");
             }
             inputs["autoScalingGroupProvider"] = args ? args.autoScalingGroupProvider : undefined;

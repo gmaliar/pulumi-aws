@@ -43,6 +43,7 @@ namespace Pulumi.Aws.Ec2
     ///     {
     ///         var routeTable = new Aws.Ec2.RouteTable("routeTable", new Aws.Ec2.RouteTableArgs
     ///         {
+    ///             VpcId = aws_vpc.Default.Id,
     ///             Routes = 
     ///             {
     ///                 new Aws.Ec2.Inputs.RouteTableRouteArgs
@@ -52,19 +53,26 @@ namespace Pulumi.Aws.Ec2
     ///                 },
     ///                 new Aws.Ec2.Inputs.RouteTableRouteArgs
     ///                 {
-    ///                     EgressOnlyGatewayId = aws_egress_only_internet_gateway.Foo.Id,
     ///                     Ipv6CidrBlock = "::/0",
+    ///                     EgressOnlyGatewayId = aws_egress_only_internet_gateway.Foo.Id,
     ///                 },
     ///             },
     ///             Tags = 
     ///             {
     ///                 { "Name", "main" },
     ///             },
-    ///             VpcId = aws_vpc.Default.Id,
     ///         });
     ///     }
     /// 
     /// }
+    /// ```
+    /// 
+    /// ## Import
+    /// 
+    /// Route Tables can be imported using the route table `id`. For example, to import route table `rtb-4e616f6d69`, use this command
+    /// 
+    /// ```sh
+    ///  $ pulumi import aws:ec2/routeTable:RouteTable public_rt rtb-4e616f6d69
     /// ```
     /// </summary>
     public partial class RouteTable : Pulumi.CustomResource

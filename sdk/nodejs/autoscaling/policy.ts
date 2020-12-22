@@ -2,8 +2,7 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 /**
@@ -23,19 +22,27 @@ import * as utilities from "../utilities";
  *
  * const bar = new aws.autoscaling.Group("bar", {
  *     availabilityZones: ["us-east-1a"],
- *     forceDelete: true,
- *     healthCheckGracePeriod: 300,
- *     healthCheckType: "ELB",
- *     launchConfiguration: aws_launch_configuration_foo.name,
  *     maxSize: 5,
  *     minSize: 2,
+ *     healthCheckGracePeriod: 300,
+ *     healthCheckType: "ELB",
+ *     forceDelete: true,
+ *     launchConfiguration: aws_launch_configuration.foo.name,
  * });
  * const bat = new aws.autoscaling.Policy("bat", {
- *     adjustmentType: "ChangeInCapacity",
- *     autoscalingGroupName: bar.name,
- *     cooldown: 300,
  *     scalingAdjustment: 4,
+ *     adjustmentType: "ChangeInCapacity",
+ *     cooldown: 300,
+ *     autoscalingGroupName: bar.name,
  * });
+ * ```
+ *
+ * ## Import
+ *
+ * AutoScaling scaling policy can be imported using the role autoscaling_group_name and name separated by `/`.
+ *
+ * ```sh
+ *  $ pulumi import aws:autoscaling/policy:Policy test-policy asg-name/policy-name
  * ```
  */
 export class Policy extends pulumi.CustomResource {
@@ -90,6 +97,9 @@ export class Policy extends pulumi.CustomResource {
      * The aggregation type for the policy's metrics. Valid values are "Minimum", "Maximum", and "Average". Without a value, AWS will treat the aggregation type as "Average".
      */
     public readonly metricAggregationType!: pulumi.Output<string>;
+    /**
+     * Minimum value to scale by when `adjustmentType` is set to `PercentChangeInCapacity`.
+     */
     public readonly minAdjustmentMagnitude!: pulumi.Output<number | undefined>;
     /**
      * The name of the dimension.
@@ -141,7 +151,7 @@ export class Policy extends pulumi.CustomResource {
             inputs["targetTrackingConfiguration"] = state ? state.targetTrackingConfiguration : undefined;
         } else {
             const args = argsOrState as PolicyArgs | undefined;
-            if (!args || args.autoscalingGroupName === undefined) {
+            if ((!args || args.autoscalingGroupName === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'autoscalingGroupName'");
             }
             inputs["adjustmentType"] = args ? args.adjustmentType : undefined;
@@ -196,6 +206,9 @@ export interface PolicyState {
      * The aggregation type for the policy's metrics. Valid values are "Minimum", "Maximum", and "Average". Without a value, AWS will treat the aggregation type as "Average".
      */
     readonly metricAggregationType?: pulumi.Input<string>;
+    /**
+     * Minimum value to scale by when `adjustmentType` is set to `PercentChangeInCapacity`.
+     */
     readonly minAdjustmentMagnitude?: pulumi.Input<number>;
     /**
      * The name of the dimension.
@@ -246,6 +259,9 @@ export interface PolicyArgs {
      * The aggregation type for the policy's metrics. Valid values are "Minimum", "Maximum", and "Average". Without a value, AWS will treat the aggregation type as "Average".
      */
     readonly metricAggregationType?: pulumi.Input<string>;
+    /**
+     * Minimum value to scale by when `adjustmentType` is set to `PercentChangeInCapacity`.
+     */
     readonly minAdjustmentMagnitude?: pulumi.Input<number>;
     /**
      * The name of the dimension.

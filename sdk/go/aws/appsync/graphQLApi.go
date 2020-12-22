@@ -4,6 +4,7 @@
 package appsync
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -19,7 +20,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/appsync"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/appsync"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -41,7 +42,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/appsync"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/appsync"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -50,9 +51,9 @@ import (
 // 		_, err := appsync.NewGraphQLApi(ctx, "example", &appsync.GraphQLApiArgs{
 // 			AuthenticationType: pulumi.String("AMAZON_COGNITO_USER_POOLS"),
 // 			UserPoolConfig: &appsync.GraphQLApiUserPoolConfigArgs{
-// 				AwsRegion:     pulumi.String(data.Aws_region.Current.Name),
+// 				AwsRegion:     pulumi.Any(data.Aws_region.Current.Name),
 // 				DefaultAction: pulumi.String("DENY"),
-// 				UserPoolId:    pulumi.String(aws_cognito_user_pool.Example.Id),
+// 				UserPoolId:    pulumi.Any(aws_cognito_user_pool.Example.Id),
 // 			},
 // 		})
 // 		if err != nil {
@@ -68,7 +69,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/appsync"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/appsync"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -92,7 +93,7 @@ import (
 // import (
 // 	"fmt"
 //
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/appsync"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/appsync"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -115,7 +116,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/appsync"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/appsync"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -140,7 +141,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/appsync"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/appsync"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -169,15 +170,15 @@ import (
 // import (
 // 	"fmt"
 //
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/appsync"
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/iam"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/appsync"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/iam"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
 // func main() {
 // 	pulumi.Run(func(ctx *pulumi.Context) error {
 // 		exampleRole, err := iam.NewRole(ctx, "exampleRole", &iam.RoleArgs{
-// 			AssumeRolePolicy: pulumi.String(fmt.Sprintf("%v%v%v%v%v%v%v%v%v%v%v%v%v", "{\n", "    \"Version\": \"2012-10-17\",\n", "    \"Statement\": [\n", "        {\n", "        \"Effect\": \"Allow\",\n", "        \"Principal\": {\n", "            \"Service\": \"appsync.amazonaws.com\"\n", "        },\n", "        \"Action\": \"sts:AssumeRole\"\n", "        }\n", "    ]\n", "}\n", "\n")),
+// 			AssumeRolePolicy: pulumi.String(fmt.Sprintf("%v%v%v%v%v%v%v%v%v%v%v%v", "{\n", "    \"Version\": \"2012-10-17\",\n", "    \"Statement\": [\n", "        {\n", "        \"Effect\": \"Allow\",\n", "        \"Principal\": {\n", "            \"Service\": \"appsync.amazonaws.com\"\n", "        },\n", "        \"Action\": \"sts:AssumeRole\"\n", "        }\n", "    ]\n", "}\n")),
 // 		})
 // 		if err != nil {
 // 			return err
@@ -201,6 +202,14 @@ import (
 // 		return nil
 // 	})
 // }
+// ```
+//
+// ## Import
+//
+// AppSync GraphQL API can be imported using the GraphQL API ID, e.g.
+//
+// ```sh
+//  $ pulumi import aws:appsync/graphQLApi:GraphQLApi example 0123456789
 // ```
 type GraphQLApi struct {
 	pulumi.CustomResourceState
@@ -232,11 +241,12 @@ type GraphQLApi struct {
 // NewGraphQLApi registers a new resource with the given unique name, arguments, and options.
 func NewGraphQLApi(ctx *pulumi.Context,
 	name string, args *GraphQLApiArgs, opts ...pulumi.ResourceOption) (*GraphQLApi, error) {
-	if args == nil || args.AuthenticationType == nil {
-		return nil, errors.New("missing required argument 'AuthenticationType'")
-	}
 	if args == nil {
-		args = &GraphQLApiArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.AuthenticationType == nil {
+		return nil, errors.New("invalid value for required argument 'AuthenticationType'")
 	}
 	var resource GraphQLApi
 	err := ctx.RegisterResource("aws:appsync/graphQLApi:GraphQLApi", name, args, &resource, opts...)
@@ -358,4 +368,43 @@ type GraphQLApiArgs struct {
 
 func (GraphQLApiArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*graphQLApiArgs)(nil)).Elem()
+}
+
+type GraphQLApiInput interface {
+	pulumi.Input
+
+	ToGraphQLApiOutput() GraphQLApiOutput
+	ToGraphQLApiOutputWithContext(ctx context.Context) GraphQLApiOutput
+}
+
+func (GraphQLApi) ElementType() reflect.Type {
+	return reflect.TypeOf((*GraphQLApi)(nil)).Elem()
+}
+
+func (i GraphQLApi) ToGraphQLApiOutput() GraphQLApiOutput {
+	return i.ToGraphQLApiOutputWithContext(context.Background())
+}
+
+func (i GraphQLApi) ToGraphQLApiOutputWithContext(ctx context.Context) GraphQLApiOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(GraphQLApiOutput)
+}
+
+type GraphQLApiOutput struct {
+	*pulumi.OutputState
+}
+
+func (GraphQLApiOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*GraphQLApiOutput)(nil)).Elem()
+}
+
+func (o GraphQLApiOutput) ToGraphQLApiOutput() GraphQLApiOutput {
+	return o
+}
+
+func (o GraphQLApiOutput) ToGraphQLApiOutputWithContext(ctx context.Context) GraphQLApiOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(GraphQLApiOutput{})
 }

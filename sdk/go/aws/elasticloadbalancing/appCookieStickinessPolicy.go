@@ -4,6 +4,7 @@
 package elasticloadbalancing
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -18,7 +19,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/elb"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/elb"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -41,9 +42,9 @@ import (
 // 			return err
 // 		}
 // 		_, err = elb.NewAppCookieStickinessPolicy(ctx, "foo", &elb.AppCookieStickinessPolicyArgs{
-// 			CookieName:   pulumi.String("MyAppCookie"),
-// 			LbPort:       pulumi.Int(80),
 // 			LoadBalancer: lb.Name,
+// 			LbPort:       pulumi.Int(80),
+// 			CookieName:   pulumi.String("MyAppCookie"),
 // 		})
 // 		if err != nil {
 // 			return err
@@ -51,6 +52,14 @@ import (
 // 		return nil
 // 	})
 // }
+// ```
+//
+// ## Import
+//
+// Application cookie stickiness policies can be imported using the ELB name, port, and policy name separated by colons (`:`), e.g.
+//
+// ```sh
+//  $ pulumi import aws:elasticloadbalancing/appCookieStickinessPolicy:AppCookieStickinessPolicy example my-elb:80:my-policy
 // ```
 //
 // Deprecated: aws.elasticloadbalancing.AppCookieStickinessPolicy has been deprecated in favor of aws.elb.AppCookieStickinessPolicy
@@ -73,17 +82,18 @@ type AppCookieStickinessPolicy struct {
 // NewAppCookieStickinessPolicy registers a new resource with the given unique name, arguments, and options.
 func NewAppCookieStickinessPolicy(ctx *pulumi.Context,
 	name string, args *AppCookieStickinessPolicyArgs, opts ...pulumi.ResourceOption) (*AppCookieStickinessPolicy, error) {
-	if args == nil || args.CookieName == nil {
-		return nil, errors.New("missing required argument 'CookieName'")
-	}
-	if args == nil || args.LbPort == nil {
-		return nil, errors.New("missing required argument 'LbPort'")
-	}
-	if args == nil || args.LoadBalancer == nil {
-		return nil, errors.New("missing required argument 'LoadBalancer'")
-	}
 	if args == nil {
-		args = &AppCookieStickinessPolicyArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.CookieName == nil {
+		return nil, errors.New("invalid value for required argument 'CookieName'")
+	}
+	if args.LbPort == nil {
+		return nil, errors.New("invalid value for required argument 'LbPort'")
+	}
+	if args.LoadBalancer == nil {
+		return nil, errors.New("invalid value for required argument 'LoadBalancer'")
 	}
 	var resource AppCookieStickinessPolicy
 	err := ctx.RegisterResource("aws:elasticloadbalancing/appCookieStickinessPolicy:AppCookieStickinessPolicy", name, args, &resource, opts...)
@@ -169,4 +179,43 @@ type AppCookieStickinessPolicyArgs struct {
 
 func (AppCookieStickinessPolicyArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*appCookieStickinessPolicyArgs)(nil)).Elem()
+}
+
+type AppCookieStickinessPolicyInput interface {
+	pulumi.Input
+
+	ToAppCookieStickinessPolicyOutput() AppCookieStickinessPolicyOutput
+	ToAppCookieStickinessPolicyOutputWithContext(ctx context.Context) AppCookieStickinessPolicyOutput
+}
+
+func (AppCookieStickinessPolicy) ElementType() reflect.Type {
+	return reflect.TypeOf((*AppCookieStickinessPolicy)(nil)).Elem()
+}
+
+func (i AppCookieStickinessPolicy) ToAppCookieStickinessPolicyOutput() AppCookieStickinessPolicyOutput {
+	return i.ToAppCookieStickinessPolicyOutputWithContext(context.Background())
+}
+
+func (i AppCookieStickinessPolicy) ToAppCookieStickinessPolicyOutputWithContext(ctx context.Context) AppCookieStickinessPolicyOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(AppCookieStickinessPolicyOutput)
+}
+
+type AppCookieStickinessPolicyOutput struct {
+	*pulumi.OutputState
+}
+
+func (AppCookieStickinessPolicyOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*AppCookieStickinessPolicyOutput)(nil)).Elem()
+}
+
+func (o AppCookieStickinessPolicyOutput) ToAppCookieStickinessPolicyOutput() AppCookieStickinessPolicyOutput {
+	return o
+}
+
+func (o AppCookieStickinessPolicyOutput) ToAppCookieStickinessPolicyOutputWithContext(ctx context.Context) AppCookieStickinessPolicyOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(AppCookieStickinessPolicyOutput{})
 }

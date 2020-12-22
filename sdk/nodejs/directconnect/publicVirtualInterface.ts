@@ -26,6 +26,14 @@ import * as utilities from "../utilities";
  *     vlan: 4094,
  * });
  * ```
+ *
+ * ## Import
+ *
+ * Direct Connect public virtual interfaces can be imported using the `vif id`, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:directconnect/publicVirtualInterface:PublicVirtualInterface test dxvif-33cc44dd
+ * ```
  */
 export class PublicVirtualInterface extends pulumi.CustomResource {
     /**
@@ -132,19 +140,19 @@ export class PublicVirtualInterface extends pulumi.CustomResource {
             inputs["vlan"] = state ? state.vlan : undefined;
         } else {
             const args = argsOrState as PublicVirtualInterfaceArgs | undefined;
-            if (!args || args.addressFamily === undefined) {
+            if ((!args || args.addressFamily === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'addressFamily'");
             }
-            if (!args || args.bgpAsn === undefined) {
+            if ((!args || args.bgpAsn === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'bgpAsn'");
             }
-            if (!args || args.connectionId === undefined) {
+            if ((!args || args.connectionId === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'connectionId'");
             }
-            if (!args || args.routeFilterPrefixes === undefined) {
+            if ((!args || args.routeFilterPrefixes === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'routeFilterPrefixes'");
             }
-            if (!args || args.vlan === undefined) {
+            if ((!args || args.vlan === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'vlan'");
             }
             inputs["addressFamily"] = args ? args.addressFamily : undefined;

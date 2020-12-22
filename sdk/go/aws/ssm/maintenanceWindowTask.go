@@ -4,6 +4,7 @@
 package ssm
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -13,64 +14,13 @@ import (
 // Provides an SSM Maintenance Window Task resource
 //
 // ## Example Usage
-// ### Automation Tasks
-//
-// ```go
-// package main
-//
-// import (
-// 	"fmt"
-//
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/ssm"
-// 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
-// )
-//
-// func main() {
-// 	pulumi.Run(func(ctx *pulumi.Context) error {
-// 		_, err := ssm.NewMaintenanceWindowTask(ctx, "example", &ssm.MaintenanceWindowTaskArgs{
-// 			MaxConcurrency: pulumi.String("2"),
-// 			MaxErrors:      pulumi.String("1"),
-// 			Priority:       pulumi.Int(1),
-// 			ServiceRoleArn: pulumi.String(aws_iam_role.Example.Arn),
-// 			Targets: ssm.MaintenanceWindowTaskTargetArray{
-// 				&ssm.MaintenanceWindowTaskTargetArgs{
-// 					Key: pulumi.String("InstanceIds"),
-// 					Values: pulumi.StringArray{
-// 						pulumi.String(aws_instance.Example.Id),
-// 					},
-// 				},
-// 			},
-// 			TaskArn: pulumi.String("AWS-RestartEC2Instance"),
-// 			TaskInvocationParameters: &ssm.MaintenanceWindowTaskTaskInvocationParametersArgs{
-// 				AutomationParameters: &ssm.MaintenanceWindowTaskTaskInvocationParametersAutomationParametersArgs{
-// 					DocumentVersion: pulumi.String(fmt.Sprintf("%v%v", "$", "LATEST")),
-// 					Parameter: pulumi.MapArray{
-// 						pulumi.Map{
-// 							"name": pulumi.String("InstanceId"),
-// 							"values": pulumi.StringArray{
-// 								pulumi.String(aws_instance.Example.Id),
-// 							},
-// 						},
-// 					},
-// 				},
-// 			},
-// 			TaskType: pulumi.String("AUTOMATION"),
-// 			WindowId: pulumi.String(aws_ssm_maintenance_window.Example.Id),
-// 		})
-// 		if err != nil {
-// 			return err
-// 		}
-// 		return nil
-// 	})
-// }
-// ```
 // ### Run Command Tasks
 //
 // ```go
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/ssm"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/ssm"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -80,41 +30,41 @@ import (
 // 			MaxConcurrency: pulumi.String("2"),
 // 			MaxErrors:      pulumi.String("1"),
 // 			Priority:       pulumi.Int(1),
-// 			ServiceRoleArn: pulumi.String(aws_iam_role.Example.Arn),
+// 			ServiceRoleArn: pulumi.Any(aws_iam_role.Example.Arn),
+// 			TaskArn:        pulumi.String("AWS-RunShellScript"),
+// 			TaskType:       pulumi.String("RUN_COMMAND"),
+// 			WindowId:       pulumi.Any(aws_ssm_maintenance_window.Example.Id),
 // 			Targets: ssm.MaintenanceWindowTaskTargetArray{
 // 				&ssm.MaintenanceWindowTaskTargetArgs{
 // 					Key: pulumi.String("InstanceIds"),
 // 					Values: pulumi.StringArray{
-// 						pulumi.String(aws_instance.Example.Id),
+// 						pulumi.Any(aws_instance.Example.Id),
 // 					},
 // 				},
 // 			},
-// 			TaskArn: pulumi.String("AWS-RunShellScript"),
 // 			TaskInvocationParameters: &ssm.MaintenanceWindowTaskTaskInvocationParametersArgs{
 // 				RunCommandParameters: &ssm.MaintenanceWindowTaskTaskInvocationParametersRunCommandParametersArgs{
+// 					OutputS3Bucket:    pulumi.Any(aws_s3_bucket.Example.Bucket),
+// 					OutputS3KeyPrefix: pulumi.String("output"),
+// 					ServiceRoleArn:    pulumi.Any(aws_iam_role.Example.Arn),
+// 					TimeoutSeconds:    pulumi.Int(600),
 // 					NotificationConfig: &ssm.MaintenanceWindowTaskTaskInvocationParametersRunCommandParametersNotificationConfigArgs{
-// 						NotificationArn: pulumi.String(aws_sns_topic.Example.Arn),
+// 						NotificationArn: pulumi.Any(aws_sns_topic.Example.Arn),
 // 						NotificationEvents: pulumi.StringArray{
 // 							pulumi.String("All"),
 // 						},
 // 						NotificationType: pulumi.String("Command"),
 // 					},
-// 					OutputS3Bucket:    pulumi.String(aws_s3_bucket.Example.Bucket),
-// 					OutputS3KeyPrefix: pulumi.String("output"),
-// 					Parameter: pulumi.MapArray{
-// 						pulumi.Map{
-// 							"name": pulumi.String("commands"),
-// 							"values": pulumi.StringArray{
+// 					Parameters: ssm.MaintenanceWindowTaskTaskInvocationParametersRunCommandParametersParameterArray{
+// 						&ssm.MaintenanceWindowTaskTaskInvocationParametersRunCommandParametersParameterArgs{
+// 							Name: pulumi.String("commands"),
+// 							Values: pulumi.StringArray{
 // 								pulumi.String("date"),
 // 							},
 // 						},
 // 					},
-// 					ServiceRoleArn: pulumi.String(aws_iam_role.Example.Arn),
-// 					TimeoutSeconds: pulumi.Int(600),
 // 				},
 // 			},
-// 			TaskType: pulumi.String("RUN_COMMAND"),
-// 			WindowId: pulumi.String(aws_ssm_maintenance_window.Example.Id),
 // 		})
 // 		if err != nil {
 // 			return err
@@ -129,7 +79,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/ssm"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/ssm"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -139,24 +89,24 @@ import (
 // 			MaxConcurrency: pulumi.String("2"),
 // 			MaxErrors:      pulumi.String("1"),
 // 			Priority:       pulumi.Int(1),
-// 			ServiceRoleArn: pulumi.String(aws_iam_role.Example.Arn),
+// 			ServiceRoleArn: pulumi.Any(aws_iam_role.Example.Arn),
+// 			TaskArn:        pulumi.Any(aws_sfn_activity.Example.Id),
+// 			TaskType:       pulumi.String("STEP_FUNCTIONS"),
+// 			WindowId:       pulumi.Any(aws_ssm_maintenance_window.Example.Id),
 // 			Targets: ssm.MaintenanceWindowTaskTargetArray{
 // 				&ssm.MaintenanceWindowTaskTargetArgs{
 // 					Key: pulumi.String("InstanceIds"),
 // 					Values: pulumi.StringArray{
-// 						pulumi.String(aws_instance.Example.Id),
+// 						pulumi.Any(aws_instance.Example.Id),
 // 					},
 // 				},
 // 			},
-// 			TaskArn: pulumi.String(aws_sfn_activity.Example.Id),
 // 			TaskInvocationParameters: &ssm.MaintenanceWindowTaskTaskInvocationParametersArgs{
 // 				StepFunctionsParameters: &ssm.MaintenanceWindowTaskTaskInvocationParametersStepFunctionsParametersArgs{
 // 					Input: pulumi.String("{\"key1\":\"value1\"}"),
 // 					Name:  pulumi.String("example"),
 // 				},
 // 			},
-// 			TaskType: pulumi.String("STEP_FUNCTIONS"),
-// 			WindowId: pulumi.String(aws_ssm_maintenance_window.Example.Id),
 // 		})
 // 		if err != nil {
 // 			return err
@@ -165,15 +115,19 @@ import (
 // 	})
 // }
 // ```
+//
+// ## Import
+//
+// AWS Maintenance Window Task can be imported using the `window_id` and `window_task_id` separated by `/`.
+//
+// ```sh
+//  $ pulumi import aws:ssm/maintenanceWindowTask:MaintenanceWindowTask task <window_id>/<window_task_id>
+// ```
 type MaintenanceWindowTask struct {
 	pulumi.CustomResourceState
 
 	// The description of the maintenance window task.
 	Description pulumi.StringPtrOutput `pulumi:"description"`
-	// A structure containing information about an Amazon S3 bucket to write instance-level logs to. Use `taskInvocationParameters` configuration block `runCommandParameters` configuration block `output_s3_*` arguments instead. Conflicts with `taskInvocationParameters`. Documented below.
-	//
-	// Deprecated: use 'task_invocation_parameters' argument instead
-	LoggingInfo MaintenanceWindowTaskLoggingInfoPtrOutput `pulumi:"loggingInfo"`
 	// The maximum number of targets this task can be run for in parallel.
 	MaxConcurrency pulumi.StringOutput `pulumi:"maxConcurrency"`
 	// The maximum number of errors allowed before this task stops being scheduled.
@@ -188,12 +142,8 @@ type MaintenanceWindowTask struct {
 	Targets MaintenanceWindowTaskTargetArrayOutput `pulumi:"targets"`
 	// The ARN of the task to execute.
 	TaskArn pulumi.StringOutput `pulumi:"taskArn"`
-	// The parameters for task execution. This argument is conflict with `taskParameters` and `loggingInfo`.
+	// Configuration block with parameters for task execution.
 	TaskInvocationParameters MaintenanceWindowTaskTaskInvocationParametersPtrOutput `pulumi:"taskInvocationParameters"`
-	// A structure containing information about parameters required by the particular `taskArn`. Use `parameter` configuration blocks under the `taskInvocationParameters` configuration block instead. Conflicts with `taskInvocationParameters`. Documented below.
-	//
-	// Deprecated: use 'task_invocation_parameters' argument instead
-	TaskParameters MaintenanceWindowTaskTaskParameterArrayOutput `pulumi:"taskParameters"`
 	// The type of task being registered. The only allowed value is `RUN_COMMAND`.
 	TaskType pulumi.StringOutput `pulumi:"taskType"`
 	// The Id of the maintenance window to register the task with.
@@ -203,29 +153,30 @@ type MaintenanceWindowTask struct {
 // NewMaintenanceWindowTask registers a new resource with the given unique name, arguments, and options.
 func NewMaintenanceWindowTask(ctx *pulumi.Context,
 	name string, args *MaintenanceWindowTaskArgs, opts ...pulumi.ResourceOption) (*MaintenanceWindowTask, error) {
-	if args == nil || args.MaxConcurrency == nil {
-		return nil, errors.New("missing required argument 'MaxConcurrency'")
-	}
-	if args == nil || args.MaxErrors == nil {
-		return nil, errors.New("missing required argument 'MaxErrors'")
-	}
-	if args == nil || args.ServiceRoleArn == nil {
-		return nil, errors.New("missing required argument 'ServiceRoleArn'")
-	}
-	if args == nil || args.Targets == nil {
-		return nil, errors.New("missing required argument 'Targets'")
-	}
-	if args == nil || args.TaskArn == nil {
-		return nil, errors.New("missing required argument 'TaskArn'")
-	}
-	if args == nil || args.TaskType == nil {
-		return nil, errors.New("missing required argument 'TaskType'")
-	}
-	if args == nil || args.WindowId == nil {
-		return nil, errors.New("missing required argument 'WindowId'")
-	}
 	if args == nil {
-		args = &MaintenanceWindowTaskArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.MaxConcurrency == nil {
+		return nil, errors.New("invalid value for required argument 'MaxConcurrency'")
+	}
+	if args.MaxErrors == nil {
+		return nil, errors.New("invalid value for required argument 'MaxErrors'")
+	}
+	if args.ServiceRoleArn == nil {
+		return nil, errors.New("invalid value for required argument 'ServiceRoleArn'")
+	}
+	if args.Targets == nil {
+		return nil, errors.New("invalid value for required argument 'Targets'")
+	}
+	if args.TaskArn == nil {
+		return nil, errors.New("invalid value for required argument 'TaskArn'")
+	}
+	if args.TaskType == nil {
+		return nil, errors.New("invalid value for required argument 'TaskType'")
+	}
+	if args.WindowId == nil {
+		return nil, errors.New("invalid value for required argument 'WindowId'")
 	}
 	var resource MaintenanceWindowTask
 	err := ctx.RegisterResource("aws:ssm/maintenanceWindowTask:MaintenanceWindowTask", name, args, &resource, opts...)
@@ -251,10 +202,6 @@ func GetMaintenanceWindowTask(ctx *pulumi.Context,
 type maintenanceWindowTaskState struct {
 	// The description of the maintenance window task.
 	Description *string `pulumi:"description"`
-	// A structure containing information about an Amazon S3 bucket to write instance-level logs to. Use `taskInvocationParameters` configuration block `runCommandParameters` configuration block `output_s3_*` arguments instead. Conflicts with `taskInvocationParameters`. Documented below.
-	//
-	// Deprecated: use 'task_invocation_parameters' argument instead
-	LoggingInfo *MaintenanceWindowTaskLoggingInfo `pulumi:"loggingInfo"`
 	// The maximum number of targets this task can be run for in parallel.
 	MaxConcurrency *string `pulumi:"maxConcurrency"`
 	// The maximum number of errors allowed before this task stops being scheduled.
@@ -269,12 +216,8 @@ type maintenanceWindowTaskState struct {
 	Targets []MaintenanceWindowTaskTarget `pulumi:"targets"`
 	// The ARN of the task to execute.
 	TaskArn *string `pulumi:"taskArn"`
-	// The parameters for task execution. This argument is conflict with `taskParameters` and `loggingInfo`.
+	// Configuration block with parameters for task execution.
 	TaskInvocationParameters *MaintenanceWindowTaskTaskInvocationParameters `pulumi:"taskInvocationParameters"`
-	// A structure containing information about parameters required by the particular `taskArn`. Use `parameter` configuration blocks under the `taskInvocationParameters` configuration block instead. Conflicts with `taskInvocationParameters`. Documented below.
-	//
-	// Deprecated: use 'task_invocation_parameters' argument instead
-	TaskParameters []MaintenanceWindowTaskTaskParameter `pulumi:"taskParameters"`
 	// The type of task being registered. The only allowed value is `RUN_COMMAND`.
 	TaskType *string `pulumi:"taskType"`
 	// The Id of the maintenance window to register the task with.
@@ -284,10 +227,6 @@ type maintenanceWindowTaskState struct {
 type MaintenanceWindowTaskState struct {
 	// The description of the maintenance window task.
 	Description pulumi.StringPtrInput
-	// A structure containing information about an Amazon S3 bucket to write instance-level logs to. Use `taskInvocationParameters` configuration block `runCommandParameters` configuration block `output_s3_*` arguments instead. Conflicts with `taskInvocationParameters`. Documented below.
-	//
-	// Deprecated: use 'task_invocation_parameters' argument instead
-	LoggingInfo MaintenanceWindowTaskLoggingInfoPtrInput
 	// The maximum number of targets this task can be run for in parallel.
 	MaxConcurrency pulumi.StringPtrInput
 	// The maximum number of errors allowed before this task stops being scheduled.
@@ -302,12 +241,8 @@ type MaintenanceWindowTaskState struct {
 	Targets MaintenanceWindowTaskTargetArrayInput
 	// The ARN of the task to execute.
 	TaskArn pulumi.StringPtrInput
-	// The parameters for task execution. This argument is conflict with `taskParameters` and `loggingInfo`.
+	// Configuration block with parameters for task execution.
 	TaskInvocationParameters MaintenanceWindowTaskTaskInvocationParametersPtrInput
-	// A structure containing information about parameters required by the particular `taskArn`. Use `parameter` configuration blocks under the `taskInvocationParameters` configuration block instead. Conflicts with `taskInvocationParameters`. Documented below.
-	//
-	// Deprecated: use 'task_invocation_parameters' argument instead
-	TaskParameters MaintenanceWindowTaskTaskParameterArrayInput
 	// The type of task being registered. The only allowed value is `RUN_COMMAND`.
 	TaskType pulumi.StringPtrInput
 	// The Id of the maintenance window to register the task with.
@@ -321,10 +256,6 @@ func (MaintenanceWindowTaskState) ElementType() reflect.Type {
 type maintenanceWindowTaskArgs struct {
 	// The description of the maintenance window task.
 	Description *string `pulumi:"description"`
-	// A structure containing information about an Amazon S3 bucket to write instance-level logs to. Use `taskInvocationParameters` configuration block `runCommandParameters` configuration block `output_s3_*` arguments instead. Conflicts with `taskInvocationParameters`. Documented below.
-	//
-	// Deprecated: use 'task_invocation_parameters' argument instead
-	LoggingInfo *MaintenanceWindowTaskLoggingInfo `pulumi:"loggingInfo"`
 	// The maximum number of targets this task can be run for in parallel.
 	MaxConcurrency string `pulumi:"maxConcurrency"`
 	// The maximum number of errors allowed before this task stops being scheduled.
@@ -339,12 +270,8 @@ type maintenanceWindowTaskArgs struct {
 	Targets []MaintenanceWindowTaskTarget `pulumi:"targets"`
 	// The ARN of the task to execute.
 	TaskArn string `pulumi:"taskArn"`
-	// The parameters for task execution. This argument is conflict with `taskParameters` and `loggingInfo`.
+	// Configuration block with parameters for task execution.
 	TaskInvocationParameters *MaintenanceWindowTaskTaskInvocationParameters `pulumi:"taskInvocationParameters"`
-	// A structure containing information about parameters required by the particular `taskArn`. Use `parameter` configuration blocks under the `taskInvocationParameters` configuration block instead. Conflicts with `taskInvocationParameters`. Documented below.
-	//
-	// Deprecated: use 'task_invocation_parameters' argument instead
-	TaskParameters []MaintenanceWindowTaskTaskParameter `pulumi:"taskParameters"`
 	// The type of task being registered. The only allowed value is `RUN_COMMAND`.
 	TaskType string `pulumi:"taskType"`
 	// The Id of the maintenance window to register the task with.
@@ -355,10 +282,6 @@ type maintenanceWindowTaskArgs struct {
 type MaintenanceWindowTaskArgs struct {
 	// The description of the maintenance window task.
 	Description pulumi.StringPtrInput
-	// A structure containing information about an Amazon S3 bucket to write instance-level logs to. Use `taskInvocationParameters` configuration block `runCommandParameters` configuration block `output_s3_*` arguments instead. Conflicts with `taskInvocationParameters`. Documented below.
-	//
-	// Deprecated: use 'task_invocation_parameters' argument instead
-	LoggingInfo MaintenanceWindowTaskLoggingInfoPtrInput
 	// The maximum number of targets this task can be run for in parallel.
 	MaxConcurrency pulumi.StringInput
 	// The maximum number of errors allowed before this task stops being scheduled.
@@ -373,12 +296,8 @@ type MaintenanceWindowTaskArgs struct {
 	Targets MaintenanceWindowTaskTargetArrayInput
 	// The ARN of the task to execute.
 	TaskArn pulumi.StringInput
-	// The parameters for task execution. This argument is conflict with `taskParameters` and `loggingInfo`.
+	// Configuration block with parameters for task execution.
 	TaskInvocationParameters MaintenanceWindowTaskTaskInvocationParametersPtrInput
-	// A structure containing information about parameters required by the particular `taskArn`. Use `parameter` configuration blocks under the `taskInvocationParameters` configuration block instead. Conflicts with `taskInvocationParameters`. Documented below.
-	//
-	// Deprecated: use 'task_invocation_parameters' argument instead
-	TaskParameters MaintenanceWindowTaskTaskParameterArrayInput
 	// The type of task being registered. The only allowed value is `RUN_COMMAND`.
 	TaskType pulumi.StringInput
 	// The Id of the maintenance window to register the task with.
@@ -387,4 +306,43 @@ type MaintenanceWindowTaskArgs struct {
 
 func (MaintenanceWindowTaskArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*maintenanceWindowTaskArgs)(nil)).Elem()
+}
+
+type MaintenanceWindowTaskInput interface {
+	pulumi.Input
+
+	ToMaintenanceWindowTaskOutput() MaintenanceWindowTaskOutput
+	ToMaintenanceWindowTaskOutputWithContext(ctx context.Context) MaintenanceWindowTaskOutput
+}
+
+func (MaintenanceWindowTask) ElementType() reflect.Type {
+	return reflect.TypeOf((*MaintenanceWindowTask)(nil)).Elem()
+}
+
+func (i MaintenanceWindowTask) ToMaintenanceWindowTaskOutput() MaintenanceWindowTaskOutput {
+	return i.ToMaintenanceWindowTaskOutputWithContext(context.Background())
+}
+
+func (i MaintenanceWindowTask) ToMaintenanceWindowTaskOutputWithContext(ctx context.Context) MaintenanceWindowTaskOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(MaintenanceWindowTaskOutput)
+}
+
+type MaintenanceWindowTaskOutput struct {
+	*pulumi.OutputState
+}
+
+func (MaintenanceWindowTaskOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*MaintenanceWindowTaskOutput)(nil)).Elem()
+}
+
+func (o MaintenanceWindowTaskOutput) ToMaintenanceWindowTaskOutput() MaintenanceWindowTaskOutput {
+	return o
+}
+
+func (o MaintenanceWindowTaskOutput) ToMaintenanceWindowTaskOutputWithContext(ctx context.Context) MaintenanceWindowTaskOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(MaintenanceWindowTaskOutput{})
 }

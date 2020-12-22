@@ -2,8 +2,7 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 import {ARN} from "..";
@@ -14,42 +13,48 @@ import {ARN} from "..";
  *
  * For more details, see the [Amazon Kinesis Analytics Documentation](https://docs.aws.amazon.com/kinesisanalytics/latest/dev/what-is.html).
  *
+ * > **Note:** To manage Amazon Kinesis Data Analytics for Apache Flink applications, use the [`aws.kinesisanalyticsv2.Application`](https://www.terraform.io/docs/providers/aws/r/kinesisanalyticsv2_application.html) resource.
+ *
  * ## Example Usage
  *
  * ```typescript
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const testStream = new aws.kinesis.Stream("test_stream", {
- *     shardCount: 1,
- * });
- * const testApplication = new aws.kinesis.AnalyticsApplication("test_application", {
- *     inputs: {
- *         kinesisStream: {
- *             resourceArn: testStream.arn,
- *             roleArn: aws_iam_role_test.arn,
- *         },
- *         namePrefix: "test_prefix",
- *         parallelism: {
- *             count: 1,
- *         },
- *         schema: {
- *             recordColumns: [{
- *                 mapping: "$.test",
- *                 name: "test",
- *                 sqlType: "VARCHAR(8)",
- *             }],
- *             recordEncoding: "UTF-8",
- *             recordFormat: {
- *                 mappingParameters: {
- *                     json: {
- *                         recordRowPath: "$",
- *                     },
+ * const testStream = new aws.kinesis.Stream("testStream", {shardCount: 1});
+ * const testApplication = new aws.kinesis.AnalyticsApplication("testApplication", {inputs: {
+ *     namePrefix: "test_prefix",
+ *     kinesisStream: {
+ *         resourceArn: testStream.arn,
+ *         roleArn: aws_iam_role.test.arn,
+ *     },
+ *     parallelism: {
+ *         count: 1,
+ *     },
+ *     schema: {
+ *         recordColumns: [{
+ *             mapping: `$.test`,
+ *             name: "test",
+ *             sqlType: "VARCHAR(8)",
+ *         }],
+ *         recordEncoding: "UTF-8",
+ *         recordFormat: {
+ *             mappingParameters: {
+ *                 json: {
+ *                     recordRowPath: "$",
  *                 },
  *             },
  *         },
  *     },
- * });
+ * }});
+ * ```
+ *
+ * ## Import
+ *
+ * Kinesis Analytics Application can be imported by using ARN, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:kinesis/analyticsApplication:AnalyticsApplication example arn:aws:kinesisanalytics:us-west-2:1234567890:application/example
  * ```
  */
 export class AnalyticsApplication extends pulumi.CustomResource {

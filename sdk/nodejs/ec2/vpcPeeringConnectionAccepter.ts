@@ -2,8 +2,7 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 /**
@@ -22,36 +21,55 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const peer = new aws.Provider("peer", {
- *     region: "us-west-2",
+ * const peer = new aws.Provider("peer", {region: "us-west-2"});
+ * // Accepter's credentials.
+ * const main = new aws.ec2.Vpc("main", {cidrBlock: "10.0.0.0/16"});
+ * const peerVpc = new aws.ec2.Vpc("peerVpc", {cidrBlock: "10.1.0.0/16"}, {
+ *     provider: aws.peer,
  * });
- * const main = new aws.ec2.Vpc("main", {
- *     cidrBlock: "10.0.0.0/16",
- * });
- * const peerVpc = new aws.ec2.Vpc("peer", {
- *     cidrBlock: "10.1.0.0/16",
- * }, { provider: peer });
- * const peerCallerIdentity = pulumi.output(aws.getCallerIdentity({ provider: peer, async: true }));
+ * const peerCallerIdentity = aws.getCallerIdentity({});
  * // Requester's side of the connection.
- * const peerVpcPeeringConnection = new aws.ec2.VpcPeeringConnection("peer", {
- *     autoAccept: false,
- *     peerOwnerId: peerCallerIdentity.accountId,
- *     peerRegion: "us-west-2",
+ * const peerVpcPeeringConnection = new aws.ec2.VpcPeeringConnection("peerVpcPeeringConnection", {
+ *     vpcId: main.id,
  *     peerVpcId: peerVpc.id,
+ *     peerOwnerId: peerCallerIdentity.then(peerCallerIdentity => peerCallerIdentity.accountId),
+ *     peerRegion: "us-west-2",
+ *     autoAccept: false,
  *     tags: {
  *         Side: "Requester",
  *     },
- *     vpcId: main.id,
  * });
  * // Accepter's side of the connection.
- * const peerVpcPeeringConnectionAccepter = new aws.ec2.VpcPeeringConnectionAccepter("peer", {
+ * const peerVpcPeeringConnectionAccepter = new aws.ec2.VpcPeeringConnectionAccepter("peerVpcPeeringConnectionAccepter", {
+ *     vpcPeeringConnectionId: peerVpcPeeringConnection.id,
  *     autoAccept: true,
  *     tags: {
  *         Side: "Accepter",
  *     },
- *     vpcPeeringConnectionId: peerVpcPeeringConnection.id,
- * }, { provider: peer });
+ * }, {
+ *     provider: aws.peer,
+ * });
  * ```
+ *
+ * ## Import
+ *
+ * VPC Peering Connection Accepters can be imported by using the Peering Connection ID, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:ec2/vpcPeeringConnectionAccepter:VpcPeeringConnectionAccepter example pcx-12345678
+ * ```
+ *
+ *  Certain resource arguments, like `auto_accept`, do not have an EC2 API method for reading the information after peering connection creation. If the argument is set in the provider configuration on an imported resource, this provder will always show a difference. To workaround this behavior, either omit the argument from the configuration or use [`ignoreChanges`](https://www.pulumi.com/docs/intro/concepts/programming-model/#ignorechanges) to hide the difference, e.g. hcl resource "aws_vpc_peering_connection_accepter" "example" {
+ *
+ * # ... other configuration ...
+ *
+ * # There is no AWS EC2 API for reading auto_accept
+ *
+ *  lifecycle {
+ *
+ *  ignore_changes = [auto_accept]
+ *
+ *  } }
  */
 export class VpcPeeringConnectionAccepter extends pulumi.CustomResource {
     /**
@@ -148,7 +166,7 @@ export class VpcPeeringConnectionAccepter extends pulumi.CustomResource {
             inputs["vpcPeeringConnectionId"] = state ? state.vpcPeeringConnectionId : undefined;
         } else {
             const args = argsOrState as VpcPeeringConnectionAccepterArgs | undefined;
-            if (!args || args.vpcPeeringConnectionId === undefined) {
+            if ((!args || args.vpcPeeringConnectionId === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'vpcPeeringConnectionId'");
             }
             inputs["accepter"] = args ? args.accepter : undefined;

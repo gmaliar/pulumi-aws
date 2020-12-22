@@ -2,12 +2,11 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "./types/input";
-import * as outputs from "./types/output";
+import { input as inputs, output as outputs, enums } from "./types";
 import * as utilities from "./utilities";
 
 /**
- * Use this data source to get the IP ranges of various AWS products and services. For more information about the contents of this data source and required JSON syntax if referencing a custom URL, see the [AWS IP Address Ranges documention](https://docs.aws.amazon.com/general/latest/gr/aws-ip-ranges.html).
+ * Use this data source to get the IP ranges of various AWS products and services. For more information about the contents of this data source and required JSON syntax if referencing a custom URL, see the [AWS IP Address Ranges documentation](https://docs.aws.amazon.com/general/latest/gr/aws-ip-ranges.html).
  *
  * ## Example Usage
  *
@@ -71,7 +70,7 @@ export interface GetIpRangesArgs {
      */
     readonly services: string[];
     /**
-     * Custom URL for source JSON file. Syntax must match [AWS IP Address Ranges documention](https://docs.aws.amazon.com/general/latest/gr/aws-ip-ranges.html). Defaults to `https://ip-ranges.amazonaws.com/ip-ranges.json`.
+     * Custom URL for source JSON file. Syntax must match [AWS IP Address Ranges documentation](https://docs.aws.amazon.com/general/latest/gr/aws-ip-ranges.html). Defaults to `https://ip-ranges.amazonaws.com/ip-ranges.json`.
      */
     readonly url?: string;
 }

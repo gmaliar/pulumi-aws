@@ -4,6 +4,7 @@
 package backup
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
@@ -17,14 +18,14 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/backup"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/backup"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
 // func main() {
 // 	pulumi.Run(func(ctx *pulumi.Context) error {
 // 		_, err := backup.NewVault(ctx, "example", &backup.VaultArgs{
-// 			KmsKeyArn: pulumi.String(aws_kms_key.Example.Arn),
+// 			KmsKeyArn: pulumi.Any(aws_kms_key.Example.Arn),
 // 		})
 // 		if err != nil {
 // 			return err
@@ -32,6 +33,14 @@ import (
 // 		return nil
 // 	})
 // }
+// ```
+//
+// ## Import
+//
+// Backup vault can be imported using the `name`, e.g.
+//
+// ```sh
+//  $ pulumi import aws:backup/vault:Vault test-vault TestVault
 // ```
 type Vault struct {
 	pulumi.CustomResourceState
@@ -54,6 +63,7 @@ func NewVault(ctx *pulumi.Context,
 	if args == nil {
 		args = &VaultArgs{}
 	}
+
 	var resource Vault
 	err := ctx.RegisterResource("aws:backup/vault:Vault", name, args, &resource, opts...)
 	if err != nil {
@@ -126,4 +136,43 @@ type VaultArgs struct {
 
 func (VaultArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*vaultArgs)(nil)).Elem()
+}
+
+type VaultInput interface {
+	pulumi.Input
+
+	ToVaultOutput() VaultOutput
+	ToVaultOutputWithContext(ctx context.Context) VaultOutput
+}
+
+func (Vault) ElementType() reflect.Type {
+	return reflect.TypeOf((*Vault)(nil)).Elem()
+}
+
+func (i Vault) ToVaultOutput() VaultOutput {
+	return i.ToVaultOutputWithContext(context.Background())
+}
+
+func (i Vault) ToVaultOutputWithContext(ctx context.Context) VaultOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(VaultOutput)
+}
+
+type VaultOutput struct {
+	*pulumi.OutputState
+}
+
+func (VaultOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*VaultOutput)(nil)).Elem()
+}
+
+func (o VaultOutput) ToVaultOutput() VaultOutput {
+	return o
+}
+
+func (o VaultOutput) ToVaultOutputWithContext(ctx context.Context) VaultOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(VaultOutput{})
 }

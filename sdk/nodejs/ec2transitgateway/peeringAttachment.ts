@@ -37,6 +37,14 @@ import * as utilities from "../utilities";
  *     },
  * });
  * ```
+ *
+ * ## Import
+ *
+ * `aws_ec2_transit_gateway_peering_attachment` can be imported by using the EC2 Transit Gateway Attachment identifier, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:ec2transitgateway/peeringAttachment:PeeringAttachment example tgw-attach-12345678
+ * ```
  */
 export class PeeringAttachment extends pulumi.CustomResource {
     /**
@@ -106,13 +114,13 @@ export class PeeringAttachment extends pulumi.CustomResource {
             inputs["transitGatewayId"] = state ? state.transitGatewayId : undefined;
         } else {
             const args = argsOrState as PeeringAttachmentArgs | undefined;
-            if (!args || args.peerRegion === undefined) {
+            if ((!args || args.peerRegion === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'peerRegion'");
             }
-            if (!args || args.peerTransitGatewayId === undefined) {
+            if ((!args || args.peerTransitGatewayId === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'peerTransitGatewayId'");
             }
-            if (!args || args.transitGatewayId === undefined) {
+            if ((!args || args.transitGatewayId === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'transitGatewayId'");
             }
             inputs["peerAccountId"] = args ? args.peerAccountId : undefined;

@@ -4,6 +4,7 @@
 package ebs
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -18,7 +19,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/ebs"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/ebs"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -40,6 +41,14 @@ import (
 // ```
 //
 // > **NOTE**: One of `size` or `snapshotId` is required when specifying an EBS volume
+//
+// ## Import
+//
+// EBS Volumes can be imported using the `id`, e.g.
+//
+// ```sh
+//  $ pulumi import aws:ebs/volume:Volume id vol-049df61146c4d7901
+// ```
 type Volume struct {
 	pulumi.CustomResourceState
 
@@ -49,7 +58,7 @@ type Volume struct {
 	AvailabilityZone pulumi.StringOutput `pulumi:"availabilityZone"`
 	// If true, the disk will be encrypted.
 	Encrypted pulumi.BoolOutput `pulumi:"encrypted"`
-	// The amount of IOPS to provision for the disk.
+	// The amount of IOPS to provision for the disk. Only valid for `type` of `io1` or `io2`.
 	Iops pulumi.IntOutput `pulumi:"iops"`
 	// The ARN for the KMS encryption key. When specifying `kmsKeyId`, `encrypted` needs to be set to true.
 	KmsKeyId pulumi.StringOutput `pulumi:"kmsKeyId"`
@@ -63,18 +72,19 @@ type Volume struct {
 	SnapshotId pulumi.StringOutput `pulumi:"snapshotId"`
 	// A map of tags to assign to the resource.
 	Tags pulumi.StringMapOutput `pulumi:"tags"`
-	// The type of EBS volume. Can be "standard", "gp2", "io1", "sc1" or "st1" (Default: "gp2").
+	// The type of EBS volume. Can be "standard", "gp2", "io1", "io2", "sc1" or "st1" (Default: "gp2").
 	Type pulumi.StringOutput `pulumi:"type"`
 }
 
 // NewVolume registers a new resource with the given unique name, arguments, and options.
 func NewVolume(ctx *pulumi.Context,
 	name string, args *VolumeArgs, opts ...pulumi.ResourceOption) (*Volume, error) {
-	if args == nil || args.AvailabilityZone == nil {
-		return nil, errors.New("missing required argument 'AvailabilityZone'")
-	}
 	if args == nil {
-		args = &VolumeArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.AvailabilityZone == nil {
+		return nil, errors.New("invalid value for required argument 'AvailabilityZone'")
 	}
 	var resource Volume
 	err := ctx.RegisterResource("aws:ebs/volume:Volume", name, args, &resource, opts...)
@@ -104,7 +114,7 @@ type volumeState struct {
 	AvailabilityZone *string `pulumi:"availabilityZone"`
 	// If true, the disk will be encrypted.
 	Encrypted *bool `pulumi:"encrypted"`
-	// The amount of IOPS to provision for the disk.
+	// The amount of IOPS to provision for the disk. Only valid for `type` of `io1` or `io2`.
 	Iops *int `pulumi:"iops"`
 	// The ARN for the KMS encryption key. When specifying `kmsKeyId`, `encrypted` needs to be set to true.
 	KmsKeyId *string `pulumi:"kmsKeyId"`
@@ -118,7 +128,7 @@ type volumeState struct {
 	SnapshotId *string `pulumi:"snapshotId"`
 	// A map of tags to assign to the resource.
 	Tags map[string]string `pulumi:"tags"`
-	// The type of EBS volume. Can be "standard", "gp2", "io1", "sc1" or "st1" (Default: "gp2").
+	// The type of EBS volume. Can be "standard", "gp2", "io1", "io2", "sc1" or "st1" (Default: "gp2").
 	Type *string `pulumi:"type"`
 }
 
@@ -129,7 +139,7 @@ type VolumeState struct {
 	AvailabilityZone pulumi.StringPtrInput
 	// If true, the disk will be encrypted.
 	Encrypted pulumi.BoolPtrInput
-	// The amount of IOPS to provision for the disk.
+	// The amount of IOPS to provision for the disk. Only valid for `type` of `io1` or `io2`.
 	Iops pulumi.IntPtrInput
 	// The ARN for the KMS encryption key. When specifying `kmsKeyId`, `encrypted` needs to be set to true.
 	KmsKeyId pulumi.StringPtrInput
@@ -143,7 +153,7 @@ type VolumeState struct {
 	SnapshotId pulumi.StringPtrInput
 	// A map of tags to assign to the resource.
 	Tags pulumi.StringMapInput
-	// The type of EBS volume. Can be "standard", "gp2", "io1", "sc1" or "st1" (Default: "gp2").
+	// The type of EBS volume. Can be "standard", "gp2", "io1", "io2", "sc1" or "st1" (Default: "gp2").
 	Type pulumi.StringPtrInput
 }
 
@@ -156,7 +166,7 @@ type volumeArgs struct {
 	AvailabilityZone string `pulumi:"availabilityZone"`
 	// If true, the disk will be encrypted.
 	Encrypted *bool `pulumi:"encrypted"`
-	// The amount of IOPS to provision for the disk.
+	// The amount of IOPS to provision for the disk. Only valid for `type` of `io1` or `io2`.
 	Iops *int `pulumi:"iops"`
 	// The ARN for the KMS encryption key. When specifying `kmsKeyId`, `encrypted` needs to be set to true.
 	KmsKeyId *string `pulumi:"kmsKeyId"`
@@ -170,7 +180,7 @@ type volumeArgs struct {
 	SnapshotId *string `pulumi:"snapshotId"`
 	// A map of tags to assign to the resource.
 	Tags map[string]string `pulumi:"tags"`
-	// The type of EBS volume. Can be "standard", "gp2", "io1", "sc1" or "st1" (Default: "gp2").
+	// The type of EBS volume. Can be "standard", "gp2", "io1", "io2", "sc1" or "st1" (Default: "gp2").
 	Type *string `pulumi:"type"`
 }
 
@@ -180,7 +190,7 @@ type VolumeArgs struct {
 	AvailabilityZone pulumi.StringInput
 	// If true, the disk will be encrypted.
 	Encrypted pulumi.BoolPtrInput
-	// The amount of IOPS to provision for the disk.
+	// The amount of IOPS to provision for the disk. Only valid for `type` of `io1` or `io2`.
 	Iops pulumi.IntPtrInput
 	// The ARN for the KMS encryption key. When specifying `kmsKeyId`, `encrypted` needs to be set to true.
 	KmsKeyId pulumi.StringPtrInput
@@ -194,10 +204,49 @@ type VolumeArgs struct {
 	SnapshotId pulumi.StringPtrInput
 	// A map of tags to assign to the resource.
 	Tags pulumi.StringMapInput
-	// The type of EBS volume. Can be "standard", "gp2", "io1", "sc1" or "st1" (Default: "gp2").
+	// The type of EBS volume. Can be "standard", "gp2", "io1", "io2", "sc1" or "st1" (Default: "gp2").
 	Type pulumi.StringPtrInput
 }
 
 func (VolumeArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*volumeArgs)(nil)).Elem()
+}
+
+type VolumeInput interface {
+	pulumi.Input
+
+	ToVolumeOutput() VolumeOutput
+	ToVolumeOutputWithContext(ctx context.Context) VolumeOutput
+}
+
+func (Volume) ElementType() reflect.Type {
+	return reflect.TypeOf((*Volume)(nil)).Elem()
+}
+
+func (i Volume) ToVolumeOutput() VolumeOutput {
+	return i.ToVolumeOutputWithContext(context.Background())
+}
+
+func (i Volume) ToVolumeOutputWithContext(ctx context.Context) VolumeOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(VolumeOutput)
+}
+
+type VolumeOutput struct {
+	*pulumi.OutputState
+}
+
+func (VolumeOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*VolumeOutput)(nil)).Elem()
+}
+
+func (o VolumeOutput) ToVolumeOutput() VolumeOutput {
+	return o
+}
+
+func (o VolumeOutput) ToVolumeOutputWithContext(ctx context.Context) VolumeOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(VolumeOutput{})
 }

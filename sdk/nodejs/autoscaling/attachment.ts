@@ -5,14 +5,15 @@ import * as pulumi from "@pulumi/pulumi";
 import * as utilities from "../utilities";
 
 /**
- * Provides an AutoScaling Attachment resource.
+ * Provides an Auto Scaling Attachment resource.
  *
- * > **NOTE on AutoScaling Groups and ASG Attachments:** This provider currently provides
- * both a standalone ASG Attachment resource (describing an ASG attached to
- * an ELB), and an AutoScaling Group resource with
- * `loadBalancers` defined in-line. At this time you cannot use an ASG with in-line
- * load balancers in conjunction with an ASG Attachment resource. Doing so will cause a
- * conflict and will overwrite attachments.
+ * > **NOTE on Auto Scaling Groups and ASG Attachments:** This provider currently provides
+ * both a standalone `aws.autoscaling.Attachment` resource
+ * (describing an ASG attached to an ELB or ALB), and an `aws.autoscaling.Group`
+ * with `loadBalancers` and `targetGroupArns` defined in-line. These two methods are not
+ * mutually-exclusive. If `aws.autoscaling.Attachment` resources are used, either alone or with inline
+ * `loadBalancers` or `targetGroupArns`, the `aws.autoscaling.Group` resource must be configured
+ * to [ignore changes](https://www.pulumi.com/docs/intro/concepts/programming-model/#ignorechanges) to the `loadBalancers` and `targetGroupArns` arguments.
  *
  * ## Example Usage
  *
@@ -21,9 +22,9 @@ import * as utilities from "../utilities";
  * import * as aws from "@pulumi/aws";
  *
  * // Create a new load balancer attachment
- * const asgAttachmentBar = new aws.autoscaling.Attachment("asg_attachment_bar", {
- *     autoscalingGroupName: aws_autoscaling_group_asg.id,
- *     elb: aws_elb_bar.id,
+ * const asgAttachmentBar = new aws.autoscaling.Attachment("asgAttachmentBar", {
+ *     autoscalingGroupName: aws_autoscaling_group.asg.id,
+ *     elb: aws_elb.bar.id,
  * });
  * ```
  *
@@ -32,9 +33,22 @@ import * as utilities from "../utilities";
  * import * as aws from "@pulumi/aws";
  *
  * // Create a new ALB Target Group attachment
- * const asgAttachmentBar = new aws.autoscaling.Attachment("asg_attachment_bar", {
- *     albTargetGroupArn: aws_alb_target_group_test.arn,
- *     autoscalingGroupName: aws_autoscaling_group_asg.id,
+ * const asgAttachmentBar = new aws.autoscaling.Attachment("asgAttachmentBar", {
+ *     autoscalingGroupName: aws_autoscaling_group.asg.id,
+ *     albTargetGroupArn: aws_alb_target_group.test.arn,
+ * });
+ * ```
+ * ## With An AutoScaling Group Resource
+ *
+ * ```typescript
+ * import * as pulumi from "@pulumi/pulumi";
+ * import * as aws from "@pulumi/aws";
+ *
+ * // ... other configuration ...
+ * const asg = new aws.autoscaling.Group("asg", {});
+ * const asgAttachmentBar = new aws.autoscaling.Attachment("asgAttachmentBar", {
+ *     autoscalingGroupName: asg.id,
+ *     elb: aws_elb.test.id,
  * });
  * ```
  */
@@ -96,7 +110,7 @@ export class Attachment extends pulumi.CustomResource {
             inputs["elb"] = state ? state.elb : undefined;
         } else {
             const args = argsOrState as AttachmentArgs | undefined;
-            if (!args || args.autoscalingGroupName === undefined) {
+            if ((!args || args.autoscalingGroupName === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'autoscalingGroupName'");
             }
             inputs["albTargetGroupArn"] = args ? args.albTargetGroupArn : undefined;

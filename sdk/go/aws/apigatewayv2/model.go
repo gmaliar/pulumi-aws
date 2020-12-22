@@ -4,6 +4,7 @@
 package apigatewayv2
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -21,16 +22,16 @@ import (
 // import (
 // 	"fmt"
 //
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/apigatewayv2"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/apigatewayv2"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
 // func main() {
 // 	pulumi.Run(func(ctx *pulumi.Context) error {
 // 		_, err := apigatewayv2.NewModel(ctx, "example", &apigatewayv2.ModelArgs{
-// 			ApiId:       pulumi.String(aws_apigatewayv2_api.Example.Id),
+// 			ApiId:       pulumi.Any(aws_apigatewayv2_api.Example.Id),
 // 			ContentType: pulumi.String("application/json"),
-// 			Schema:      pulumi.String(fmt.Sprintf("%v%v%v%v%v%v%v%v%v%v%v", "{\n", "  \"", "$", "schema\": \"http://json-schema.org/draft-04/schema#\",\n", "  \"title\": \"ExampleModel\",\n", "  \"type\": \"object\",\n", "  \"properties\": {\n", "    \"id\": { \"type\": \"string\" }\n", "  }\n", "}\n", "\n")),
+// 			Schema:      pulumi.String(fmt.Sprintf("%v%v%v%v%v%v%v%v%v%v", "{\n", "  \"", "$", "schema\": \"http://json-schema.org/draft-04/schema#\",\n", "  \"title\": \"ExampleModel\",\n", "  \"type\": \"object\",\n", "  \"properties\": {\n", "    \"id\": { \"type\": \"string\" }\n", "  }\n", "}\n")),
 // 		})
 // 		if err != nil {
 // 			return err
@@ -39,35 +40,44 @@ import (
 // 	})
 // }
 // ```
+//
+// ## Import
+//
+// `aws_apigatewayv2_model` can be imported by using the API identifier and model identifier, e.g.
+//
+// ```sh
+//  $ pulumi import aws:apigatewayv2/model:Model example aabbccddee/1122334
+// ```
 type Model struct {
 	pulumi.CustomResourceState
 
 	// The API identifier.
 	ApiId pulumi.StringOutput `pulumi:"apiId"`
-	// The content-type for the model, for example, `application/json`.
+	// The content-type for the model, for example, `application/json`. Must be between 1 and 256 characters in length.
 	ContentType pulumi.StringOutput `pulumi:"contentType"`
-	// The description of the model.
+	// The description of the model. Must be between 1 and 128 characters in length.
 	Description pulumi.StringPtrOutput `pulumi:"description"`
-	// The name of the model. Must be alphanumeric.
+	// The name of the model. Must be alphanumeric. Must be between 1 and 128 characters in length.
 	Name pulumi.StringOutput `pulumi:"name"`
-	// The schema for the model. This should be a [JSON schema draft 4](https://tools.ietf.org/html/draft-zyp-json-schema-04) model.
+	// The schema for the model. This should be a [JSON schema draft 4](https://tools.ietf.org/html/draft-zyp-json-schema-04) model. Must be less than or equal to 32768 characters in length.
 	Schema pulumi.StringOutput `pulumi:"schema"`
 }
 
 // NewModel registers a new resource with the given unique name, arguments, and options.
 func NewModel(ctx *pulumi.Context,
 	name string, args *ModelArgs, opts ...pulumi.ResourceOption) (*Model, error) {
-	if args == nil || args.ApiId == nil {
-		return nil, errors.New("missing required argument 'ApiId'")
-	}
-	if args == nil || args.ContentType == nil {
-		return nil, errors.New("missing required argument 'ContentType'")
-	}
-	if args == nil || args.Schema == nil {
-		return nil, errors.New("missing required argument 'Schema'")
-	}
 	if args == nil {
-		args = &ModelArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.ApiId == nil {
+		return nil, errors.New("invalid value for required argument 'ApiId'")
+	}
+	if args.ContentType == nil {
+		return nil, errors.New("invalid value for required argument 'ContentType'")
+	}
+	if args.Schema == nil {
+		return nil, errors.New("invalid value for required argument 'Schema'")
 	}
 	var resource Model
 	err := ctx.RegisterResource("aws:apigatewayv2/model:Model", name, args, &resource, opts...)
@@ -93,26 +103,26 @@ func GetModel(ctx *pulumi.Context,
 type modelState struct {
 	// The API identifier.
 	ApiId *string `pulumi:"apiId"`
-	// The content-type for the model, for example, `application/json`.
+	// The content-type for the model, for example, `application/json`. Must be between 1 and 256 characters in length.
 	ContentType *string `pulumi:"contentType"`
-	// The description of the model.
+	// The description of the model. Must be between 1 and 128 characters in length.
 	Description *string `pulumi:"description"`
-	// The name of the model. Must be alphanumeric.
+	// The name of the model. Must be alphanumeric. Must be between 1 and 128 characters in length.
 	Name *string `pulumi:"name"`
-	// The schema for the model. This should be a [JSON schema draft 4](https://tools.ietf.org/html/draft-zyp-json-schema-04) model.
+	// The schema for the model. This should be a [JSON schema draft 4](https://tools.ietf.org/html/draft-zyp-json-schema-04) model. Must be less than or equal to 32768 characters in length.
 	Schema *string `pulumi:"schema"`
 }
 
 type ModelState struct {
 	// The API identifier.
 	ApiId pulumi.StringPtrInput
-	// The content-type for the model, for example, `application/json`.
+	// The content-type for the model, for example, `application/json`. Must be between 1 and 256 characters in length.
 	ContentType pulumi.StringPtrInput
-	// The description of the model.
+	// The description of the model. Must be between 1 and 128 characters in length.
 	Description pulumi.StringPtrInput
-	// The name of the model. Must be alphanumeric.
+	// The name of the model. Must be alphanumeric. Must be between 1 and 128 characters in length.
 	Name pulumi.StringPtrInput
-	// The schema for the model. This should be a [JSON schema draft 4](https://tools.ietf.org/html/draft-zyp-json-schema-04) model.
+	// The schema for the model. This should be a [JSON schema draft 4](https://tools.ietf.org/html/draft-zyp-json-schema-04) model. Must be less than or equal to 32768 characters in length.
 	Schema pulumi.StringPtrInput
 }
 
@@ -123,13 +133,13 @@ func (ModelState) ElementType() reflect.Type {
 type modelArgs struct {
 	// The API identifier.
 	ApiId string `pulumi:"apiId"`
-	// The content-type for the model, for example, `application/json`.
+	// The content-type for the model, for example, `application/json`. Must be between 1 and 256 characters in length.
 	ContentType string `pulumi:"contentType"`
-	// The description of the model.
+	// The description of the model. Must be between 1 and 128 characters in length.
 	Description *string `pulumi:"description"`
-	// The name of the model. Must be alphanumeric.
+	// The name of the model. Must be alphanumeric. Must be between 1 and 128 characters in length.
 	Name *string `pulumi:"name"`
-	// The schema for the model. This should be a [JSON schema draft 4](https://tools.ietf.org/html/draft-zyp-json-schema-04) model.
+	// The schema for the model. This should be a [JSON schema draft 4](https://tools.ietf.org/html/draft-zyp-json-schema-04) model. Must be less than or equal to 32768 characters in length.
 	Schema string `pulumi:"schema"`
 }
 
@@ -137,16 +147,55 @@ type modelArgs struct {
 type ModelArgs struct {
 	// The API identifier.
 	ApiId pulumi.StringInput
-	// The content-type for the model, for example, `application/json`.
+	// The content-type for the model, for example, `application/json`. Must be between 1 and 256 characters in length.
 	ContentType pulumi.StringInput
-	// The description of the model.
+	// The description of the model. Must be between 1 and 128 characters in length.
 	Description pulumi.StringPtrInput
-	// The name of the model. Must be alphanumeric.
+	// The name of the model. Must be alphanumeric. Must be between 1 and 128 characters in length.
 	Name pulumi.StringPtrInput
-	// The schema for the model. This should be a [JSON schema draft 4](https://tools.ietf.org/html/draft-zyp-json-schema-04) model.
+	// The schema for the model. This should be a [JSON schema draft 4](https://tools.ietf.org/html/draft-zyp-json-schema-04) model. Must be less than or equal to 32768 characters in length.
 	Schema pulumi.StringInput
 }
 
 func (ModelArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*modelArgs)(nil)).Elem()
+}
+
+type ModelInput interface {
+	pulumi.Input
+
+	ToModelOutput() ModelOutput
+	ToModelOutputWithContext(ctx context.Context) ModelOutput
+}
+
+func (Model) ElementType() reflect.Type {
+	return reflect.TypeOf((*Model)(nil)).Elem()
+}
+
+func (i Model) ToModelOutput() ModelOutput {
+	return i.ToModelOutputWithContext(context.Background())
+}
+
+func (i Model) ToModelOutputWithContext(ctx context.Context) ModelOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(ModelOutput)
+}
+
+type ModelOutput struct {
+	*pulumi.OutputState
+}
+
+func (ModelOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*ModelOutput)(nil)).Elem()
+}
+
+func (o ModelOutput) ToModelOutput() ModelOutput {
+	return o
+}
+
+func (o ModelOutput) ToModelOutputWithContext(ctx context.Context) ModelOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(ModelOutput{})
 }

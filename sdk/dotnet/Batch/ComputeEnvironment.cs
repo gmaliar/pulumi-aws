@@ -42,13 +42,12 @@ namespace Pulumi.Aws.Batch
     /// 	}
     ///     ]
     /// }
-    /// 
     /// ",
     ///         });
     ///         var ecsInstanceRoleRolePolicyAttachment = new Aws.Iam.RolePolicyAttachment("ecsInstanceRoleRolePolicyAttachment", new Aws.Iam.RolePolicyAttachmentArgs
     ///         {
-    ///             PolicyArn = "arn:aws:iam::aws:policy/service-role/AmazonEC2ContainerServiceforEC2Role",
     ///             Role = ecsInstanceRoleRole.Name,
+    ///             PolicyArn = "arn:aws:iam::aws:policy/service-role/AmazonEC2ContainerServiceforEC2Role",
     ///         });
     ///         var ecsInstanceRoleInstanceProfile = new Aws.Iam.InstanceProfile("ecsInstanceRoleInstanceProfile", new Aws.Iam.InstanceProfileArgs
     ///         {
@@ -68,38 +67,38 @@ namespace Pulumi.Aws.Batch
     /// 	}
     ///     ]
     /// }
-    /// 
     /// ",
     ///         });
     ///         var awsBatchServiceRoleRolePolicyAttachment = new Aws.Iam.RolePolicyAttachment("awsBatchServiceRoleRolePolicyAttachment", new Aws.Iam.RolePolicyAttachmentArgs
     ///         {
-    ///             PolicyArn = "arn:aws:iam::aws:policy/service-role/AWSBatchServiceRole",
     ///             Role = awsBatchServiceRoleRole.Name,
-    ///         });
-    ///         var sampleSecurityGroup = new Aws.Ec2.SecurityGroup("sampleSecurityGroup", new Aws.Ec2.SecurityGroupArgs
-    ///         {
-    ///             Egress = 
-    ///             {
-    ///                 new Aws.Ec2.Inputs.SecurityGroupEgressArgs
-    ///                 {
-    ///                     CidrBlocks = 
-    ///                     {
-    ///                         "0.0.0.0/0",
-    ///                     },
-    ///                     FromPort = 0,
-    ///                     Protocol = "-1",
-    ///                     ToPort = 0,
-    ///                 },
-    ///             },
+    ///             PolicyArn = "arn:aws:iam::aws:policy/service-role/AWSBatchServiceRole",
     ///         });
     ///         var sampleVpc = new Aws.Ec2.Vpc("sampleVpc", new Aws.Ec2.VpcArgs
     ///         {
     ///             CidrBlock = "10.1.0.0/16",
     ///         });
+    ///         var sampleSecurityGroup = new Aws.Ec2.SecurityGroup("sampleSecurityGroup", new Aws.Ec2.SecurityGroupArgs
+    ///         {
+    ///             VpcId = sampleVpc.Id,
+    ///             Egress = 
+    ///             {
+    ///                 new Aws.Ec2.Inputs.SecurityGroupEgressArgs
+    ///                 {
+    ///                     FromPort = 0,
+    ///                     ToPort = 0,
+    ///                     Protocol = "-1",
+    ///                     CidrBlocks = 
+    ///                     {
+    ///                         "0.0.0.0/0",
+    ///                     },
+    ///                 },
+    ///             },
+    ///         });
     ///         var sampleSubnet = new Aws.Ec2.Subnet("sampleSubnet", new Aws.Ec2.SubnetArgs
     ///         {
-    ///             CidrBlock = "10.1.1.0/24",
     ///             VpcId = sampleVpc.Id,
+    ///             CidrBlock = "10.1.1.0/24",
     ///         });
     ///         var sampleComputeEnvironment = new Aws.Batch.ComputeEnvironment("sampleComputeEnvironment", new Aws.Batch.ComputeEnvironmentArgs
     ///         {
@@ -129,13 +128,23 @@ namespace Pulumi.Aws.Batch
     ///         {
     ///             DependsOn = 
     ///             {
-    ///                 "aws_iam_role_policy_attachment.aws_batch_service_role",
+    ///                 awsBatchServiceRoleRolePolicyAttachment,
     ///             },
     ///         });
     ///     }
     /// 
     /// }
     /// ```
+    /// 
+    /// ## Import
+    /// 
+    /// AWS Batch compute can be imported using the `compute_environment_name`, e.g.
+    /// 
+    /// ```sh
+    ///  $ pulumi import aws:batch/computeEnvironment:ComputeEnvironment sample sample
+    /// ```
+    /// 
+    ///  [1]http://docs.aws.amazon.com/batch/latest/userguide/what-is-batch.html [2]http://docs.aws.amazon.com/batch/latest/userguide/compute_environments.html [3]http://docs.aws.amazon.com/batch/latest/userguide/troubleshooting.html [4]https://docs.aws.amazon.com/batch/latest/userguide/allocation-strategies.html
     /// </summary>
     public partial class ComputeEnvironment : Pulumi.CustomResource
     {
@@ -192,6 +201,12 @@ namespace Pulumi.Aws.Batch
         /// </summary>
         [Output("statusReason")]
         public Output<string> StatusReason { get; private set; } = null!;
+
+        /// <summary>
+        /// Key-value pair tags to be applied to resources that are launched in the compute environment.
+        /// </summary>
+        [Output("tags")]
+        public Output<ImmutableDictionary<string, string>?> Tags { get; private set; } = null!;
 
         /// <summary>
         /// The type of compute environment. Valid items are `EC2` or `SPOT`.
@@ -275,6 +290,18 @@ namespace Pulumi.Aws.Batch
         [Input("state")]
         public Input<string>? State { get; set; }
 
+        [Input("tags")]
+        private InputMap<string>? _tags;
+
+        /// <summary>
+        /// Key-value pair tags to be applied to resources that are launched in the compute environment.
+        /// </summary>
+        public InputMap<string> Tags
+        {
+            get => _tags ?? (_tags = new InputMap<string>());
+            set => _tags = value;
+        }
+
         /// <summary>
         /// The type of compute environment. Valid items are `EC2` or `SPOT`.
         /// </summary>
@@ -341,6 +368,18 @@ namespace Pulumi.Aws.Batch
         /// </summary>
         [Input("statusReason")]
         public Input<string>? StatusReason { get; set; }
+
+        [Input("tags")]
+        private InputMap<string>? _tags;
+
+        /// <summary>
+        /// Key-value pair tags to be applied to resources that are launched in the compute environment.
+        /// </summary>
+        public InputMap<string> Tags
+        {
+            get => _tags ?? (_tags = new InputMap<string>());
+            set => _tags = value;
+        }
 
         /// <summary>
         /// The type of compute environment. Valid items are `EC2` or `SPOT`.

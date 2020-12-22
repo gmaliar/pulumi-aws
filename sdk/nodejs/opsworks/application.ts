@@ -2,8 +2,7 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 /**
@@ -14,36 +13,44 @@ import * as utilities from "../utilities";
  * ```typescript
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
- * import * as fs from "fs";
+ * import * from "fs";
  *
  * const foo_app = new aws.opsworks.Application("foo-app", {
- *     appSources: [{
- *         revision: "master",
- *         type: "git",
- *         url: "https://github.com/example.git",
- *     }],
- *     autoBundleOnDeploy: "true",
+ *     shortName: "foobar",
+ *     stackId: aws_opsworks_stack.main.id,
+ *     type: "rails",
  *     description: "This is a Rails application",
- *     documentRoot: "public",
  *     domains: [
  *         "example.com",
  *         "sub.example.com",
  *     ],
- *     enableSsl: true,
  *     environments: [{
  *         key: "key",
- *         secure: false,
  *         value: "value",
+ *         secure: false,
  *     }],
- *     railsEnv: "staging",
- *     shortName: "foobar",
+ *     appSources: [{
+ *         type: "git",
+ *         revision: "master",
+ *         url: "https://github.com/example.git",
+ *     }],
+ *     enableSsl: true,
  *     sslConfigurations: [{
- *         certificate: fs.readFileSync("./foobar.crt", "utf-8"),
- *         privateKey: fs.readFileSync("./foobar.key", "utf-8"),
+ *         privateKey: fs.readFileSync("./foobar.key"),
+ *         certificate: fs.readFileSync("./foobar.crt"),
  *     }],
- *     stackId: aws_opsworks_stack_main.id,
- *     type: "rails",
+ *     documentRoot: "public",
+ *     autoBundleOnDeploy: true,
+ *     railsEnv: "staging",
  * });
+ * ```
+ *
+ * ## Import
+ *
+ * Opsworks Application can be imported using the `id`, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:opsworks/application:Application test <id>
  * ```
  */
 export class Application extends pulumi.CustomResource {
@@ -174,10 +181,10 @@ export class Application extends pulumi.CustomResource {
             inputs["type"] = state ? state.type : undefined;
         } else {
             const args = argsOrState as ApplicationArgs | undefined;
-            if (!args || args.stackId === undefined) {
+            if ((!args || args.stackId === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'stackId'");
             }
-            if (!args || args.type === undefined) {
+            if ((!args || args.type === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'type'");
             }
             inputs["appSources"] = args ? args.appSources : undefined;

@@ -32,21 +32,35 @@ namespace Pulumi.Aws.ApiGateway
     ///         });
     ///         var exampleDomainName = new Aws.ApiGateway.DomainName("exampleDomainName", new Aws.ApiGateway.DomainNameArgs
     ///         {
+    ///             DomainName = "example.com",
+    ///             CertificateName = "example-api",
     ///             CertificateBody = File.ReadAllText($"{path.Module}/example.com/example.crt"),
     ///             CertificateChain = File.ReadAllText($"{path.Module}/example.com/ca.crt"),
-    ///             CertificateName = "example-api",
     ///             CertificatePrivateKey = File.ReadAllText($"{path.Module}/example.com/example.key"),
-    ///             DomainName = "example.com",
     ///         });
     ///         var test = new Aws.ApiGateway.BasePathMapping("test", new Aws.ApiGateway.BasePathMappingArgs
     ///         {
     ///             RestApi = aws_api_gateway_rest_api.MyDemoAPI.Id,
-    ///             DomainName = exampleDomainName.Domain,
     ///             StageName = exampleDeployment.StageName,
+    ///             DomainName = exampleDomainName.Domain,
     ///         });
     ///     }
     /// 
     /// }
+    /// ```
+    /// 
+    /// ## Import
+    /// 
+    /// `aws_api_gateway_base_path_mapping` can be imported by using the domain name and base path, e.g. For empty `base_path` (e.g. root path (`/`))
+    /// 
+    /// ```sh
+    ///  $ pulumi import aws:apigateway/basePathMapping:BasePathMapping example example.com/
+    /// ```
+    /// 
+    ///  Otherwise
+    /// 
+    /// ```sh
+    ///  $ pulumi import aws:apigateway/basePathMapping:BasePathMapping example example.com/base-path
     /// ```
     /// </summary>
     public partial class BasePathMapping : Pulumi.CustomResource

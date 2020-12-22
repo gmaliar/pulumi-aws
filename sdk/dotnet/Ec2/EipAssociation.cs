@@ -32,7 +32,7 @@ namespace Pulumi.Aws.Ec2
     ///         {
     ///             Ami = "ami-21f78e11",
     ///             AvailabilityZone = "us-west-2a",
-    ///             InstanceType = "t1.micro",
+    ///             InstanceType = "t2.micro",
     ///             Tags = 
     ///             {
     ///                 { "Name", "HelloWorld" },
@@ -44,12 +44,20 @@ namespace Pulumi.Aws.Ec2
     ///         });
     ///         var eipAssoc = new Aws.Ec2.EipAssociation("eipAssoc", new Aws.Ec2.EipAssociationArgs
     ///         {
-    ///             AllocationId = example.Id,
     ///             InstanceId = web.Id,
+    ///             AllocationId = example.Id,
     ///         });
     ///     }
     /// 
     /// }
+    /// ```
+    /// 
+    /// ## Import
+    /// 
+    /// EIP Assocations can be imported using their association ID.
+    /// 
+    /// ```sh
+    ///  $ pulumi import aws:ec2/eipAssociation:EipAssociation test eipassoc-ab12c345
     /// ```
     /// </summary>
     public partial class EipAssociation : Pulumi.CustomResource

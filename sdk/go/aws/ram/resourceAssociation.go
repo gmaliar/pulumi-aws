@@ -4,6 +4,7 @@
 package ram
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -20,15 +21,15 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/ram"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/ram"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
 // func main() {
 // 	pulumi.Run(func(ctx *pulumi.Context) error {
 // 		_, err := ram.NewResourceAssociation(ctx, "example", &ram.ResourceAssociationArgs{
-// 			ResourceArn:      pulumi.String(aws_subnet.Example.Arn),
-// 			ResourceShareArn: pulumi.String(aws_ram_resource_share.Example.Arn),
+// 			ResourceArn:      pulumi.Any(aws_subnet.Example.Arn),
+// 			ResourceShareArn: pulumi.Any(aws_ram_resource_share.Example.Arn),
 // 		})
 // 		if err != nil {
 // 			return err
@@ -36,6 +37,14 @@ import (
 // 		return nil
 // 	})
 // }
+// ```
+//
+// ## Import
+//
+// RAM Resource Associations can be imported using their Resource Share ARN and Resource ARN separated by a comma, e.g.
+//
+// ```sh
+//  $ pulumi import aws:ram/resourceAssociation:ResourceAssociation example arn:aws:ram:eu-west-1:123456789012:resource-share/73da1ab9-b94a-4ba3-8eb4-45917f7f4b12,arn:aws:ec2:eu-west-1:123456789012:subnet/subnet-12345678
 // ```
 type ResourceAssociation struct {
 	pulumi.CustomResourceState
@@ -49,14 +58,15 @@ type ResourceAssociation struct {
 // NewResourceAssociation registers a new resource with the given unique name, arguments, and options.
 func NewResourceAssociation(ctx *pulumi.Context,
 	name string, args *ResourceAssociationArgs, opts ...pulumi.ResourceOption) (*ResourceAssociation, error) {
-	if args == nil || args.ResourceArn == nil {
-		return nil, errors.New("missing required argument 'ResourceArn'")
-	}
-	if args == nil || args.ResourceShareArn == nil {
-		return nil, errors.New("missing required argument 'ResourceShareArn'")
-	}
 	if args == nil {
-		args = &ResourceAssociationArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.ResourceArn == nil {
+		return nil, errors.New("invalid value for required argument 'ResourceArn'")
+	}
+	if args.ResourceShareArn == nil {
+		return nil, errors.New("invalid value for required argument 'ResourceShareArn'")
 	}
 	var resource ResourceAssociation
 	err := ctx.RegisterResource("aws:ram/resourceAssociation:ResourceAssociation", name, args, &resource, opts...)
@@ -114,4 +124,43 @@ type ResourceAssociationArgs struct {
 
 func (ResourceAssociationArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*resourceAssociationArgs)(nil)).Elem()
+}
+
+type ResourceAssociationInput interface {
+	pulumi.Input
+
+	ToResourceAssociationOutput() ResourceAssociationOutput
+	ToResourceAssociationOutputWithContext(ctx context.Context) ResourceAssociationOutput
+}
+
+func (ResourceAssociation) ElementType() reflect.Type {
+	return reflect.TypeOf((*ResourceAssociation)(nil)).Elem()
+}
+
+func (i ResourceAssociation) ToResourceAssociationOutput() ResourceAssociationOutput {
+	return i.ToResourceAssociationOutputWithContext(context.Background())
+}
+
+func (i ResourceAssociation) ToResourceAssociationOutputWithContext(ctx context.Context) ResourceAssociationOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(ResourceAssociationOutput)
+}
+
+type ResourceAssociationOutput struct {
+	*pulumi.OutputState
+}
+
+func (ResourceAssociationOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*ResourceAssociationOutput)(nil)).Elem()
+}
+
+func (o ResourceAssociationOutput) ToResourceAssociationOutput() ResourceAssociationOutput {
+	return o
+}
+
+func (o ResourceAssociationOutput) ToResourceAssociationOutputWithContext(ctx context.Context) ResourceAssociationOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(ResourceAssociationOutput{})
 }

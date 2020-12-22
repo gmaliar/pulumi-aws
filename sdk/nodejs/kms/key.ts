@@ -18,6 +18,14 @@ import * as utilities from "../utilities";
  *     description: "KMS key 1",
  * });
  * ```
+ *
+ * ## Import
+ *
+ * KMS Keys can be imported using the `id`, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:kms/key:Key a 1234abcd-12ab-34cd-56ef-1234567890ab
+ * ```
  */
 export class Key extends pulumi.CustomResource {
     /**
@@ -57,8 +65,7 @@ export class Key extends pulumi.CustomResource {
      */
     public readonly customerMasterKeySpec!: pulumi.Output<string | undefined>;
     /**
-     * Duration in days after which the key is deleted
-     * after destruction of the resource, must be between 7 and 30 days. Defaults to 30 days.
+     * Duration in days after which the key is deleted after destruction of the resource, must be between 7 and 30 days. Defaults to 30 days.
      */
     public readonly deletionWindowInDays!: pulumi.Output<number | undefined>;
     /**
@@ -66,8 +73,7 @@ export class Key extends pulumi.CustomResource {
      */
     public readonly description!: pulumi.Output<string>;
     /**
-     * Specifies whether [key rotation](http://docs.aws.amazon.com/kms/latest/developerguide/rotate-keys.html)
-     * is enabled. Defaults to false.
+     * Specifies whether [key rotation](http://docs.aws.amazon.com/kms/latest/developerguide/rotate-keys.html) is enabled. Defaults to false.
      */
     public readonly enableKeyRotation!: pulumi.Output<boolean | undefined>;
     /**
@@ -152,8 +158,7 @@ export interface KeyState {
      */
     readonly customerMasterKeySpec?: pulumi.Input<string>;
     /**
-     * Duration in days after which the key is deleted
-     * after destruction of the resource, must be between 7 and 30 days. Defaults to 30 days.
+     * Duration in days after which the key is deleted after destruction of the resource, must be between 7 and 30 days. Defaults to 30 days.
      */
     readonly deletionWindowInDays?: pulumi.Input<number>;
     /**
@@ -161,8 +166,7 @@ export interface KeyState {
      */
     readonly description?: pulumi.Input<string>;
     /**
-     * Specifies whether [key rotation](http://docs.aws.amazon.com/kms/latest/developerguide/rotate-keys.html)
-     * is enabled. Defaults to false.
+     * Specifies whether [key rotation](http://docs.aws.amazon.com/kms/latest/developerguide/rotate-keys.html) is enabled. Defaults to false.
      */
     readonly enableKeyRotation?: pulumi.Input<boolean>;
     /**
@@ -198,8 +202,7 @@ export interface KeyArgs {
      */
     readonly customerMasterKeySpec?: pulumi.Input<string>;
     /**
-     * Duration in days after which the key is deleted
-     * after destruction of the resource, must be between 7 and 30 days. Defaults to 30 days.
+     * Duration in days after which the key is deleted after destruction of the resource, must be between 7 and 30 days. Defaults to 30 days.
      */
     readonly deletionWindowInDays?: pulumi.Input<number>;
     /**
@@ -207,8 +210,7 @@ export interface KeyArgs {
      */
     readonly description?: pulumi.Input<string>;
     /**
-     * Specifies whether [key rotation](http://docs.aws.amazon.com/kms/latest/developerguide/rotate-keys.html)
-     * is enabled. Defaults to false.
+     * Specifies whether [key rotation](http://docs.aws.amazon.com/kms/latest/developerguide/rotate-keys.html) is enabled. Defaults to false.
      */
     readonly enableKeyRotation?: pulumi.Input<boolean>;
     /**

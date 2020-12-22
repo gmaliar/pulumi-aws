@@ -2,8 +2,7 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 /**
@@ -16,12 +15,20 @@ import * as utilities from "../utilities";
  * import * as aws from "@pulumi/aws";
  *
  * const example = new aws.globalaccelerator.EndpointGroup("example", {
+ *     listenerArn: aws_globalaccelerator_listener.example.id,
  *     endpointConfigurations: [{
- *         endpointId: aws_lb_example.arn,
+ *         endpointId: aws_lb.example.arn,
  *         weight: 100,
  *     }],
- *     listenerArn: aws_globalaccelerator_listener_example.id,
  * });
+ * ```
+ *
+ * ## Import
+ *
+ * Global Accelerator endpoint groups can be imported using the `id`, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:globalaccelerator/endpointGroup:EndpointGroup example arn:aws:globalaccelerator::111111111111:accelerator/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx/listener/xxxxxxx/endpoint-group/xxxxxxxx
  * ```
  */
 export class EndpointGroup extends pulumi.CustomResource {
@@ -53,6 +60,10 @@ export class EndpointGroup extends pulumi.CustomResource {
     }
 
     /**
+     * The Amazon Resource Name (ARN) of the endpoint group.
+     */
+    public /*out*/ readonly arn!: pulumi.Output<string>;
+    /**
      * The list of endpoint objects. Fields documented below.
      */
     public readonly endpointConfigurations!: pulumi.Output<outputs.globalaccelerator.EndpointGroupEndpointConfiguration[] | undefined>;
@@ -64,14 +75,8 @@ export class EndpointGroup extends pulumi.CustomResource {
      * The time—10 seconds or 30 seconds—between each health check for an endpoint. The default value is 30.
      */
     public readonly healthCheckIntervalSeconds!: pulumi.Output<number | undefined>;
-    /**
-     * If the protocol is HTTP/S, then this specifies the path that is the destination for health check targets. The default value is slash (/).
-     */
-    public readonly healthCheckPath!: pulumi.Output<string | undefined>;
-    /**
-     * The port that AWS Global Accelerator uses to check the health of endpoints that are part of this endpoint group. The default port is the listener port that this endpoint group is associated with. If listener port is a list of ports, Global Accelerator uses the first port in the list.
-     */
-    public readonly healthCheckPort!: pulumi.Output<number | undefined>;
+    public readonly healthCheckPath!: pulumi.Output<string>;
+    public readonly healthCheckPort!: pulumi.Output<number>;
     /**
      * The protocol that AWS Global Accelerator uses to check the health of endpoints that are part of this endpoint group. The default value is TCP.
      */
@@ -80,6 +85,10 @@ export class EndpointGroup extends pulumi.CustomResource {
      * The Amazon Resource Name (ARN) of the listener.
      */
     public readonly listenerArn!: pulumi.Output<string>;
+    /**
+     * Override specific listener ports used to route traffic to endpoints that are part of this endpoint group. Fields documented below.
+     */
+    public readonly portOverrides!: pulumi.Output<outputs.globalaccelerator.EndpointGroupPortOverride[] | undefined>;
     /**
      * The number of consecutive health checks required to set the state of a healthy endpoint to unhealthy, or to set an unhealthy endpoint to healthy. The default value is 3.
      */
@@ -101,6 +110,7 @@ export class EndpointGroup extends pulumi.CustomResource {
         let inputs: pulumi.Inputs = {};
         if (opts && opts.id) {
             const state = argsOrState as EndpointGroupState | undefined;
+            inputs["arn"] = state ? state.arn : undefined;
             inputs["endpointConfigurations"] = state ? state.endpointConfigurations : undefined;
             inputs["endpointGroupRegion"] = state ? state.endpointGroupRegion : undefined;
             inputs["healthCheckIntervalSeconds"] = state ? state.healthCheckIntervalSeconds : undefined;
@@ -108,11 +118,12 @@ export class EndpointGroup extends pulumi.CustomResource {
             inputs["healthCheckPort"] = state ? state.healthCheckPort : undefined;
             inputs["healthCheckProtocol"] = state ? state.healthCheckProtocol : undefined;
             inputs["listenerArn"] = state ? state.listenerArn : undefined;
+            inputs["portOverrides"] = state ? state.portOverrides : undefined;
             inputs["thresholdCount"] = state ? state.thresholdCount : undefined;
             inputs["trafficDialPercentage"] = state ? state.trafficDialPercentage : undefined;
         } else {
             const args = argsOrState as EndpointGroupArgs | undefined;
-            if (!args || args.listenerArn === undefined) {
+            if ((!args || args.listenerArn === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'listenerArn'");
             }
             inputs["endpointConfigurations"] = args ? args.endpointConfigurations : undefined;
@@ -122,8 +133,10 @@ export class EndpointGroup extends pulumi.CustomResource {
             inputs["healthCheckPort"] = args ? args.healthCheckPort : undefined;
             inputs["healthCheckProtocol"] = args ? args.healthCheckProtocol : undefined;
             inputs["listenerArn"] = args ? args.listenerArn : undefined;
+            inputs["portOverrides"] = args ? args.portOverrides : undefined;
             inputs["thresholdCount"] = args ? args.thresholdCount : undefined;
             inputs["trafficDialPercentage"] = args ? args.trafficDialPercentage : undefined;
+            inputs["arn"] = undefined /*out*/;
         }
         if (!opts) {
             opts = {}
@@ -141,6 +154,10 @@ export class EndpointGroup extends pulumi.CustomResource {
  */
 export interface EndpointGroupState {
     /**
+     * The Amazon Resource Name (ARN) of the endpoint group.
+     */
+    readonly arn?: pulumi.Input<string>;
+    /**
      * The list of endpoint objects. Fields documented below.
      */
     readonly endpointConfigurations?: pulumi.Input<pulumi.Input<inputs.globalaccelerator.EndpointGroupEndpointConfiguration>[]>;
@@ -152,13 +169,7 @@ export interface EndpointGroupState {
      * The time—10 seconds or 30 seconds—between each health check for an endpoint. The default value is 30.
      */
     readonly healthCheckIntervalSeconds?: pulumi.Input<number>;
-    /**
-     * If the protocol is HTTP/S, then this specifies the path that is the destination for health check targets. The default value is slash (/).
-     */
     readonly healthCheckPath?: pulumi.Input<string>;
-    /**
-     * The port that AWS Global Accelerator uses to check the health of endpoints that are part of this endpoint group. The default port is the listener port that this endpoint group is associated with. If listener port is a list of ports, Global Accelerator uses the first port in the list.
-     */
     readonly healthCheckPort?: pulumi.Input<number>;
     /**
      * The protocol that AWS Global Accelerator uses to check the health of endpoints that are part of this endpoint group. The default value is TCP.
@@ -168,6 +179,10 @@ export interface EndpointGroupState {
      * The Amazon Resource Name (ARN) of the listener.
      */
     readonly listenerArn?: pulumi.Input<string>;
+    /**
+     * Override specific listener ports used to route traffic to endpoints that are part of this endpoint group. Fields documented below.
+     */
+    readonly portOverrides?: pulumi.Input<pulumi.Input<inputs.globalaccelerator.EndpointGroupPortOverride>[]>;
     /**
      * The number of consecutive health checks required to set the state of a healthy endpoint to unhealthy, or to set an unhealthy endpoint to healthy. The default value is 3.
      */
@@ -194,13 +209,7 @@ export interface EndpointGroupArgs {
      * The time—10 seconds or 30 seconds—between each health check for an endpoint. The default value is 30.
      */
     readonly healthCheckIntervalSeconds?: pulumi.Input<number>;
-    /**
-     * If the protocol is HTTP/S, then this specifies the path that is the destination for health check targets. The default value is slash (/).
-     */
     readonly healthCheckPath?: pulumi.Input<string>;
-    /**
-     * The port that AWS Global Accelerator uses to check the health of endpoints that are part of this endpoint group. The default port is the listener port that this endpoint group is associated with. If listener port is a list of ports, Global Accelerator uses the first port in the list.
-     */
     readonly healthCheckPort?: pulumi.Input<number>;
     /**
      * The protocol that AWS Global Accelerator uses to check the health of endpoints that are part of this endpoint group. The default value is TCP.
@@ -210,6 +219,10 @@ export interface EndpointGroupArgs {
      * The Amazon Resource Name (ARN) of the listener.
      */
     readonly listenerArn: pulumi.Input<string>;
+    /**
+     * Override specific listener ports used to route traffic to endpoints that are part of this endpoint group. Fields documented below.
+     */
+    readonly portOverrides?: pulumi.Input<pulumi.Input<inputs.globalaccelerator.EndpointGroupPortOverride>[]>;
     /**
      * The number of consecutive health checks required to set the state of a healthy endpoint to unhealthy, or to set an unhealthy endpoint to healthy. The default value is 3.
      */

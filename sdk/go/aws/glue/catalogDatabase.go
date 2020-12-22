@@ -4,6 +4,7 @@
 package glue
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
@@ -17,7 +18,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/glue"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/glue"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -32,6 +33,14 @@ import (
 // 		return nil
 // 	})
 // }
+// ```
+//
+// ## Import
+//
+// Glue Catalog Databases can be imported using the `catalog_id:name`. If you have not set a Catalog ID specify the AWS Account ID that the database is in, e.g.
+//
+// ```sh
+//  $ pulumi import aws:glue/catalogDatabase:CatalogDatabase database 123456789012:my_database
 // ```
 type CatalogDatabase struct {
 	pulumi.CustomResourceState
@@ -56,6 +65,7 @@ func NewCatalogDatabase(ctx *pulumi.Context,
 	if args == nil {
 		args = &CatalogDatabaseArgs{}
 	}
+
 	var resource CatalogDatabase
 	err := ctx.RegisterResource("aws:glue/catalogDatabase:CatalogDatabase", name, args, &resource, opts...)
 	if err != nil {
@@ -140,4 +150,43 @@ type CatalogDatabaseArgs struct {
 
 func (CatalogDatabaseArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*catalogDatabaseArgs)(nil)).Elem()
+}
+
+type CatalogDatabaseInput interface {
+	pulumi.Input
+
+	ToCatalogDatabaseOutput() CatalogDatabaseOutput
+	ToCatalogDatabaseOutputWithContext(ctx context.Context) CatalogDatabaseOutput
+}
+
+func (CatalogDatabase) ElementType() reflect.Type {
+	return reflect.TypeOf((*CatalogDatabase)(nil)).Elem()
+}
+
+func (i CatalogDatabase) ToCatalogDatabaseOutput() CatalogDatabaseOutput {
+	return i.ToCatalogDatabaseOutputWithContext(context.Background())
+}
+
+func (i CatalogDatabase) ToCatalogDatabaseOutputWithContext(ctx context.Context) CatalogDatabaseOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(CatalogDatabaseOutput)
+}
+
+type CatalogDatabaseOutput struct {
+	*pulumi.OutputState
+}
+
+func (CatalogDatabaseOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*CatalogDatabaseOutput)(nil)).Elem()
+}
+
+func (o CatalogDatabaseOutput) ToCatalogDatabaseOutput() CatalogDatabaseOutput {
+	return o
+}
+
+func (o CatalogDatabaseOutput) ToCatalogDatabaseOutputWithContext(ctx context.Context) CatalogDatabaseOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(CatalogDatabaseOutput{})
 }

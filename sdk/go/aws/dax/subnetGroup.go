@@ -4,6 +4,7 @@
 package dax
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -18,7 +19,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/dax"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/dax"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -26,8 +27,8 @@ import (
 // 	pulumi.Run(func(ctx *pulumi.Context) error {
 // 		_, err := dax.NewSubnetGroup(ctx, "example", &dax.SubnetGroupArgs{
 // 			SubnetIds: pulumi.StringArray{
-// 				pulumi.String(aws_subnet.Example1.Id),
-// 				pulumi.String(aws_subnet.Example2.Id),
+// 				pulumi.Any(aws_subnet.Example1.Id),
+// 				pulumi.Any(aws_subnet.Example2.Id),
 // 			},
 // 		})
 // 		if err != nil {
@@ -36,6 +37,14 @@ import (
 // 		return nil
 // 	})
 // }
+// ```
+//
+// ## Import
+//
+// DAX Subnet Group can be imported using the `name`, e.g.
+//
+// ```sh
+//  $ pulumi import aws:dax/subnetGroup:SubnetGroup example my_dax_sg
 // ```
 type SubnetGroup struct {
 	pulumi.CustomResourceState
@@ -53,11 +62,12 @@ type SubnetGroup struct {
 // NewSubnetGroup registers a new resource with the given unique name, arguments, and options.
 func NewSubnetGroup(ctx *pulumi.Context,
 	name string, args *SubnetGroupArgs, opts ...pulumi.ResourceOption) (*SubnetGroup, error) {
-	if args == nil || args.SubnetIds == nil {
-		return nil, errors.New("missing required argument 'SubnetIds'")
-	}
 	if args == nil {
-		args = &SubnetGroupArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.SubnetIds == nil {
+		return nil, errors.New("invalid value for required argument 'SubnetIds'")
 	}
 	var resource SubnetGroup
 	err := ctx.RegisterResource("aws:dax/subnetGroup:SubnetGroup", name, args, &resource, opts...)
@@ -127,4 +137,43 @@ type SubnetGroupArgs struct {
 
 func (SubnetGroupArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*subnetGroupArgs)(nil)).Elem()
+}
+
+type SubnetGroupInput interface {
+	pulumi.Input
+
+	ToSubnetGroupOutput() SubnetGroupOutput
+	ToSubnetGroupOutputWithContext(ctx context.Context) SubnetGroupOutput
+}
+
+func (SubnetGroup) ElementType() reflect.Type {
+	return reflect.TypeOf((*SubnetGroup)(nil)).Elem()
+}
+
+func (i SubnetGroup) ToSubnetGroupOutput() SubnetGroupOutput {
+	return i.ToSubnetGroupOutputWithContext(context.Background())
+}
+
+func (i SubnetGroup) ToSubnetGroupOutputWithContext(ctx context.Context) SubnetGroupOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(SubnetGroupOutput)
+}
+
+type SubnetGroupOutput struct {
+	*pulumi.OutputState
+}
+
+func (SubnetGroupOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*SubnetGroupOutput)(nil)).Elem()
+}
+
+func (o SubnetGroupOutput) ToSubnetGroupOutput() SubnetGroupOutput {
+	return o
+}
+
+func (o SubnetGroupOutput) ToSubnetGroupOutputWithContext(ctx context.Context) SubnetGroupOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(SubnetGroupOutput{})
 }

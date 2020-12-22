@@ -46,6 +46,14 @@ import {PolicyDocument, Role} from "./index";
  * `,
  * });
  * ```
+ *
+ * ## Import
+ *
+ * IAM Role Policies can be imported using the `role_name:role_policy_name`, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:iam/rolePolicy:RolePolicy mypolicy role_of_mypolicy_name:mypolicy_name
+ * ```
  */
 export class RolePolicy extends pulumi.CustomResource {
     /**
@@ -112,10 +120,10 @@ export class RolePolicy extends pulumi.CustomResource {
             inputs["role"] = state ? state.role : undefined;
         } else {
             const args = argsOrState as RolePolicyArgs | undefined;
-            if (!args || args.policy === undefined) {
+            if ((!args || args.policy === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'policy'");
             }
-            if (!args || args.role === undefined) {
+            if ((!args || args.role === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'role'");
             }
             inputs["name"] = args ? args.name : undefined;

@@ -2,8 +2,7 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 /**
@@ -17,18 +16,16 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * // Declare the data source
- * const s3 = pulumi.output(aws.ec2.getVpcEndpointService({
+ * const s3 = aws.ec2.getVpcEndpointService({
  *     service: "s3",
- * }, { async: true }));
- * // Create a VPC
- * const foo = new aws.ec2.Vpc("foo", {
- *     cidrBlock: "10.0.0.0/16",
+ *     serviceType: "Gateway",
  * });
+ * // Create a VPC
+ * const foo = new aws.ec2.Vpc("foo", {cidrBlock: "10.0.0.0/16"});
  * // Create a VPC endpoint
  * const ep = new aws.ec2.VpcEndpoint("ep", {
- *     serviceName: s3.serviceName!,
  *     vpcId: foo.id,
+ *     serviceName: s3.then(s3 => s3.serviceName),
  * });
  * ```
  * ### Non-AWS Service
@@ -68,6 +65,7 @@ export function getVpcEndpointService(args?: GetVpcEndpointServiceArgs, opts?: p
         "filters": args.filters,
         "service": args.service,
         "serviceName": args.serviceName,
+        "serviceType": args.serviceType,
         "tags": args.tags,
     }, opts);
 }
@@ -88,6 +86,10 @@ export interface GetVpcEndpointServiceArgs {
      * The service name that is specified when creating a VPC endpoint. For AWS services the service name is usually in the form `com.amazonaws.<region>.<service>` (the SageMaker Notebook service is an exception to this rule, the service name is in the form `aws.sagemaker.<region>.notebook`).
      */
     readonly serviceName?: string;
+    /**
+     * The service type, `Gateway` or `Interface`.
+     */
+    readonly serviceType?: string;
     /**
      * A map of tags, each pair of which must exactly match a pair on the desired VPC Endpoint Service.
      */
@@ -137,9 +139,6 @@ export interface GetVpcEndpointServiceResult {
      */
     readonly serviceId: string;
     readonly serviceName: string;
-    /**
-     * The service type, `Gateway` or `Interface`.
-     */
     readonly serviceType: string;
     /**
      * A map of tags assigned to the resource.

@@ -19,6 +19,14 @@ import * as utilities from "../utilities";
  *     url: "https://accounts.google.com",
  * });
  * ```
+ *
+ * ## Import
+ *
+ * IAM OpenID Connect Providers can be imported using the `arn`, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:iam/openIdConnectProvider:OpenIdConnectProvider default arn:aws:iam::123456789012:oidc-provider/accounts.google.com
+ * ```
  */
 export class OpenIdConnectProvider extends pulumi.CustomResource {
     /**
@@ -83,13 +91,13 @@ export class OpenIdConnectProvider extends pulumi.CustomResource {
             inputs["url"] = state ? state.url : undefined;
         } else {
             const args = argsOrState as OpenIdConnectProviderArgs | undefined;
-            if (!args || args.clientIdLists === undefined) {
+            if ((!args || args.clientIdLists === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'clientIdLists'");
             }
-            if (!args || args.thumbprintLists === undefined) {
+            if ((!args || args.thumbprintLists === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'thumbprintLists'");
             }
-            if (!args || args.url === undefined) {
+            if ((!args || args.url === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'url'");
             }
             inputs["clientIdLists"] = args ? args.clientIdLists : undefined;

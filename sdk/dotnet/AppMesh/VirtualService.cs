@@ -69,6 +69,16 @@ namespace Pulumi.Aws.AppMesh
     /// 
     /// }
     /// ```
+    /// 
+    /// ## Import
+    /// 
+    /// App Mesh virtual services can be imported using `mesh_name` together with the virtual service's `name`, e.g.
+    /// 
+    /// ```sh
+    ///  $ pulumi import aws:appmesh/virtualService:VirtualService servicea simpleapp/servicea.simpleapp.local
+    /// ```
+    /// 
+    ///  [1]/docs/providers/aws/index.html
     /// </summary>
     public partial class VirtualService : Pulumi.CustomResource
     {
@@ -91,16 +101,28 @@ namespace Pulumi.Aws.AppMesh
         public Output<string> LastUpdatedDate { get; private set; } = null!;
 
         /// <summary>
-        /// The name of the service mesh in which to create the virtual service.
+        /// The name of the service mesh in which to create the virtual service. Must be between 1 and 255 characters in length.
         /// </summary>
         [Output("meshName")]
         public Output<string> MeshName { get; private set; } = null!;
 
         /// <summary>
-        /// The name to use for the virtual service.
+        /// The AWS account ID of the service mesh's owner. Defaults to the account ID the [AWS provider](https://www.terraform.io/docs/providers/aws/index.html) is currently connected to.
+        /// </summary>
+        [Output("meshOwner")]
+        public Output<string> MeshOwner { get; private set; } = null!;
+
+        /// <summary>
+        /// The name to use for the virtual service. Must be between 1 and 255 characters in length.
         /// </summary>
         [Output("name")]
         public Output<string> Name { get; private set; } = null!;
+
+        /// <summary>
+        /// The resource owner's AWS account ID.
+        /// </summary>
+        [Output("resourceOwner")]
+        public Output<string> ResourceOwner { get; private set; } = null!;
 
         /// <summary>
         /// The virtual service specification to apply.
@@ -161,13 +183,19 @@ namespace Pulumi.Aws.AppMesh
     public sealed class VirtualServiceArgs : Pulumi.ResourceArgs
     {
         /// <summary>
-        /// The name of the service mesh in which to create the virtual service.
+        /// The name of the service mesh in which to create the virtual service. Must be between 1 and 255 characters in length.
         /// </summary>
         [Input("meshName", required: true)]
         public Input<string> MeshName { get; set; } = null!;
 
         /// <summary>
-        /// The name to use for the virtual service.
+        /// The AWS account ID of the service mesh's owner. Defaults to the account ID the [AWS provider](https://www.terraform.io/docs/providers/aws/index.html) is currently connected to.
+        /// </summary>
+        [Input("meshOwner")]
+        public Input<string>? MeshOwner { get; set; }
+
+        /// <summary>
+        /// The name to use for the virtual service. Must be between 1 and 255 characters in length.
         /// </summary>
         [Input("name")]
         public Input<string>? Name { get; set; }
@@ -216,16 +244,28 @@ namespace Pulumi.Aws.AppMesh
         public Input<string>? LastUpdatedDate { get; set; }
 
         /// <summary>
-        /// The name of the service mesh in which to create the virtual service.
+        /// The name of the service mesh in which to create the virtual service. Must be between 1 and 255 characters in length.
         /// </summary>
         [Input("meshName")]
         public Input<string>? MeshName { get; set; }
 
         /// <summary>
-        /// The name to use for the virtual service.
+        /// The AWS account ID of the service mesh's owner. Defaults to the account ID the [AWS provider](https://www.terraform.io/docs/providers/aws/index.html) is currently connected to.
+        /// </summary>
+        [Input("meshOwner")]
+        public Input<string>? MeshOwner { get; set; }
+
+        /// <summary>
+        /// The name to use for the virtual service. Must be between 1 and 255 characters in length.
         /// </summary>
         [Input("name")]
         public Input<string>? Name { get; set; }
+
+        /// <summary>
+        /// The resource owner's AWS account ID.
+        /// </summary>
+        [Input("resourceOwner")]
+        public Input<string>? ResourceOwner { get; set; }
 
         /// <summary>
         /// The virtual service specification to apply.

@@ -177,6 +177,14 @@ import {Topic} from "./index";
  *     provider: "aws.sns2sqs",
  * });
  * ```
+ *
+ * ## Import
+ *
+ * SNS Topic Subscriptions can be imported using the `subscription arn`, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:sns/topicSubscription:TopicSubscription user_updates_sqs_target arn:aws:sns:us-west-2:0123456789012:my-topic:8a21d249-4329-4871-acc6-7be709c6ea7f
+ * ```
  */
 export class TopicSubscription extends pulumi.CustomResource {
     /**
@@ -266,13 +274,13 @@ export class TopicSubscription extends pulumi.CustomResource {
             inputs["topic"] = state ? state.topic : undefined;
         } else {
             const args = argsOrState as TopicSubscriptionArgs | undefined;
-            if (!args || args.endpoint === undefined) {
+            if ((!args || args.endpoint === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'endpoint'");
             }
-            if (!args || args.protocol === undefined) {
+            if ((!args || args.protocol === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'protocol'");
             }
-            if (!args || args.topic === undefined) {
+            if ((!args || args.topic === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'topic'");
             }
             inputs["confirmationTimeoutInMinutes"] = args ? args.confirmationTimeoutInMinutes : undefined;

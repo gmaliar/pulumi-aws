@@ -2,8 +2,7 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 /**
@@ -18,7 +17,16 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const foo = pulumi.output(aws.kms.getKey({
+ * const byAlias = pulumi.output(aws.kms.getKey({
+ *     keyId: "alias/my-key",
+ * }, { async: true }));
+ * const byId = pulumi.output(aws.kms.getKey({
+ *     keyId: "1234abcd-12ab-34cd-56ef-1234567890ab",
+ * }, { async: true }));
+ * const byAliasArn = pulumi.output(aws.kms.getKey({
+ *     keyId: "arn:aws:kms:us-east-1:111122223333:alias/my-key",
+ * }, { async: true }));
+ * const byKeyArn = pulumi.output(aws.kms.getKey({
  *     keyId: "arn:aws:kms:us-east-1:111122223333:key/1234abcd-12ab-34cd-56ef-1234567890ab",
  * }, { async: true }));
  * ```

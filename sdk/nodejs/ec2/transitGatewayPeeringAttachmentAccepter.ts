@@ -14,11 +14,19 @@ import * as utilities from "../utilities";
  * import * as aws from "@pulumi/aws";
  *
  * const example = new aws.ec2.TransitGatewayPeeringAttachmentAccepter("example", {
+ *     transitGatewayAttachmentId: aws_ec2_transit_gateway_peering_attachment.example.id,
  *     tags: {
  *         Name: "Example cross-account attachment",
  *     },
- *     transitGatewayAttachmentId: aws_ec2_transit_gateway_peering_attachment_example.id,
  * });
+ * ```
+ *
+ * ## Import
+ *
+ * `aws_ec2_transit_gateway_peering_attachment_accepter` can be imported by using the EC2 Transit Gateway Attachment identifier, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:ec2/transitGatewayPeeringAttachmentAccepter:TransitGatewayPeeringAttachmentAccepter example tgw-attach-12345678
  * ```
  */
 export class TransitGatewayPeeringAttachmentAccepter extends pulumi.CustomResource {
@@ -91,7 +99,7 @@ export class TransitGatewayPeeringAttachmentAccepter extends pulumi.CustomResour
             inputs["transitGatewayId"] = state ? state.transitGatewayId : undefined;
         } else {
             const args = argsOrState as TransitGatewayPeeringAttachmentAccepterArgs | undefined;
-            if (!args || args.transitGatewayAttachmentId === undefined) {
+            if ((!args || args.transitGatewayAttachmentId === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'transitGatewayAttachmentId'");
             }
             inputs["tags"] = args ? args.tags : undefined;

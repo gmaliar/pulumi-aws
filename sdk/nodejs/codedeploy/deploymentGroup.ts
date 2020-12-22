@@ -2,8 +2,7 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 /**
@@ -17,8 +16,7 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const exampleRole = new aws.iam.Role("example", {
- *     assumeRolePolicy: `{
+ * const exampleRole = new aws.iam.Role("exampleRole", {assumeRolePolicy: `{
  *   "Version": "2012-10-17",
  *   "Statement": [
  *     {
@@ -31,25 +29,17 @@ import * as utilities from "../utilities";
  *     }
  *   ]
  * }
- * `,
- * });
- * const aWSCodeDeployRole = new aws.iam.RolePolicyAttachment("AWSCodeDeployRole", {
+ * `});
+ * const aWSCodeDeployRole = new aws.iam.RolePolicyAttachment("aWSCodeDeployRole", {
  *     policyArn: "arn:aws:iam::aws:policy/service-role/AWSCodeDeployRole",
  *     role: exampleRole.name,
  * });
- * const exampleApplication = new aws.codedeploy.Application("example", {});
- * const exampleTopic = new aws.sns.Topic("example", {});
- * const exampleDeploymentGroup = new aws.codedeploy.DeploymentGroup("example", {
- *     alarmConfiguration: {
- *         alarms: ["my-alarm-name"],
- *         enabled: true,
- *     },
+ * const exampleApplication = new aws.codedeploy.Application("exampleApplication", {});
+ * const exampleTopic = new aws.sns.Topic("exampleTopic", {});
+ * const exampleDeploymentGroup = new aws.codedeploy.DeploymentGroup("exampleDeploymentGroup", {
  *     appName: exampleApplication.name,
- *     autoRollbackConfiguration: {
- *         enabled: true,
- *         events: ["DEPLOYMENT_FAILURE"],
- *     },
  *     deploymentGroupName: "example-group",
+ *     serviceRoleArn: exampleRole.arn,
  *     ec2TagSets: [{
  *         ec2TagFilters: [
  *             {
@@ -64,12 +54,19 @@ import * as utilities from "../utilities";
  *             },
  *         ],
  *     }],
- *     serviceRoleArn: exampleRole.arn,
  *     triggerConfigurations: [{
  *         triggerEvents: ["DeploymentFailure"],
  *         triggerName: "example-trigger",
  *         triggerTargetArn: exampleTopic.arn,
  *     }],
+ *     autoRollbackConfiguration: {
+ *         enabled: true,
+ *         events: ["DEPLOYMENT_FAILURE"],
+ *     },
+ *     alarmConfiguration: {
+ *         alarms: ["my-alarm-name"],
+ *         enabled: true,
+ *     },
  * });
  * ```
  * ### Blue Green Deployments with ECS
@@ -78,11 +75,12 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const exampleApplication = new aws.codedeploy.Application("example", {
- *     computePlatform: "ECS",
- * });
- * const exampleDeploymentGroup = new aws.codedeploy.DeploymentGroup("example", {
+ * const exampleApplication = new aws.codedeploy.Application("exampleApplication", {computePlatform: "ECS"});
+ * const exampleDeploymentGroup = new aws.codedeploy.DeploymentGroup("exampleDeploymentGroup", {
  *     appName: exampleApplication.name,
+ *     deploymentConfigName: "CodeDeployDefault.ECSAllAtOnce",
+ *     deploymentGroupName: "example",
+ *     serviceRoleArn: aws_iam_role.example.arn,
  *     autoRollbackConfiguration: {
  *         enabled: true,
  *         events: ["DEPLOYMENT_FAILURE"],
@@ -96,32 +94,29 @@ import * as utilities from "../utilities";
  *             terminationWaitTimeInMinutes: 5,
  *         },
  *     },
- *     deploymentConfigName: "CodeDeployDefault.ECSAllAtOnce",
- *     deploymentGroupName: "example",
  *     deploymentStyle: {
  *         deploymentOption: "WITH_TRAFFIC_CONTROL",
  *         deploymentType: "BLUE_GREEN",
  *     },
  *     ecsService: {
- *         clusterName: aws_ecs_cluster_example.name,
- *         serviceName: aws_ecs_service_example.name,
+ *         clusterName: aws_ecs_cluster.example.name,
+ *         serviceName: aws_ecs_service.example.name,
  *     },
  *     loadBalancerInfo: {
  *         targetGroupPairInfo: {
  *             prodTrafficRoute: {
- *                 listenerArns: [aws_lb_listener_example.arn],
+ *                 listenerArns: [aws_lb_listener.example.arn],
  *             },
  *             targetGroups: [
  *                 {
- *                     name: aws_lb_target_group_blue.name,
+ *                     name: aws_lb_target_group.blue.name,
  *                 },
  *                 {
- *                     name: aws_lb_target_group_green.name,
+ *                     name: aws_lb_target_group.green.name,
  *                 },
  *             ],
  *         },
  *     },
- *     serviceRoleArn: aws_iam_role_example.arn,
  * });
  * ```
  * ### Blue Green Deployments with Servers and Classic ELB
@@ -130,9 +125,20 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const exampleApplication = new aws.codedeploy.Application("example", {});
- * const exampleDeploymentGroup = new aws.codedeploy.DeploymentGroup("example", {
+ * const exampleApplication = new aws.codedeploy.Application("exampleApplication", {});
+ * const exampleDeploymentGroup = new aws.codedeploy.DeploymentGroup("exampleDeploymentGroup", {
  *     appName: exampleApplication.name,
+ *     deploymentGroupName: "example-group",
+ *     serviceRoleArn: aws_iam_role.example.arn,
+ *     deploymentStyle: {
+ *         deploymentOption: "WITH_TRAFFIC_CONTROL",
+ *         deploymentType: "BLUE_GREEN",
+ *     },
+ *     loadBalancerInfo: {
+ *         elbInfos: [{
+ *             name: aws_elb.example.name,
+ *         }],
+ *     },
  *     blueGreenDeploymentConfig: {
  *         deploymentReadyOption: {
  *             actionOnTimeout: "STOP_DEPLOYMENT",
@@ -145,19 +151,18 @@ import * as utilities from "../utilities";
  *             action: "KEEP_ALIVE",
  *         },
  *     },
- *     deploymentGroupName: "example-group",
- *     deploymentStyle: {
- *         deploymentOption: "WITH_TRAFFIC_CONTROL",
- *         deploymentType: "BLUE_GREEN",
- *     },
- *     loadBalancerInfo: {
- *         elbInfos: [{
- *             name: aws_elb_example.name,
- *         }],
- *     },
- *     serviceRoleArn: aws_iam_role_example.arn,
  * });
  * ```
+ *
+ * ## Import
+ *
+ * CodeDeploy Deployment Groups can be imported by their `app_name`, a colon, and `deployment_group_name`, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:codedeploy/deploymentGroup:DeploymentGroup example my-application:my-deployment-group
+ * ```
+ *
+ *  [1]http://docs.aws.amazon.com/codedeploy/latest/userguide/monitoring-sns-event-notifications-create-trigger.html
  */
 export class DeploymentGroup extends pulumi.CustomResource {
     /**
@@ -277,13 +282,13 @@ export class DeploymentGroup extends pulumi.CustomResource {
             inputs["triggerConfigurations"] = state ? state.triggerConfigurations : undefined;
         } else {
             const args = argsOrState as DeploymentGroupArgs | undefined;
-            if (!args || args.appName === undefined) {
+            if ((!args || args.appName === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'appName'");
             }
-            if (!args || args.deploymentGroupName === undefined) {
+            if ((!args || args.deploymentGroupName === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'deploymentGroupName'");
             }
-            if (!args || args.serviceRoleArn === undefined) {
+            if ((!args || args.serviceRoleArn === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'serviceRoleArn'");
             }
             inputs["alarmConfiguration"] = args ? args.alarmConfiguration : undefined;

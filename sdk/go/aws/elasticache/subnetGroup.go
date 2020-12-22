@@ -4,6 +4,7 @@
 package elasticache
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -22,8 +23,8 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/ec2"
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/elasticache"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/ec2"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/elasticache"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -39,12 +40,12 @@ import (
 // 			return err
 // 		}
 // 		fooSubnet, err := ec2.NewSubnet(ctx, "fooSubnet", &ec2.SubnetArgs{
-// 			AvailabilityZone: pulumi.String("us-west-2a"),
+// 			VpcId:            fooVpc.ID(),
 // 			CidrBlock:        pulumi.String("10.0.0.0/24"),
+// 			AvailabilityZone: pulumi.String("us-west-2a"),
 // 			Tags: pulumi.StringMap{
 // 				"Name": pulumi.String("tf-test"),
 // 			},
-// 			VpcId: fooVpc.ID(),
 // 		})
 // 		if err != nil {
 // 			return err
@@ -61,6 +62,14 @@ import (
 // 	})
 // }
 // ```
+//
+// ## Import
+//
+// ElastiCache Subnet Groups can be imported using the `name`, e.g.
+//
+// ```sh
+//  $ pulumi import aws:elasticache/subnetGroup:SubnetGroup bar tf-test-cache-subnet
+// ```
 type SubnetGroup struct {
 	pulumi.CustomResourceState
 
@@ -75,11 +84,12 @@ type SubnetGroup struct {
 // NewSubnetGroup registers a new resource with the given unique name, arguments, and options.
 func NewSubnetGroup(ctx *pulumi.Context,
 	name string, args *SubnetGroupArgs, opts ...pulumi.ResourceOption) (*SubnetGroup, error) {
-	if args == nil || args.SubnetIds == nil {
-		return nil, errors.New("missing required argument 'SubnetIds'")
-	}
 	if args == nil {
-		args = &SubnetGroupArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.SubnetIds == nil {
+		return nil, errors.New("invalid value for required argument 'SubnetIds'")
 	}
 	if args.Description == nil {
 		args.Description = pulumi.StringPtr("Managed by Pulumi")
@@ -148,4 +158,43 @@ type SubnetGroupArgs struct {
 
 func (SubnetGroupArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*subnetGroupArgs)(nil)).Elem()
+}
+
+type SubnetGroupInput interface {
+	pulumi.Input
+
+	ToSubnetGroupOutput() SubnetGroupOutput
+	ToSubnetGroupOutputWithContext(ctx context.Context) SubnetGroupOutput
+}
+
+func (SubnetGroup) ElementType() reflect.Type {
+	return reflect.TypeOf((*SubnetGroup)(nil)).Elem()
+}
+
+func (i SubnetGroup) ToSubnetGroupOutput() SubnetGroupOutput {
+	return i.ToSubnetGroupOutputWithContext(context.Background())
+}
+
+func (i SubnetGroup) ToSubnetGroupOutputWithContext(ctx context.Context) SubnetGroupOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(SubnetGroupOutput)
+}
+
+type SubnetGroupOutput struct {
+	*pulumi.OutputState
+}
+
+func (SubnetGroupOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*SubnetGroupOutput)(nil)).Elem()
+}
+
+func (o SubnetGroupOutput) ToSubnetGroupOutput() SubnetGroupOutput {
+	return o
+}
+
+func (o SubnetGroupOutput) ToSubnetGroupOutputWithContext(ctx context.Context) SubnetGroupOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(SubnetGroupOutput{})
 }

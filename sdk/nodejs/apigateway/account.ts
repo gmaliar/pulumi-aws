@@ -2,8 +2,7 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 /**
@@ -17,8 +16,7 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const cloudwatchRole = new aws.iam.Role("cloudwatch", {
- *     assumeRolePolicy: `{
+ * const cloudwatchRole = new aws.iam.Role("cloudwatchRole", {assumeRolePolicy: `{
  *   "Version": "2012-10-17",
  *   "Statement": [
  *     {
@@ -31,12 +29,10 @@ import * as utilities from "../utilities";
  *     }
  *   ]
  * }
- * `,
- * });
- * const demo = new aws.apigateway.Account("demo", {
- *     cloudwatchRoleArn: cloudwatchRole.arn,
- * });
- * const cloudwatchRolePolicy = new aws.iam.RolePolicy("cloudwatch", {
+ * `});
+ * const demo = new aws.apigateway.Account("demo", {cloudwatchRoleArn: cloudwatchRole.arn});
+ * const cloudwatchRolePolicy = new aws.iam.RolePolicy("cloudwatchRolePolicy", {
+ *     role: cloudwatchRole.id,
  *     policy: `{
  *     "Version": "2012-10-17",
  *     "Statement": [
@@ -56,8 +52,15 @@ import * as utilities from "../utilities";
  *     ]
  * }
  * `,
- *     role: cloudwatchRole.id,
  * });
+ * ```
+ *
+ * ## Import
+ *
+ * API Gateway Accounts can be imported using the word `api-gateway-account`, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:apigateway/account:Account demo api-gateway-account
  * ```
  */
 export class Account extends pulumi.CustomResource {
@@ -89,9 +92,7 @@ export class Account extends pulumi.CustomResource {
     }
 
     /**
-     * The ARN of an IAM role for CloudWatch (to allow logging & monitoring).
-     * See more [in AWS Docs](https://docs.aws.amazon.com/apigateway/latest/developerguide/how-to-stage-settings.html#how-to-stage-settings-console).
-     * Logging & monitoring can be enabled/disabled and otherwise tuned on the API Gateway Stage level.
+     * The ARN of an IAM role for CloudWatch (to allow logging & monitoring). See more [in AWS Docs](https://docs.aws.amazon.com/apigateway/latest/developerguide/how-to-stage-settings.html#how-to-stage-settings-console). Logging & monitoring can be enabled/disabled and otherwise tuned on the API Gateway Stage level.
      */
     public readonly cloudwatchRoleArn!: pulumi.Output<string | undefined>;
     /**
@@ -134,9 +135,7 @@ export class Account extends pulumi.CustomResource {
  */
 export interface AccountState {
     /**
-     * The ARN of an IAM role for CloudWatch (to allow logging & monitoring).
-     * See more [in AWS Docs](https://docs.aws.amazon.com/apigateway/latest/developerguide/how-to-stage-settings.html#how-to-stage-settings-console).
-     * Logging & monitoring can be enabled/disabled and otherwise tuned on the API Gateway Stage level.
+     * The ARN of an IAM role for CloudWatch (to allow logging & monitoring). See more [in AWS Docs](https://docs.aws.amazon.com/apigateway/latest/developerguide/how-to-stage-settings.html#how-to-stage-settings-console). Logging & monitoring can be enabled/disabled and otherwise tuned on the API Gateway Stage level.
      */
     readonly cloudwatchRoleArn?: pulumi.Input<string>;
     /**
@@ -150,9 +149,7 @@ export interface AccountState {
  */
 export interface AccountArgs {
     /**
-     * The ARN of an IAM role for CloudWatch (to allow logging & monitoring).
-     * See more [in AWS Docs](https://docs.aws.amazon.com/apigateway/latest/developerguide/how-to-stage-settings.html#how-to-stage-settings-console).
-     * Logging & monitoring can be enabled/disabled and otherwise tuned on the API Gateway Stage level.
+     * The ARN of an IAM role for CloudWatch (to allow logging & monitoring). See more [in AWS Docs](https://docs.aws.amazon.com/apigateway/latest/developerguide/how-to-stage-settings.html#how-to-stage-settings-console). Logging & monitoring can be enabled/disabled and otherwise tuned on the API Gateway Stage level.
      */
     readonly cloudwatchRoleArn?: pulumi.Input<string>;
 }

@@ -2,8 +2,7 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 /**
@@ -28,9 +27,9 @@ import * as utilities from "../utilities";
  * import * as aws from "@pulumi/aws";
  *
  * const foo = new aws.ec2.VpcPeeringConnection("foo", {
- *     peerOwnerId: var_peer_owner_id,
- *     peerVpcId: aws_vpc_bar.id,
- *     vpcId: aws_vpc_foo.id,
+ *     peerOwnerId: _var.peer_owner_id,
+ *     peerVpcId: aws_vpc.bar.id,
+ *     vpcId: aws_vpc.foo.id,
  * });
  * ```
  *
@@ -41,15 +40,15 @@ import * as utilities from "../utilities";
  * import * as aws from "@pulumi/aws";
  *
  * const foo = new aws.ec2.VpcPeeringConnection("foo", {
+ *     peerOwnerId: _var.peer_owner_id,
+ *     peerVpcId: aws_vpc.bar.id,
+ *     vpcId: aws_vpc.foo.id,
  *     accepter: {
  *         allowRemoteVpcDnsResolution: true,
  *     },
- *     peerOwnerId: var_peer_owner_id,
- *     peerVpcId: aws_vpc_bar.id,
  *     requester: {
  *         allowRemoteVpcDnsResolution: true,
  *     },
- *     vpcId: aws_vpc_foo.id,
  * });
  * ```
  *
@@ -59,20 +58,16 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const fooVpc = new aws.ec2.Vpc("foo", {
- *     cidrBlock: "10.1.0.0/16",
- * });
- * const bar = new aws.ec2.Vpc("bar", {
- *     cidrBlock: "10.2.0.0/16",
- * });
- * const fooVpcPeeringConnection = new aws.ec2.VpcPeeringConnection("foo", {
- *     autoAccept: true,
- *     peerOwnerId: var_peer_owner_id,
+ * const fooVpc = new aws.ec2.Vpc("fooVpc", {cidrBlock: "10.1.0.0/16"});
+ * const bar = new aws.ec2.Vpc("bar", {cidrBlock: "10.2.0.0/16"});
+ * const fooVpcPeeringConnection = new aws.ec2.VpcPeeringConnection("fooVpcPeeringConnection", {
+ *     peerOwnerId: _var.peer_owner_id,
  *     peerVpcId: bar.id,
+ *     vpcId: fooVpc.id,
+ *     autoAccept: true,
  *     tags: {
  *         Name: "VPC Peering between foo and bar",
  *     },
- *     vpcId: fooVpc.id,
  * });
  * ```
  *
@@ -83,10 +78,10 @@ import * as utilities from "../utilities";
  * import * as aws from "@pulumi/aws";
  *
  * const fooVpc = new aws.ec2.Vpc("fooVpc", {cidrBlock: "10.1.0.0/16"}, {
- *     provider: "aws.us-west-2",
+ *     provider: aws["us-west-2"],
  * });
  * const bar = new aws.ec2.Vpc("bar", {cidrBlock: "10.2.0.0/16"}, {
- *     provider: "aws.us-east-1",
+ *     provider: aws["us-east-1"],
  * });
  * const fooVpcPeeringConnection = new aws.ec2.VpcPeeringConnection("fooVpcPeeringConnection", {
  *     peerOwnerId: _var.peer_owner_id,
@@ -100,6 +95,16 @@ import * as utilities from "../utilities";
  * If both VPCs are not in the same AWS account do not enable the `autoAccept` attribute.
  * The accepter can manage its side of the connection using the `aws.ec2.VpcPeeringConnectionAccepter` resource
  * or accept the connection manually using the AWS Management Console, AWS CLI, through SDKs, etc.
+ *
+ * ## Import
+ *
+ * VPC Peering resources can be imported using the `vpc peering id`, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:ec2/vpcPeeringConnection:VpcPeeringConnection test_connection pcx-111aaa111
+ * ```
+ *
+ *  [1]/docs/providers/aws/index.html
  */
 export class VpcPeeringConnection extends pulumi.CustomResource {
     /**
@@ -195,10 +200,10 @@ export class VpcPeeringConnection extends pulumi.CustomResource {
             inputs["vpcId"] = state ? state.vpcId : undefined;
         } else {
             const args = argsOrState as VpcPeeringConnectionArgs | undefined;
-            if (!args || args.peerVpcId === undefined) {
+            if ((!args || args.peerVpcId === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'peerVpcId'");
             }
-            if (!args || args.vpcId === undefined) {
+            if ((!args || args.vpcId === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'vpcId'");
             }
             inputs["accepter"] = args ? args.accepter : undefined;

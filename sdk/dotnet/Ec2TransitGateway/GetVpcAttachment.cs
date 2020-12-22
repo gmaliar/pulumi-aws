@@ -115,6 +115,10 @@ namespace Pulumi.Aws.Ec2TransitGateway
     public sealed class GetVpcAttachmentResult
     {
         /// <summary>
+        /// Whether Appliance Mode support is enabled.
+        /// </summary>
+        public readonly string ApplianceModeSupport;
+        /// <summary>
         /// Whether DNS support is enabled.
         /// </summary>
         public readonly string DnsSupport;
@@ -122,7 +126,7 @@ namespace Pulumi.Aws.Ec2TransitGateway
         /// <summary>
         /// EC2 Transit Gateway VPC Attachment identifier
         /// </summary>
-        public readonly string? Id;
+        public readonly string Id;
         /// <summary>
         /// Whether IPv6 support is enabled.
         /// </summary>
@@ -150,11 +154,13 @@ namespace Pulumi.Aws.Ec2TransitGateway
 
         [OutputConstructor]
         private GetVpcAttachmentResult(
+            string applianceModeSupport,
+
             string dnsSupport,
 
             ImmutableArray<Outputs.GetVpcAttachmentFilterResult> filters,
 
-            string? id,
+            string id,
 
             string ipv6Support,
 
@@ -168,6 +174,7 @@ namespace Pulumi.Aws.Ec2TransitGateway
 
             string vpcOwnerId)
         {
+            ApplianceModeSupport = applianceModeSupport;
             DnsSupport = dnsSupport;
             Filters = filters;
             Id = id;

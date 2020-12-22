@@ -4,6 +4,7 @@
 package applicationloadbalancing
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -20,8 +21,8 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/cognito"
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/lb"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/cognito"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/lb"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -36,10 +37,12 @@ import (
 // 			return err
 // 		}
 // 		_, err = lb.NewListenerRule(ctx, "static", &lb.ListenerRuleArgs{
+// 			ListenerArn: frontEndListener.Arn,
+// 			Priority:    pulumi.Int(100),
 // 			Actions: lb.ListenerRuleActionArray{
 // 				&lb.ListenerRuleActionArgs{
-// 					TargetGroupArn: pulumi.String(aws_lb_target_group.Static.Arn),
 // 					Type:           pulumi.String("forward"),
+// 					TargetGroupArn: pulumi.Any(aws_lb_target_group.Static.Arn),
 // 				},
 // 			},
 // 			Conditions: lb.ListenerRuleConditionArray{
@@ -58,32 +61,17 @@ import (
 // 					},
 // 				},
 // 			},
-// 			ListenerArn: frontEndListener.Arn,
-// 			Priority:    pulumi.Int(100),
 // 		})
 // 		if err != nil {
 // 			return err
 // 		}
-// 		_, err = lb.NewListenerRule(ctx, "hostBasedRouting", &lb.ListenerRuleArgs{
+// 		_, err = lb.NewListenerRule(ctx, "hostBasedWeightedRouting", &lb.ListenerRuleArgs{
+// 			ListenerArn: frontEndListener.Arn,
+// 			Priority:    pulumi.Int(99),
 // 			Actions: lb.ListenerRuleActionArray{
 // 				&lb.ListenerRuleActionArgs{
-// 					Forward: &lb.ListenerRuleActionForwardArgs{
-// 						Stickiness: &lb.ListenerRuleActionForwardStickinessArgs{
-// 							Duration: pulumi.Int(600),
-// 							Enabled:  pulumi.Bool(true),
-// 						},
-// 						TargetGroup: pulumi.MapArray{
-// 							pulumi.Map{
-// 								"arn":    pulumi.String(aws_lb_target_group.Main.Arn),
-// 								"weight": pulumi.Float64(80),
-// 							},
-// 							pulumi.Map{
-// 								"arn":    pulumi.String(aws_lb_target_group.Canary.Arn),
-// 								"weight": pulumi.Float64(20),
-// 							},
-// 						},
-// 					},
-// 					Type: pulumi.String("forward"),
+// 					Type:           pulumi.String("forward"),
+// 					TargetGroupArn: pulumi.Any(aws_lb_target_group.Static.Arn),
 // 				},
 // 			},
 // 			Conditions: lb.ListenerRuleConditionArray{
@@ -95,43 +83,57 @@ import (
 // 					},
 // 				},
 // 			},
-// 			ListenerArn: frontEndListener.Arn,
-// 			Priority:    pulumi.Int(99),
 // 		})
 // 		if err != nil {
 // 			return err
 // 		}
-// 		_, err = lb.NewListenerRule(ctx, "hostBasedWeightedRouting", &lb.ListenerRuleArgs{
+// 		_, err = lb.NewListenerRule(ctx, "hostBasedRouting", &lb.ListenerRuleArgs{
+// 			ListenerArn: frontEndListener.Arn,
+// 			Priority:    pulumi.Int(99),
 // 			Actions: lb.ListenerRuleActionArray{
 // 				&lb.ListenerRuleActionArgs{
-// 					TargetGroupArn: pulumi.String(aws_lb_target_group.Static.Arn),
-// 					Type:           pulumi.String("forward"),
+// 					Type: pulumi.String("forward"),
+// 					Forward: &lb.ListenerRuleActionForwardArgs{
+// 						TargetGroups: lb.ListenerRuleActionForwardTargetGroupArray{
+// 							&lb.ListenerRuleActionForwardTargetGroupArgs{
+// 								Arn:    pulumi.Any(aws_lb_target_group.Main.Arn),
+// 								Weight: pulumi.Int(80),
+// 							},
+// 							&lb.ListenerRuleActionForwardTargetGroupArgs{
+// 								Arn:    pulumi.Any(aws_lb_target_group.Canary.Arn),
+// 								Weight: pulumi.Int(20),
+// 							},
+// 						},
+// 						Stickiness: &lb.ListenerRuleActionForwardStickinessArgs{
+// 							Enabled:  pulumi.Bool(true),
+// 							Duration: pulumi.Int(600),
+// 						},
+// 					},
 // 				},
 // 			},
 // 			Conditions: lb.ListenerRuleConditionArray{
 // 				&lb.ListenerRuleConditionArgs{
 // 					HostHeader: &lb.ListenerRuleConditionHostHeaderArgs{
 // 						Values: pulumi.StringArray{
-// 							pulumi.String("my-service.*.mydomain.io"),
+// 							pulumi.String("my-service.*.mycompany.io"),
 // 						},
 // 					},
 // 				},
 // 			},
-// 			ListenerArn: frontEndListener.Arn,
-// 			Priority:    pulumi.Int(99),
 // 		})
 // 		if err != nil {
 // 			return err
 // 		}
 // 		_, err = lb.NewListenerRule(ctx, "redirectHttpToHttps", &lb.ListenerRuleArgs{
+// 			ListenerArn: frontEndListener.Arn,
 // 			Actions: lb.ListenerRuleActionArray{
 // 				&lb.ListenerRuleActionArgs{
+// 					Type: pulumi.String("redirect"),
 // 					Redirect: &lb.ListenerRuleActionRedirectArgs{
 // 						Port:       pulumi.String("443"),
 // 						Protocol:   pulumi.String("HTTPS"),
 // 						StatusCode: pulumi.String("HTTP_301"),
 // 					},
-// 					Type: pulumi.String("redirect"),
 // 				},
 // 			},
 // 			Conditions: lb.ListenerRuleConditionArray{
@@ -144,20 +146,20 @@ import (
 // 					},
 // 				},
 // 			},
-// 			ListenerArn: frontEndListener.Arn,
 // 		})
 // 		if err != nil {
 // 			return err
 // 		}
 // 		_, err = lb.NewListenerRule(ctx, "healthCheck", &lb.ListenerRuleArgs{
+// 			ListenerArn: frontEndListener.Arn,
 // 			Actions: lb.ListenerRuleActionArray{
 // 				&lb.ListenerRuleActionArgs{
+// 					Type: pulumi.String("fixed-response"),
 // 					FixedResponse: &lb.ListenerRuleActionFixedResponseArgs{
 // 						ContentType: pulumi.String("text/plain"),
 // 						MessageBody: pulumi.String("HEALTHY"),
 // 						StatusCode:  pulumi.String("200"),
 // 					},
-// 					Type: pulumi.String("fixed-response"),
 // 				},
 // 			},
 // 			Conditions: lb.ListenerRuleConditionArray{
@@ -173,26 +175,47 @@ import (
 // 					},
 // 				},
 // 			},
-// 			ListenerArn: frontEndListener.Arn,
 // 		})
 // 		if err != nil {
 // 			return err
 // 		}
-// 		_, err = cognito.NewUserPool(ctx, "pool", nil)
+// 		pool, err := cognito.NewUserPool(ctx, "pool", nil)
 // 		if err != nil {
 // 			return err
 // 		}
-// 		_, err = cognito.NewUserPoolClient(ctx, "client", nil)
+// 		client, err := cognito.NewUserPoolClient(ctx, "client", nil)
 // 		if err != nil {
 // 			return err
 // 		}
-// 		_, err = cognito.NewUserPoolDomain(ctx, "domain", nil)
+// 		domain, err := cognito.NewUserPoolDomain(ctx, "domain", nil)
 // 		if err != nil {
 // 			return err
 // 		}
 // 		_, err = lb.NewListenerRule(ctx, "admin", &lb.ListenerRuleArgs{
+// 			ListenerArn: frontEndListener.Arn,
 // 			Actions: lb.ListenerRuleActionArray{
 // 				&lb.ListenerRuleActionArgs{
+// 					Type: pulumi.String("authenticate-cognito"),
+// 					AuthenticateCognito: &lb.ListenerRuleActionAuthenticateCognitoArgs{
+// 						UserPoolArn:      pool.Arn,
+// 						UserPoolClientId: client.ID(),
+// 						UserPoolDomain:   domain.Domain,
+// 					},
+// 				},
+// 				&lb.ListenerRuleActionArgs{
+// 					Type:           pulumi.String("forward"),
+// 					TargetGroupArn: pulumi.Any(aws_lb_target_group.Static.Arn),
+// 				},
+// 			},
+// 		})
+// 		if err != nil {
+// 			return err
+// 		}
+// 		_, err = lb.NewListenerRule(ctx, "oidc", &lb.ListenerRuleArgs{
+// 			ListenerArn: frontEndListener.Arn,
+// 			Actions: lb.ListenerRuleActionArray{
+// 				&lb.ListenerRuleActionArgs{
+// 					Type: pulumi.String("authenticate-oidc"),
 // 					AuthenticateOidc: &lb.ListenerRuleActionAuthenticateOidcArgs{
 // 						AuthorizationEndpoint: pulumi.String("https://example.com/authorization_endpoint"),
 // 						ClientId:              pulumi.String("client_id"),
@@ -201,14 +224,12 @@ import (
 // 						TokenEndpoint:         pulumi.String("https://example.com/token_endpoint"),
 // 						UserInfoEndpoint:      pulumi.String("https://example.com/user_info_endpoint"),
 // 					},
-// 					Type: pulumi.String("authenticate-oidc"),
 // 				},
 // 				&lb.ListenerRuleActionArgs{
-// 					TargetGroupArn: pulumi.String(aws_lb_target_group.Static.Arn),
 // 					Type:           pulumi.String("forward"),
+// 					TargetGroupArn: pulumi.Any(aws_lb_target_group.Static.Arn),
 // 				},
 // 			},
-// 			ListenerArn: frontEndListener.Arn,
 // 		})
 // 		if err != nil {
 // 			return err
@@ -216,6 +237,14 @@ import (
 // 		return nil
 // 	})
 // }
+// ```
+//
+// ## Import
+//
+// Rules can be imported using their ARN, e.g.
+//
+// ```sh
+//  $ pulumi import aws:applicationloadbalancing/listenerRule:ListenerRule front_end arn:aws:elasticloadbalancing:us-west-2:187416307283:listener-rule/app/test/8e4497da625e2d8a/9ab28ade35828f96/67b3d2d36dd7c26b
 // ```
 //
 // Deprecated: aws.applicationloadbalancing.ListenerRule has been deprecated in favor of aws.alb.ListenerRule
@@ -237,17 +266,18 @@ type ListenerRule struct {
 // NewListenerRule registers a new resource with the given unique name, arguments, and options.
 func NewListenerRule(ctx *pulumi.Context,
 	name string, args *ListenerRuleArgs, opts ...pulumi.ResourceOption) (*ListenerRule, error) {
-	if args == nil || args.Actions == nil {
-		return nil, errors.New("missing required argument 'Actions'")
-	}
-	if args == nil || args.Conditions == nil {
-		return nil, errors.New("missing required argument 'Conditions'")
-	}
-	if args == nil || args.ListenerArn == nil {
-		return nil, errors.New("missing required argument 'ListenerArn'")
-	}
 	if args == nil {
-		args = &ListenerRuleArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.Actions == nil {
+		return nil, errors.New("invalid value for required argument 'Actions'")
+	}
+	if args.Conditions == nil {
+		return nil, errors.New("invalid value for required argument 'Conditions'")
+	}
+	if args.ListenerArn == nil {
+		return nil, errors.New("invalid value for required argument 'ListenerArn'")
 	}
 	var resource ListenerRule
 	err := ctx.RegisterResource("aws:applicationloadbalancing/listenerRule:ListenerRule", name, args, &resource, opts...)
@@ -325,4 +355,43 @@ type ListenerRuleArgs struct {
 
 func (ListenerRuleArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*listenerRuleArgs)(nil)).Elem()
+}
+
+type ListenerRuleInput interface {
+	pulumi.Input
+
+	ToListenerRuleOutput() ListenerRuleOutput
+	ToListenerRuleOutputWithContext(ctx context.Context) ListenerRuleOutput
+}
+
+func (ListenerRule) ElementType() reflect.Type {
+	return reflect.TypeOf((*ListenerRule)(nil)).Elem()
+}
+
+func (i ListenerRule) ToListenerRuleOutput() ListenerRuleOutput {
+	return i.ToListenerRuleOutputWithContext(context.Background())
+}
+
+func (i ListenerRule) ToListenerRuleOutputWithContext(ctx context.Context) ListenerRuleOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(ListenerRuleOutput)
+}
+
+type ListenerRuleOutput struct {
+	*pulumi.OutputState
+}
+
+func (ListenerRuleOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*ListenerRuleOutput)(nil)).Elem()
+}
+
+func (o ListenerRuleOutput) ToListenerRuleOutput() ListenerRuleOutput {
+	return o
+}
+
+func (o ListenerRuleOutput) ToListenerRuleOutputWithContext(ctx context.Context) ListenerRuleOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(ListenerRuleOutput{})
 }

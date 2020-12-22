@@ -4,6 +4,7 @@
 package apigatewayv2
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -21,7 +22,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/apigatewayv2"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/apigatewayv2"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -29,7 +30,7 @@ import (
 // 	pulumi.Run(func(ctx *pulumi.Context) error {
 // 		_, err := apigatewayv2.NewVpcLink(ctx, "example", &apigatewayv2.VpcLinkArgs{
 // 			SecurityGroupIds: pulumi.StringArray{
-// 				pulumi.String(data.Aws_security_group.Example.Id),
+// 				pulumi.Any(data.Aws_security_group.Example.Id),
 // 			},
 // 			SubnetIds: data.Aws_subnet_ids.Example.Ids,
 // 			Tags: pulumi.StringMap{
@@ -43,12 +44,20 @@ import (
 // 	})
 // }
 // ```
+//
+// ## Import
+//
+// `aws_apigatewayv2_vpc_link` can be imported by using the VPC Link identifier, e.g.
+//
+// ```sh
+//  $ pulumi import aws:apigatewayv2/vpcLink:VpcLink example aabbccddee
+// ```
 type VpcLink struct {
 	pulumi.CustomResourceState
 
 	// The VPC Link ARN.
 	Arn pulumi.StringOutput `pulumi:"arn"`
-	// The name of the VPC Link.
+	// The name of the VPC Link. Must be between 1 and 128 characters in length.
 	Name pulumi.StringOutput `pulumi:"name"`
 	// Security group IDs for the VPC Link.
 	SecurityGroupIds pulumi.StringArrayOutput `pulumi:"securityGroupIds"`
@@ -61,14 +70,15 @@ type VpcLink struct {
 // NewVpcLink registers a new resource with the given unique name, arguments, and options.
 func NewVpcLink(ctx *pulumi.Context,
 	name string, args *VpcLinkArgs, opts ...pulumi.ResourceOption) (*VpcLink, error) {
-	if args == nil || args.SecurityGroupIds == nil {
-		return nil, errors.New("missing required argument 'SecurityGroupIds'")
-	}
-	if args == nil || args.SubnetIds == nil {
-		return nil, errors.New("missing required argument 'SubnetIds'")
-	}
 	if args == nil {
-		args = &VpcLinkArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.SecurityGroupIds == nil {
+		return nil, errors.New("invalid value for required argument 'SecurityGroupIds'")
+	}
+	if args.SubnetIds == nil {
+		return nil, errors.New("invalid value for required argument 'SubnetIds'")
 	}
 	var resource VpcLink
 	err := ctx.RegisterResource("aws:apigatewayv2/vpcLink:VpcLink", name, args, &resource, opts...)
@@ -94,7 +104,7 @@ func GetVpcLink(ctx *pulumi.Context,
 type vpcLinkState struct {
 	// The VPC Link ARN.
 	Arn *string `pulumi:"arn"`
-	// The name of the VPC Link.
+	// The name of the VPC Link. Must be between 1 and 128 characters in length.
 	Name *string `pulumi:"name"`
 	// Security group IDs for the VPC Link.
 	SecurityGroupIds []string `pulumi:"securityGroupIds"`
@@ -107,7 +117,7 @@ type vpcLinkState struct {
 type VpcLinkState struct {
 	// The VPC Link ARN.
 	Arn pulumi.StringPtrInput
-	// The name of the VPC Link.
+	// The name of the VPC Link. Must be between 1 and 128 characters in length.
 	Name pulumi.StringPtrInput
 	// Security group IDs for the VPC Link.
 	SecurityGroupIds pulumi.StringArrayInput
@@ -122,7 +132,7 @@ func (VpcLinkState) ElementType() reflect.Type {
 }
 
 type vpcLinkArgs struct {
-	// The name of the VPC Link.
+	// The name of the VPC Link. Must be between 1 and 128 characters in length.
 	Name *string `pulumi:"name"`
 	// Security group IDs for the VPC Link.
 	SecurityGroupIds []string `pulumi:"securityGroupIds"`
@@ -134,7 +144,7 @@ type vpcLinkArgs struct {
 
 // The set of arguments for constructing a VpcLink resource.
 type VpcLinkArgs struct {
-	// The name of the VPC Link.
+	// The name of the VPC Link. Must be between 1 and 128 characters in length.
 	Name pulumi.StringPtrInput
 	// Security group IDs for the VPC Link.
 	SecurityGroupIds pulumi.StringArrayInput
@@ -146,4 +156,43 @@ type VpcLinkArgs struct {
 
 func (VpcLinkArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*vpcLinkArgs)(nil)).Elem()
+}
+
+type VpcLinkInput interface {
+	pulumi.Input
+
+	ToVpcLinkOutput() VpcLinkOutput
+	ToVpcLinkOutputWithContext(ctx context.Context) VpcLinkOutput
+}
+
+func (VpcLink) ElementType() reflect.Type {
+	return reflect.TypeOf((*VpcLink)(nil)).Elem()
+}
+
+func (i VpcLink) ToVpcLinkOutput() VpcLinkOutput {
+	return i.ToVpcLinkOutputWithContext(context.Background())
+}
+
+func (i VpcLink) ToVpcLinkOutputWithContext(ctx context.Context) VpcLinkOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(VpcLinkOutput)
+}
+
+type VpcLinkOutput struct {
+	*pulumi.OutputState
+}
+
+func (VpcLinkOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*VpcLinkOutput)(nil)).Elem()
+}
+
+func (o VpcLinkOutput) ToVpcLinkOutput() VpcLinkOutput {
+	return o
+}
+
+func (o VpcLinkOutput) ToVpcLinkOutputWithContext(ctx context.Context) VpcLinkOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(VpcLinkOutput{})
 }

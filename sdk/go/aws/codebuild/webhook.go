@@ -4,6 +4,7 @@
 package codebuild
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -25,28 +26,28 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/codebuild"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/codebuild"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
 // func main() {
 // 	pulumi.Run(func(ctx *pulumi.Context) error {
 // 		_, err := codebuild.NewWebhook(ctx, "example", &codebuild.WebhookArgs{
+// 			ProjectName: pulumi.Any(aws_codebuild_project.Example.Name),
 // 			FilterGroups: codebuild.WebhookFilterGroupArray{
 // 				&codebuild.WebhookFilterGroupArgs{
 // 					Filters: codebuild.WebhookFilterGroupFilterArray{
 // 						&codebuild.WebhookFilterGroupFilterArgs{
-// 							Pattern: pulumi.String("PUSH"),
 // 							Type:    pulumi.String("EVENT"),
+// 							Pattern: pulumi.String("PUSH"),
 // 						},
 // 						&codebuild.WebhookFilterGroupFilterArgs{
-// 							Pattern: pulumi.String("master"),
 // 							Type:    pulumi.String("HEAD_REF"),
+// 							Pattern: pulumi.String("master"),
 // 						},
 // 					},
 // 				},
 // 			},
-// 			ProjectName: pulumi.String(aws_codebuild_project.Example.Name),
 // 		})
 // 		if err != nil {
 // 			return err
@@ -65,7 +66,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/codebuild"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/codebuild"
 // 	"github.com/pulumi/pulumi-github/sdk/go/github"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
@@ -73,23 +74,23 @@ import (
 // func main() {
 // 	pulumi.Run(func(ctx *pulumi.Context) error {
 // 		exampleWebhook, err := codebuild.NewWebhook(ctx, "exampleWebhook", &codebuild.WebhookArgs{
-// 			ProjectName: pulumi.String(aws_codebuild_project.Example.Name),
+// 			ProjectName: pulumi.Any(aws_codebuild_project.Example.Name),
 // 		})
 // 		if err != nil {
 // 			return err
 // 		}
 // 		_, err = github.NewRepositoryWebhook(ctx, "exampleRepositoryWebhook", &github.RepositoryWebhookArgs{
 // 			Active: pulumi.Bool(true),
-// 			Configuration: &github.RepositoryWebhookConfigurationArgs{
-// 				ContentType: pulumi.String("json"),
-// 				InsecureSsl: pulumi.Bool(false),
-// 				Secret:      exampleWebhook.Secret,
-// 				Url:         exampleWebhook.PayloadUrl,
-// 			},
 // 			Events: pulumi.StringArray{
 // 				pulumi.String("push"),
 // 			},
-// 			Repository: pulumi.String(github_repository.Example.Name),
+// 			Repository: pulumi.Any(github_repository.Example.Name),
+// 			Configuration: &github.RepositoryWebhookConfigurationArgs{
+// 				Url:         exampleWebhook.PayloadUrl,
+// 				Secret:      exampleWebhook.Secret,
+// 				ContentType: pulumi.String("json"),
+// 				InsecureSsl: pulumi.Bool(false),
+// 			},
 // 		})
 // 		if err != nil {
 // 			return err
@@ -97,6 +98,14 @@ import (
 // 		return nil
 // 	})
 // }
+// ```
+//
+// ## Import
+//
+// CodeBuild Webhooks can be imported using the CodeBuild Project name, e.g.
+//
+// ```sh
+//  $ pulumi import aws:codebuild/webhook:Webhook example MyProjectName
 // ```
 type Webhook struct {
 	pulumi.CustomResourceState
@@ -118,11 +127,12 @@ type Webhook struct {
 // NewWebhook registers a new resource with the given unique name, arguments, and options.
 func NewWebhook(ctx *pulumi.Context,
 	name string, args *WebhookArgs, opts ...pulumi.ResourceOption) (*Webhook, error) {
-	if args == nil || args.ProjectName == nil {
-		return nil, errors.New("missing required argument 'ProjectName'")
-	}
 	if args == nil {
-		args = &WebhookArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.ProjectName == nil {
+		return nil, errors.New("invalid value for required argument 'ProjectName'")
 	}
 	var resource Webhook
 	err := ctx.RegisterResource("aws:codebuild/webhook:Webhook", name, args, &resource, opts...)
@@ -200,4 +210,43 @@ type WebhookArgs struct {
 
 func (WebhookArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*webhookArgs)(nil)).Elem()
+}
+
+type WebhookInput interface {
+	pulumi.Input
+
+	ToWebhookOutput() WebhookOutput
+	ToWebhookOutputWithContext(ctx context.Context) WebhookOutput
+}
+
+func (Webhook) ElementType() reflect.Type {
+	return reflect.TypeOf((*Webhook)(nil)).Elem()
+}
+
+func (i Webhook) ToWebhookOutput() WebhookOutput {
+	return i.ToWebhookOutputWithContext(context.Background())
+}
+
+func (i Webhook) ToWebhookOutputWithContext(ctx context.Context) WebhookOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(WebhookOutput)
+}
+
+type WebhookOutput struct {
+	*pulumi.OutputState
+}
+
+func (WebhookOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*WebhookOutput)(nil)).Elem()
+}
+
+func (o WebhookOutput) ToWebhookOutput() WebhookOutput {
+	return o
+}
+
+func (o WebhookOutput) ToWebhookOutputWithContext(ctx context.Context) WebhookOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(WebhookOutput{})
 }

@@ -32,22 +32,30 @@ import * as utilities from "../utilities";
  *         ],
  *         conditions: [{
  *             test: "StringEquals",
- *             values: [var_account_id],
  *             variable: "AWS:SourceOwner",
+ *             values: [_var["account-id"]],
  *         }],
  *         effect: "Allow",
  *         principals: [{
- *             identifiers: ["*"],
  *             type: "AWS",
+ *             identifiers: ["*"],
  *         }],
  *         resources: [arn],
  *         sid: "__default_statement_ID",
  *     }],
- * }, { async: true }));
- * const defaultTopicPolicy = new aws.sns.TopicPolicy("default", {
+ * }));
+ * const _default = new aws.sns.TopicPolicy("default", {
  *     arn: test.arn,
  *     policy: snsTopicPolicy.json,
  * });
+ * ```
+ *
+ * ## Import
+ *
+ * SNS Topic Policy can be imported using the topic ARN, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:sns/topicPolicy:TopicPolicy user_updates arn:aws:sns:us-west-2:0123456789012:my-topic
  * ```
  */
 export class TopicPolicy extends pulumi.CustomResource {
@@ -103,10 +111,10 @@ export class TopicPolicy extends pulumi.CustomResource {
             inputs["policy"] = state ? state.policy : undefined;
         } else {
             const args = argsOrState as TopicPolicyArgs | undefined;
-            if (!args || args.arn === undefined) {
+            if ((!args || args.arn === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'arn'");
             }
-            if (!args || args.policy === undefined) {
+            if ((!args || args.policy === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'policy'");
             }
             inputs["arn"] = args ? args.arn : undefined;

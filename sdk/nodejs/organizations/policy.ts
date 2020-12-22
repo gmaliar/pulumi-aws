@@ -25,6 +25,14 @@ import * as utilities from "../utilities";
  * `,
  * });
  * ```
+ *
+ * ## Import
+ *
+ * `aws_organizations_policy` can be imported by using the policy ID, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:organizations/policy:Policy example p-12345678
+ * ```
  */
 export class Policy extends pulumi.CustomResource {
     /**
@@ -71,7 +79,11 @@ export class Policy extends pulumi.CustomResource {
      */
     public readonly name!: pulumi.Output<string>;
     /**
-     * The type of policy to create. Valid values are `BACKUP_POLICY`, `SERVICE_CONTROL_POLICY` (SCP), and `TAG_POLICY`. Defaults to `SERVICE_CONTROL_POLICY`.
+     * Key-value map of resource tags.
+     */
+    public readonly tags!: pulumi.Output<{[key: string]: string} | undefined>;
+    /**
+     * The type of policy to create. Valid values are `AISERVICES_OPT_OUT_POLICY`, `BACKUP_POLICY`, `SERVICE_CONTROL_POLICY` (SCP), and `TAG_POLICY`. Defaults to `SERVICE_CONTROL_POLICY`.
      */
     public readonly type!: pulumi.Output<string | undefined>;
 
@@ -91,15 +103,17 @@ export class Policy extends pulumi.CustomResource {
             inputs["content"] = state ? state.content : undefined;
             inputs["description"] = state ? state.description : undefined;
             inputs["name"] = state ? state.name : undefined;
+            inputs["tags"] = state ? state.tags : undefined;
             inputs["type"] = state ? state.type : undefined;
         } else {
             const args = argsOrState as PolicyArgs | undefined;
-            if (!args || args.content === undefined) {
+            if ((!args || args.content === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'content'");
             }
             inputs["content"] = args ? args.content : undefined;
             inputs["description"] = args ? args.description : undefined;
             inputs["name"] = args ? args.name : undefined;
+            inputs["tags"] = args ? args.tags : undefined;
             inputs["type"] = args ? args.type : undefined;
             inputs["arn"] = undefined /*out*/;
         }
@@ -135,7 +149,11 @@ export interface PolicyState {
      */
     readonly name?: pulumi.Input<string>;
     /**
-     * The type of policy to create. Valid values are `BACKUP_POLICY`, `SERVICE_CONTROL_POLICY` (SCP), and `TAG_POLICY`. Defaults to `SERVICE_CONTROL_POLICY`.
+     * Key-value map of resource tags.
+     */
+    readonly tags?: pulumi.Input<{[key: string]: pulumi.Input<string>}>;
+    /**
+     * The type of policy to create. Valid values are `AISERVICES_OPT_OUT_POLICY`, `BACKUP_POLICY`, `SERVICE_CONTROL_POLICY` (SCP), and `TAG_POLICY`. Defaults to `SERVICE_CONTROL_POLICY`.
      */
     readonly type?: pulumi.Input<string>;
 }
@@ -157,7 +175,11 @@ export interface PolicyArgs {
      */
     readonly name?: pulumi.Input<string>;
     /**
-     * The type of policy to create. Valid values are `BACKUP_POLICY`, `SERVICE_CONTROL_POLICY` (SCP), and `TAG_POLICY`. Defaults to `SERVICE_CONTROL_POLICY`.
+     * Key-value map of resource tags.
+     */
+    readonly tags?: pulumi.Input<{[key: string]: pulumi.Input<string>}>;
+    /**
+     * The type of policy to create. Valid values are `AISERVICES_OPT_OUT_POLICY`, `BACKUP_POLICY`, `SERVICE_CONTROL_POLICY` (SCP), and `TAG_POLICY`. Defaults to `SERVICE_CONTROL_POLICY`.
      */
     readonly type?: pulumi.Input<string>;
 }

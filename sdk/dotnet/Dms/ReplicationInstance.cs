@@ -101,6 +101,14 @@ namespace Pulumi.Aws.Dms
     /// 
     /// }
     /// ```
+    /// 
+    /// ## Import
+    /// 
+    /// Replication instances can be imported using the `replication_instance_id`, e.g.
+    /// 
+    /// ```sh
+    ///  $ pulumi import aws:dms/replicationInstance:ReplicationInstance test test-dms-replication-instance-tf
+    /// ```
     /// </summary>
     public partial class ReplicationInstance : Pulumi.CustomResource
     {
@@ -109,6 +117,12 @@ namespace Pulumi.Aws.Dms
         /// </summary>
         [Output("allocatedStorage")]
         public Output<int> AllocatedStorage { get; private set; } = null!;
+
+        /// <summary>
+        /// Indicates that major version upgrades are allowed.
+        /// </summary>
+        [Output("allowMajorVersionUpgrade")]
+        public Output<bool?> AllowMajorVersionUpgrade { get; private set; } = null!;
 
         /// <summary>
         /// Indicates whether the changes should be applied immediately or during the next maintenance window. Only used when updating an existing resource.
@@ -259,6 +273,12 @@ namespace Pulumi.Aws.Dms
         public Input<int>? AllocatedStorage { get; set; }
 
         /// <summary>
+        /// Indicates that major version upgrades are allowed.
+        /// </summary>
+        [Input("allowMajorVersionUpgrade")]
+        public Input<bool>? AllowMajorVersionUpgrade { get; set; }
+
+        /// <summary>
         /// Indicates whether the changes should be applied immediately or during the next maintenance window. Only used when updating an existing resource.
         /// </summary>
         [Input("applyImmediately")]
@@ -360,6 +380,12 @@ namespace Pulumi.Aws.Dms
         /// </summary>
         [Input("allocatedStorage")]
         public Input<int>? AllocatedStorage { get; set; }
+
+        /// <summary>
+        /// Indicates that major version upgrades are allowed.
+        /// </summary>
+        [Input("allowMajorVersionUpgrade")]
+        public Input<bool>? AllowMajorVersionUpgrade { get; set; }
 
         /// <summary>
         /// Indicates whether the changes should be applied immediately or during the next maintenance window. Only used when updating an existing resource.

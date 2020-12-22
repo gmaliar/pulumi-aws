@@ -41,18 +41,18 @@ namespace Pulumi.Aws.AutoScaling
     ///                 "us-west-2a",
     ///             },
     ///             HealthCheckType = "EC2",
+    ///             TerminationPolicies = 
+    ///             {
+    ///                 "OldestInstance",
+    ///             },
     ///             Tags = 
     ///             {
     ///                 new Aws.AutoScaling.Inputs.GroupTagArgs
     ///                 {
     ///                     Key = "Foo",
-    ///                     PropagateAtLaunch = true,
     ///                     Value = "foo-bar",
+    ///                     PropagateAtLaunch = true,
     ///                 },
-    ///             },
-    ///             TerminationPolicies = 
-    ///             {
-    ///                 "OldestInstance",
     ///             },
     ///         });
     ///         var foobarLifecycleHook = new Aws.AutoScaling.LifecycleHook("foobarLifecycleHook", new Aws.AutoScaling.LifecycleHookArgs
@@ -64,7 +64,6 @@ namespace Pulumi.Aws.AutoScaling
     ///             NotificationMetadata = @"{
     ///   ""foo"": ""bar""
     /// }
-    /// 
     /// ",
     ///             NotificationTargetArn = "arn:aws:sqs:us-east-1:444455556666:queue1*",
     ///             RoleArn = "arn:aws:iam::123456789012:role/S3Access",
@@ -72,6 +71,14 @@ namespace Pulumi.Aws.AutoScaling
     ///     }
     /// 
     /// }
+    /// ```
+    /// 
+    /// ## Import
+    /// 
+    /// AutoScaling Lifecycle Hooks can be imported using the role autoscaling_group_name and name separated by `/`.
+    /// 
+    /// ```sh
+    ///  $ pulumi import aws:autoscaling/lifecycleHook:LifecycleHook test-lifecycle-hook asg-name/lifecycle-hook-name
     /// ```
     /// </summary>
     public partial class LifecycleHook : Pulumi.CustomResource

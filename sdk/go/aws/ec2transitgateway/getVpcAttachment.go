@@ -16,7 +16,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/ec2transitgateway"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/ec2transitgateway"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -45,7 +45,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/ec2transitgateway"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/ec2transitgateway"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -83,11 +83,13 @@ type LookupVpcAttachmentArgs struct {
 
 // A collection of values returned by getVpcAttachment.
 type LookupVpcAttachmentResult struct {
+	// Whether Appliance Mode support is enabled.
+	ApplianceModeSupport string `pulumi:"applianceModeSupport"`
 	// Whether DNS support is enabled.
 	DnsSupport string                   `pulumi:"dnsSupport"`
 	Filters    []GetVpcAttachmentFilter `pulumi:"filters"`
 	// EC2 Transit Gateway VPC Attachment identifier
-	Id *string `pulumi:"id"`
+	Id string `pulumi:"id"`
 	// Whether IPv6 support is enabled.
 	Ipv6Support string `pulumi:"ipv6Support"`
 	// Identifiers of EC2 Subnets.

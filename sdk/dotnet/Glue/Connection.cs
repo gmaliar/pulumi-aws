@@ -70,6 +70,14 @@ namespace Pulumi.Aws.Glue
     /// 
     /// }
     /// ```
+    /// 
+    /// ## Import
+    /// 
+    /// Glue Connections can be imported using the `CATALOG-ID` (AWS account ID if not custom) and `NAME`, e.g.
+    /// 
+    /// ```sh
+    ///  $ pulumi import aws:glue/connection:Connection MyConnection 123456789012:MyConnection
+    /// ```
     /// </summary>
     public partial class Connection : Pulumi.CustomResource
     {
@@ -92,7 +100,7 @@ namespace Pulumi.Aws.Glue
         public Output<ImmutableDictionary<string, string>> ConnectionProperties { get; private set; } = null!;
 
         /// <summary>
-        /// The type of the connection. Supported are: `JDBC`, `MONGODB`, `KAFKA`. Defaults to `JBDC`.
+        /// The type of the connection. Supported are: `JDBC`, `MONGODB`, `KAFKA`, and `NETWORK`. Defaults to `JBDC`.
         /// </summary>
         [Output("connectionType")]
         public Output<string?> ConnectionType { get; private set; } = null!;
@@ -186,7 +194,7 @@ namespace Pulumi.Aws.Glue
         }
 
         /// <summary>
-        /// The type of the connection. Supported are: `JDBC`, `MONGODB`, `KAFKA`. Defaults to `JBDC`.
+        /// The type of the connection. Supported are: `JDBC`, `MONGODB`, `KAFKA`, and `NETWORK`. Defaults to `JBDC`.
         /// </summary>
         [Input("connectionType")]
         public Input<string>? ConnectionType { get; set; }
@@ -253,7 +261,7 @@ namespace Pulumi.Aws.Glue
         }
 
         /// <summary>
-        /// The type of the connection. Supported are: `JDBC`, `MONGODB`, `KAFKA`. Defaults to `JBDC`.
+        /// The type of the connection. Supported are: `JDBC`, `MONGODB`, `KAFKA`, and `NETWORK`. Defaults to `JBDC`.
         /// </summary>
         [Input("connectionType")]
         public Input<string>? ConnectionType { get; set; }

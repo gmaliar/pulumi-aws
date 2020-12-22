@@ -4,6 +4,7 @@
 package ec2clientvpn
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -19,16 +20,16 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/ec2clientvpn"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/ec2clientvpn"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
 // func main() {
 // 	pulumi.Run(func(ctx *pulumi.Context) error {
 // 		_, err := ec2clientvpn.NewAuthorizationRule(ctx, "example", &ec2clientvpn.AuthorizationRuleArgs{
+// 			ClientVpnEndpointId: pulumi.Any(aws_ec2_client_vpn_endpoint.Example.Id),
+// 			TargetNetworkCidr:   pulumi.Any(aws_subnet.Example.Cidr_block),
 // 			AuthorizeAllGroups:  pulumi.Bool(true),
-// 			ClientVpnEndpointId: pulumi.String(aws_ec2_client_vpn_endpoint.Example.Id),
-// 			TargetNetworkCidr:   pulumi.String(aws_subnet.Example.Cidr_block),
 // 		})
 // 		if err != nil {
 // 			return err
@@ -36,6 +37,18 @@ import (
 // 		return nil
 // 	})
 // }
+// ```
+//
+// ## Import
+//
+// AWS Client VPN authorization rules can be imported using the endpoint ID and target network CIDR. If there is a specific group name that is included as well. All values are separated by a `,`.
+//
+// ```sh
+//  $ pulumi import aws:ec2clientvpn/authorizationRule:AuthorizationRule example cvpn-endpoint-0ac3a1abbccddd666,10.1.0.0/24
+// ```
+//
+// ```sh
+//  $ pulumi import aws:ec2clientvpn/authorizationRule:AuthorizationRule example cvpn-endpoint-0ac3a1abbccddd666,10.1.0.0/24,team-a
 // ```
 type AuthorizationRule struct {
 	pulumi.CustomResourceState
@@ -55,14 +68,15 @@ type AuthorizationRule struct {
 // NewAuthorizationRule registers a new resource with the given unique name, arguments, and options.
 func NewAuthorizationRule(ctx *pulumi.Context,
 	name string, args *AuthorizationRuleArgs, opts ...pulumi.ResourceOption) (*AuthorizationRule, error) {
-	if args == nil || args.ClientVpnEndpointId == nil {
-		return nil, errors.New("missing required argument 'ClientVpnEndpointId'")
-	}
-	if args == nil || args.TargetNetworkCidr == nil {
-		return nil, errors.New("missing required argument 'TargetNetworkCidr'")
-	}
 	if args == nil {
-		args = &AuthorizationRuleArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.ClientVpnEndpointId == nil {
+		return nil, errors.New("invalid value for required argument 'ClientVpnEndpointId'")
+	}
+	if args.TargetNetworkCidr == nil {
+		return nil, errors.New("invalid value for required argument 'TargetNetworkCidr'")
 	}
 	var resource AuthorizationRule
 	err := ctx.RegisterResource("aws:ec2clientvpn/authorizationRule:AuthorizationRule", name, args, &resource, opts...)
@@ -144,4 +158,43 @@ type AuthorizationRuleArgs struct {
 
 func (AuthorizationRuleArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*authorizationRuleArgs)(nil)).Elem()
+}
+
+type AuthorizationRuleInput interface {
+	pulumi.Input
+
+	ToAuthorizationRuleOutput() AuthorizationRuleOutput
+	ToAuthorizationRuleOutputWithContext(ctx context.Context) AuthorizationRuleOutput
+}
+
+func (AuthorizationRule) ElementType() reflect.Type {
+	return reflect.TypeOf((*AuthorizationRule)(nil)).Elem()
+}
+
+func (i AuthorizationRule) ToAuthorizationRuleOutput() AuthorizationRuleOutput {
+	return i.ToAuthorizationRuleOutputWithContext(context.Background())
+}
+
+func (i AuthorizationRule) ToAuthorizationRuleOutputWithContext(ctx context.Context) AuthorizationRuleOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(AuthorizationRuleOutput)
+}
+
+type AuthorizationRuleOutput struct {
+	*pulumi.OutputState
+}
+
+func (AuthorizationRuleOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*AuthorizationRuleOutput)(nil)).Elem()
+}
+
+func (o AuthorizationRuleOutput) ToAuthorizationRuleOutput() AuthorizationRuleOutput {
+	return o
+}
+
+func (o AuthorizationRuleOutput) ToAuthorizationRuleOutputWithContext(ctx context.Context) AuthorizationRuleOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(AuthorizationRuleOutput{})
 }

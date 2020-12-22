@@ -4,6 +4,7 @@
 package opsworks
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -20,20 +21,20 @@ import (
 // import (
 // 	"fmt"
 //
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/opsworks"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/opsworks"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
 // func main() {
 // 	pulumi.Run(func(ctx *pulumi.Context) error {
 // 		_, err := opsworks.NewStack(ctx, "main", &opsworks.StackArgs{
-// 			CustomJson:                pulumi.String(fmt.Sprintf("%v%v%v%v%v%v", "{\n", " \"foobar\": {\n", "    \"version\": \"1.0.0\"\n", "  }\n", "}\n", "\n")),
-// 			DefaultInstanceProfileArn: pulumi.String(aws_iam_instance_profile.Opsworks.Arn),
 // 			Region:                    pulumi.String("us-west-1"),
-// 			ServiceRoleArn:            pulumi.String(aws_iam_role.Opsworks.Arn),
+// 			ServiceRoleArn:            pulumi.Any(aws_iam_role.Opsworks.Arn),
+// 			DefaultInstanceProfileArn: pulumi.Any(aws_iam_instance_profile.Opsworks.Arn),
 // 			Tags: pulumi.StringMap{
 // 				"Name": pulumi.String("foobar-stack"),
 // 			},
+// 			CustomJson: pulumi.String(fmt.Sprintf("%v%v%v%v%v", "{\n", " \"foobar\": {\n", "    \"version\": \"1.0.0\"\n", "  }\n", "}\n")),
 // 		})
 // 		if err != nil {
 // 			return err
@@ -41,6 +42,14 @@ import (
 // 		return nil
 // 	})
 // }
+// ```
+//
+// ## Import
+//
+// OpsWorks stacks can be imported using the `id`, e.g.
+//
+// ```sh
+//  $ pulumi import aws:opsworks/stack:Stack bar 00000000-0000-0000-0000-000000000000
 // ```
 type Stack struct {
 	pulumi.CustomResourceState
@@ -103,17 +112,18 @@ type Stack struct {
 // NewStack registers a new resource with the given unique name, arguments, and options.
 func NewStack(ctx *pulumi.Context,
 	name string, args *StackArgs, opts ...pulumi.ResourceOption) (*Stack, error) {
-	if args == nil || args.DefaultInstanceProfileArn == nil {
-		return nil, errors.New("missing required argument 'DefaultInstanceProfileArn'")
-	}
-	if args == nil || args.Region == nil {
-		return nil, errors.New("missing required argument 'Region'")
-	}
-	if args == nil || args.ServiceRoleArn == nil {
-		return nil, errors.New("missing required argument 'ServiceRoleArn'")
-	}
 	if args == nil {
-		args = &StackArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.DefaultInstanceProfileArn == nil {
+		return nil, errors.New("invalid value for required argument 'DefaultInstanceProfileArn'")
+	}
+	if args.Region == nil {
+		return nil, errors.New("invalid value for required argument 'Region'")
+	}
+	if args.ServiceRoleArn == nil {
+		return nil, errors.New("invalid value for required argument 'ServiceRoleArn'")
 	}
 	var resource Stack
 	err := ctx.RegisterResource("aws:opsworks/stack:Stack", name, args, &resource, opts...)
@@ -363,4 +373,43 @@ type StackArgs struct {
 
 func (StackArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*stackArgs)(nil)).Elem()
+}
+
+type StackInput interface {
+	pulumi.Input
+
+	ToStackOutput() StackOutput
+	ToStackOutputWithContext(ctx context.Context) StackOutput
+}
+
+func (Stack) ElementType() reflect.Type {
+	return reflect.TypeOf((*Stack)(nil)).Elem()
+}
+
+func (i Stack) ToStackOutput() StackOutput {
+	return i.ToStackOutputWithContext(context.Background())
+}
+
+func (i Stack) ToStackOutputWithContext(ctx context.Context) StackOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(StackOutput)
+}
+
+type StackOutput struct {
+	*pulumi.OutputState
+}
+
+func (StackOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*StackOutput)(nil)).Elem()
+}
+
+func (o StackOutput) ToStackOutput() StackOutput {
+	return o
+}
+
+func (o StackOutput) ToStackOutputWithContext(ctx context.Context) StackOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(StackOutput{})
 }

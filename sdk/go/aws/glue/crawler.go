@@ -4,6 +4,7 @@
 package glue
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -19,20 +20,20 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/glue"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/glue"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
 // func main() {
 // 	pulumi.Run(func(ctx *pulumi.Context) error {
 // 		_, err := glue.NewCrawler(ctx, "example", &glue.CrawlerArgs{
-// 			DatabaseName: pulumi.String(aws_glue_catalog_database.Example.Name),
+// 			DatabaseName: pulumi.Any(aws_glue_catalog_database.Example.Name),
+// 			Role:         pulumi.Any(aws_iam_role.Example.Arn),
 // 			DynamodbTargets: glue.CrawlerDynamodbTargetArray{
 // 				&glue.CrawlerDynamodbTargetArgs{
 // 					Path: pulumi.String("table-name"),
 // 				},
 // 			},
-// 			Role: pulumi.String(aws_iam_role.Example.Arn),
 // 		})
 // 		if err != nil {
 // 			return err
@@ -49,21 +50,21 @@ import (
 // import (
 // 	"fmt"
 //
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/glue"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/glue"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
 // func main() {
 // 	pulumi.Run(func(ctx *pulumi.Context) error {
 // 		_, err := glue.NewCrawler(ctx, "example", &glue.CrawlerArgs{
-// 			DatabaseName: pulumi.String(aws_glue_catalog_database.Example.Name),
+// 			DatabaseName: pulumi.Any(aws_glue_catalog_database.Example.Name),
+// 			Role:         pulumi.Any(aws_iam_role.Example.Arn),
 // 			JdbcTargets: glue.CrawlerJdbcTargetArray{
 // 				&glue.CrawlerJdbcTargetArgs{
-// 					ConnectionName: pulumi.String(aws_glue_connection.Example.Name),
+// 					ConnectionName: pulumi.Any(aws_glue_connection.Example.Name),
 // 					Path:           pulumi.String(fmt.Sprintf("%v%v", "database-name/", "%")),
 // 				},
 // 			},
-// 			Role: pulumi.String(aws_iam_role.Example.Arn),
 // 		})
 // 		if err != nil {
 // 			return err
@@ -80,15 +81,15 @@ import (
 // import (
 // 	"fmt"
 //
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/glue"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/glue"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
 // func main() {
 // 	pulumi.Run(func(ctx *pulumi.Context) error {
 // 		_, err := glue.NewCrawler(ctx, "example", &glue.CrawlerArgs{
-// 			DatabaseName: pulumi.String(aws_glue_catalog_database.Example.Name),
-// 			Role:         pulumi.String(aws_iam_role.Example.Arn),
+// 			DatabaseName: pulumi.Any(aws_glue_catalog_database.Example.Name),
+// 			Role:         pulumi.Any(aws_iam_role.Example.Arn),
 // 			S3Targets: glue.CrawlerS3TargetArray{
 // 				&glue.CrawlerS3TargetArgs{
 // 					Path: pulumi.String(fmt.Sprintf("%v%v", "s3://", aws_s3_bucket.Example.Bucket)),
@@ -102,6 +103,94 @@ import (
 // 	})
 // }
 // ```
+// ### MongoDB Target
+//
+// ```go
+// package main
+//
+// import (
+// 	"fmt"
+//
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/glue"
+// 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
+// )
+//
+// func main() {
+// 	pulumi.Run(func(ctx *pulumi.Context) error {
+// 		_, err := glue.NewCrawler(ctx, "example", &glue.CrawlerArgs{
+// 			DatabaseName: pulumi.Any(aws_glue_catalog_database.Example.Name),
+// 			Role:         pulumi.Any(aws_iam_role.Example.Arn),
+// 			MongodbTargets: glue.CrawlerMongodbTargetArray{
+// 				&glue.CrawlerMongodbTargetArgs{
+// 					ConnectionName: pulumi.Any(aws_glue_connection.Example.Name),
+// 					Path:           pulumi.String(fmt.Sprintf("%v%v", "database-name/", "%")),
+// 				},
+// 			},
+// 		})
+// 		if err != nil {
+// 			return err
+// 		}
+// 		return nil
+// 	})
+// }
+// ```
+// ### Configuration Settings
+//
+// ```go
+// package main
+//
+// import (
+// 	"encoding/json"
+// 	"fmt"
+//
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/glue"
+// 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
+// )
+//
+// func main() {
+// 	pulumi.Run(func(ctx *pulumi.Context) error {
+// 		tmpJSON0, err := json.Marshal(map[string]interface{}{
+// 			"Grouping": map[string]interface{}{
+// 				"TableGroupingPolicy": "CombineCompatibleSchemas",
+// 			},
+// 			"CrawlerOutput": map[string]interface{}{
+// 				"Partitions": map[string]interface{}{
+// 					"AddOrUpdateBehavior": "InheritFromTable",
+// 				},
+// 			},
+// 			"Version": 1,
+// 		})
+// 		if err != nil {
+// 			return err
+// 		}
+// 		json0 := string(tmpJSON0)
+// 		_, err := glue.NewCrawler(ctx, "eventsCrawler", &glue.CrawlerArgs{
+// 			DatabaseName:  pulumi.Any(aws_glue_catalog_database.Glue_database.Name),
+// 			Schedule:      pulumi.String("cron(0 1 * * ? *)"),
+// 			Role:          pulumi.Any(aws_iam_role.Glue_role.Arn),
+// 			Tags:          _var.Tags,
+// 			Configuration: pulumi.String(json0),
+// 			S3Targets: glue.CrawlerS3TargetArray{
+// 				&glue.CrawlerS3TargetArgs{
+// 					Path: pulumi.String(fmt.Sprintf("%v%v", "s3://", aws_s3_bucket.Data_lake_bucket.Bucket)),
+// 				},
+// 			},
+// 		})
+// 		if err != nil {
+// 			return err
+// 		}
+// 		return nil
+// 	})
+// }
+// ```
+//
+// ## Import
+//
+// Glue Crawlers can be imported using `name`, e.g.
+//
+// ```sh
+//  $ pulumi import aws:glue/crawler:Crawler MyJob MyJob
+// ```
 type Crawler struct {
 	pulumi.CustomResourceState
 
@@ -110,7 +199,7 @@ type Crawler struct {
 	CatalogTargets CrawlerCatalogTargetArrayOutput `pulumi:"catalogTargets"`
 	// List of custom classifiers. By default, all AWS classifiers are included in a crawl, but these custom classifiers always override the default classifiers for a given classification.
 	Classifiers pulumi.StringArrayOutput `pulumi:"classifiers"`
-	// JSON string of configuration information.
+	// JSON string of configuration information. For more details see [Setting Crawler Configuration Options](https://docs.aws.amazon.com/glue/latest/dg/crawler-configuration.html).
 	Configuration pulumi.StringPtrOutput `pulumi:"configuration"`
 	// Glue database where results are written.
 	DatabaseName pulumi.StringOutput `pulumi:"databaseName"`
@@ -120,6 +209,8 @@ type Crawler struct {
 	DynamodbTargets CrawlerDynamodbTargetArrayOutput `pulumi:"dynamodbTargets"`
 	// List of nested JBDC target arguments. See below.
 	JdbcTargets CrawlerJdbcTargetArrayOutput `pulumi:"jdbcTargets"`
+	// List nested MongoDB target arguments. See below.
+	MongodbTargets CrawlerMongodbTargetArrayOutput `pulumi:"mongodbTargets"`
 	// Name of the crawler.
 	Name pulumi.StringOutput `pulumi:"name"`
 	// The IAM role friendly name (including path without leading slash), or ARN of an IAM role, used by the crawler to access other resources.
@@ -141,14 +232,15 @@ type Crawler struct {
 // NewCrawler registers a new resource with the given unique name, arguments, and options.
 func NewCrawler(ctx *pulumi.Context,
 	name string, args *CrawlerArgs, opts ...pulumi.ResourceOption) (*Crawler, error) {
-	if args == nil || args.DatabaseName == nil {
-		return nil, errors.New("missing required argument 'DatabaseName'")
-	}
-	if args == nil || args.Role == nil {
-		return nil, errors.New("missing required argument 'Role'")
-	}
 	if args == nil {
-		args = &CrawlerArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.DatabaseName == nil {
+		return nil, errors.New("invalid value for required argument 'DatabaseName'")
+	}
+	if args.Role == nil {
+		return nil, errors.New("invalid value for required argument 'Role'")
 	}
 	var resource Crawler
 	err := ctx.RegisterResource("aws:glue/crawler:Crawler", name, args, &resource, opts...)
@@ -177,7 +269,7 @@ type crawlerState struct {
 	CatalogTargets []CrawlerCatalogTarget `pulumi:"catalogTargets"`
 	// List of custom classifiers. By default, all AWS classifiers are included in a crawl, but these custom classifiers always override the default classifiers for a given classification.
 	Classifiers []string `pulumi:"classifiers"`
-	// JSON string of configuration information.
+	// JSON string of configuration information. For more details see [Setting Crawler Configuration Options](https://docs.aws.amazon.com/glue/latest/dg/crawler-configuration.html).
 	Configuration *string `pulumi:"configuration"`
 	// Glue database where results are written.
 	DatabaseName *string `pulumi:"databaseName"`
@@ -187,6 +279,8 @@ type crawlerState struct {
 	DynamodbTargets []CrawlerDynamodbTarget `pulumi:"dynamodbTargets"`
 	// List of nested JBDC target arguments. See below.
 	JdbcTargets []CrawlerJdbcTarget `pulumi:"jdbcTargets"`
+	// List nested MongoDB target arguments. See below.
+	MongodbTargets []CrawlerMongodbTarget `pulumi:"mongodbTargets"`
 	// Name of the crawler.
 	Name *string `pulumi:"name"`
 	// The IAM role friendly name (including path without leading slash), or ARN of an IAM role, used by the crawler to access other resources.
@@ -211,7 +305,7 @@ type CrawlerState struct {
 	CatalogTargets CrawlerCatalogTargetArrayInput
 	// List of custom classifiers. By default, all AWS classifiers are included in a crawl, but these custom classifiers always override the default classifiers for a given classification.
 	Classifiers pulumi.StringArrayInput
-	// JSON string of configuration information.
+	// JSON string of configuration information. For more details see [Setting Crawler Configuration Options](https://docs.aws.amazon.com/glue/latest/dg/crawler-configuration.html).
 	Configuration pulumi.StringPtrInput
 	// Glue database where results are written.
 	DatabaseName pulumi.StringPtrInput
@@ -221,6 +315,8 @@ type CrawlerState struct {
 	DynamodbTargets CrawlerDynamodbTargetArrayInput
 	// List of nested JBDC target arguments. See below.
 	JdbcTargets CrawlerJdbcTargetArrayInput
+	// List nested MongoDB target arguments. See below.
+	MongodbTargets CrawlerMongodbTargetArrayInput
 	// Name of the crawler.
 	Name pulumi.StringPtrInput
 	// The IAM role friendly name (including path without leading slash), or ARN of an IAM role, used by the crawler to access other resources.
@@ -247,7 +343,7 @@ type crawlerArgs struct {
 	CatalogTargets []CrawlerCatalogTarget `pulumi:"catalogTargets"`
 	// List of custom classifiers. By default, all AWS classifiers are included in a crawl, but these custom classifiers always override the default classifiers for a given classification.
 	Classifiers []string `pulumi:"classifiers"`
-	// JSON string of configuration information.
+	// JSON string of configuration information. For more details see [Setting Crawler Configuration Options](https://docs.aws.amazon.com/glue/latest/dg/crawler-configuration.html).
 	Configuration *string `pulumi:"configuration"`
 	// Glue database where results are written.
 	DatabaseName string `pulumi:"databaseName"`
@@ -257,6 +353,8 @@ type crawlerArgs struct {
 	DynamodbTargets []CrawlerDynamodbTarget `pulumi:"dynamodbTargets"`
 	// List of nested JBDC target arguments. See below.
 	JdbcTargets []CrawlerJdbcTarget `pulumi:"jdbcTargets"`
+	// List nested MongoDB target arguments. See below.
+	MongodbTargets []CrawlerMongodbTarget `pulumi:"mongodbTargets"`
 	// Name of the crawler.
 	Name *string `pulumi:"name"`
 	// The IAM role friendly name (including path without leading slash), or ARN of an IAM role, used by the crawler to access other resources.
@@ -280,7 +378,7 @@ type CrawlerArgs struct {
 	CatalogTargets CrawlerCatalogTargetArrayInput
 	// List of custom classifiers. By default, all AWS classifiers are included in a crawl, but these custom classifiers always override the default classifiers for a given classification.
 	Classifiers pulumi.StringArrayInput
-	// JSON string of configuration information.
+	// JSON string of configuration information. For more details see [Setting Crawler Configuration Options](https://docs.aws.amazon.com/glue/latest/dg/crawler-configuration.html).
 	Configuration pulumi.StringPtrInput
 	// Glue database where results are written.
 	DatabaseName pulumi.StringInput
@@ -290,6 +388,8 @@ type CrawlerArgs struct {
 	DynamodbTargets CrawlerDynamodbTargetArrayInput
 	// List of nested JBDC target arguments. See below.
 	JdbcTargets CrawlerJdbcTargetArrayInput
+	// List nested MongoDB target arguments. See below.
+	MongodbTargets CrawlerMongodbTargetArrayInput
 	// Name of the crawler.
 	Name pulumi.StringPtrInput
 	// The IAM role friendly name (including path without leading slash), or ARN of an IAM role, used by the crawler to access other resources.
@@ -310,4 +410,43 @@ type CrawlerArgs struct {
 
 func (CrawlerArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*crawlerArgs)(nil)).Elem()
+}
+
+type CrawlerInput interface {
+	pulumi.Input
+
+	ToCrawlerOutput() CrawlerOutput
+	ToCrawlerOutputWithContext(ctx context.Context) CrawlerOutput
+}
+
+func (Crawler) ElementType() reflect.Type {
+	return reflect.TypeOf((*Crawler)(nil)).Elem()
+}
+
+func (i Crawler) ToCrawlerOutput() CrawlerOutput {
+	return i.ToCrawlerOutputWithContext(context.Background())
+}
+
+func (i Crawler) ToCrawlerOutputWithContext(ctx context.Context) CrawlerOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(CrawlerOutput)
+}
+
+type CrawlerOutput struct {
+	*pulumi.OutputState
+}
+
+func (CrawlerOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*CrawlerOutput)(nil)).Elem()
+}
+
+func (o CrawlerOutput) ToCrawlerOutput() CrawlerOutput {
+	return o
+}
+
+func (o CrawlerOutput) ToCrawlerOutputWithContext(ctx context.Context) CrawlerOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(CrawlerOutput{})
 }

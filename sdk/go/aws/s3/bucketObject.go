@@ -4,6 +4,7 @@
 package s3
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -19,16 +20,16 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/kms"
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/s3"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/kms"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/s3"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
 // func main() {
 // 	pulumi.Run(func(ctx *pulumi.Context) error {
 // 		examplekms, err := kms.NewKey(ctx, "examplekms", &kms.KeyArgs{
-// 			DeletionWindowInDays: pulumi.Int(7),
 // 			Description:          pulumi.String("KMS key 1"),
+// 			DeletionWindowInDays: pulumi.Int(7),
 // 		})
 // 		if err != nil {
 // 			return err
@@ -40,10 +41,10 @@ import (
 // 			return err
 // 		}
 // 		_, err = s3.NewBucketObject(ctx, "examplebucketObject", &s3.BucketObjectArgs{
-// 			Bucket:   examplebucket.ID(),
 // 			Key:      pulumi.String("someobject"),
-// 			KmsKeyId: examplekms.Arn,
+// 			Bucket:   examplebucket.ID(),
 // 			Source:   pulumi.NewFileAsset("index.html"),
+// 			KmsKeyId: examplekms.Arn,
 // 		})
 // 		if err != nil {
 // 			return err
@@ -58,7 +59,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/s3"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/s3"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -71,10 +72,10 @@ import (
 // 			return err
 // 		}
 // 		_, err = s3.NewBucketObject(ctx, "examplebucketObject", &s3.BucketObjectArgs{
-// 			Bucket:               examplebucket.ID(),
 // 			Key:                  pulumi.String("someobject"),
-// 			ServerSideEncryption: pulumi.String("aws:kms"),
+// 			Bucket:               examplebucket.ID(),
 // 			Source:               pulumi.NewFileAsset("index.html"),
+// 			ServerSideEncryption: pulumi.String("aws:kms"),
 // 		})
 // 		if err != nil {
 // 			return err
@@ -89,7 +90,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/s3"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/s3"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -102,10 +103,10 @@ import (
 // 			return err
 // 		}
 // 		_, err = s3.NewBucketObject(ctx, "examplebucketObject", &s3.BucketObjectArgs{
-// 			Bucket:               examplebucket.ID(),
 // 			Key:                  pulumi.String("someobject"),
-// 			ServerSideEncryption: pulumi.String("AES256"),
+// 			Bucket:               examplebucket.ID(),
 // 			Source:               pulumi.NewFileAsset("index.html"),
+// 			ServerSideEncryption: pulumi.String("AES256"),
 // 		})
 // 		if err != nil {
 // 			return err
@@ -120,7 +121,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/s3"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/s3"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -128,24 +129,24 @@ import (
 // 	pulumi.Run(func(ctx *pulumi.Context) error {
 // 		examplebucket, err := s3.NewBucket(ctx, "examplebucket", &s3.BucketArgs{
 // 			Acl: pulumi.String("private"),
-// 			ObjectLockConfiguration: &s3.BucketObjectLockConfigurationArgs{
-// 				ObjectLockEnabled: pulumi.String("Enabled"),
-// 			},
 // 			Versioning: &s3.BucketVersioningArgs{
 // 				Enabled: pulumi.Bool(true),
+// 			},
+// 			ObjectLockConfiguration: &s3.BucketObjectLockConfigurationArgs{
+// 				ObjectLockEnabled: pulumi.String("Enabled"),
 // 			},
 // 		})
 // 		if err != nil {
 // 			return err
 // 		}
 // 		_, err = s3.NewBucketObject(ctx, "examplebucketObject", &s3.BucketObjectArgs{
-// 			Bucket:                    examplebucket.ID(),
-// 			ForceDestroy:              pulumi.Bool(true),
 // 			Key:                       pulumi.String("someobject"),
+// 			Bucket:                    examplebucket.ID(),
+// 			Source:                    pulumi.NewFileAsset("important.txt"),
 // 			ObjectLockLegalHoldStatus: pulumi.String("ON"),
 // 			ObjectLockMode:            pulumi.String("GOVERNANCE"),
 // 			ObjectLockRetainUntilDate: pulumi.String("2021-12-31T23:59:60Z"),
-// 			Source:                    pulumi.NewFileAsset("important.txt"),
+// 			ForceDestroy:              pulumi.Bool(true),
 // 		})
 // 		if err != nil {
 // 			return err
@@ -157,7 +158,7 @@ import (
 type BucketObject struct {
 	pulumi.CustomResourceState
 
-	// The [canned ACL](https://docs.aws.amazon.com/AmazonS3/latest/dev/acl-overview.html#canned-acl) to apply. Defaults to "private".
+	// The [canned ACL](https://docs.aws.amazon.com/AmazonS3/latest/dev/acl-overview.html#canned-acl) to apply. Valid values are `private`, `public-read`, `public-read-write`, `aws-exec-read`, `authenticated-read`, `bucket-owner-read`, and `bucket-owner-full-control`. Defaults to `private`.
 	Acl pulumi.StringPtrOutput `pulumi:"acl"`
 	// The name of the bucket to put the file in. Alternatively, an [S3 access point](https://docs.aws.amazon.com/AmazonS3/latest/dev/using-access-points.html) ARN can be specified.
 	Bucket pulumi.StringOutput `pulumi:"bucket"`
@@ -182,12 +183,8 @@ type BucketObject struct {
 	// Default is `false`. This value should be set to `true` only if the bucket has S3 object lock enabled.
 	ForceDestroy pulumi.BoolPtrOutput `pulumi:"forceDestroy"`
 	// The name of the object once it is in the bucket.
-	Key pulumi.StringOutput `pulumi:"key"`
-	// Specifies the AWS KMS Key ARN to use for object encryption.
-	// This value is a fully qualified **ARN** of the KMS Key. If using `kms.Key`,
-	// use the exported `arn` attribute:
-	// `kmsKeyId = "${aws_kms_key.foo.arn}"`
-	KmsKeyId pulumi.StringPtrOutput `pulumi:"kmsKeyId"`
+	Key      pulumi.StringOutput `pulumi:"key"`
+	KmsKeyId pulumi.StringOutput `pulumi:"kmsKeyId"`
 	// A map of keys/values to provision metadata (will be automatically prefixed by `x-amz-meta-`, note that only lowercase label are currently supported by the AWS Go API).
 	Metadata pulumi.StringMapOutput `pulumi:"metadata"`
 	// The [legal hold](https://docs.aws.amazon.com/AmazonS3/latest/dev/object-lock-overview.html#object-lock-legal-holds) status that you want to apply to the specified object. Valid values are `ON` and `OFF`.
@@ -215,11 +212,12 @@ type BucketObject struct {
 // NewBucketObject registers a new resource with the given unique name, arguments, and options.
 func NewBucketObject(ctx *pulumi.Context,
 	name string, args *BucketObjectArgs, opts ...pulumi.ResourceOption) (*BucketObject, error) {
-	if args == nil || args.Bucket == nil {
-		return nil, errors.New("missing required argument 'Bucket'")
-	}
 	if args == nil {
-		args = &BucketObjectArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.Bucket == nil {
+		return nil, errors.New("invalid value for required argument 'Bucket'")
 	}
 	var resource BucketObject
 	err := ctx.RegisterResource("aws:s3/bucketObject:BucketObject", name, args, &resource, opts...)
@@ -243,7 +241,7 @@ func GetBucketObject(ctx *pulumi.Context,
 
 // Input properties used for looking up and filtering BucketObject resources.
 type bucketObjectState struct {
-	// The [canned ACL](https://docs.aws.amazon.com/AmazonS3/latest/dev/acl-overview.html#canned-acl) to apply. Defaults to "private".
+	// The [canned ACL](https://docs.aws.amazon.com/AmazonS3/latest/dev/acl-overview.html#canned-acl) to apply. Valid values are `private`, `public-read`, `public-read-write`, `aws-exec-read`, `authenticated-read`, `bucket-owner-read`, and `bucket-owner-full-control`. Defaults to `private`.
 	Acl *string `pulumi:"acl"`
 	// The name of the bucket to put the file in. Alternatively, an [S3 access point](https://docs.aws.amazon.com/AmazonS3/latest/dev/using-access-points.html) ARN can be specified.
 	Bucket *string `pulumi:"bucket"`
@@ -268,11 +266,7 @@ type bucketObjectState struct {
 	// Default is `false`. This value should be set to `true` only if the bucket has S3 object lock enabled.
 	ForceDestroy *bool `pulumi:"forceDestroy"`
 	// The name of the object once it is in the bucket.
-	Key *string `pulumi:"key"`
-	// Specifies the AWS KMS Key ARN to use for object encryption.
-	// This value is a fully qualified **ARN** of the KMS Key. If using `kms.Key`,
-	// use the exported `arn` attribute:
-	// `kmsKeyId = "${aws_kms_key.foo.arn}"`
+	Key      *string `pulumi:"key"`
 	KmsKeyId *string `pulumi:"kmsKeyId"`
 	// A map of keys/values to provision metadata (will be automatically prefixed by `x-amz-meta-`, note that only lowercase label are currently supported by the AWS Go API).
 	Metadata map[string]string `pulumi:"metadata"`
@@ -299,7 +293,7 @@ type bucketObjectState struct {
 }
 
 type BucketObjectState struct {
-	// The [canned ACL](https://docs.aws.amazon.com/AmazonS3/latest/dev/acl-overview.html#canned-acl) to apply. Defaults to "private".
+	// The [canned ACL](https://docs.aws.amazon.com/AmazonS3/latest/dev/acl-overview.html#canned-acl) to apply. Valid values are `private`, `public-read`, `public-read-write`, `aws-exec-read`, `authenticated-read`, `bucket-owner-read`, and `bucket-owner-full-control`. Defaults to `private`.
 	Acl pulumi.StringPtrInput
 	// The name of the bucket to put the file in. Alternatively, an [S3 access point](https://docs.aws.amazon.com/AmazonS3/latest/dev/using-access-points.html) ARN can be specified.
 	Bucket pulumi.StringPtrInput
@@ -324,11 +318,7 @@ type BucketObjectState struct {
 	// Default is `false`. This value should be set to `true` only if the bucket has S3 object lock enabled.
 	ForceDestroy pulumi.BoolPtrInput
 	// The name of the object once it is in the bucket.
-	Key pulumi.StringPtrInput
-	// Specifies the AWS KMS Key ARN to use for object encryption.
-	// This value is a fully qualified **ARN** of the KMS Key. If using `kms.Key`,
-	// use the exported `arn` attribute:
-	// `kmsKeyId = "${aws_kms_key.foo.arn}"`
+	Key      pulumi.StringPtrInput
 	KmsKeyId pulumi.StringPtrInput
 	// A map of keys/values to provision metadata (will be automatically prefixed by `x-amz-meta-`, note that only lowercase label are currently supported by the AWS Go API).
 	Metadata pulumi.StringMapInput
@@ -359,7 +349,7 @@ func (BucketObjectState) ElementType() reflect.Type {
 }
 
 type bucketObjectArgs struct {
-	// The [canned ACL](https://docs.aws.amazon.com/AmazonS3/latest/dev/acl-overview.html#canned-acl) to apply. Defaults to "private".
+	// The [canned ACL](https://docs.aws.amazon.com/AmazonS3/latest/dev/acl-overview.html#canned-acl) to apply. Valid values are `private`, `public-read`, `public-read-write`, `aws-exec-read`, `authenticated-read`, `bucket-owner-read`, and `bucket-owner-full-control`. Defaults to `private`.
 	Acl *string `pulumi:"acl"`
 	// The name of the bucket to put the file in. Alternatively, an [S3 access point](https://docs.aws.amazon.com/AmazonS3/latest/dev/using-access-points.html) ARN can be specified.
 	Bucket interface{} `pulumi:"bucket"`
@@ -384,11 +374,7 @@ type bucketObjectArgs struct {
 	// Default is `false`. This value should be set to `true` only if the bucket has S3 object lock enabled.
 	ForceDestroy *bool `pulumi:"forceDestroy"`
 	// The name of the object once it is in the bucket.
-	Key *string `pulumi:"key"`
-	// Specifies the AWS KMS Key ARN to use for object encryption.
-	// This value is a fully qualified **ARN** of the KMS Key. If using `kms.Key`,
-	// use the exported `arn` attribute:
-	// `kmsKeyId = "${aws_kms_key.foo.arn}"`
+	Key      *string `pulumi:"key"`
 	KmsKeyId *string `pulumi:"kmsKeyId"`
 	// A map of keys/values to provision metadata (will be automatically prefixed by `x-amz-meta-`, note that only lowercase label are currently supported by the AWS Go API).
 	Metadata map[string]string `pulumi:"metadata"`
@@ -413,7 +399,7 @@ type bucketObjectArgs struct {
 
 // The set of arguments for constructing a BucketObject resource.
 type BucketObjectArgs struct {
-	// The [canned ACL](https://docs.aws.amazon.com/AmazonS3/latest/dev/acl-overview.html#canned-acl) to apply. Defaults to "private".
+	// The [canned ACL](https://docs.aws.amazon.com/AmazonS3/latest/dev/acl-overview.html#canned-acl) to apply. Valid values are `private`, `public-read`, `public-read-write`, `aws-exec-read`, `authenticated-read`, `bucket-owner-read`, and `bucket-owner-full-control`. Defaults to `private`.
 	Acl pulumi.StringPtrInput
 	// The name of the bucket to put the file in. Alternatively, an [S3 access point](https://docs.aws.amazon.com/AmazonS3/latest/dev/using-access-points.html) ARN can be specified.
 	Bucket pulumi.Input
@@ -438,11 +424,7 @@ type BucketObjectArgs struct {
 	// Default is `false`. This value should be set to `true` only if the bucket has S3 object lock enabled.
 	ForceDestroy pulumi.BoolPtrInput
 	// The name of the object once it is in the bucket.
-	Key pulumi.StringPtrInput
-	// Specifies the AWS KMS Key ARN to use for object encryption.
-	// This value is a fully qualified **ARN** of the KMS Key. If using `kms.Key`,
-	// use the exported `arn` attribute:
-	// `kmsKeyId = "${aws_kms_key.foo.arn}"`
+	Key      pulumi.StringPtrInput
 	KmsKeyId pulumi.StringPtrInput
 	// A map of keys/values to provision metadata (will be automatically prefixed by `x-amz-meta-`, note that only lowercase label are currently supported by the AWS Go API).
 	Metadata pulumi.StringMapInput
@@ -467,4 +449,43 @@ type BucketObjectArgs struct {
 
 func (BucketObjectArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*bucketObjectArgs)(nil)).Elem()
+}
+
+type BucketObjectInput interface {
+	pulumi.Input
+
+	ToBucketObjectOutput() BucketObjectOutput
+	ToBucketObjectOutputWithContext(ctx context.Context) BucketObjectOutput
+}
+
+func (BucketObject) ElementType() reflect.Type {
+	return reflect.TypeOf((*BucketObject)(nil)).Elem()
+}
+
+func (i BucketObject) ToBucketObjectOutput() BucketObjectOutput {
+	return i.ToBucketObjectOutputWithContext(context.Background())
+}
+
+func (i BucketObject) ToBucketObjectOutputWithContext(ctx context.Context) BucketObjectOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(BucketObjectOutput)
+}
+
+type BucketObjectOutput struct {
+	*pulumi.OutputState
+}
+
+func (BucketObjectOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*BucketObjectOutput)(nil)).Elem()
+}
+
+func (o BucketObjectOutput) ToBucketObjectOutput() BucketObjectOutput {
+	return o
+}
+
+func (o BucketObjectOutput) ToBucketObjectOutputWithContext(ctx context.Context) BucketObjectOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(BucketObjectOutput{})
 }

@@ -2,8 +2,7 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 /**
@@ -15,20 +14,26 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const example = new aws.glue.SecurityConfiguration("example", {
- *     encryptionConfiguration: {
- *         cloudwatchEncryption: {
- *             cloudwatchEncryptionMode: "DISABLED",
- *         },
- *         jobBookmarksEncryption: {
- *             jobBookmarksEncryptionMode: "DISABLED",
- *         },
- *         s3Encryption: {
- *             kmsKeyArn: aws_kms_key_example.arn,
- *             s3EncryptionMode: "SSE-KMS",
- *         },
+ * const example = new aws.glue.SecurityConfiguration("example", {encryptionConfiguration: {
+ *     cloudwatchEncryption: {
+ *         cloudwatchEncryptionMode: "DISABLED",
  *     },
- * });
+ *     jobBookmarksEncryption: {
+ *         jobBookmarksEncryptionMode: "DISABLED",
+ *     },
+ *     s3Encryption: {
+ *         kmsKeyArn: data.aws_kms_key.example.arn,
+ *         s3EncryptionMode: "SSE-KMS",
+ *     },
+ * }});
+ * ```
+ *
+ * ## Import
+ *
+ * Glue Security Configurations can be imported using `name`, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:glue/securityConfiguration:SecurityConfiguration example example
  * ```
  */
 export class SecurityConfiguration extends pulumi.CustomResource {
@@ -84,7 +89,7 @@ export class SecurityConfiguration extends pulumi.CustomResource {
             inputs["name"] = state ? state.name : undefined;
         } else {
             const args = argsOrState as SecurityConfigurationArgs | undefined;
-            if (!args || args.encryptionConfiguration === undefined) {
+            if ((!args || args.encryptionConfiguration === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'encryptionConfiguration'");
             }
             inputs["encryptionConfiguration"] = args ? args.encryptionConfiguration : undefined;

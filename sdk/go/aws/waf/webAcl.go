@@ -4,6 +4,7 @@
 package waf
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -18,7 +19,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/waf"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/waf"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -45,16 +46,16 @@ import (
 // 				},
 // 			},
 // 		}, pulumi.DependsOn([]pulumi.Resource{
-// 			"aws_waf_ipset.ipset",
+// 			ipset,
 // 		}))
 // 		if err != nil {
 // 			return err
 // 		}
 // 		_, err = waf.NewWebAcl(ctx, "wafAcl", &waf.WebAclArgs{
+// 			MetricName: pulumi.String("tfWebACL"),
 // 			DefaultAction: &waf.WebAclDefaultActionArgs{
 // 				Type: pulumi.String("ALLOW"),
 // 			},
-// 			MetricName: pulumi.String("tfWebACL"),
 // 			Rules: waf.WebAclRuleArray{
 // 				&waf.WebAclRuleArgs{
 // 					Action: &waf.WebAclRuleActionArgs{
@@ -66,8 +67,8 @@ import (
 // 				},
 // 			},
 // 		}, pulumi.DependsOn([]pulumi.Resource{
-// 			"aws_waf_ipset.ipset",
-// 			"aws_waf_rule.wafrule",
+// 			ipset,
+// 			wafrule,
 // 		}))
 // 		if err != nil {
 // 			return err
@@ -84,7 +85,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/waf"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/waf"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -92,15 +93,15 @@ import (
 // 	pulumi.Run(func(ctx *pulumi.Context) error {
 // 		_, err := waf.NewWebAcl(ctx, "example", &waf.WebAclArgs{
 // 			LoggingConfiguration: &waf.WebAclLoggingConfigurationArgs{
-// 				LogDestination: pulumi.String(aws_kinesis_firehose_delivery_stream.Example.Arn),
+// 				LogDestination: pulumi.Any(aws_kinesis_firehose_delivery_stream.Example.Arn),
 // 				RedactedFields: &waf.WebAclLoggingConfigurationRedactedFieldsArgs{
-// 					FieldToMatch: pulumi.Array{
-// 						pulumi.StringMap{
-// 							"type": pulumi.String("URI"),
+// 					FieldToMatches: waf.WebAclLoggingConfigurationRedactedFieldsFieldToMatchArray{
+// 						&waf.WebAclLoggingConfigurationRedactedFieldsFieldToMatchArgs{
+// 							Type: pulumi.String("URI"),
 // 						},
-// 						pulumi.StringMap{
-// 							"data": pulumi.String("referer"),
-// 							"type": pulumi.String("HEADER"),
+// 						&waf.WebAclLoggingConfigurationRedactedFieldsFieldToMatchArgs{
+// 							Data: pulumi.String("referer"),
+// 							Type: pulumi.String("HEADER"),
 // 						},
 // 					},
 // 				},
@@ -112,6 +113,14 @@ import (
 // 		return nil
 // 	})
 // }
+// ```
+//
+// ## Import
+//
+// WAF Web ACL can be imported using the `id`, e.g.
+//
+// ```sh
+//  $ pulumi import aws:waf/webAcl:WebAcl main 0c8e583e-18f3-4c13-9e2a-67c4805d2f94
 // ```
 type WebAcl struct {
 	pulumi.CustomResourceState
@@ -135,14 +144,15 @@ type WebAcl struct {
 // NewWebAcl registers a new resource with the given unique name, arguments, and options.
 func NewWebAcl(ctx *pulumi.Context,
 	name string, args *WebAclArgs, opts ...pulumi.ResourceOption) (*WebAcl, error) {
-	if args == nil || args.DefaultAction == nil {
-		return nil, errors.New("missing required argument 'DefaultAction'")
-	}
-	if args == nil || args.MetricName == nil {
-		return nil, errors.New("missing required argument 'MetricName'")
-	}
 	if args == nil {
-		args = &WebAclArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.DefaultAction == nil {
+		return nil, errors.New("invalid value for required argument 'DefaultAction'")
+	}
+	if args.MetricName == nil {
+		return nil, errors.New("invalid value for required argument 'MetricName'")
 	}
 	var resource WebAcl
 	err := ctx.RegisterResource("aws:waf/webAcl:WebAcl", name, args, &resource, opts...)
@@ -236,4 +246,43 @@ type WebAclArgs struct {
 
 func (WebAclArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*webAclArgs)(nil)).Elem()
+}
+
+type WebAclInput interface {
+	pulumi.Input
+
+	ToWebAclOutput() WebAclOutput
+	ToWebAclOutputWithContext(ctx context.Context) WebAclOutput
+}
+
+func (WebAcl) ElementType() reflect.Type {
+	return reflect.TypeOf((*WebAcl)(nil)).Elem()
+}
+
+func (i WebAcl) ToWebAclOutput() WebAclOutput {
+	return i.ToWebAclOutputWithContext(context.Background())
+}
+
+func (i WebAcl) ToWebAclOutputWithContext(ctx context.Context) WebAclOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(WebAclOutput)
+}
+
+type WebAclOutput struct {
+	*pulumi.OutputState
+}
+
+func (WebAclOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*WebAclOutput)(nil)).Elem()
+}
+
+func (o WebAclOutput) ToWebAclOutput() WebAclOutput {
+	return o
+}
+
+func (o WebAclOutput) ToWebAclOutputWithContext(ctx context.Context) WebAclOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(WebAclOutput{})
 }

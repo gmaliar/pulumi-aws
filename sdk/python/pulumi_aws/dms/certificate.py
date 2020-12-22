@@ -5,28 +5,22 @@
 import warnings
 import pulumi
 import pulumi.runtime
-from typing import Union
-from .. import utilities, tables
+from typing import Any, Mapping, Optional, Sequence, Union
+from .. import _utilities, _tables
+
+__all__ = ['Certificate']
 
 
 class Certificate(pulumi.CustomResource):
-    certificate_arn: pulumi.Output[str]
-    """
-    The Amazon Resource Name (ARN) for the certificate.
-    """
-    certificate_id: pulumi.Output[str]
-    """
-    The certificate identifier.
-    """
-    certificate_pem: pulumi.Output[str]
-    """
-    The contents of the .pem X.509 certificate file for the certificate. Either `certificate_pem` or `certificate_wallet` must be set.
-    """
-    certificate_wallet: pulumi.Output[str]
-    """
-    The contents of the Oracle Wallet certificate for use with SSL. Either `certificate_pem` or `certificate_wallet` must be set.
-    """
-    def __init__(__self__, resource_name, opts=None, certificate_id=None, certificate_pem=None, certificate_wallet=None, __props__=None, __name__=None, __opts__=None):
+    def __init__(__self__,
+                 resource_name: str,
+                 opts: Optional[pulumi.ResourceOptions] = None,
+                 certificate_id: Optional[pulumi.Input[str]] = None,
+                 certificate_pem: Optional[pulumi.Input[str]] = None,
+                 certificate_wallet: Optional[pulumi.Input[str]] = None,
+                 __props__=None,
+                 __name__=None,
+                 __opts__=None):
         """
         Provides a DMS (Data Migration Service) certificate resource. DMS certificates can be created, deleted, and imported.
 
@@ -42,6 +36,14 @@ class Certificate(pulumi.CustomResource):
         test = aws.dms.Certificate("test",
             certificate_id="test-dms-certificate-tf",
             certificate_pem="...")
+        ```
+
+        ## Import
+
+        Certificates can be imported using the `certificate_arn`, e.g.
+
+        ```sh
+         $ pulumi import aws:dms/certificate:Certificate test arn:aws:dms:us-west-2:123456789:cert:xxxxxxxxxx
         ```
 
         :param str resource_name: The name of the resource.
@@ -61,13 +63,13 @@ class Certificate(pulumi.CustomResource):
         if not isinstance(opts, pulumi.ResourceOptions):
             raise TypeError('Expected resource options to be a ResourceOptions instance')
         if opts.version is None:
-            opts.version = utilities.get_version()
+            opts.version = _utilities.get_version()
         if opts.id is None:
             if __props__ is not None:
                 raise TypeError('__props__ is only valid when passed in combination with a valid opts.id to get an existing resource')
             __props__ = dict()
 
-            if certificate_id is None:
+            if certificate_id is None and not opts.urn:
                 raise TypeError("Missing required property 'certificate_id'")
             __props__['certificate_id'] = certificate_id
             __props__['certificate_pem'] = certificate_pem
@@ -80,13 +82,19 @@ class Certificate(pulumi.CustomResource):
             opts)
 
     @staticmethod
-    def get(resource_name, id, opts=None, certificate_arn=None, certificate_id=None, certificate_pem=None, certificate_wallet=None):
+    def get(resource_name: str,
+            id: pulumi.Input[str],
+            opts: Optional[pulumi.ResourceOptions] = None,
+            certificate_arn: Optional[pulumi.Input[str]] = None,
+            certificate_id: Optional[pulumi.Input[str]] = None,
+            certificate_pem: Optional[pulumi.Input[str]] = None,
+            certificate_wallet: Optional[pulumi.Input[str]] = None) -> 'Certificate':
         """
         Get an existing Certificate resource's state with the given name, id, and optional extra
         properties used to qualify the lookup.
 
         :param str resource_name: The unique name of the resulting resource.
-        :param str id: The unique provider ID of the resource to lookup.
+        :param pulumi.Input[str] id: The unique provider ID of the resource to lookup.
         :param pulumi.ResourceOptions opts: Options for the resource.
         :param pulumi.Input[str] certificate_arn: The Amazon Resource Name (ARN) for the certificate.
         :param pulumi.Input[str] certificate_id: The certificate identifier.
@@ -103,8 +111,41 @@ class Certificate(pulumi.CustomResource):
         __props__["certificate_wallet"] = certificate_wallet
         return Certificate(resource_name, opts=opts, __props__=__props__)
 
+    @property
+    @pulumi.getter(name="certificateArn")
+    def certificate_arn(self) -> pulumi.Output[str]:
+        """
+        The Amazon Resource Name (ARN) for the certificate.
+        """
+        return pulumi.get(self, "certificate_arn")
+
+    @property
+    @pulumi.getter(name="certificateId")
+    def certificate_id(self) -> pulumi.Output[str]:
+        """
+        The certificate identifier.
+        """
+        return pulumi.get(self, "certificate_id")
+
+    @property
+    @pulumi.getter(name="certificatePem")
+    def certificate_pem(self) -> pulumi.Output[Optional[str]]:
+        """
+        The contents of the .pem X.509 certificate file for the certificate. Either `certificate_pem` or `certificate_wallet` must be set.
+        """
+        return pulumi.get(self, "certificate_pem")
+
+    @property
+    @pulumi.getter(name="certificateWallet")
+    def certificate_wallet(self) -> pulumi.Output[Optional[str]]:
+        """
+        The contents of the Oracle Wallet certificate for use with SSL. Either `certificate_pem` or `certificate_wallet` must be set.
+        """
+        return pulumi.get(self, "certificate_wallet")
+
     def translate_output_property(self, prop):
-        return tables._CAMEL_TO_SNAKE_CASE_TABLE.get(prop) or prop
+        return _tables.CAMEL_TO_SNAKE_CASE_TABLE.get(prop) or prop
 
     def translate_input_property(self, prop):
-        return tables._SNAKE_TO_CAMEL_CASE_TABLE.get(prop) or prop
+        return _tables.SNAKE_TO_CAMEL_CASE_TABLE.get(prop) or prop
+

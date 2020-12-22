@@ -26,8 +26,8 @@ namespace Pulumi.Aws.Inspector
     ///         {
     ///             Tags = 
     ///             {
-    ///                 { "Env", "bar" },
     ///                 { "Name", "foo" },
+    ///                 { "Env", "bar" },
     ///             },
     ///         });
     ///         var foo = new Aws.Inspector.AssessmentTarget("foo", new Aws.Inspector.AssessmentTargetArgs
@@ -37,6 +37,14 @@ namespace Pulumi.Aws.Inspector
     ///     }
     /// 
     /// }
+    /// ```
+    /// 
+    /// ## Import
+    /// 
+    /// Inspector Assessment Targets can be imported via their Amazon Resource Name (ARN), e.g.
+    /// 
+    /// ```sh
+    ///  $ pulumi import aws:inspector/assessmentTarget:AssessmentTarget example arn:aws:inspector:us-east-1:123456789012:target/0-xxxxxxx
     /// ```
     /// </summary>
     public partial class AssessmentTarget : Pulumi.CustomResource

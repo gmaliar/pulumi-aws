@@ -4,6 +4,7 @@
 package pinpoint
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -18,7 +19,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/pinpoint"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/pinpoint"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -37,6 +38,14 @@ import (
 // 		return nil
 // 	})
 // }
+// ```
+//
+// ## Import
+//
+// Pinpoint SMS Channel can be imported using the `application-id`, e.g.
+//
+// ```sh
+//  $ pulumi import aws:pinpoint/smsChannel:SmsChannel sms application-id
 // ```
 type SmsChannel struct {
 	pulumi.CustomResourceState
@@ -58,11 +67,12 @@ type SmsChannel struct {
 // NewSmsChannel registers a new resource with the given unique name, arguments, and options.
 func NewSmsChannel(ctx *pulumi.Context,
 	name string, args *SmsChannelArgs, opts ...pulumi.ResourceOption) (*SmsChannel, error) {
-	if args == nil || args.ApplicationId == nil {
-		return nil, errors.New("missing required argument 'ApplicationId'")
-	}
 	if args == nil {
-		args = &SmsChannelArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.ApplicationId == nil {
+		return nil, errors.New("invalid value for required argument 'ApplicationId'")
 	}
 	var resource SmsChannel
 	err := ctx.RegisterResource("aws:pinpoint/smsChannel:SmsChannel", name, args, &resource, opts...)
@@ -144,4 +154,43 @@ type SmsChannelArgs struct {
 
 func (SmsChannelArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*smsChannelArgs)(nil)).Elem()
+}
+
+type SmsChannelInput interface {
+	pulumi.Input
+
+	ToSmsChannelOutput() SmsChannelOutput
+	ToSmsChannelOutputWithContext(ctx context.Context) SmsChannelOutput
+}
+
+func (SmsChannel) ElementType() reflect.Type {
+	return reflect.TypeOf((*SmsChannel)(nil)).Elem()
+}
+
+func (i SmsChannel) ToSmsChannelOutput() SmsChannelOutput {
+	return i.ToSmsChannelOutputWithContext(context.Background())
+}
+
+func (i SmsChannel) ToSmsChannelOutputWithContext(ctx context.Context) SmsChannelOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(SmsChannelOutput)
+}
+
+type SmsChannelOutput struct {
+	*pulumi.OutputState
+}
+
+func (SmsChannelOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*SmsChannelOutput)(nil)).Elem()
+}
+
+func (o SmsChannelOutput) ToSmsChannelOutput() SmsChannelOutput {
+	return o
+}
+
+func (o SmsChannelOutput) ToSmsChannelOutputWithContext(ctx context.Context) SmsChannelOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(SmsChannelOutput{})
 }

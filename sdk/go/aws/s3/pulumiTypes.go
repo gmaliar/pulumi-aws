@@ -1391,7 +1391,7 @@ type BucketLifecycleRule struct {
 	Enabled bool `pulumi:"enabled"`
 	// Specifies a period in the object's expire (documented below).
 	Expiration *BucketLifecycleRuleExpiration `pulumi:"expiration"`
-	// Unique identifier for the rule.
+	// Unique identifier for the rule. Must be less than or equal to 255 characters in length.
 	Id *string `pulumi:"id"`
 	// Specifies when noncurrent object versions expire (documented below).
 	NoncurrentVersionExpiration *BucketLifecycleRuleNoncurrentVersionExpiration `pulumi:"noncurrentVersionExpiration"`
@@ -1423,7 +1423,7 @@ type BucketLifecycleRuleArgs struct {
 	Enabled pulumi.BoolInput `pulumi:"enabled"`
 	// Specifies a period in the object's expire (documented below).
 	Expiration BucketLifecycleRuleExpirationPtrInput `pulumi:"expiration"`
-	// Unique identifier for the rule.
+	// Unique identifier for the rule. Must be less than or equal to 255 characters in length.
 	Id pulumi.StringPtrInput `pulumi:"id"`
 	// Specifies when noncurrent object versions expire (documented below).
 	NoncurrentVersionExpiration BucketLifecycleRuleNoncurrentVersionExpirationPtrInput `pulumi:"noncurrentVersionExpiration"`
@@ -1503,7 +1503,7 @@ func (o BucketLifecycleRuleOutput) Expiration() BucketLifecycleRuleExpirationPtr
 	return o.ApplyT(func(v BucketLifecycleRule) *BucketLifecycleRuleExpiration { return v.Expiration }).(BucketLifecycleRuleExpirationPtrOutput)
 }
 
-// Unique identifier for the rule.
+// Unique identifier for the rule. Must be less than or equal to 255 characters in length.
 func (o BucketLifecycleRuleOutput) Id() pulumi.StringPtrOutput {
 	return o.ApplyT(func(v BucketLifecycleRule) *string { return v.Id }).(pulumi.StringPtrOutput)
 }
@@ -3189,6 +3189,137 @@ func (o BucketObjectLockConfigurationRuleDefaultRetentionPtrOutput) Years() pulu
 	}).(pulumi.IntPtrOutput)
 }
 
+type BucketOwnershipControlsRule struct {
+	// Object ownership. Valid values: `BucketOwnerPreferred` or `ObjectWriter`
+	ObjectOwnership string `pulumi:"objectOwnership"`
+}
+
+// BucketOwnershipControlsRuleInput is an input type that accepts BucketOwnershipControlsRuleArgs and BucketOwnershipControlsRuleOutput values.
+// You can construct a concrete instance of `BucketOwnershipControlsRuleInput` via:
+//
+//          BucketOwnershipControlsRuleArgs{...}
+type BucketOwnershipControlsRuleInput interface {
+	pulumi.Input
+
+	ToBucketOwnershipControlsRuleOutput() BucketOwnershipControlsRuleOutput
+	ToBucketOwnershipControlsRuleOutputWithContext(context.Context) BucketOwnershipControlsRuleOutput
+}
+
+type BucketOwnershipControlsRuleArgs struct {
+	// Object ownership. Valid values: `BucketOwnerPreferred` or `ObjectWriter`
+	ObjectOwnership pulumi.StringInput `pulumi:"objectOwnership"`
+}
+
+func (BucketOwnershipControlsRuleArgs) ElementType() reflect.Type {
+	return reflect.TypeOf((*BucketOwnershipControlsRule)(nil)).Elem()
+}
+
+func (i BucketOwnershipControlsRuleArgs) ToBucketOwnershipControlsRuleOutput() BucketOwnershipControlsRuleOutput {
+	return i.ToBucketOwnershipControlsRuleOutputWithContext(context.Background())
+}
+
+func (i BucketOwnershipControlsRuleArgs) ToBucketOwnershipControlsRuleOutputWithContext(ctx context.Context) BucketOwnershipControlsRuleOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(BucketOwnershipControlsRuleOutput)
+}
+
+func (i BucketOwnershipControlsRuleArgs) ToBucketOwnershipControlsRulePtrOutput() BucketOwnershipControlsRulePtrOutput {
+	return i.ToBucketOwnershipControlsRulePtrOutputWithContext(context.Background())
+}
+
+func (i BucketOwnershipControlsRuleArgs) ToBucketOwnershipControlsRulePtrOutputWithContext(ctx context.Context) BucketOwnershipControlsRulePtrOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(BucketOwnershipControlsRuleOutput).ToBucketOwnershipControlsRulePtrOutputWithContext(ctx)
+}
+
+// BucketOwnershipControlsRulePtrInput is an input type that accepts BucketOwnershipControlsRuleArgs, BucketOwnershipControlsRulePtr and BucketOwnershipControlsRulePtrOutput values.
+// You can construct a concrete instance of `BucketOwnershipControlsRulePtrInput` via:
+//
+//          BucketOwnershipControlsRuleArgs{...}
+//
+//  or:
+//
+//          nil
+type BucketOwnershipControlsRulePtrInput interface {
+	pulumi.Input
+
+	ToBucketOwnershipControlsRulePtrOutput() BucketOwnershipControlsRulePtrOutput
+	ToBucketOwnershipControlsRulePtrOutputWithContext(context.Context) BucketOwnershipControlsRulePtrOutput
+}
+
+type bucketOwnershipControlsRulePtrType BucketOwnershipControlsRuleArgs
+
+func BucketOwnershipControlsRulePtr(v *BucketOwnershipControlsRuleArgs) BucketOwnershipControlsRulePtrInput {
+	return (*bucketOwnershipControlsRulePtrType)(v)
+}
+
+func (*bucketOwnershipControlsRulePtrType) ElementType() reflect.Type {
+	return reflect.TypeOf((**BucketOwnershipControlsRule)(nil)).Elem()
+}
+
+func (i *bucketOwnershipControlsRulePtrType) ToBucketOwnershipControlsRulePtrOutput() BucketOwnershipControlsRulePtrOutput {
+	return i.ToBucketOwnershipControlsRulePtrOutputWithContext(context.Background())
+}
+
+func (i *bucketOwnershipControlsRulePtrType) ToBucketOwnershipControlsRulePtrOutputWithContext(ctx context.Context) BucketOwnershipControlsRulePtrOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(BucketOwnershipControlsRulePtrOutput)
+}
+
+type BucketOwnershipControlsRuleOutput struct{ *pulumi.OutputState }
+
+func (BucketOwnershipControlsRuleOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*BucketOwnershipControlsRule)(nil)).Elem()
+}
+
+func (o BucketOwnershipControlsRuleOutput) ToBucketOwnershipControlsRuleOutput() BucketOwnershipControlsRuleOutput {
+	return o
+}
+
+func (o BucketOwnershipControlsRuleOutput) ToBucketOwnershipControlsRuleOutputWithContext(ctx context.Context) BucketOwnershipControlsRuleOutput {
+	return o
+}
+
+func (o BucketOwnershipControlsRuleOutput) ToBucketOwnershipControlsRulePtrOutput() BucketOwnershipControlsRulePtrOutput {
+	return o.ToBucketOwnershipControlsRulePtrOutputWithContext(context.Background())
+}
+
+func (o BucketOwnershipControlsRuleOutput) ToBucketOwnershipControlsRulePtrOutputWithContext(ctx context.Context) BucketOwnershipControlsRulePtrOutput {
+	return o.ApplyT(func(v BucketOwnershipControlsRule) *BucketOwnershipControlsRule {
+		return &v
+	}).(BucketOwnershipControlsRulePtrOutput)
+}
+
+// Object ownership. Valid values: `BucketOwnerPreferred` or `ObjectWriter`
+func (o BucketOwnershipControlsRuleOutput) ObjectOwnership() pulumi.StringOutput {
+	return o.ApplyT(func(v BucketOwnershipControlsRule) string { return v.ObjectOwnership }).(pulumi.StringOutput)
+}
+
+type BucketOwnershipControlsRulePtrOutput struct{ *pulumi.OutputState }
+
+func (BucketOwnershipControlsRulePtrOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((**BucketOwnershipControlsRule)(nil)).Elem()
+}
+
+func (o BucketOwnershipControlsRulePtrOutput) ToBucketOwnershipControlsRulePtrOutput() BucketOwnershipControlsRulePtrOutput {
+	return o
+}
+
+func (o BucketOwnershipControlsRulePtrOutput) ToBucketOwnershipControlsRulePtrOutputWithContext(ctx context.Context) BucketOwnershipControlsRulePtrOutput {
+	return o
+}
+
+func (o BucketOwnershipControlsRulePtrOutput) Elem() BucketOwnershipControlsRuleOutput {
+	return o.ApplyT(func(v *BucketOwnershipControlsRule) BucketOwnershipControlsRule { return *v }).(BucketOwnershipControlsRuleOutput)
+}
+
+// Object ownership. Valid values: `BucketOwnerPreferred` or `ObjectWriter`
+func (o BucketOwnershipControlsRulePtrOutput) ObjectOwnership() pulumi.StringPtrOutput {
+	return o.ApplyT(func(v *BucketOwnershipControlsRule) *string {
+		if v == nil {
+			return nil
+		}
+		return &v.ObjectOwnership
+	}).(pulumi.StringPtrOutput)
+}
+
 type BucketReplicationConfiguration struct {
 	// The ARN of the IAM role for Amazon S3 to assume when replicating the objects.
 	Role string `pulumi:"role"`
@@ -3344,9 +3475,9 @@ type BucketReplicationConfigurationRule struct {
 	Destination BucketReplicationConfigurationRuleDestination `pulumi:"destination"`
 	// Filter that identifies subset of objects to which the replication rule applies (documented below).
 	Filter *BucketReplicationConfigurationRuleFilter `pulumi:"filter"`
-	// Unique identifier for the rule.
+	// Unique identifier for the rule. Must be less than or equal to 255 characters in length.
 	Id *string `pulumi:"id"`
-	// Object keyname prefix identifying one or more objects to which the rule applies.
+	// Object keyname prefix identifying one or more objects to which the rule applies. Must be less than or equal to 1024 characters in length.
 	Prefix *string `pulumi:"prefix"`
 	// is optional (with a default value of `0`) but must be unique between multiple rules
 	Priority *int `pulumi:"priority"`
@@ -3372,9 +3503,9 @@ type BucketReplicationConfigurationRuleArgs struct {
 	Destination BucketReplicationConfigurationRuleDestinationInput `pulumi:"destination"`
 	// Filter that identifies subset of objects to which the replication rule applies (documented below).
 	Filter BucketReplicationConfigurationRuleFilterPtrInput `pulumi:"filter"`
-	// Unique identifier for the rule.
+	// Unique identifier for the rule. Must be less than or equal to 255 characters in length.
 	Id pulumi.StringPtrInput `pulumi:"id"`
-	// Object keyname prefix identifying one or more objects to which the rule applies.
+	// Object keyname prefix identifying one or more objects to which the rule applies. Must be less than or equal to 1024 characters in length.
 	Prefix pulumi.StringPtrInput `pulumi:"prefix"`
 	// is optional (with a default value of `0`) but must be unique between multiple rules
 	Priority pulumi.IntPtrInput `pulumi:"priority"`
@@ -3447,12 +3578,12 @@ func (o BucketReplicationConfigurationRuleOutput) Filter() BucketReplicationConf
 	return o.ApplyT(func(v BucketReplicationConfigurationRule) *BucketReplicationConfigurationRuleFilter { return v.Filter }).(BucketReplicationConfigurationRuleFilterPtrOutput)
 }
 
-// Unique identifier for the rule.
+// Unique identifier for the rule. Must be less than or equal to 255 characters in length.
 func (o BucketReplicationConfigurationRuleOutput) Id() pulumi.StringPtrOutput {
 	return o.ApplyT(func(v BucketReplicationConfigurationRule) *string { return v.Id }).(pulumi.StringPtrOutput)
 }
 
-// Object keyname prefix identifying one or more objects to which the rule applies.
+// Object keyname prefix identifying one or more objects to which the rule applies. Must be less than or equal to 1024 characters in length.
 func (o BucketReplicationConfigurationRuleOutput) Prefix() pulumi.StringPtrOutput {
 	return o.ApplyT(func(v BucketReplicationConfigurationRule) *string { return v.Prefix }).(pulumi.StringPtrOutput)
 }
@@ -3721,7 +3852,7 @@ func (o BucketReplicationConfigurationRuleDestinationAccessControlTranslationPtr
 }
 
 type BucketReplicationConfigurationRuleFilter struct {
-	// Object keyname prefix that identifies subset of objects to which the rule applies.
+	// Object keyname prefix that identifies subset of objects to which the rule applies. Must be less than or equal to 1024 characters in length.
 	Prefix *string `pulumi:"prefix"`
 	// A map of tags that identifies subset of objects to which the rule applies.
 	// The rule applies only to objects having all the tags in its tagset.
@@ -3740,7 +3871,7 @@ type BucketReplicationConfigurationRuleFilterInput interface {
 }
 
 type BucketReplicationConfigurationRuleFilterArgs struct {
-	// Object keyname prefix that identifies subset of objects to which the rule applies.
+	// Object keyname prefix that identifies subset of objects to which the rule applies. Must be less than or equal to 1024 characters in length.
 	Prefix pulumi.StringPtrInput `pulumi:"prefix"`
 	// A map of tags that identifies subset of objects to which the rule applies.
 	// The rule applies only to objects having all the tags in its tagset.
@@ -3824,7 +3955,7 @@ func (o BucketReplicationConfigurationRuleFilterOutput) ToBucketReplicationConfi
 	}).(BucketReplicationConfigurationRuleFilterPtrOutput)
 }
 
-// Object keyname prefix that identifies subset of objects to which the rule applies.
+// Object keyname prefix that identifies subset of objects to which the rule applies. Must be less than or equal to 1024 characters in length.
 func (o BucketReplicationConfigurationRuleFilterOutput) Prefix() pulumi.StringPtrOutput {
 	return o.ApplyT(func(v BucketReplicationConfigurationRuleFilter) *string { return v.Prefix }).(pulumi.StringPtrOutput)
 }
@@ -3853,7 +3984,7 @@ func (o BucketReplicationConfigurationRuleFilterPtrOutput) Elem() BucketReplicat
 	return o.ApplyT(func(v *BucketReplicationConfigurationRuleFilter) BucketReplicationConfigurationRuleFilter { return *v }).(BucketReplicationConfigurationRuleFilterOutput)
 }
 
-// Object keyname prefix that identifies subset of objects to which the rule applies.
+// Object keyname prefix that identifies subset of objects to which the rule applies. Must be less than or equal to 1024 characters in length.
 func (o BucketReplicationConfigurationRuleFilterPtrOutput) Prefix() pulumi.StringPtrOutput {
 	return o.ApplyT(func(v *BucketReplicationConfigurationRuleFilter) *string {
 		if v == nil {
@@ -5960,6 +6091,8 @@ func init() {
 	pulumi.RegisterOutputType(BucketObjectLockConfigurationRulePtrOutput{})
 	pulumi.RegisterOutputType(BucketObjectLockConfigurationRuleDefaultRetentionOutput{})
 	pulumi.RegisterOutputType(BucketObjectLockConfigurationRuleDefaultRetentionPtrOutput{})
+	pulumi.RegisterOutputType(BucketOwnershipControlsRuleOutput{})
+	pulumi.RegisterOutputType(BucketOwnershipControlsRulePtrOutput{})
 	pulumi.RegisterOutputType(BucketReplicationConfigurationOutput{})
 	pulumi.RegisterOutputType(BucketReplicationConfigurationPtrOutput{})
 	pulumi.RegisterOutputType(BucketReplicationConfigurationRuleOutput{})

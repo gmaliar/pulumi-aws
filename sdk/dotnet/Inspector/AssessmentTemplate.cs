@@ -24,6 +24,7 @@ namespace Pulumi.Aws.Inspector
     ///     {
     ///         var example = new Aws.Inspector.AssessmentTemplate("example", new Aws.Inspector.AssessmentTemplateArgs
     ///         {
+    ///             TargetArn = aws_inspector_assessment_target.Example.Arn,
     ///             Duration = 3600,
     ///             RulesPackageArns = 
     ///             {
@@ -32,11 +33,18 @@ namespace Pulumi.Aws.Inspector
     ///                 "arn:aws:inspector:us-west-2:758058086616:rulespackage/0-JJOtZiqQ",
     ///                 "arn:aws:inspector:us-west-2:758058086616:rulespackage/0-vg5GGHSD",
     ///             },
-    ///             TargetArn = aws_inspector_assessment_target.Example.Arn,
     ///         });
     ///     }
     /// 
     /// }
+    /// ```
+    /// 
+    /// ## Import
+    /// 
+    /// `aws_inspector_assessment_template` can be imported by using the template assessment ARN, e.g.
+    /// 
+    /// ```sh
+    ///  $ pulumi import aws:inspector/assessmentTemplate:AssessmentTemplate example arn:aws:inspector:us-west-2:123456789012:target/0-9IaAzhGR/template/0-WEcjR8CH
     /// ```
     /// </summary>
     public partial class AssessmentTemplate : Pulumi.CustomResource

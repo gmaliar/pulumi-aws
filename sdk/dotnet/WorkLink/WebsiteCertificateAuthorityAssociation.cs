@@ -26,12 +26,20 @@ namespace Pulumi.Aws.WorkLink
     ///         });
     ///         var test = new Aws.WorkLink.WebsiteCertificateAuthorityAssociation("test", new Aws.WorkLink.WebsiteCertificateAuthorityAssociationArgs
     ///         {
-    ///             Certificate = File.ReadAllText("certificate.pem"),
     ///             FleetArn = aws_worklink_fleet.Test.Arn,
+    ///             Certificate = File.ReadAllText("certificate.pem"),
     ///         });
     ///     }
     /// 
     /// }
+    /// ```
+    /// 
+    /// ## Import
+    /// 
+    /// WorkLink Website Certificate Authority can be imported using `FLEET-ARN,WEBSITE-CA-ID`, e.g.
+    /// 
+    /// ```sh
+    ///  $ pulumi import aws:worklink/websiteCertificateAuthorityAssociation:WebsiteCertificateAuthorityAssociation example arn:aws:worklink::123456789012:fleet/example,abcdefghijk
     /// ```
     /// </summary>
     public partial class WebsiteCertificateAuthorityAssociation : Pulumi.CustomResource

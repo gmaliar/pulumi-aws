@@ -14,18 +14,25 @@ import * as utilities from "../utilities";
  * import * as aws from "@pulumi/aws";
  *
  * const test = new aws.apigateway.RestApi("test", {});
- * const myusageplan = new aws.apigateway.UsagePlan("myusageplan", {
- *     apiStages: [{
- *         apiId: test.id,
- *         stage: aws_api_gateway_deployment_foo.stageName,
- *     }],
- * });
+ * // ...
+ * const myusageplan = new aws.apigateway.UsagePlan("myusageplan", {apiStages: [{
+ *     apiId: test.id,
+ *     stage: aws_api_gateway_deployment.foo.stage_name,
+ * }]});
  * const mykey = new aws.apigateway.ApiKey("mykey", {});
  * const main = new aws.apigateway.UsagePlanKey("main", {
  *     keyId: mykey.id,
  *     keyType: "API_KEY",
  *     usagePlanId: myusageplan.id,
  * });
+ * ```
+ *
+ * ## Import
+ *
+ * AWS API Gateway Usage Plan Key can be imported using the `USAGE-PLAN-ID/USAGE-PLAN-KEY-ID`, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:apigateway/usagePlanKey:UsagePlanKey key 12345abcde/zzz
  * ```
  */
 export class UsagePlanKey extends pulumi.CustomResource {
@@ -96,13 +103,13 @@ export class UsagePlanKey extends pulumi.CustomResource {
             inputs["value"] = state ? state.value : undefined;
         } else {
             const args = argsOrState as UsagePlanKeyArgs | undefined;
-            if (!args || args.keyId === undefined) {
+            if ((!args || args.keyId === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'keyId'");
             }
-            if (!args || args.keyType === undefined) {
+            if ((!args || args.keyType === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'keyType'");
             }
-            if (!args || args.usagePlanId === undefined) {
+            if ((!args || args.usagePlanId === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'usagePlanId'");
             }
             inputs["keyId"] = args ? args.keyId : undefined;

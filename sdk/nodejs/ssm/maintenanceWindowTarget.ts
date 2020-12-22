@@ -2,8 +2,7 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 /**
@@ -16,18 +15,18 @@ import * as utilities from "../utilities";
  * import * as aws from "@pulumi/aws";
  *
  * const window = new aws.ssm.MaintenanceWindow("window", {
- *     cutoff: 1,
- *     duration: 3,
  *     schedule: "cron(0 16 ? * TUE *)",
+ *     duration: 3,
+ *     cutoff: 1,
  * });
  * const target1 = new aws.ssm.MaintenanceWindowTarget("target1", {
+ *     windowId: window.id,
  *     description: "This is a maintenance window target",
  *     resourceType: "INSTANCE",
  *     targets: [{
  *         key: "tag:Name",
  *         values: ["acceptance_test"],
  *     }],
- *     windowId: window.id,
  * });
  * ```
  *
@@ -38,22 +37,27 @@ import * as utilities from "../utilities";
  * import * as aws from "@pulumi/aws";
  *
  * const window = new aws.ssm.MaintenanceWindow("window", {
- *     cutoff: 1,
- *     duration: 3,
  *     schedule: "cron(0 16 ? * TUE *)",
+ *     duration: 3,
+ *     cutoff: 1,
  * });
  * const target1 = new aws.ssm.MaintenanceWindowTarget("target1", {
+ *     windowId: window.id,
  *     description: "This is a maintenance window target",
  *     resourceType: "RESOURCE_GROUP",
  *     targets: [{
  *         key: "resource-groups:ResourceTypeFilters",
- *         values: [
- *             "AWS::EC2::INSTANCE",
- *             "AWS::EC2::VPC",
- *         ],
+ *         values: ["AWS::EC2::Instance"],
  *     }],
- *     windowId: window.id,
  * });
+ * ```
+ *
+ * ## Import
+ *
+ * SSM Maintenance Window targets can be imported using `WINDOW_ID/WINDOW_TARGET_ID`, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:ssm/maintenanceWindowTarget:MaintenanceWindowTarget example mw-0c50858d01EXAMPLE/23639a0b-ddbc-4bca-9e72-78d96EXAMPLE
  * ```
  */
 export class MaintenanceWindowTarget extends pulumi.CustomResource {
@@ -130,13 +134,13 @@ export class MaintenanceWindowTarget extends pulumi.CustomResource {
             inputs["windowId"] = state ? state.windowId : undefined;
         } else {
             const args = argsOrState as MaintenanceWindowTargetArgs | undefined;
-            if (!args || args.resourceType === undefined) {
+            if ((!args || args.resourceType === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'resourceType'");
             }
-            if (!args || args.targets === undefined) {
+            if ((!args || args.targets === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'targets'");
             }
-            if (!args || args.windowId === undefined) {
+            if ((!args || args.windowId === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'windowId'");
             }
             inputs["description"] = args ? args.description : undefined;

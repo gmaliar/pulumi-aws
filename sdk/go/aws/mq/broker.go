@@ -4,6 +4,7 @@
 package mq
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -32,7 +33,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/mq"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/mq"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -41,19 +42,19 @@ import (
 // 		_, err := mq.NewBroker(ctx, "example", &mq.BrokerArgs{
 // 			BrokerName: pulumi.String("example"),
 // 			Configuration: &mq.BrokerConfigurationArgs{
-// 				Id:       pulumi.String(aws_mq_configuration.Test.Id),
-// 				Revision: pulumi.String(aws_mq_configuration.Test.Latest_revision),
+// 				Id:       pulumi.Any(aws_mq_configuration.Test.Id),
+// 				Revision: pulumi.Any(aws_mq_configuration.Test.Latest_revision),
 // 			},
 // 			EngineType:       pulumi.String("ActiveMQ"),
 // 			EngineVersion:    pulumi.String("5.15.0"),
 // 			HostInstanceType: pulumi.String("mq.t2.micro"),
 // 			SecurityGroups: pulumi.StringArray{
-// 				pulumi.String(aws_security_group.Test.Id),
+// 				pulumi.Any(aws_security_group.Test.Id),
 // 			},
 // 			Users: mq.BrokerUserArray{
 // 				&mq.BrokerUserArgs{
-// 					Password: pulumi.String("MindTheGap"),
 // 					Username: pulumi.String("ExampleUser"),
+// 					Password: pulumi.String("MindTheGap"),
 // 				},
 // 			},
 // 		})
@@ -63,6 +64,14 @@ import (
 // 		return nil
 // 	})
 // }
+// ```
+//
+// ## Import
+//
+// MQ Brokers can be imported using their broker id, e.g.
+//
+// ```sh
+//  $ pulumi import aws:mq/broker:Broker example a1b2c3d4-d5f6-7777-8888-9999aaaabbbbcccc
 // ```
 type Broker struct {
 	pulumi.CustomResourceState
@@ -117,26 +126,27 @@ type Broker struct {
 // NewBroker registers a new resource with the given unique name, arguments, and options.
 func NewBroker(ctx *pulumi.Context,
 	name string, args *BrokerArgs, opts ...pulumi.ResourceOption) (*Broker, error) {
-	if args == nil || args.BrokerName == nil {
-		return nil, errors.New("missing required argument 'BrokerName'")
-	}
-	if args == nil || args.EngineType == nil {
-		return nil, errors.New("missing required argument 'EngineType'")
-	}
-	if args == nil || args.EngineVersion == nil {
-		return nil, errors.New("missing required argument 'EngineVersion'")
-	}
-	if args == nil || args.HostInstanceType == nil {
-		return nil, errors.New("missing required argument 'HostInstanceType'")
-	}
-	if args == nil || args.SecurityGroups == nil {
-		return nil, errors.New("missing required argument 'SecurityGroups'")
-	}
-	if args == nil || args.Users == nil {
-		return nil, errors.New("missing required argument 'Users'")
-	}
 	if args == nil {
-		args = &BrokerArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.BrokerName == nil {
+		return nil, errors.New("invalid value for required argument 'BrokerName'")
+	}
+	if args.EngineType == nil {
+		return nil, errors.New("invalid value for required argument 'EngineType'")
+	}
+	if args.EngineVersion == nil {
+		return nil, errors.New("invalid value for required argument 'EngineVersion'")
+	}
+	if args.HostInstanceType == nil {
+		return nil, errors.New("invalid value for required argument 'HostInstanceType'")
+	}
+	if args.SecurityGroups == nil {
+		return nil, errors.New("invalid value for required argument 'SecurityGroups'")
+	}
+	if args.Users == nil {
+		return nil, errors.New("invalid value for required argument 'Users'")
 	}
 	var resource Broker
 	err := ctx.RegisterResource("aws:mq/broker:Broker", name, args, &resource, opts...)
@@ -334,4 +344,43 @@ type BrokerArgs struct {
 
 func (BrokerArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*brokerArgs)(nil)).Elem()
+}
+
+type BrokerInput interface {
+	pulumi.Input
+
+	ToBrokerOutput() BrokerOutput
+	ToBrokerOutputWithContext(ctx context.Context) BrokerOutput
+}
+
+func (Broker) ElementType() reflect.Type {
+	return reflect.TypeOf((*Broker)(nil)).Elem()
+}
+
+func (i Broker) ToBrokerOutput() BrokerOutput {
+	return i.ToBrokerOutputWithContext(context.Background())
+}
+
+func (i Broker) ToBrokerOutputWithContext(ctx context.Context) BrokerOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(BrokerOutput)
+}
+
+type BrokerOutput struct {
+	*pulumi.OutputState
+}
+
+func (BrokerOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*BrokerOutput)(nil)).Elem()
+}
+
+func (o BrokerOutput) ToBrokerOutput() BrokerOutput {
+	return o
+}
+
+func (o BrokerOutput) ToBrokerOutputWithContext(ctx context.Context) BrokerOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(BrokerOutput{})
 }

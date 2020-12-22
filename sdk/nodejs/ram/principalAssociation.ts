@@ -24,11 +24,8 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const exampleResourceShare = new aws.ram.ResourceShare("example", {
- *     // ... other configuration ...
- *     allowExternalPrincipals: true,
- * });
- * const examplePrincipalAssociation = new aws.ram.PrincipalAssociation("example", {
+ * const exampleResourceShare = new aws.ram.ResourceShare("exampleResourceShare", {allowExternalPrincipals: true});
+ * const examplePrincipalAssociation = new aws.ram.PrincipalAssociation("examplePrincipalAssociation", {
  *     principal: "111111111111",
  *     resourceShareArn: exampleResourceShare.arn,
  * });
@@ -40,9 +37,17 @@ import * as utilities from "../utilities";
  * import * as aws from "@pulumi/aws";
  *
  * const example = new aws.ram.PrincipalAssociation("example", {
- *     principal: aws_organizations_organization_example.arn,
- *     resourceShareArn: aws_ram_resource_share_example.arn,
+ *     principal: aws_organizations_organization.example.arn,
+ *     resourceShareArn: aws_ram_resource_share.example.arn,
  * });
+ * ```
+ *
+ * ## Import
+ *
+ * RAM Principal Associations can be imported using their Resource Share ARN and the `principal` separated by a comma, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:ram/principalAssociation:PrincipalAssociation example arn:aws:ram:eu-west-1:123456789012:resource-share/73da1ab9-b94a-4ba3-8eb4-45917f7f4b12,123456789012
  * ```
  */
 export class PrincipalAssociation extends pulumi.CustomResource {
@@ -98,10 +103,10 @@ export class PrincipalAssociation extends pulumi.CustomResource {
             inputs["resourceShareArn"] = state ? state.resourceShareArn : undefined;
         } else {
             const args = argsOrState as PrincipalAssociationArgs | undefined;
-            if (!args || args.principal === undefined) {
+            if ((!args || args.principal === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'principal'");
             }
-            if (!args || args.resourceShareArn === undefined) {
+            if ((!args || args.resourceShareArn === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'resourceShareArn'");
             }
             inputs["principal"] = args ? args.principal : undefined;

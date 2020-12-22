@@ -27,11 +27,11 @@ namespace Pulumi.Aws.Glue
     ///     {
     ///         var example = new Aws.Glue.Job("example", new Aws.Glue.JobArgs
     ///         {
+    ///             RoleArn = aws_iam_role.Example.Arn,
     ///             Command = new Aws.Glue.Inputs.JobCommandArgs
     ///             {
     ///                 ScriptLocation = $"s3://{aws_s3_bucket.Example.Bucket}/example.py",
     ///             },
-    ///             RoleArn = aws_iam_role.Example.Arn,
     ///         });
     ///     }
     /// 
@@ -49,6 +49,7 @@ namespace Pulumi.Aws.Glue
     ///     {
     ///         var example = new Aws.Glue.Job("example", new Aws.Glue.JobArgs
     ///         {
+    ///             RoleArn = aws_iam_role.Example.Arn,
     ///             Command = new Aws.Glue.Inputs.JobCommandArgs
     ///             {
     ///                 ScriptLocation = $"s3://{aws_s3_bucket.Example.Bucket}/example.scala",
@@ -57,7 +58,6 @@ namespace Pulumi.Aws.Glue
     ///             {
     ///                 { "--job-language", "scala" },
     ///             },
-    ///             RoleArn = aws_iam_role.Example.Arn,
     ///         });
     ///     }
     /// 
@@ -77,6 +77,7 @@ namespace Pulumi.Aws.Glue
     ///         {
     ///             RetentionInDays = 14,
     ///         });
+    ///         // ... other configuration ...
     ///         var exampleJob = new Aws.Glue.Job("exampleJob", new Aws.Glue.JobArgs
     ///         {
     ///             DefaultArguments = 
@@ -91,15 +92,17 @@ namespace Pulumi.Aws.Glue
     /// 
     /// }
     /// ```
+    /// 
+    /// ## Import
+    /// 
+    /// Glue Jobs can be imported using `name`, e.g.
+    /// 
+    /// ```sh
+    ///  $ pulumi import aws:glue/job:Job MyJob MyJob
+    /// ```
     /// </summary>
     public partial class Job : Pulumi.CustomResource
     {
-        /// <summary>
-        /// **DEPRECATED** (Optional) The number of AWS Glue data processing units (DPUs) to allocate to this Job. At least 2 DPUs need to be allocated; the default is 10. A DPU is a relative measure of processing power that consists of 4 vCPUs of compute capacity and 16 GB of memory.
-        /// </summary>
-        [Output("allocatedCapacity")]
-        public Output<int> AllocatedCapacity { get; private set; } = null!;
-
         /// <summary>
         /// Amazon Resource Name (ARN) of Glue Job
         /// </summary>
@@ -143,7 +146,7 @@ namespace Pulumi.Aws.Glue
         public Output<string> GlueVersion { get; private set; } = null!;
 
         /// <summary>
-        /// The maximum number of AWS Glue data processing units (DPUs) that can be allocated when this job runs. `Required` when `pythonshell` is set, accept either `0.0625` or `1.0`.
+        /// The maximum number of AWS Glue data processing units (DPUs) that can be allocated when this job runs. `Required` when `pythonshell` is set, accept either `0.0625` or `1.0`. Use `number_of_workers` and `worker_type` arguments instead with `glue_version` `2.0` and above.
         /// </summary>
         [Output("maxCapacity")]
         public Output<double> MaxCapacity { get; private set; } = null!;
@@ -159,6 +162,12 @@ namespace Pulumi.Aws.Glue
         /// </summary>
         [Output("name")]
         public Output<string> Name { get; private set; } = null!;
+
+        /// <summary>
+        /// Non-overridable arguments for this job, specified as name-value pairs.
+        /// </summary>
+        [Output("nonOverridableArguments")]
+        public Output<ImmutableDictionary<string, string>?> NonOverridableArguments { get; private set; } = null!;
 
         /// <summary>
         /// Notification property of the job. Defined below.
@@ -249,12 +258,6 @@ namespace Pulumi.Aws.Glue
     public sealed class JobArgs : Pulumi.ResourceArgs
     {
         /// <summary>
-        /// **DEPRECATED** (Optional) The number of AWS Glue data processing units (DPUs) to allocate to this Job. At least 2 DPUs need to be allocated; the default is 10. A DPU is a relative measure of processing power that consists of 4 vCPUs of compute capacity and 16 GB of memory.
-        /// </summary>
-        [Input("allocatedCapacity")]
-        public Input<int>? AllocatedCapacity { get; set; }
-
-        /// <summary>
         /// The command of the job. Defined below.
         /// </summary>
         [Input("command", required: true)]
@@ -303,7 +306,7 @@ namespace Pulumi.Aws.Glue
         public Input<string>? GlueVersion { get; set; }
 
         /// <summary>
-        /// The maximum number of AWS Glue data processing units (DPUs) that can be allocated when this job runs. `Required` when `pythonshell` is set, accept either `0.0625` or `1.0`.
+        /// The maximum number of AWS Glue data processing units (DPUs) that can be allocated when this job runs. `Required` when `pythonshell` is set, accept either `0.0625` or `1.0`. Use `number_of_workers` and `worker_type` arguments instead with `glue_version` `2.0` and above.
         /// </summary>
         [Input("maxCapacity")]
         public Input<double>? MaxCapacity { get; set; }
@@ -319,6 +322,18 @@ namespace Pulumi.Aws.Glue
         /// </summary>
         [Input("name")]
         public Input<string>? Name { get; set; }
+
+        [Input("nonOverridableArguments")]
+        private InputMap<string>? _nonOverridableArguments;
+
+        /// <summary>
+        /// Non-overridable arguments for this job, specified as name-value pairs.
+        /// </summary>
+        public InputMap<string> NonOverridableArguments
+        {
+            get => _nonOverridableArguments ?? (_nonOverridableArguments = new InputMap<string>());
+            set => _nonOverridableArguments = value;
+        }
 
         /// <summary>
         /// Notification property of the job. Defined below.
@@ -376,12 +391,6 @@ namespace Pulumi.Aws.Glue
     public sealed class JobState : Pulumi.ResourceArgs
     {
         /// <summary>
-        /// **DEPRECATED** (Optional) The number of AWS Glue data processing units (DPUs) to allocate to this Job. At least 2 DPUs need to be allocated; the default is 10. A DPU is a relative measure of processing power that consists of 4 vCPUs of compute capacity and 16 GB of memory.
-        /// </summary>
-        [Input("allocatedCapacity")]
-        public Input<int>? AllocatedCapacity { get; set; }
-
-        /// <summary>
         /// Amazon Resource Name (ARN) of Glue Job
         /// </summary>
         [Input("arn")]
@@ -436,7 +445,7 @@ namespace Pulumi.Aws.Glue
         public Input<string>? GlueVersion { get; set; }
 
         /// <summary>
-        /// The maximum number of AWS Glue data processing units (DPUs) that can be allocated when this job runs. `Required` when `pythonshell` is set, accept either `0.0625` or `1.0`.
+        /// The maximum number of AWS Glue data processing units (DPUs) that can be allocated when this job runs. `Required` when `pythonshell` is set, accept either `0.0625` or `1.0`. Use `number_of_workers` and `worker_type` arguments instead with `glue_version` `2.0` and above.
         /// </summary>
         [Input("maxCapacity")]
         public Input<double>? MaxCapacity { get; set; }
@@ -452,6 +461,18 @@ namespace Pulumi.Aws.Glue
         /// </summary>
         [Input("name")]
         public Input<string>? Name { get; set; }
+
+        [Input("nonOverridableArguments")]
+        private InputMap<string>? _nonOverridableArguments;
+
+        /// <summary>
+        /// Non-overridable arguments for this job, specified as name-value pairs.
+        /// </summary>
+        public InputMap<string> NonOverridableArguments
+        {
+            get => _nonOverridableArguments ?? (_nonOverridableArguments = new InputMap<string>());
+            set => _nonOverridableArguments = value;
+        }
 
         /// <summary>
         /// Notification property of the job. Defined below.

@@ -4,6 +4,7 @@
 package ec2
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
@@ -17,17 +18,17 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/ec2"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/ec2"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
 // func main() {
 // 	pulumi.Run(func(ctx *pulumi.Context) error {
 // 		_, err := ec2.NewInternetGateway(ctx, "gw", &ec2.InternetGatewayArgs{
+// 			VpcId: pulumi.Any(aws_vpc.Main.Id),
 // 			Tags: pulumi.StringMap{
 // 				"Name": pulumi.String("main"),
 // 			},
-// 			VpcId: pulumi.String(aws_vpc.Main.Id),
 // 		})
 // 		if err != nil {
 // 			return err
@@ -35,6 +36,14 @@ import (
 // 		return nil
 // 	})
 // }
+// ```
+//
+// ## Import
+//
+// Internet Gateways can be imported using the `id`, e.g.
+//
+// ```sh
+//  $ pulumi import aws:ec2/internetGateway:InternetGateway gw igw-c0a643a9
 // ```
 type InternetGateway struct {
 	pulumi.CustomResourceState
@@ -55,6 +64,7 @@ func NewInternetGateway(ctx *pulumi.Context,
 	if args == nil {
 		args = &InternetGatewayArgs{}
 	}
+
 	var resource InternetGateway
 	err := ctx.RegisterResource("aws:ec2/internetGateway:InternetGateway", name, args, &resource, opts...)
 	if err != nil {
@@ -119,4 +129,43 @@ type InternetGatewayArgs struct {
 
 func (InternetGatewayArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*internetGatewayArgs)(nil)).Elem()
+}
+
+type InternetGatewayInput interface {
+	pulumi.Input
+
+	ToInternetGatewayOutput() InternetGatewayOutput
+	ToInternetGatewayOutputWithContext(ctx context.Context) InternetGatewayOutput
+}
+
+func (InternetGateway) ElementType() reflect.Type {
+	return reflect.TypeOf((*InternetGateway)(nil)).Elem()
+}
+
+func (i InternetGateway) ToInternetGatewayOutput() InternetGatewayOutput {
+	return i.ToInternetGatewayOutputWithContext(context.Background())
+}
+
+func (i InternetGateway) ToInternetGatewayOutputWithContext(ctx context.Context) InternetGatewayOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(InternetGatewayOutput)
+}
+
+type InternetGatewayOutput struct {
+	*pulumi.OutputState
+}
+
+func (InternetGatewayOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*InternetGatewayOutput)(nil)).Elem()
+}
+
+func (o InternetGatewayOutput) ToInternetGatewayOutput() InternetGatewayOutput {
+	return o
+}
+
+func (o InternetGatewayOutput) ToInternetGatewayOutputWithContext(ctx context.Context) InternetGatewayOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(InternetGatewayOutput{})
 }

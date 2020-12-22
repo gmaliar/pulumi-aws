@@ -2,8 +2,7 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 /**
@@ -17,14 +16,22 @@ import * as utilities from "../utilities";
  *
  * const dada = new aws.cloudwatch.LogGroup("dada", {});
  * const yada = new aws.cloudwatch.LogMetricFilter("yada", {
+ *     pattern: "",
  *     logGroupName: dada.name,
  *     metricTransformation: {
  *         name: "EventCount",
  *         namespace: "YourNamespace",
  *         value: "1",
  *     },
- *     pattern: "",
  * });
+ * ```
+ *
+ * ## Import
+ *
+ * CloudWatch Log Metric Filter can be imported using the `log_group_name:name`, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:cloudwatch/logMetricFilter:LogMetricFilter test /aws/lambda/function:test
  * ```
  */
 export class LogMetricFilter extends pulumi.CustomResource {
@@ -60,8 +67,7 @@ export class LogMetricFilter extends pulumi.CustomResource {
      */
     public readonly logGroupName!: pulumi.Output<string>;
     /**
-     * A block defining collection of information
-     * needed to define how metric data gets emitted. See below.
+     * A block defining collection of information needed to define how metric data gets emitted. See below.
      */
     public readonly metricTransformation!: pulumi.Output<outputs.cloudwatch.LogMetricFilterMetricTransformation>;
     /**
@@ -92,13 +98,13 @@ export class LogMetricFilter extends pulumi.CustomResource {
             inputs["pattern"] = state ? state.pattern : undefined;
         } else {
             const args = argsOrState as LogMetricFilterArgs | undefined;
-            if (!args || args.logGroupName === undefined) {
+            if ((!args || args.logGroupName === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'logGroupName'");
             }
-            if (!args || args.metricTransformation === undefined) {
+            if ((!args || args.metricTransformation === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'metricTransformation'");
             }
-            if (!args || args.pattern === undefined) {
+            if ((!args || args.pattern === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'pattern'");
             }
             inputs["logGroupName"] = args ? args.logGroupName : undefined;
@@ -126,8 +132,7 @@ export interface LogMetricFilterState {
      */
     readonly logGroupName?: pulumi.Input<string>;
     /**
-     * A block defining collection of information
-     * needed to define how metric data gets emitted. See below.
+     * A block defining collection of information needed to define how metric data gets emitted. See below.
      */
     readonly metricTransformation?: pulumi.Input<inputs.cloudwatch.LogMetricFilterMetricTransformation>;
     /**
@@ -150,8 +155,7 @@ export interface LogMetricFilterArgs {
      */
     readonly logGroupName: pulumi.Input<string>;
     /**
-     * A block defining collection of information
-     * needed to define how metric data gets emitted. See below.
+     * A block defining collection of information needed to define how metric data gets emitted. See below.
      */
     readonly metricTransformation: pulumi.Input<inputs.cloudwatch.LogMetricFilterMetricTransformation>;
     /**

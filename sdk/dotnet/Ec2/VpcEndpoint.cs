@@ -32,8 +32,8 @@ namespace Pulumi.Aws.Ec2
     ///     {
     ///         var s3 = new Aws.Ec2.VpcEndpoint("s3", new Aws.Ec2.VpcEndpointArgs
     ///         {
-    ///             ServiceName = "com.amazonaws.us-west-2.s3",
     ///             VpcId = aws_vpc.Main.Id,
+    ///             ServiceName = "com.amazonaws.us-west-2.s3",
     ///         });
     ///     }
     /// 
@@ -51,12 +51,12 @@ namespace Pulumi.Aws.Ec2
     ///     {
     ///         var s3 = new Aws.Ec2.VpcEndpoint("s3", new Aws.Ec2.VpcEndpointArgs
     ///         {
+    ///             VpcId = aws_vpc.Main.Id,
     ///             ServiceName = "com.amazonaws.us-west-2.s3",
     ///             Tags = 
     ///             {
     ///                 { "Environment", "test" },
     ///             },
-    ///             VpcId = aws_vpc.Main.Id,
     ///         });
     ///     }
     /// 
@@ -74,20 +74,20 @@ namespace Pulumi.Aws.Ec2
     ///     {
     ///         var ec2 = new Aws.Ec2.VpcEndpoint("ec2", new Aws.Ec2.VpcEndpointArgs
     ///         {
-    ///             PrivateDnsEnabled = true,
+    ///             VpcId = aws_vpc.Main.Id,
+    ///             ServiceName = "com.amazonaws.us-west-2.ec2",
+    ///             VpcEndpointType = "Interface",
     ///             SecurityGroupIds = 
     ///             {
     ///                 aws_security_group.Sg1.Id,
     ///             },
-    ///             ServiceName = "com.amazonaws.us-west-2.ec2",
-    ///             VpcEndpointType = "Interface",
-    ///             VpcId = aws_vpc.Main.Id,
+    ///             PrivateDnsEnabled = true,
     ///         });
     ///     }
     /// 
     /// }
     /// ```
-    /// ### Non-AWS Service
+    /// ### Gateway Load Balancer Endpoint Type
     /// 
     /// ```csharp
     /// using Pulumi;
@@ -97,44 +97,41 @@ namespace Pulumi.Aws.Ec2
     /// {
     ///     public MyStack()
     ///     {
-    ///         var ptfeServiceVpcEndpoint = new Aws.Ec2.VpcEndpoint("ptfeServiceVpcEndpoint", new Aws.Ec2.VpcEndpointArgs
+    ///         var current = Output.Create(Aws.GetCallerIdentity.InvokeAsync());
+    ///         var exampleVpcEndpointService = new Aws.Ec2.VpcEndpointService("exampleVpcEndpointService", new Aws.Ec2.VpcEndpointServiceArgs
     ///         {
-    ///             PrivateDnsEnabled = false,
-    ///             SecurityGroupIds = 
+    ///             AcceptanceRequired = false,
+    ///             AllowedPrincipals = 
     ///             {
-    ///                 aws_security_group.Ptfe_service.Id,
+    ///                 current.Apply(current =&gt; current.Arn),
     ///             },
-    ///             ServiceName = @var.Ptfe_service,
+    ///             GatewayLoadBalancerArns = 
+    ///             {
+    ///                 aws_lb.Example.Arn,
+    ///             },
+    ///         });
+    ///         var exampleVpcEndpoint = new Aws.Ec2.VpcEndpoint("exampleVpcEndpoint", new Aws.Ec2.VpcEndpointArgs
+    ///         {
+    ///             ServiceName = exampleVpcEndpointService.ServiceName,
     ///             SubnetIds = 
     ///             {
-    ///                 local.Subnet_ids,
+    ///                 aws_subnet.Example.Id,
     ///             },
-    ///             VpcEndpointType = "Interface",
-    ///             VpcId = @var.Vpc_id,
-    ///         });
-    ///         var @internal = Output.Create(Aws.Route53.GetZone.InvokeAsync(new Aws.Route53.GetZoneArgs
-    ///         {
-    ///             Name = "vpc.internal.",
-    ///             PrivateZone = true,
-    ///             VpcId = @var.Vpc_id,
-    ///         }));
-    ///         var ptfeServiceRecord = new Aws.Route53.Record("ptfeServiceRecord", new Aws.Route53.RecordArgs
-    ///         {
-    ///             Name = @internal.Apply(@internal =&gt; $"ptfe.{@internal.Name}"),
-    ///             Records = 
-    ///             {
-    ///                 ptfeServiceVpcEndpoint.DnsEntries.Apply(dnsEntries =&gt; dnsEntries[0])["dns_name"],
-    ///             },
-    ///             Ttl = 300,
-    ///             Type = "CNAME",
-    ///             ZoneId = @internal.Apply(@internal =&gt; @internal.ZoneId),
+    ///             VpcEndpointType = exampleVpcEndpointService.ServiceType,
+    ///             VpcId = aws_vpc.Example.Id,
     ///         });
     ///     }
     /// 
     /// }
     /// ```
     /// 
-    /// &gt; **NOTE The `dns_entry` output is a list of maps:** This provider interpolation support for lists of maps requires the `lookup` and `[]` until full support of lists of maps is available
+    /// ## Import
+    /// 
+    /// VPC Endpoints can be imported using the `vpc endpoint id`, e.g.
+    /// 
+    /// ```sh
+    ///  $ pulumi import aws:ec2/vpcEndpoint:VpcEndpoint endpoint1 vpce-3ecf2a57
+    /// ```
     /// </summary>
     public partial class VpcEndpoint : Pulumi.CustomResource
     {
@@ -224,7 +221,7 @@ namespace Pulumi.Aws.Ec2
         public Output<string> State { get; private set; } = null!;
 
         /// <summary>
-        /// The ID of one or more subnets in which to create a network interface for the endpoint. Applicable for endpoints of type `Interface`.
+        /// The ID of one or more subnets in which to create a network interface for the endpoint. Applicable for endpoints of type `GatewayLoadBalancer` and `Interface`.
         /// </summary>
         [Output("subnetIds")]
         public Output<ImmutableArray<string>> SubnetIds { get; private set; } = null!;
@@ -236,7 +233,7 @@ namespace Pulumi.Aws.Ec2
         public Output<ImmutableDictionary<string, string>?> Tags { get; private set; } = null!;
 
         /// <summary>
-        /// The VPC endpoint type, `Gateway` or `Interface`. Defaults to `Gateway`.
+        /// The VPC endpoint type, `Gateway`, `GatewayLoadBalancer`, or `Interface`. Defaults to `Gateway`.
         /// </summary>
         [Output("vpcEndpointType")]
         public Output<string?> VpcEndpointType { get; private set; } = null!;
@@ -346,7 +343,7 @@ namespace Pulumi.Aws.Ec2
         private InputList<string>? _subnetIds;
 
         /// <summary>
-        /// The ID of one or more subnets in which to create a network interface for the endpoint. Applicable for endpoints of type `Interface`.
+        /// The ID of one or more subnets in which to create a network interface for the endpoint. Applicable for endpoints of type `GatewayLoadBalancer` and `Interface`.
         /// </summary>
         public InputList<string> SubnetIds
         {
@@ -367,7 +364,7 @@ namespace Pulumi.Aws.Ec2
         }
 
         /// <summary>
-        /// The VPC endpoint type, `Gateway` or `Interface`. Defaults to `Gateway`.
+        /// The VPC endpoint type, `Gateway`, `GatewayLoadBalancer`, or `Interface`. Defaults to `Gateway`.
         /// </summary>
         [Input("vpcEndpointType")]
         public Input<string>? VpcEndpointType { get; set; }
@@ -504,7 +501,7 @@ namespace Pulumi.Aws.Ec2
         private InputList<string>? _subnetIds;
 
         /// <summary>
-        /// The ID of one or more subnets in which to create a network interface for the endpoint. Applicable for endpoints of type `Interface`.
+        /// The ID of one or more subnets in which to create a network interface for the endpoint. Applicable for endpoints of type `GatewayLoadBalancer` and `Interface`.
         /// </summary>
         public InputList<string> SubnetIds
         {
@@ -525,7 +522,7 @@ namespace Pulumi.Aws.Ec2
         }
 
         /// <summary>
-        /// The VPC endpoint type, `Gateway` or `Interface`. Defaults to `Gateway`.
+        /// The VPC endpoint type, `Gateway`, `GatewayLoadBalancer`, or `Interface`. Defaults to `Gateway`.
         /// </summary>
         [Input("vpcEndpointType")]
         public Input<string>? VpcEndpointType { get; set; }

@@ -5,9 +5,16 @@
 import warnings
 import pulumi
 import pulumi.runtime
-from typing import Union
-from .. import utilities, tables
+from typing import Any, Mapping, Optional, Sequence, Union
+from .. import _utilities, _tables
 
+__all__ = [
+    'GetSitesResult',
+    'AwaitableGetSitesResult',
+    'get_sites',
+]
+
+@pulumi.output_type
 class GetSitesResult:
     """
     A collection of values returned by getSites.
@@ -15,16 +22,28 @@ class GetSitesResult:
     def __init__(__self__, id=None, ids=None):
         if id and not isinstance(id, str):
             raise TypeError("Expected argument 'id' to be a str")
-        __self__.id = id
+        pulumi.set(__self__, "id", id)
+        if ids and not isinstance(ids, list):
+            raise TypeError("Expected argument 'ids' to be a list")
+        pulumi.set(__self__, "ids", ids)
+
+    @property
+    @pulumi.getter
+    def id(self) -> str:
         """
         The provider-assigned unique ID for this managed resource.
         """
-        if ids and not isinstance(ids, list):
-            raise TypeError("Expected argument 'ids' to be a list")
-        __self__.ids = ids
+        return pulumi.get(self, "id")
+
+    @property
+    @pulumi.getter
+    def ids(self) -> Sequence[str]:
         """
         Set of Outposts Site identifiers.
         """
+        return pulumi.get(self, "ids")
+
+
 class AwaitableGetSitesResult(GetSitesResult):
     # pylint: disable=using-constant-test
     def __await__(self):
@@ -34,7 +53,8 @@ class AwaitableGetSitesResult(GetSitesResult):
             id=self.id,
             ids=self.ids)
 
-def get_sites(opts=None):
+
+def get_sites(opts: Optional[pulumi.InvokeOptions] = None) -> AwaitableGetSitesResult:
     """
     Provides details about multiple Outposts Sites.
 
@@ -48,14 +68,12 @@ def get_sites(opts=None):
     ```
     """
     __args__ = dict()
-
-
     if opts is None:
         opts = pulumi.InvokeOptions()
     if opts.version is None:
-        opts.version = utilities.get_version()
-    __ret__ = pulumi.runtime.invoke('aws:outposts/getSites:getSites', __args__, opts=opts).value
+        opts.version = _utilities.get_version()
+    __ret__ = pulumi.runtime.invoke('aws:outposts/getSites:getSites', __args__, opts=opts, typ=GetSitesResult).value
 
     return AwaitableGetSitesResult(
-        id=__ret__.get('id'),
-        ids=__ret__.get('ids'))
+        id=__ret__.id,
+        ids=__ret__.ids)

@@ -4,6 +4,7 @@
 package waf
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
@@ -17,7 +18,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/waf"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/waf"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -42,6 +43,14 @@ import (
 // 	})
 // }
 // ```
+//
+// ## Import
+//
+// WAF IPSets can be imported using their ID, e.g.
+//
+// ```sh
+//  $ pulumi import aws:waf/ipSet:IpSet example a1b2c3d4-d5f6-7777-8888-9999aaaabbbbcccc
+// ```
 type IpSet struct {
 	pulumi.CustomResourceState
 
@@ -59,6 +68,7 @@ func NewIpSet(ctx *pulumi.Context,
 	if args == nil {
 		args = &IpSetArgs{}
 	}
+
 	var resource IpSet
 	err := ctx.RegisterResource("aws:waf/ipSet:IpSet", name, args, &resource, opts...)
 	if err != nil {
@@ -119,4 +129,43 @@ type IpSetArgs struct {
 
 func (IpSetArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*ipSetArgs)(nil)).Elem()
+}
+
+type IpSetInput interface {
+	pulumi.Input
+
+	ToIpSetOutput() IpSetOutput
+	ToIpSetOutputWithContext(ctx context.Context) IpSetOutput
+}
+
+func (IpSet) ElementType() reflect.Type {
+	return reflect.TypeOf((*IpSet)(nil)).Elem()
+}
+
+func (i IpSet) ToIpSetOutput() IpSetOutput {
+	return i.ToIpSetOutputWithContext(context.Background())
+}
+
+func (i IpSet) ToIpSetOutputWithContext(ctx context.Context) IpSetOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(IpSetOutput)
+}
+
+type IpSetOutput struct {
+	*pulumi.OutputState
+}
+
+func (IpSetOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*IpSetOutput)(nil)).Elem()
+}
+
+func (o IpSetOutput) ToIpSetOutput() IpSetOutput {
+	return o
+}
+
+func (o IpSetOutput) ToIpSetOutputWithContext(ctx context.Context) IpSetOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(IpSetOutput{})
 }

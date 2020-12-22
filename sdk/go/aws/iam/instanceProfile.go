@@ -4,6 +4,7 @@
 package iam
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
@@ -19,15 +20,15 @@ import (
 // import (
 // 	"fmt"
 //
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/iam"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/iam"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
 // func main() {
 // 	pulumi.Run(func(ctx *pulumi.Context) error {
 // 		role, err := iam.NewRole(ctx, "role", &iam.RoleArgs{
-// 			AssumeRolePolicy: pulumi.String(fmt.Sprintf("%v%v%v%v%v%v%v%v%v%v%v%v%v%v", "{\n", "    \"Version\": \"2012-10-17\",\n", "    \"Statement\": [\n", "        {\n", "            \"Action\": \"sts:AssumeRole\",\n", "            \"Principal\": {\n", "               \"Service\": \"ec2.amazonaws.com\"\n", "            },\n", "            \"Effect\": \"Allow\",\n", "            \"Sid\": \"\"\n", "        }\n", "    ]\n", "}\n", "\n")),
 // 			Path:             pulumi.String("/"),
+// 			AssumeRolePolicy: pulumi.String(fmt.Sprintf("%v%v%v%v%v%v%v%v%v%v%v%v%v", "{\n", "    \"Version\": \"2012-10-17\",\n", "    \"Statement\": [\n", "        {\n", "            \"Action\": \"sts:AssumeRole\",\n", "            \"Principal\": {\n", "               \"Service\": \"ec2.amazonaws.com\"\n", "            },\n", "            \"Effect\": \"Allow\",\n", "            \"Sid\": \"\"\n", "        }\n", "    ]\n", "}\n")),
 // 		})
 // 		if err != nil {
 // 			return err
@@ -41,6 +42,14 @@ import (
 // 		return nil
 // 	})
 // }
+// ```
+//
+// ## Import
+//
+// Instance Profiles can be imported using the `name`, e.g.
+//
+// ```sh
+//  $ pulumi import aws:iam/instanceProfile:InstanceProfile test_profile app-instance-profile-1
 // ```
 type InstanceProfile struct {
 	pulumi.CustomResourceState
@@ -56,11 +65,7 @@ type InstanceProfile struct {
 	// Path in which to create the profile.
 	Path pulumi.StringPtrOutput `pulumi:"path"`
 	// The role name to include in the profile.
-	Role pulumi.StringOutput `pulumi:"role"`
-	// A list of role names to include in the profile.  The current default is 1.  If you see an error message similar to `Cannot exceed quota for InstanceSessionsPerInstanceProfile: 1`, then you must contact AWS support and ask for a limit increase.
-	//
-	// Deprecated: Use `role` instead. Only a single role can be passed to an IAM Instance Profile
-	Roles pulumi.StringArrayOutput `pulumi:"roles"`
+	Role pulumi.StringPtrOutput `pulumi:"role"`
 	// The [unique ID][1] assigned by AWS.
 	UniqueId pulumi.StringOutput `pulumi:"uniqueId"`
 }
@@ -71,6 +76,7 @@ func NewInstanceProfile(ctx *pulumi.Context,
 	if args == nil {
 		args = &InstanceProfileArgs{}
 	}
+
 	var resource InstanceProfile
 	err := ctx.RegisterResource("aws:iam/instanceProfile:InstanceProfile", name, args, &resource, opts...)
 	if err != nil {
@@ -105,10 +111,6 @@ type instanceProfileState struct {
 	Path *string `pulumi:"path"`
 	// The role name to include in the profile.
 	Role *string `pulumi:"role"`
-	// A list of role names to include in the profile.  The current default is 1.  If you see an error message similar to `Cannot exceed quota for InstanceSessionsPerInstanceProfile: 1`, then you must contact AWS support and ask for a limit increase.
-	//
-	// Deprecated: Use `role` instead. Only a single role can be passed to an IAM Instance Profile
-	Roles []string `pulumi:"roles"`
 	// The [unique ID][1] assigned by AWS.
 	UniqueId *string `pulumi:"uniqueId"`
 }
@@ -126,10 +128,6 @@ type InstanceProfileState struct {
 	Path pulumi.StringPtrInput
 	// The role name to include in the profile.
 	Role pulumi.StringPtrInput
-	// A list of role names to include in the profile.  The current default is 1.  If you see an error message similar to `Cannot exceed quota for InstanceSessionsPerInstanceProfile: 1`, then you must contact AWS support and ask for a limit increase.
-	//
-	// Deprecated: Use `role` instead. Only a single role can be passed to an IAM Instance Profile
-	Roles pulumi.StringArrayInput
 	// The [unique ID][1] assigned by AWS.
 	UniqueId pulumi.StringPtrInput
 }
@@ -147,10 +145,6 @@ type instanceProfileArgs struct {
 	Path *string `pulumi:"path"`
 	// The role name to include in the profile.
 	Role interface{} `pulumi:"role"`
-	// A list of role names to include in the profile.  The current default is 1.  If you see an error message similar to `Cannot exceed quota for InstanceSessionsPerInstanceProfile: 1`, then you must contact AWS support and ask for a limit increase.
-	//
-	// Deprecated: Use `role` instead. Only a single role can be passed to an IAM Instance Profile
-	Roles []interface{} `pulumi:"roles"`
 }
 
 // The set of arguments for constructing a InstanceProfile resource.
@@ -163,12 +157,47 @@ type InstanceProfileArgs struct {
 	Path pulumi.StringPtrInput
 	// The role name to include in the profile.
 	Role pulumi.Input
-	// A list of role names to include in the profile.  The current default is 1.  If you see an error message similar to `Cannot exceed quota for InstanceSessionsPerInstanceProfile: 1`, then you must contact AWS support and ask for a limit increase.
-	//
-	// Deprecated: Use `role` instead. Only a single role can be passed to an IAM Instance Profile
-	Roles pulumi.ArrayInput
 }
 
 func (InstanceProfileArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*instanceProfileArgs)(nil)).Elem()
+}
+
+type InstanceProfileInput interface {
+	pulumi.Input
+
+	ToInstanceProfileOutput() InstanceProfileOutput
+	ToInstanceProfileOutputWithContext(ctx context.Context) InstanceProfileOutput
+}
+
+func (InstanceProfile) ElementType() reflect.Type {
+	return reflect.TypeOf((*InstanceProfile)(nil)).Elem()
+}
+
+func (i InstanceProfile) ToInstanceProfileOutput() InstanceProfileOutput {
+	return i.ToInstanceProfileOutputWithContext(context.Background())
+}
+
+func (i InstanceProfile) ToInstanceProfileOutputWithContext(ctx context.Context) InstanceProfileOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(InstanceProfileOutput)
+}
+
+type InstanceProfileOutput struct {
+	*pulumi.OutputState
+}
+
+func (InstanceProfileOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*InstanceProfileOutput)(nil)).Elem()
+}
+
+func (o InstanceProfileOutput) ToInstanceProfileOutput() InstanceProfileOutput {
+	return o
+}
+
+func (o InstanceProfileOutput) ToInstanceProfileOutputWithContext(ctx context.Context) InstanceProfileOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(InstanceProfileOutput{})
 }

@@ -2,8 +2,7 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 /**
@@ -16,10 +15,10 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const main = pulumi.output(aws.elb.getServiceAccount({ async: true }));
- * const elbLogs = new aws.s3.Bucket("elb_logs", {
+ * const main = aws.elb.getServiceAccount({});
+ * const elbLogs = new aws.s3.Bucket("elbLogs", {
  *     acl: "private",
- *     policy: pulumi.interpolate`{
+ *     policy: main.then(main => `{
  *   "Id": "Policy",
  *   "Version": "2012-10-17",
  *   "Statement": [
@@ -37,14 +36,14 @@ import * as utilities from "../utilities";
  *     }
  *   ]
  * }
- * `,
+ * `),
  * });
  * const bar = new aws.elb.LoadBalancer("bar", {
+ *     availabilityZones: ["us-west-2a"],
  *     accessLogs: {
  *         bucket: elbLogs.bucket,
  *         interval: 5,
  *     },
- *     availabilityZones: ["us-west-2a"],
  *     listeners: [{
  *         instancePort: 8000,
  *         instanceProtocol: "http",

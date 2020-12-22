@@ -14,13 +14,19 @@ import * as utilities from "../utilities";
  * import * as aws from "@pulumi/aws";
  *
  * const example = new aws.directconnect.GatewayAssociationProposal("example", {
- *     associatedGatewayId: aws_vpn_gateway_example.id,
- *     dxGatewayId: aws_dx_gateway_example.id,
- *     dxGatewayOwnerAccountId: aws_dx_gateway_example.ownerAccountId,
+ *     dxGatewayId: aws_dx_gateway.example.id,
+ *     dxGatewayOwnerAccountId: aws_dx_gateway.example.owner_account_id,
+ *     associatedGatewayId: aws_vpn_gateway.example.id,
  * });
  * ```
  *
- * A full example of how to create a VPN Gateway in one AWS account, create a Direct Connect Gateway in a second AWS account, and associate the VPN Gateway with the Direct Connect Gateway via the `aws.directconnect.GatewayAssociationProposal` and `aws.directconnect.GatewayAssociation` resources can be found in [the `./examples/dx-gateway-cross-account-vgw-association` directory within the Github Repository](https://github.com/providers/provider-aws/tree/master/examples/dx-gateway-cross-account-vgw-association).
+ * ## Import
+ *
+ * Direct Connect Gateway Association Proposals can be imported using the proposal ID, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:directconnect/gatewayAssociationProposal:GatewayAssociationProposal example ac90e981-b718-4364-872d-65478c84fafe
+ * ```
  */
 export class GatewayAssociationProposal extends pulumi.CustomResource {
     /**
@@ -57,7 +63,7 @@ export class GatewayAssociationProposal extends pulumi.CustomResource {
     /**
      * The ID of the VGW or transit gateway with which to associate the Direct Connect gateway.
      */
-    public readonly associatedGatewayId!: pulumi.Output<string | undefined>;
+    public readonly associatedGatewayId!: pulumi.Output<string>;
     /**
      * The ID of the AWS account that owns the VGW or transit gateway with which to associate the Direct Connect gateway.
      */
@@ -74,12 +80,6 @@ export class GatewayAssociationProposal extends pulumi.CustomResource {
      * AWS Account identifier of the Direct Connect Gateway's owner.
      */
     public readonly dxGatewayOwnerAccountId!: pulumi.Output<string>;
-    /**
-     * *Deprecated:* Use `associatedGatewayId` instead. Virtual Gateway identifier to associate with the Direct Connect Gateway.
-     *
-     * @deprecated use 'associated_gateway_id' argument instead
-     */
-    public readonly vpnGatewayId!: pulumi.Output<string | undefined>;
 
     /**
      * Create a GatewayAssociationProposal resource with the given unique name, arguments, and options.
@@ -99,20 +99,21 @@ export class GatewayAssociationProposal extends pulumi.CustomResource {
             inputs["associatedGatewayType"] = state ? state.associatedGatewayType : undefined;
             inputs["dxGatewayId"] = state ? state.dxGatewayId : undefined;
             inputs["dxGatewayOwnerAccountId"] = state ? state.dxGatewayOwnerAccountId : undefined;
-            inputs["vpnGatewayId"] = state ? state.vpnGatewayId : undefined;
         } else {
             const args = argsOrState as GatewayAssociationProposalArgs | undefined;
-            if (!args || args.dxGatewayId === undefined) {
+            if ((!args || args.associatedGatewayId === undefined) && !(opts && opts.urn)) {
+                throw new Error("Missing required property 'associatedGatewayId'");
+            }
+            if ((!args || args.dxGatewayId === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'dxGatewayId'");
             }
-            if (!args || args.dxGatewayOwnerAccountId === undefined) {
+            if ((!args || args.dxGatewayOwnerAccountId === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'dxGatewayOwnerAccountId'");
             }
             inputs["allowedPrefixes"] = args ? args.allowedPrefixes : undefined;
             inputs["associatedGatewayId"] = args ? args.associatedGatewayId : undefined;
             inputs["dxGatewayId"] = args ? args.dxGatewayId : undefined;
             inputs["dxGatewayOwnerAccountId"] = args ? args.dxGatewayOwnerAccountId : undefined;
-            inputs["vpnGatewayId"] = args ? args.vpnGatewayId : undefined;
             inputs["associatedGatewayOwnerAccountId"] = undefined /*out*/;
             inputs["associatedGatewayType"] = undefined /*out*/;
         }
@@ -155,12 +156,6 @@ export interface GatewayAssociationProposalState {
      * AWS Account identifier of the Direct Connect Gateway's owner.
      */
     readonly dxGatewayOwnerAccountId?: pulumi.Input<string>;
-    /**
-     * *Deprecated:* Use `associatedGatewayId` instead. Virtual Gateway identifier to associate with the Direct Connect Gateway.
-     *
-     * @deprecated use 'associated_gateway_id' argument instead
-     */
-    readonly vpnGatewayId?: pulumi.Input<string>;
 }
 
 /**
@@ -174,7 +169,7 @@ export interface GatewayAssociationProposalArgs {
     /**
      * The ID of the VGW or transit gateway with which to associate the Direct Connect gateway.
      */
-    readonly associatedGatewayId?: pulumi.Input<string>;
+    readonly associatedGatewayId: pulumi.Input<string>;
     /**
      * Direct Connect Gateway identifier.
      */
@@ -183,10 +178,4 @@ export interface GatewayAssociationProposalArgs {
      * AWS Account identifier of the Direct Connect Gateway's owner.
      */
     readonly dxGatewayOwnerAccountId: pulumi.Input<string>;
-    /**
-     * *Deprecated:* Use `associatedGatewayId` instead. Virtual Gateway identifier to associate with the Direct Connect Gateway.
-     *
-     * @deprecated use 'associated_gateway_id' argument instead
-     */
-    readonly vpnGatewayId?: pulumi.Input<string>;
 }

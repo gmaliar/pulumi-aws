@@ -2,8 +2,7 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 /**
@@ -21,13 +20,21 @@ import * as utilities from "../utilities";
  * import * as aws from "@pulumi/aws";
  *
  * const tftest = new aws.elasticbeanstalk.Application("tftest", {
- *     appversionLifecycle: {
- *         deleteSourceFromS3: true,
- *         maxCount: 128,
- *         serviceRole: aws_iam_role_beanstalk_service.arn,
- *     },
  *     description: "tf-test-desc",
+ *     appversionLifecycle: {
+ *         serviceRole: aws_iam_role.beanstalk_service.arn,
+ *         maxCount: 128,
+ *         deleteSourceFromS3: true,
+ *     },
  * });
+ * ```
+ *
+ * ## Import
+ *
+ * Elastic Beanstalk Applications can be imported using the `name`, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:elasticbeanstalk/application:Application tf_test tf-test-name
  * ```
  */
 export class Application extends pulumi.CustomResource {

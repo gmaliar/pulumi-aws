@@ -18,8 +18,7 @@ import {Role} from "./index";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const role = new aws.iam.Role("role", {
- *     assumeRolePolicy: `    {
+ * const role = new aws.iam.Role("role", {assumeRolePolicy: `    {
  *       "Version": "2012-10-17",
  *       "Statement": [
  *         {
@@ -32,8 +31,7 @@ import {Role} from "./index";
  *         }
  *       ]
  *     }
- * `,
- * });
+ * `});
  * const policy = new aws.iam.Policy("policy", {
  *     description: "A test policy",
  *     policy: `{
@@ -51,9 +49,17 @@ import {Role} from "./index";
  * `,
  * });
  * const test_attach = new aws.iam.RolePolicyAttachment("test-attach", {
- *     policyArn: policy.arn,
  *     role: role.name,
+ *     policyArn: policy.arn,
  * });
+ * ```
+ *
+ * ## Import
+ *
+ * IAM role policy attachments can be imported using the role name and policy arn separated by `/`.
+ *
+ * ```sh
+ *  $ pulumi import aws:iam/rolePolicyAttachment:RolePolicyAttachment test-attach test-role/arn:aws:iam::xxxxxxxxxxxx:policy/test-policy
  * ```
  */
 export class RolePolicyAttachment extends pulumi.CustomResource {
@@ -109,10 +115,10 @@ export class RolePolicyAttachment extends pulumi.CustomResource {
             inputs["role"] = state ? state.role : undefined;
         } else {
             const args = argsOrState as RolePolicyAttachmentArgs | undefined;
-            if (!args || args.policyArn === undefined) {
+            if ((!args || args.policyArn === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'policyArn'");
             }
-            if (!args || args.role === undefined) {
+            if ((!args || args.role === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'role'");
             }
             inputs["policyArn"] = args ? args.policyArn : undefined;

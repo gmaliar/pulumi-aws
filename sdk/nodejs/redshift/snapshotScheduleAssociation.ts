@@ -11,22 +11,30 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const defaultCluster = new aws.redshift.Cluster("default", {
+ * const defaultCluster = new aws.redshift.Cluster("defaultCluster", {
  *     clusterIdentifier: "tf-redshift-cluster",
- *     clusterType: "single-node",
  *     databaseName: "mydb",
- *     masterPassword: "Mustbe8characters",
  *     masterUsername: "foo",
+ *     masterPassword: "Mustbe8characters",
  *     nodeType: "dc1.large",
+ *     clusterType: "single-node",
  * });
- * const defaultSnapshotSchedule = new aws.redshift.SnapshotSchedule("default", {
- *     definitions: ["rate(12 hours)"],
+ * const defaultSnapshotSchedule = new aws.redshift.SnapshotSchedule("defaultSnapshotSchedule", {
  *     identifier: "tf-redshift-snapshot-schedule",
+ *     definitions: ["rate(12 hours)"],
  * });
- * const defaultSnapshotScheduleAssociation = new aws.redshift.SnapshotScheduleAssociation("default", {
+ * const defaultSnapshotScheduleAssociation = new aws.redshift.SnapshotScheduleAssociation("defaultSnapshotScheduleAssociation", {
  *     clusterIdentifier: defaultCluster.id,
  *     scheduleIdentifier: defaultSnapshotSchedule.id,
  * });
+ * ```
+ *
+ * ## Import
+ *
+ * Redshift Snapshot Schedule Association can be imported using the `<cluster-identifier>/<schedule-identifier>`, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:redshift/snapshotScheduleAssociation:SnapshotScheduleAssociation default tf-redshift-cluster/tf-redshift-snapshot-schedule
  * ```
  */
 export class SnapshotScheduleAssociation extends pulumi.CustomResource {
@@ -82,10 +90,10 @@ export class SnapshotScheduleAssociation extends pulumi.CustomResource {
             inputs["scheduleIdentifier"] = state ? state.scheduleIdentifier : undefined;
         } else {
             const args = argsOrState as SnapshotScheduleAssociationArgs | undefined;
-            if (!args || args.clusterIdentifier === undefined) {
+            if ((!args || args.clusterIdentifier === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'clusterIdentifier'");
             }
-            if (!args || args.scheduleIdentifier === undefined) {
+            if ((!args || args.scheduleIdentifier === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'scheduleIdentifier'");
             }
             inputs["clusterIdentifier"] = args ? args.clusterIdentifier : undefined;

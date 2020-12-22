@@ -2,8 +2,7 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 /**
@@ -23,14 +22,13 @@ import * as utilities from "../utilities";
  * import * as aws from "@pulumi/aws";
  *
  * const config = new pulumi.Config();
- * const securityGroupId = config.require("securityGroupId");
- *
- * const selected = pulumi.output(aws.ec2.getSecurityGroup({
+ * const securityGroupId = config.requireObject("securityGroupId");
+ * const selected = aws.ec2.getSecurityGroup({
  *     id: securityGroupId,
- * }, { async: true }));
+ * });
  * const subnet = new aws.ec2.Subnet("subnet", {
+ *     vpcId: selected.then(selected => selected.vpcId),
  *     cidrBlock: "10.0.1.0/24",
- *     vpcId: selected.vpcId!,
  * });
  * ```
  */

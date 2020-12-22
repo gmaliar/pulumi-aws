@@ -13,18 +13,24 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const foo = new aws.ec2.Vpc("foo", {
- *     cidrBlock: "10.0.0.0/16",
- * });
- * const alphaSubnet = new aws.ec2.Subnet("alpha", {
+ * const foo = new aws.ec2.Vpc("foo", {cidrBlock: "10.0.0.0/16"});
+ * const alphaSubnet = new aws.ec2.Subnet("alphaSubnet", {
+ *     vpcId: foo.id,
  *     availabilityZone: "us-west-2a",
  *     cidrBlock: "10.0.1.0/24",
- *     vpcId: foo.id,
  * });
- * const alphaMountTarget = new aws.efs.MountTarget("alpha", {
- *     fileSystemId: aws_efs_file_system_foo.id,
+ * const alphaMountTarget = new aws.efs.MountTarget("alphaMountTarget", {
+ *     fileSystemId: aws_efs_file_system.foo.id,
  *     subnetId: alphaSubnet.id,
  * });
+ * ```
+ *
+ * ## Import
+ *
+ * The EFS mount targets can be imported using the `id`, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:efs/mountTarget:MountTarget alpha fsmt-52a643fb
  * ```
  */
 export class MountTarget extends pulumi.CustomResource {
@@ -127,10 +133,10 @@ export class MountTarget extends pulumi.CustomResource {
             inputs["subnetId"] = state ? state.subnetId : undefined;
         } else {
             const args = argsOrState as MountTargetArgs | undefined;
-            if (!args || args.fileSystemId === undefined) {
+            if ((!args || args.fileSystemId === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'fileSystemId'");
             }
-            if (!args || args.subnetId === undefined) {
+            if ((!args || args.subnetId === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'subnetId'");
             }
             inputs["fileSystemId"] = args ? args.fileSystemId : undefined;

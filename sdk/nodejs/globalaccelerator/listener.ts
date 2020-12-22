@@ -2,8 +2,7 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 /**
@@ -15,24 +14,32 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const exampleAccelerator = new aws.globalaccelerator.Accelerator("example", {
+ * const exampleAccelerator = new aws.globalaccelerator.Accelerator("exampleAccelerator", {
+ *     ipAddressType: "IPV4",
+ *     enabled: true,
  *     attributes: {
  *         flowLogsEnabled: true,
  *         flowLogsS3Bucket: "example-bucket",
  *         flowLogsS3Prefix: "flow-logs/",
  *     },
- *     enabled: true,
- *     ipAddressType: "IPV4",
  * });
- * const exampleListener = new aws.globalaccelerator.Listener("example", {
+ * const exampleListener = new aws.globalaccelerator.Listener("exampleListener", {
  *     acceleratorArn: exampleAccelerator.id,
  *     clientAffinity: "SOURCE_IP",
+ *     protocol: "TCP",
  *     portRanges: [{
  *         fromPort: 80,
  *         toPort: 80,
  *     }],
- *     protocol: "TCP",
  * });
+ * ```
+ *
+ * ## Import
+ *
+ * Global Accelerator listeners can be imported using the `id`, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:globalaccelerator/listener:Listener example arn:aws:globalaccelerator::111111111111:accelerator/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx/listener/xxxxxxxx
  * ```
  */
 export class Listener extends pulumi.CustomResource {
@@ -98,13 +105,13 @@ export class Listener extends pulumi.CustomResource {
             inputs["protocol"] = state ? state.protocol : undefined;
         } else {
             const args = argsOrState as ListenerArgs | undefined;
-            if (!args || args.acceleratorArn === undefined) {
+            if ((!args || args.acceleratorArn === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'acceleratorArn'");
             }
-            if (!args || args.portRanges === undefined) {
+            if ((!args || args.portRanges === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'portRanges'");
             }
-            if (!args || args.protocol === undefined) {
+            if ((!args || args.protocol === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'protocol'");
             }
             inputs["acceleratorArn"] = args ? args.acceleratorArn : undefined;

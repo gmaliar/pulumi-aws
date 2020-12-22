@@ -4,6 +4,7 @@
 package ec2clientvpn
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -19,27 +20,27 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/ec2clientvpn"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/ec2clientvpn"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
 // func main() {
 // 	pulumi.Run(func(ctx *pulumi.Context) error {
 // 		_, err := ec2clientvpn.NewEndpoint(ctx, "example", &ec2clientvpn.EndpointArgs{
+// 			Description:          pulumi.String("clientvpn-example"),
+// 			ServerCertificateArn: pulumi.Any(aws_acm_certificate.Cert.Arn),
+// 			ClientCidrBlock:      pulumi.String("10.0.0.0/16"),
 // 			AuthenticationOptions: ec2clientvpn.EndpointAuthenticationOptionArray{
 // 				&ec2clientvpn.EndpointAuthenticationOptionArgs{
-// 					RootCertificateChainArn: pulumi.String(aws_acm_certificate.Root_cert.Arn),
 // 					Type:                    pulumi.String("certificate-authentication"),
+// 					RootCertificateChainArn: pulumi.Any(aws_acm_certificate.Root_cert.Arn),
 // 				},
 // 			},
-// 			ClientCidrBlock: pulumi.String("10.0.0.0/16"),
 // 			ConnectionLogOptions: &ec2clientvpn.EndpointConnectionLogOptionsArgs{
-// 				CloudwatchLogGroup:  pulumi.String(aws_cloudwatch_log_group.Lg.Name),
-// 				CloudwatchLogStream: pulumi.String(aws_cloudwatch_log_stream.Ls.Name),
 // 				Enabled:             pulumi.Bool(true),
+// 				CloudwatchLogGroup:  pulumi.Any(aws_cloudwatch_log_group.Lg.Name),
+// 				CloudwatchLogStream: pulumi.Any(aws_cloudwatch_log_stream.Ls.Name),
 // 			},
-// 			Description:          pulumi.String("clientvpn-example"),
-// 			ServerCertificateArn: pulumi.String(aws_acm_certificate.Cert.Arn),
 // 		})
 // 		if err != nil {
 // 			return err
@@ -47,6 +48,14 @@ import (
 // 		return nil
 // 	})
 // }
+// ```
+//
+// ## Import
+//
+// AWS Client VPN endpoints can be imported using the `id` value found via `aws ec2 describe-client-vpn-endpoints`, e.g.
+//
+// ```sh
+//  $ pulumi import aws:ec2clientvpn/endpoint:Endpoint example cvpn-endpoint-0ac3a1abbccddd666
 // ```
 type Endpoint struct {
 	pulumi.CustomResourceState
@@ -80,20 +89,21 @@ type Endpoint struct {
 // NewEndpoint registers a new resource with the given unique name, arguments, and options.
 func NewEndpoint(ctx *pulumi.Context,
 	name string, args *EndpointArgs, opts ...pulumi.ResourceOption) (*Endpoint, error) {
-	if args == nil || args.AuthenticationOptions == nil {
-		return nil, errors.New("missing required argument 'AuthenticationOptions'")
-	}
-	if args == nil || args.ClientCidrBlock == nil {
-		return nil, errors.New("missing required argument 'ClientCidrBlock'")
-	}
-	if args == nil || args.ConnectionLogOptions == nil {
-		return nil, errors.New("missing required argument 'ConnectionLogOptions'")
-	}
-	if args == nil || args.ServerCertificateArn == nil {
-		return nil, errors.New("missing required argument 'ServerCertificateArn'")
-	}
 	if args == nil {
-		args = &EndpointArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.AuthenticationOptions == nil {
+		return nil, errors.New("invalid value for required argument 'AuthenticationOptions'")
+	}
+	if args.ClientCidrBlock == nil {
+		return nil, errors.New("invalid value for required argument 'ClientCidrBlock'")
+	}
+	if args.ConnectionLogOptions == nil {
+		return nil, errors.New("invalid value for required argument 'ConnectionLogOptions'")
+	}
+	if args.ServerCertificateArn == nil {
+		return nil, errors.New("invalid value for required argument 'ServerCertificateArn'")
 	}
 	var resource Endpoint
 	err := ctx.RegisterResource("aws:ec2clientvpn/endpoint:Endpoint", name, args, &resource, opts...)
@@ -219,4 +229,43 @@ type EndpointArgs struct {
 
 func (EndpointArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*endpointArgs)(nil)).Elem()
+}
+
+type EndpointInput interface {
+	pulumi.Input
+
+	ToEndpointOutput() EndpointOutput
+	ToEndpointOutputWithContext(ctx context.Context) EndpointOutput
+}
+
+func (Endpoint) ElementType() reflect.Type {
+	return reflect.TypeOf((*Endpoint)(nil)).Elem()
+}
+
+func (i Endpoint) ToEndpointOutput() EndpointOutput {
+	return i.ToEndpointOutputWithContext(context.Background())
+}
+
+func (i Endpoint) ToEndpointOutputWithContext(ctx context.Context) EndpointOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(EndpointOutput)
+}
+
+type EndpointOutput struct {
+	*pulumi.OutputState
+}
+
+func (EndpointOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*EndpointOutput)(nil)).Elem()
+}
+
+func (o EndpointOutput) ToEndpointOutput() EndpointOutput {
+	return o
+}
+
+func (o EndpointOutput) ToEndpointOutputWithContext(ctx context.Context) EndpointOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(EndpointOutput{})
 }

@@ -4,6 +4,7 @@
 package glue
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -19,27 +20,27 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/glue"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/glue"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
 // func main() {
 // 	pulumi.Run(func(ctx *pulumi.Context) error {
 // 		_, err := glue.NewTrigger(ctx, "example", &glue.TriggerArgs{
+// 			Type: pulumi.String("CONDITIONAL"),
 // 			Actions: glue.TriggerActionArray{
 // 				&glue.TriggerActionArgs{
-// 					JobName: pulumi.String(aws_glue_job.Example1.Name),
+// 					JobName: pulumi.Any(aws_glue_job.Example1.Name),
 // 				},
 // 			},
 // 			Predicate: &glue.TriggerPredicateArgs{
 // 				Conditions: glue.TriggerPredicateConditionArray{
 // 					&glue.TriggerPredicateConditionArgs{
-// 						JobName: pulumi.String(aws_glue_job.Example2.Name),
+// 						JobName: pulumi.Any(aws_glue_job.Example2.Name),
 // 						State:   pulumi.String("SUCCEEDED"),
 // 					},
 // 				},
 // 			},
-// 			Type: pulumi.String("CONDITIONAL"),
 // 		})
 // 		if err != nil {
 // 			return err
@@ -54,19 +55,19 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/glue"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/glue"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
 // func main() {
 // 	pulumi.Run(func(ctx *pulumi.Context) error {
 // 		_, err := glue.NewTrigger(ctx, "example", &glue.TriggerArgs{
+// 			Type: pulumi.String("ON_DEMAND"),
 // 			Actions: glue.TriggerActionArray{
 // 				&glue.TriggerActionArgs{
-// 					JobName: pulumi.String(aws_glue_job.Example.Name),
+// 					JobName: pulumi.Any(aws_glue_job.Example.Name),
 // 				},
 // 			},
-// 			Type: pulumi.String("ON_DEMAND"),
 // 		})
 // 		if err != nil {
 // 			return err
@@ -81,20 +82,20 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/glue"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/glue"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
 // func main() {
 // 	pulumi.Run(func(ctx *pulumi.Context) error {
 // 		_, err := glue.NewTrigger(ctx, "example", &glue.TriggerArgs{
-// 			Actions: glue.TriggerActionArray{
-// 				&glue.TriggerActionArgs{
-// 					JobName: pulumi.String(aws_glue_job.Example.Name),
-// 				},
-// 			},
 // 			Schedule: pulumi.String("cron(15 12 * * ? *)"),
 // 			Type:     pulumi.String("SCHEDULED"),
+// 			Actions: glue.TriggerActionArray{
+// 				&glue.TriggerActionArgs{
+// 					JobName: pulumi.Any(aws_glue_job.Example.Name),
+// 				},
+// 			},
 // 		})
 // 		if err != nil {
 // 			return err
@@ -111,27 +112,27 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/glue"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/glue"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
 // func main() {
 // 	pulumi.Run(func(ctx *pulumi.Context) error {
 // 		_, err := glue.NewTrigger(ctx, "example", &glue.TriggerArgs{
+// 			Type: pulumi.String("CONDITIONAL"),
 // 			Actions: glue.TriggerActionArray{
 // 				&glue.TriggerActionArgs{
-// 					CrawlerName: pulumi.String(aws_glue_crawler.Example1.Name),
+// 					CrawlerName: pulumi.Any(aws_glue_crawler.Example1.Name),
 // 				},
 // 			},
 // 			Predicate: &glue.TriggerPredicateArgs{
 // 				Conditions: glue.TriggerPredicateConditionArray{
 // 					&glue.TriggerPredicateConditionArgs{
-// 						JobName: pulumi.String(aws_glue_job.Example2.Name),
+// 						JobName: pulumi.Any(aws_glue_job.Example2.Name),
 // 						State:   pulumi.String("SUCCEEDED"),
 // 					},
 // 				},
 // 			},
-// 			Type: pulumi.String("CONDITIONAL"),
 // 		})
 // 		if err != nil {
 // 			return err
@@ -148,27 +149,27 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/glue"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/glue"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
 // func main() {
 // 	pulumi.Run(func(ctx *pulumi.Context) error {
 // 		_, err := glue.NewTrigger(ctx, "example", &glue.TriggerArgs{
+// 			Type: pulumi.String("CONDITIONAL"),
 // 			Actions: glue.TriggerActionArray{
 // 				&glue.TriggerActionArgs{
-// 					JobName: pulumi.String(aws_glue_job.Example1.Name),
+// 					JobName: pulumi.Any(aws_glue_job.Example1.Name),
 // 				},
 // 			},
 // 			Predicate: &glue.TriggerPredicateArgs{
 // 				Conditions: glue.TriggerPredicateConditionArray{
 // 					&glue.TriggerPredicateConditionArgs{
+// 						CrawlerName: pulumi.Any(aws_glue_crawler.Example2.Name),
 // 						CrawlState:  pulumi.String("SUCCEEDED"),
-// 						CrawlerName: pulumi.String(aws_glue_crawler.Example2.Name),
 // 					},
 // 				},
 // 			},
-// 			Type: pulumi.String("CONDITIONAL"),
 // 		})
 // 		if err != nil {
 // 			return err
@@ -176,6 +177,14 @@ import (
 // 		return nil
 // 	})
 // }
+// ```
+//
+// ## Import
+//
+// Glue Triggers can be imported using `name`, e.g.
+//
+// ```sh
+//  $ pulumi import aws:glue/trigger:Trigger MyTrigger MyTrigger
 // ```
 type Trigger struct {
 	pulumi.CustomResourceState
@@ -205,14 +214,15 @@ type Trigger struct {
 // NewTrigger registers a new resource with the given unique name, arguments, and options.
 func NewTrigger(ctx *pulumi.Context,
 	name string, args *TriggerArgs, opts ...pulumi.ResourceOption) (*Trigger, error) {
-	if args == nil || args.Actions == nil {
-		return nil, errors.New("missing required argument 'Actions'")
-	}
-	if args == nil || args.Type == nil {
-		return nil, errors.New("missing required argument 'Type'")
-	}
 	if args == nil {
-		args = &TriggerArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.Actions == nil {
+		return nil, errors.New("invalid value for required argument 'Actions'")
+	}
+	if args.Type == nil {
+		return nil, errors.New("invalid value for required argument 'Type'")
 	}
 	var resource Trigger
 	err := ctx.RegisterResource("aws:glue/trigger:Trigger", name, args, &resource, opts...)
@@ -330,4 +340,43 @@ type TriggerArgs struct {
 
 func (TriggerArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*triggerArgs)(nil)).Elem()
+}
+
+type TriggerInput interface {
+	pulumi.Input
+
+	ToTriggerOutput() TriggerOutput
+	ToTriggerOutputWithContext(ctx context.Context) TriggerOutput
+}
+
+func (Trigger) ElementType() reflect.Type {
+	return reflect.TypeOf((*Trigger)(nil)).Elem()
+}
+
+func (i Trigger) ToTriggerOutput() TriggerOutput {
+	return i.ToTriggerOutputWithContext(context.Background())
+}
+
+func (i Trigger) ToTriggerOutputWithContext(ctx context.Context) TriggerOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(TriggerOutput)
+}
+
+type TriggerOutput struct {
+	*pulumi.OutputState
+}
+
+func (TriggerOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*TriggerOutput)(nil)).Elem()
+}
+
+func (o TriggerOutput) ToTriggerOutput() TriggerOutput {
+	return o
+}
+
+func (o TriggerOutput) ToTriggerOutputWithContext(ctx context.Context) TriggerOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(TriggerOutput{})
 }

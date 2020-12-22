@@ -4,6 +4,7 @@
 package securityhub
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -18,20 +19,20 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/securityhub"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/securityhub"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
 // func main() {
 // 	pulumi.Run(func(ctx *pulumi.Context) error {
-// 		_, err := securityhub.NewAccount(ctx, "example", nil)
+// 		example, err := securityhub.NewAccount(ctx, "example", nil)
 // 		if err != nil {
 // 			return err
 // 		}
 // 		_, err = securityhub.NewStandardsSubscription(ctx, "cis", &securityhub.StandardsSubscriptionArgs{
 // 			StandardsArn: pulumi.String("arn:aws:securityhub:::ruleset/cis-aws-foundations-benchmark/v/1.2.0"),
 // 		}, pulumi.DependsOn([]pulumi.Resource{
-// 			"aws_securityhub_account.example",
+// 			example,
 // 		}))
 // 		if err != nil {
 // 			return err
@@ -39,7 +40,7 @@ import (
 // 		_, err = securityhub.NewStandardsSubscription(ctx, "pci321", &securityhub.StandardsSubscriptionArgs{
 // 			StandardsArn: pulumi.String("arn:aws:securityhub:us-east-1::standards/pci-dss/v/3.2.1"),
 // 		}, pulumi.DependsOn([]pulumi.Resource{
-// 			"aws_securityhub_account.example",
+// 			example,
 // 		}))
 // 		if err != nil {
 // 			return err
@@ -47,6 +48,18 @@ import (
 // 		return nil
 // 	})
 // }
+// ```
+//
+// ## Import
+//
+// Security Hub standards subscriptions can be imported using the standards subscription ARN, e.g.
+//
+// ```sh
+//  $ pulumi import aws:securityhub/standardsSubscription:StandardsSubscription cis arn:aws:securityhub:eu-west-1:123456789012:subscription/cis-aws-foundations-benchmark/v/1.2.0
+// ```
+//
+// ```sh
+//  $ pulumi import aws:securityhub/standardsSubscription:StandardsSubscription pci_321 arn:aws:securityhub:eu-west-1:123456789012:subscription/pci-dss/v/3.2.1
 // ```
 type StandardsSubscription struct {
 	pulumi.CustomResourceState
@@ -58,11 +71,12 @@ type StandardsSubscription struct {
 // NewStandardsSubscription registers a new resource with the given unique name, arguments, and options.
 func NewStandardsSubscription(ctx *pulumi.Context,
 	name string, args *StandardsSubscriptionArgs, opts ...pulumi.ResourceOption) (*StandardsSubscription, error) {
-	if args == nil || args.StandardsArn == nil {
-		return nil, errors.New("missing required argument 'StandardsArn'")
-	}
 	if args == nil {
-		args = &StandardsSubscriptionArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.StandardsArn == nil {
+		return nil, errors.New("invalid value for required argument 'StandardsArn'")
 	}
 	var resource StandardsSubscription
 	err := ctx.RegisterResource("aws:securityhub/standardsSubscription:StandardsSubscription", name, args, &resource, opts...)
@@ -112,4 +126,43 @@ type StandardsSubscriptionArgs struct {
 
 func (StandardsSubscriptionArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*standardsSubscriptionArgs)(nil)).Elem()
+}
+
+type StandardsSubscriptionInput interface {
+	pulumi.Input
+
+	ToStandardsSubscriptionOutput() StandardsSubscriptionOutput
+	ToStandardsSubscriptionOutputWithContext(ctx context.Context) StandardsSubscriptionOutput
+}
+
+func (StandardsSubscription) ElementType() reflect.Type {
+	return reflect.TypeOf((*StandardsSubscription)(nil)).Elem()
+}
+
+func (i StandardsSubscription) ToStandardsSubscriptionOutput() StandardsSubscriptionOutput {
+	return i.ToStandardsSubscriptionOutputWithContext(context.Background())
+}
+
+func (i StandardsSubscription) ToStandardsSubscriptionOutputWithContext(ctx context.Context) StandardsSubscriptionOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(StandardsSubscriptionOutput)
+}
+
+type StandardsSubscriptionOutput struct {
+	*pulumi.OutputState
+}
+
+func (StandardsSubscriptionOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*StandardsSubscriptionOutput)(nil)).Elem()
+}
+
+func (o StandardsSubscriptionOutput) ToStandardsSubscriptionOutput() StandardsSubscriptionOutput {
+	return o
+}
+
+func (o StandardsSubscriptionOutput) ToStandardsSubscriptionOutputWithContext(ctx context.Context) StandardsSubscriptionOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(StandardsSubscriptionOutput{})
 }

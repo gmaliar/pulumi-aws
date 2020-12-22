@@ -286,6 +286,7 @@ func (o AcceleratorIpSetArrayOutput) Index(i pulumi.IntInput) AcceleratorIpSetOu
 }
 
 type EndpointGroupEndpointConfiguration struct {
+	ClientIpPreservationEnabled *bool `pulumi:"clientIpPreservationEnabled"`
 	// An ID for the endpoint. If the endpoint is a Network Load Balancer or Application Load Balancer, this is the Amazon Resource Name (ARN) of the resource. If the endpoint is an Elastic IP address, this is the Elastic IP address allocation ID.
 	EndpointId *string `pulumi:"endpointId"`
 	// The weight associated with the endpoint. When you add weights to endpoints, you configure AWS Global Accelerator to route traffic based on proportions that you specify.
@@ -304,6 +305,7 @@ type EndpointGroupEndpointConfigurationInput interface {
 }
 
 type EndpointGroupEndpointConfigurationArgs struct {
+	ClientIpPreservationEnabled pulumi.BoolPtrInput `pulumi:"clientIpPreservationEnabled"`
 	// An ID for the endpoint. If the endpoint is a Network Load Balancer or Application Load Balancer, this is the Amazon Resource Name (ARN) of the resource. If the endpoint is an Elastic IP address, this is the Elastic IP address allocation ID.
 	EndpointId pulumi.StringPtrInput `pulumi:"endpointId"`
 	// The weight associated with the endpoint. When you add weights to endpoints, you configure AWS Global Accelerator to route traffic based on proportions that you specify.
@@ -361,6 +363,10 @@ func (o EndpointGroupEndpointConfigurationOutput) ToEndpointGroupEndpointConfigu
 	return o
 }
 
+func (o EndpointGroupEndpointConfigurationOutput) ClientIpPreservationEnabled() pulumi.BoolPtrOutput {
+	return o.ApplyT(func(v EndpointGroupEndpointConfiguration) *bool { return v.ClientIpPreservationEnabled }).(pulumi.BoolPtrOutput)
+}
+
 // An ID for the endpoint. If the endpoint is a Network Load Balancer or Application Load Balancer, this is the Amazon Resource Name (ARN) of the resource. If the endpoint is an Elastic IP address, this is the Elastic IP address allocation ID.
 func (o EndpointGroupEndpointConfigurationOutput) EndpointId() pulumi.StringPtrOutput {
 	return o.ApplyT(func(v EndpointGroupEndpointConfiguration) *string { return v.EndpointId }).(pulumi.StringPtrOutput)
@@ -389,6 +395,112 @@ func (o EndpointGroupEndpointConfigurationArrayOutput) Index(i pulumi.IntInput) 
 	return pulumi.All(o, i).ApplyT(func(vs []interface{}) EndpointGroupEndpointConfiguration {
 		return vs[0].([]EndpointGroupEndpointConfiguration)[vs[1].(int)]
 	}).(EndpointGroupEndpointConfigurationOutput)
+}
+
+type EndpointGroupPortOverride struct {
+	// The endpoint port that you want a listener port to be mapped to. This is the port on the endpoint, such as the Application Load Balancer or Amazon EC2 instance.
+	EndpointPort int `pulumi:"endpointPort"`
+	// The listener port that you want to map to a specific endpoint port. This is the port that user traffic arrives to the Global Accelerator on.
+	ListenerPort int `pulumi:"listenerPort"`
+}
+
+// EndpointGroupPortOverrideInput is an input type that accepts EndpointGroupPortOverrideArgs and EndpointGroupPortOverrideOutput values.
+// You can construct a concrete instance of `EndpointGroupPortOverrideInput` via:
+//
+//          EndpointGroupPortOverrideArgs{...}
+type EndpointGroupPortOverrideInput interface {
+	pulumi.Input
+
+	ToEndpointGroupPortOverrideOutput() EndpointGroupPortOverrideOutput
+	ToEndpointGroupPortOverrideOutputWithContext(context.Context) EndpointGroupPortOverrideOutput
+}
+
+type EndpointGroupPortOverrideArgs struct {
+	// The endpoint port that you want a listener port to be mapped to. This is the port on the endpoint, such as the Application Load Balancer or Amazon EC2 instance.
+	EndpointPort pulumi.IntInput `pulumi:"endpointPort"`
+	// The listener port that you want to map to a specific endpoint port. This is the port that user traffic arrives to the Global Accelerator on.
+	ListenerPort pulumi.IntInput `pulumi:"listenerPort"`
+}
+
+func (EndpointGroupPortOverrideArgs) ElementType() reflect.Type {
+	return reflect.TypeOf((*EndpointGroupPortOverride)(nil)).Elem()
+}
+
+func (i EndpointGroupPortOverrideArgs) ToEndpointGroupPortOverrideOutput() EndpointGroupPortOverrideOutput {
+	return i.ToEndpointGroupPortOverrideOutputWithContext(context.Background())
+}
+
+func (i EndpointGroupPortOverrideArgs) ToEndpointGroupPortOverrideOutputWithContext(ctx context.Context) EndpointGroupPortOverrideOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(EndpointGroupPortOverrideOutput)
+}
+
+// EndpointGroupPortOverrideArrayInput is an input type that accepts EndpointGroupPortOverrideArray and EndpointGroupPortOverrideArrayOutput values.
+// You can construct a concrete instance of `EndpointGroupPortOverrideArrayInput` via:
+//
+//          EndpointGroupPortOverrideArray{ EndpointGroupPortOverrideArgs{...} }
+type EndpointGroupPortOverrideArrayInput interface {
+	pulumi.Input
+
+	ToEndpointGroupPortOverrideArrayOutput() EndpointGroupPortOverrideArrayOutput
+	ToEndpointGroupPortOverrideArrayOutputWithContext(context.Context) EndpointGroupPortOverrideArrayOutput
+}
+
+type EndpointGroupPortOverrideArray []EndpointGroupPortOverrideInput
+
+func (EndpointGroupPortOverrideArray) ElementType() reflect.Type {
+	return reflect.TypeOf((*[]EndpointGroupPortOverride)(nil)).Elem()
+}
+
+func (i EndpointGroupPortOverrideArray) ToEndpointGroupPortOverrideArrayOutput() EndpointGroupPortOverrideArrayOutput {
+	return i.ToEndpointGroupPortOverrideArrayOutputWithContext(context.Background())
+}
+
+func (i EndpointGroupPortOverrideArray) ToEndpointGroupPortOverrideArrayOutputWithContext(ctx context.Context) EndpointGroupPortOverrideArrayOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(EndpointGroupPortOverrideArrayOutput)
+}
+
+type EndpointGroupPortOverrideOutput struct{ *pulumi.OutputState }
+
+func (EndpointGroupPortOverrideOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*EndpointGroupPortOverride)(nil)).Elem()
+}
+
+func (o EndpointGroupPortOverrideOutput) ToEndpointGroupPortOverrideOutput() EndpointGroupPortOverrideOutput {
+	return o
+}
+
+func (o EndpointGroupPortOverrideOutput) ToEndpointGroupPortOverrideOutputWithContext(ctx context.Context) EndpointGroupPortOverrideOutput {
+	return o
+}
+
+// The endpoint port that you want a listener port to be mapped to. This is the port on the endpoint, such as the Application Load Balancer or Amazon EC2 instance.
+func (o EndpointGroupPortOverrideOutput) EndpointPort() pulumi.IntOutput {
+	return o.ApplyT(func(v EndpointGroupPortOverride) int { return v.EndpointPort }).(pulumi.IntOutput)
+}
+
+// The listener port that you want to map to a specific endpoint port. This is the port that user traffic arrives to the Global Accelerator on.
+func (o EndpointGroupPortOverrideOutput) ListenerPort() pulumi.IntOutput {
+	return o.ApplyT(func(v EndpointGroupPortOverride) int { return v.ListenerPort }).(pulumi.IntOutput)
+}
+
+type EndpointGroupPortOverrideArrayOutput struct{ *pulumi.OutputState }
+
+func (EndpointGroupPortOverrideArrayOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*[]EndpointGroupPortOverride)(nil)).Elem()
+}
+
+func (o EndpointGroupPortOverrideArrayOutput) ToEndpointGroupPortOverrideArrayOutput() EndpointGroupPortOverrideArrayOutput {
+	return o
+}
+
+func (o EndpointGroupPortOverrideArrayOutput) ToEndpointGroupPortOverrideArrayOutputWithContext(ctx context.Context) EndpointGroupPortOverrideArrayOutput {
+	return o
+}
+
+func (o EndpointGroupPortOverrideArrayOutput) Index(i pulumi.IntInput) EndpointGroupPortOverrideOutput {
+	return pulumi.All(o, i).ApplyT(func(vs []interface{}) EndpointGroupPortOverride {
+		return vs[0].([]EndpointGroupPortOverride)[vs[1].(int)]
+	}).(EndpointGroupPortOverrideOutput)
 }
 
 type ListenerPortRange struct {
@@ -504,6 +616,8 @@ func init() {
 	pulumi.RegisterOutputType(AcceleratorIpSetArrayOutput{})
 	pulumi.RegisterOutputType(EndpointGroupEndpointConfigurationOutput{})
 	pulumi.RegisterOutputType(EndpointGroupEndpointConfigurationArrayOutput{})
+	pulumi.RegisterOutputType(EndpointGroupPortOverrideOutput{})
+	pulumi.RegisterOutputType(EndpointGroupPortOverrideArrayOutput{})
 	pulumi.RegisterOutputType(ListenerPortRangeOutput{})
 	pulumi.RegisterOutputType(ListenerPortRangeArrayOutput{})
 }

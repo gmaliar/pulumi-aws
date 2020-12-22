@@ -4,6 +4,7 @@
 package iot
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
@@ -17,7 +18,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/iot"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/iot"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -34,6 +35,14 @@ import (
 // 		return nil
 // 	})
 // }
+// ```
+//
+// ## Import
+//
+// IOT Things can be imported using the name, e.g.
+//
+// ```sh
+//  $ pulumi import aws:iot/thing:Thing example example
 // ```
 type Thing struct {
 	pulumi.CustomResourceState
@@ -58,6 +67,7 @@ func NewThing(ctx *pulumi.Context,
 	if args == nil {
 		args = &ThingArgs{}
 	}
+
 	var resource Thing
 	err := ctx.RegisterResource("aws:iot/thing:Thing", name, args, &resource, opts...)
 	if err != nil {
@@ -134,4 +144,43 @@ type ThingArgs struct {
 
 func (ThingArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*thingArgs)(nil)).Elem()
+}
+
+type ThingInput interface {
+	pulumi.Input
+
+	ToThingOutput() ThingOutput
+	ToThingOutputWithContext(ctx context.Context) ThingOutput
+}
+
+func (Thing) ElementType() reflect.Type {
+	return reflect.TypeOf((*Thing)(nil)).Elem()
+}
+
+func (i Thing) ToThingOutput() ThingOutput {
+	return i.ToThingOutputWithContext(context.Background())
+}
+
+func (i Thing) ToThingOutputWithContext(ctx context.Context) ThingOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(ThingOutput)
+}
+
+type ThingOutput struct {
+	*pulumi.OutputState
+}
+
+func (ThingOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*ThingOutput)(nil)).Elem()
+}
+
+func (o ThingOutput) ToThingOutput() ThingOutput {
+	return o
+}
+
+func (o ThingOutput) ToThingOutputWithContext(ctx context.Context) ThingOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(ThingOutput{})
 }

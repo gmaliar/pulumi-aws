@@ -4,6 +4,7 @@
 package backup
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -25,15 +26,15 @@ import (
 // import (
 // 	"fmt"
 //
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/backup"
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/iam"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/backup"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/iam"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
 // func main() {
 // 	pulumi.Run(func(ctx *pulumi.Context) error {
 // 		exampleRole, err := iam.NewRole(ctx, "exampleRole", &iam.RoleArgs{
-// 			AssumeRolePolicy: pulumi.String(fmt.Sprintf("%v%v%v%v%v%v%v%v%v%v%v%v%v", "{\n", "  \"Version\": \"2012-10-17\",\n", "  \"Statement\": [\n", "    {\n", "      \"Action\": [\"sts:AssumeRole\"],\n", "      \"Effect\": \"allow\",\n", "      \"Principal\": {\n", "        \"Service\": [\"backup.amazonaws.com\"]\n", "      }\n", "    }\n", "  ]\n", "}\n", "\n")),
+// 			AssumeRolePolicy: pulumi.String(fmt.Sprintf("%v%v%v%v%v%v%v%v%v%v%v%v", "{\n", "  \"Version\": \"2012-10-17\",\n", "  \"Statement\": [\n", "    {\n", "      \"Action\": [\"sts:AssumeRole\"],\n", "      \"Effect\": \"allow\",\n", "      \"Principal\": {\n", "        \"Service\": [\"backup.amazonaws.com\"]\n", "      }\n", "    }\n", "  ]\n", "}\n")),
 // 		})
 // 		if err != nil {
 // 			return err
@@ -61,19 +62,19 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/backup"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/backup"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
 // func main() {
 // 	pulumi.Run(func(ctx *pulumi.Context) error {
 // 		_, err := backup.NewSelection(ctx, "example", &backup.SelectionArgs{
-// 			IamRoleArn: pulumi.String(aws_iam_role.Example.Arn),
-// 			PlanId:     pulumi.String(aws_backup_plan.Example.Id),
+// 			IamRoleArn: pulumi.Any(aws_iam_role.Example.Arn),
+// 			PlanId:     pulumi.Any(aws_backup_plan.Example.Id),
 // 			SelectionTags: backup.SelectionSelectionTagArray{
 // 				&backup.SelectionSelectionTagArgs{
-// 					Key:   pulumi.String("foo"),
 // 					Type:  pulumi.String("STRINGEQUALS"),
+// 					Key:   pulumi.String("foo"),
 // 					Value: pulumi.String("bar"),
 // 				},
 // 			},
@@ -84,6 +85,14 @@ import (
 // 		return nil
 // 	})
 // }
+// ```
+//
+// ## Import
+//
+// Backup selection can be imported using the role plan_id and id separated by `|`.
+//
+// ```sh
+//  $ pulumi import aws:backup/selection:Selection example plan-id|selection-id
 // ```
 type Selection struct {
 	pulumi.CustomResourceState
@@ -103,14 +112,15 @@ type Selection struct {
 // NewSelection registers a new resource with the given unique name, arguments, and options.
 func NewSelection(ctx *pulumi.Context,
 	name string, args *SelectionArgs, opts ...pulumi.ResourceOption) (*Selection, error) {
-	if args == nil || args.IamRoleArn == nil {
-		return nil, errors.New("missing required argument 'IamRoleArn'")
-	}
-	if args == nil || args.PlanId == nil {
-		return nil, errors.New("missing required argument 'PlanId'")
-	}
 	if args == nil {
-		args = &SelectionArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.IamRoleArn == nil {
+		return nil, errors.New("invalid value for required argument 'IamRoleArn'")
+	}
+	if args.PlanId == nil {
+		return nil, errors.New("invalid value for required argument 'PlanId'")
 	}
 	var resource Selection
 	err := ctx.RegisterResource("aws:backup/selection:Selection", name, args, &resource, opts...)
@@ -192,4 +202,43 @@ type SelectionArgs struct {
 
 func (SelectionArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*selectionArgs)(nil)).Elem()
+}
+
+type SelectionInput interface {
+	pulumi.Input
+
+	ToSelectionOutput() SelectionOutput
+	ToSelectionOutputWithContext(ctx context.Context) SelectionOutput
+}
+
+func (Selection) ElementType() reflect.Type {
+	return reflect.TypeOf((*Selection)(nil)).Elem()
+}
+
+func (i Selection) ToSelectionOutput() SelectionOutput {
+	return i.ToSelectionOutputWithContext(context.Background())
+}
+
+func (i Selection) ToSelectionOutputWithContext(ctx context.Context) SelectionOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(SelectionOutput)
+}
+
+type SelectionOutput struct {
+	*pulumi.OutputState
+}
+
+func (SelectionOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*SelectionOutput)(nil)).Elem()
+}
+
+func (o SelectionOutput) ToSelectionOutput() SelectionOutput {
+	return o
+}
+
+func (o SelectionOutput) ToSelectionOutputWithContext(ctx context.Context) SelectionOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(SelectionOutput{})
 }

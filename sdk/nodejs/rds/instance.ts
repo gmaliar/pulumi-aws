@@ -2,11 +2,8 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
-
-import {InstanceType, StorageType} from "./index";
 
 /**
  * Provides an RDS instance resource.  A DB instance is an isolated database
@@ -66,6 +63,14 @@ import {InstanceType, StorageType} from "./index";
  *     allocatedStorage: 50,
  *     maxAllocatedStorage: 100,
  * });
+ * ```
+ *
+ * ## Import
+ *
+ * DB Instances can be imported using the `identifier`, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:rds/instance:Instance default mydb-rds-instance
  * ```
  */
 export class Instance extends pulumi.CustomResource {
@@ -184,7 +189,7 @@ export class Instance extends pulumi.CustomResource {
      */
     public readonly domainIamRoleName!: pulumi.Output<string | undefined>;
     /**
-     * List of log types to enable for exporting to CloudWatch logs. If omitted, no logs will be exported. Valid values (depending on `engine`). MySQL and MariaDB: `audit`, `error`, `general`, `slowquery`. PostgreSQL: `postgresql`, `upgrade`. MSSQL: `agent` , `error`. Oracle: `alert`, `audit`, `listener`, `trace`.
+     * Set of log types to enable for exporting to CloudWatch logs. If omitted, no logs will be exported. Valid values (depending on `engine`). MySQL and MariaDB: `audit`, `error`, `general`, `slowquery`. PostgreSQL: `postgresql`, `upgrade`. MSSQL: `agent` , `error`. Oracle: `alert`, `audit`, `listener`, `trace`.
      */
     public readonly enabledCloudwatchLogsExports!: pulumi.Output<string[] | undefined>;
     /**
@@ -249,6 +254,10 @@ export class Instance extends pulumi.CustomResource {
      * encrypted replica, set this to the destination KMS ARN.
      */
     public readonly kmsKeyId!: pulumi.Output<string>;
+    /**
+     * The latest time, in UTC [RFC3339 format](https://tools.ietf.org/html/rfc3339#section-5.8), to which a database can be restored with point-in-time restore.
+     */
+    public /*out*/ readonly latestRestorableTime!: pulumi.Output<string>;
     /**
      * (Optional, but required for some DB engines, i.e. Oracle
      * SE1) License model information for this DB instance.
@@ -342,6 +351,10 @@ export class Instance extends pulumi.CustomResource {
      * The RDS Resource ID of this instance.
      */
     public /*out*/ readonly resourceId!: pulumi.Output<string>;
+    /**
+     * A configuration block for restoring a DB instance to an arbitrary point in time. Requires the `identifier` argument to be set with the name of the new DB instance to be created. See Restore To Point In Time below for details.
+     */
+    public readonly restoreToPointInTime!: pulumi.Output<outputs.rds.InstanceRestoreToPointInTime | undefined>;
     /**
      * Restore from a Percona Xtrabackup in S3.  See [Importing Data into an Amazon RDS MySQL DB Instance](http://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/MySQL.Procedural.Importing.html)
      */
@@ -447,6 +460,7 @@ export class Instance extends pulumi.CustomResource {
             inputs["instanceClass"] = state ? state.instanceClass : undefined;
             inputs["iops"] = state ? state.iops : undefined;
             inputs["kmsKeyId"] = state ? state.kmsKeyId : undefined;
+            inputs["latestRestorableTime"] = state ? state.latestRestorableTime : undefined;
             inputs["licenseModel"] = state ? state.licenseModel : undefined;
             inputs["maintenanceWindow"] = state ? state.maintenanceWindow : undefined;
             inputs["maxAllocatedStorage"] = state ? state.maxAllocatedStorage : undefined;
@@ -465,6 +479,7 @@ export class Instance extends pulumi.CustomResource {
             inputs["replicas"] = state ? state.replicas : undefined;
             inputs["replicateSourceDb"] = state ? state.replicateSourceDb : undefined;
             inputs["resourceId"] = state ? state.resourceId : undefined;
+            inputs["restoreToPointInTime"] = state ? state.restoreToPointInTime : undefined;
             inputs["s3Import"] = state ? state.s3Import : undefined;
             inputs["securityGroupNames"] = state ? state.securityGroupNames : undefined;
             inputs["skipFinalSnapshot"] = state ? state.skipFinalSnapshot : undefined;
@@ -478,7 +493,7 @@ export class Instance extends pulumi.CustomResource {
             inputs["vpcSecurityGroupIds"] = state ? state.vpcSecurityGroupIds : undefined;
         } else {
             const args = argsOrState as InstanceArgs | undefined;
-            if (!args || args.instanceClass === undefined) {
+            if ((!args || args.instanceClass === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'instanceClass'");
             }
             inputs["allocatedStorage"] = args ? args.allocatedStorage : undefined;
@@ -522,6 +537,7 @@ export class Instance extends pulumi.CustomResource {
             inputs["port"] = args ? args.port : undefined;
             inputs["publiclyAccessible"] = args ? args.publiclyAccessible : undefined;
             inputs["replicateSourceDb"] = args ? args.replicateSourceDb : undefined;
+            inputs["restoreToPointInTime"] = args ? args.restoreToPointInTime : undefined;
             inputs["s3Import"] = args ? args.s3Import : undefined;
             inputs["securityGroupNames"] = args ? args.securityGroupNames : undefined;
             inputs["skipFinalSnapshot"] = args ? args.skipFinalSnapshot : undefined;
@@ -536,6 +552,7 @@ export class Instance extends pulumi.CustomResource {
             inputs["arn"] = undefined /*out*/;
             inputs["endpoint"] = undefined /*out*/;
             inputs["hostedZoneId"] = undefined /*out*/;
+            inputs["latestRestorableTime"] = undefined /*out*/;
             inputs["replicas"] = undefined /*out*/;
             inputs["resourceId"] = undefined /*out*/;
             inputs["status"] = undefined /*out*/;
@@ -643,7 +660,7 @@ export interface InstanceState {
      */
     readonly domainIamRoleName?: pulumi.Input<string>;
     /**
-     * List of log types to enable for exporting to CloudWatch logs. If omitted, no logs will be exported. Valid values (depending on `engine`). MySQL and MariaDB: `audit`, `error`, `general`, `slowquery`. PostgreSQL: `postgresql`, `upgrade`. MSSQL: `agent` , `error`. Oracle: `alert`, `audit`, `listener`, `trace`.
+     * Set of log types to enable for exporting to CloudWatch logs. If omitted, no logs will be exported. Valid values (depending on `engine`). MySQL and MariaDB: `audit`, `error`, `general`, `slowquery`. PostgreSQL: `postgresql`, `upgrade`. MSSQL: `agent` , `error`. Oracle: `alert`, `audit`, `listener`, `trace`.
      */
     readonly enabledCloudwatchLogsExports?: pulumi.Input<pulumi.Input<string>[]>;
     /**
@@ -697,7 +714,7 @@ export interface InstanceState {
     /**
      * The instance type of the RDS instance.
      */
-    readonly instanceClass?: pulumi.Input<string | InstanceType>;
+    readonly instanceClass?: pulumi.Input<string | enums.rds.InstanceType>;
     /**
      * The amount of provisioned IOPS. Setting this implies a
      * storageType of "io1".
@@ -708,6 +725,10 @@ export interface InstanceState {
      * encrypted replica, set this to the destination KMS ARN.
      */
     readonly kmsKeyId?: pulumi.Input<string>;
+    /**
+     * The latest time, in UTC [RFC3339 format](https://tools.ietf.org/html/rfc3339#section-5.8), to which a database can be restored with point-in-time restore.
+     */
+    readonly latestRestorableTime?: pulumi.Input<string>;
     /**
      * (Optional, but required for some DB engines, i.e. Oracle
      * SE1) License model information for this DB instance.
@@ -802,6 +823,10 @@ export interface InstanceState {
      */
     readonly resourceId?: pulumi.Input<string>;
     /**
+     * A configuration block for restoring a DB instance to an arbitrary point in time. Requires the `identifier` argument to be set with the name of the new DB instance to be created. See Restore To Point In Time below for details.
+     */
+    readonly restoreToPointInTime?: pulumi.Input<inputs.rds.InstanceRestoreToPointInTime>;
+    /**
      * Restore from a Percona Xtrabackup in S3.  See [Importing Data into an Amazon RDS MySQL DB Instance](http://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/MySQL.Procedural.Importing.html)
      */
     readonly s3Import?: pulumi.Input<inputs.rds.InstanceS3Import>;
@@ -841,7 +866,7 @@ export interface InstanceState {
      * purpose SSD), or "io1" (provisioned IOPS SSD). The default is "io1" if `iops` is
      * specified, "gp2" if not.
      */
-    readonly storageType?: pulumi.Input<string | StorageType>;
+    readonly storageType?: pulumi.Input<string | enums.rds.StorageType>;
     /**
      * A map of tags to assign to the resource.
      */
@@ -950,7 +975,7 @@ export interface InstanceArgs {
      */
     readonly domainIamRoleName?: pulumi.Input<string>;
     /**
-     * List of log types to enable for exporting to CloudWatch logs. If omitted, no logs will be exported. Valid values (depending on `engine`). MySQL and MariaDB: `audit`, `error`, `general`, `slowquery`. PostgreSQL: `postgresql`, `upgrade`. MSSQL: `agent` , `error`. Oracle: `alert`, `audit`, `listener`, `trace`.
+     * Set of log types to enable for exporting to CloudWatch logs. If omitted, no logs will be exported. Valid values (depending on `engine`). MySQL and MariaDB: `audit`, `error`, `general`, `slowquery`. PostgreSQL: `postgresql`, `upgrade`. MSSQL: `agent` , `error`. Oracle: `alert`, `audit`, `listener`, `trace`.
      */
     readonly enabledCloudwatchLogsExports?: pulumi.Input<pulumi.Input<string>[]>;
     /**
@@ -995,7 +1020,7 @@ export interface InstanceArgs {
     /**
      * The instance type of the RDS instance.
      */
-    readonly instanceClass: pulumi.Input<string | InstanceType>;
+    readonly instanceClass: pulumi.Input<string | enums.rds.InstanceType>;
     /**
      * The amount of provisioned IOPS. Setting this implies a
      * storageType of "io1".
@@ -1095,6 +1120,10 @@ export interface InstanceArgs {
      */
     readonly replicateSourceDb?: pulumi.Input<string>;
     /**
+     * A configuration block for restoring a DB instance to an arbitrary point in time. Requires the `identifier` argument to be set with the name of the new DB instance to be created. See Restore To Point In Time below for details.
+     */
+    readonly restoreToPointInTime?: pulumi.Input<inputs.rds.InstanceRestoreToPointInTime>;
+    /**
      * Restore from a Percona Xtrabackup in S3.  See [Importing Data into an Amazon RDS MySQL DB Instance](http://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/MySQL.Procedural.Importing.html)
      */
     readonly s3Import?: pulumi.Input<inputs.rds.InstanceS3Import>;
@@ -1130,7 +1159,7 @@ export interface InstanceArgs {
      * purpose SSD), or "io1" (provisioned IOPS SSD). The default is "io1" if `iops` is
      * specified, "gp2" if not.
      */
-    readonly storageType?: pulumi.Input<string | StorageType>;
+    readonly storageType?: pulumi.Input<string | enums.rds.StorageType>;
     /**
      * A map of tags to assign to the resource.
      */

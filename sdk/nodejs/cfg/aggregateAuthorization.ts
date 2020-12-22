@@ -18,6 +18,14 @@ import * as utilities from "../utilities";
  *     region: "eu-west-2",
  * });
  * ```
+ *
+ * ## Import
+ *
+ * Config aggregate authorizations can be imported using `account_id:region`, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:cfg/aggregateAuthorization:AggregateAuthorization example 123456789012:us-east-1
+ * ```
  */
 export class AggregateAuthorization extends pulumi.CustomResource {
     /**
@@ -82,10 +90,10 @@ export class AggregateAuthorization extends pulumi.CustomResource {
             inputs["tags"] = state ? state.tags : undefined;
         } else {
             const args = argsOrState as AggregateAuthorizationArgs | undefined;
-            if (!args || args.accountId === undefined) {
+            if ((!args || args.accountId === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'accountId'");
             }
-            if (!args || args.region === undefined) {
+            if ((!args || args.region === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'region'");
             }
             inputs["accountId"] = args ? args.accountId : undefined;

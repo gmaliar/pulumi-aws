@@ -17,6 +17,14 @@ import * as utilities from "../utilities";
  *     amazonSideAsn: "64512",
  * });
  * ```
+ *
+ * ## Import
+ *
+ * Direct Connect Gateways can be imported using the `gateway id`, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:directconnect/gateway:Gateway test abcd1234-dcba-5678-be23-cdef9876ab45
+ * ```
  */
 export class Gateway extends pulumi.CustomResource {
     /**
@@ -76,7 +84,7 @@ export class Gateway extends pulumi.CustomResource {
             inputs["ownerAccountId"] = state ? state.ownerAccountId : undefined;
         } else {
             const args = argsOrState as GatewayArgs | undefined;
-            if (!args || args.amazonSideAsn === undefined) {
+            if ((!args || args.amazonSideAsn === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'amazonSideAsn'");
             }
             inputs["amazonSideAsn"] = args ? args.amazonSideAsn : undefined;

@@ -2,8 +2,7 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 /**
@@ -23,27 +22,35 @@ import * as utilities from "../utilities";
  * import * as aws from "@pulumi/aws";
  *
  * const main = new aws.ec2.NetworkAcl("main", {
+ *     vpcId: aws_vpc.main.id,
  *     egress: [{
+ *         protocol: "tcp",
+ *         ruleNo: 200,
  *         action: "allow",
  *         cidrBlock: "10.3.0.0/18",
  *         fromPort: 443,
- *         protocol: "tcp",
- *         ruleNo: 200,
  *         toPort: 443,
  *     }],
  *     ingress: [{
+ *         protocol: "tcp",
+ *         ruleNo: 100,
  *         action: "allow",
  *         cidrBlock: "10.3.0.0/18",
  *         fromPort: 80,
- *         protocol: "tcp",
- *         ruleNo: 100,
  *         toPort: 80,
  *     }],
  *     tags: {
  *         Name: "main",
  *     },
- *     vpcId: aws_vpc_main.id,
  * });
+ * ```
+ *
+ * ## Import
+ *
+ * Network ACLs can be imported using the `id`, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:ec2/networkAcl:NetworkAcl main acl-7aaabd18
  * ```
  */
 export class NetworkAcl extends pulumi.CustomResource {
@@ -124,7 +131,7 @@ export class NetworkAcl extends pulumi.CustomResource {
             inputs["vpcId"] = state ? state.vpcId : undefined;
         } else {
             const args = argsOrState as NetworkAclArgs | undefined;
-            if (!args || args.vpcId === undefined) {
+            if ((!args || args.vpcId === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'vpcId'");
             }
             inputs["egress"] = args ? args.egress : undefined;

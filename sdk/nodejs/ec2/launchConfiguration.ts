@@ -2,8 +2,7 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 import {InstanceProfile} from "../iam";
@@ -17,7 +16,8 @@ import {InstanceProfile} from "../iam";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const ubuntu = pulumi.output(aws.getAmi({
+ * const ubuntu = aws.getAmi({
+ *     mostRecent: true,
  *     filters: [
  *         {
  *             name: "name",
@@ -28,11 +28,10 @@ import {InstanceProfile} from "../iam";
  *             values: ["hvm"],
  *         },
  *     ],
- *     mostRecent: true,
- *     owners: ["099720109477"], // Canonical
- * }, { async: true }));
- * const asConf = new aws.ec2.LaunchConfiguration("as_conf", {
- *     imageId: ubuntu.id,
+ *     owners: ["099720109477"],
+ * });
+ * const asConf = new aws.ec2.LaunchConfiguration("asConf", {
+ *     imageId: ubuntu.then(ubuntu => ubuntu.id),
  *     instanceType: "t2.micro",
  * });
  * ```
@@ -50,7 +49,8 @@ import {InstanceProfile} from "../iam";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const ubuntu = pulumi.output(aws.getAmi({
+ * const ubuntu = aws.getAmi({
+ *     mostRecent: true,
  *     filters: [
  *         {
  *             name: "name",
@@ -61,18 +61,17 @@ import {InstanceProfile} from "../iam";
  *             values: ["hvm"],
  *         },
  *     ],
- *     mostRecent: true,
- *     owners: ["099720109477"], // Canonical
- * }, { async: true }));
- * const asConf = new aws.ec2.LaunchConfiguration("as_conf", {
- *     imageId: ubuntu.id,
- *     instanceType: "t2.micro",
+ *     owners: ["099720109477"],
+ * });
+ * const asConf = new aws.ec2.LaunchConfiguration("asConf", {
  *     namePrefix: "lc-example-",
+ *     imageId: ubuntu.then(ubuntu => ubuntu.id),
+ *     instanceType: "t2.micro",
  * });
  * const bar = new aws.autoscaling.Group("bar", {
  *     launchConfiguration: asConf.name,
- *     maxSize: 2,
  *     minSize: 1,
+ *     maxSize: 2,
  * });
  * ```
  *
@@ -93,7 +92,8 @@ import {InstanceProfile} from "../iam";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const ubuntu = pulumi.output(aws.getAmi({
+ * const ubuntu = aws.getAmi({
+ *     mostRecent: true,
  *     filters: [
  *         {
  *             name: "name",
@@ -104,17 +104,14 @@ import {InstanceProfile} from "../iam";
  *             values: ["hvm"],
  *         },
  *     ],
- *     mostRecent: true,
- *     owners: ["099720109477"], // Canonical
- * }, { async: true }));
- * const asConf = new aws.ec2.LaunchConfiguration("as_conf", {
- *     imageId: ubuntu.id,
+ *     owners: ["099720109477"],
+ * });
+ * const asConf = new aws.ec2.LaunchConfiguration("asConf", {
+ *     imageId: ubuntu.then(ubuntu => ubuntu.id),
  *     instanceType: "m4.large",
  *     spotPrice: "0.001",
  * });
- * const bar = new aws.autoscaling.Group("bar", {
- *     launchConfiguration: asConf.name,
- * });
+ * const bar = new aws.autoscaling.Group("bar", {launchConfiguration: asConf.name});
  * ```
  *
  * ## Block devices
@@ -152,6 +149,7 @@ import {InstanceProfile} from "../iam";
  * * `deleteOnTermination` - (Optional) Whether the volume should be destroyed
  *   on instance termination (Default: `true`).
  * * `encrypted` - (Optional) Whether the volume should be encrypted or not. Do not use this option if you are using `snapshotId` as the encrypted flag will be determined by the snapshot. (Default: `false`).
+ * * `noDevice` - (Optional) Whether the device in the block device mapping of the AMI is suppressed.
  *
  * Modifying any `ebsBlockDevice` currently requires resource replacement.
  *
@@ -172,6 +170,14 @@ import {InstanceProfile} from "../iam";
  * cannot currently be detected by this provider. After updating to block device
  * configuration, resource recreation can be manually triggered by using the
  * [`up` command with the --replace argument](https://www.pulumi.com/docs/reference/cli/pulumi_up/).
+ *
+ * ## Import
+ *
+ * Launch configurations can be imported using the `name`, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:ec2/launchConfiguration:LaunchConfiguration as_conf lg-123456
+ * ```
  */
 export class LaunchConfiguration extends pulumi.CustomResource {
     /**
@@ -324,10 +330,10 @@ export class LaunchConfiguration extends pulumi.CustomResource {
             inputs["vpcClassicLinkSecurityGroups"] = state ? state.vpcClassicLinkSecurityGroups : undefined;
         } else {
             const args = argsOrState as LaunchConfigurationArgs | undefined;
-            if (!args || args.imageId === undefined) {
+            if ((!args || args.imageId === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'imageId'");
             }
-            if (!args || args.instanceType === undefined) {
+            if ((!args || args.instanceType === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'instanceType'");
             }
             inputs["associatePublicIpAddress"] = args ? args.associatePublicIpAddress : undefined;

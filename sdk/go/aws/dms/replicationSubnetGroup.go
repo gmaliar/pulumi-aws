@@ -4,6 +4,7 @@
 package dms
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -18,7 +19,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/dms"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/dms"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -41,6 +42,14 @@ import (
 // 	})
 // }
 // ```
+//
+// ## Import
+//
+// Replication subnet groups can be imported using the `replication_subnet_group_id`, e.g.
+//
+// ```sh
+//  $ pulumi import aws:dms/replicationSubnetGroup:ReplicationSubnetGroup test test-dms-replication-subnet-group-tf
+// ```
 type ReplicationSubnetGroup struct {
 	pulumi.CustomResourceState
 
@@ -60,17 +69,18 @@ type ReplicationSubnetGroup struct {
 // NewReplicationSubnetGroup registers a new resource with the given unique name, arguments, and options.
 func NewReplicationSubnetGroup(ctx *pulumi.Context,
 	name string, args *ReplicationSubnetGroupArgs, opts ...pulumi.ResourceOption) (*ReplicationSubnetGroup, error) {
-	if args == nil || args.ReplicationSubnetGroupDescription == nil {
-		return nil, errors.New("missing required argument 'ReplicationSubnetGroupDescription'")
-	}
-	if args == nil || args.ReplicationSubnetGroupId == nil {
-		return nil, errors.New("missing required argument 'ReplicationSubnetGroupId'")
-	}
-	if args == nil || args.SubnetIds == nil {
-		return nil, errors.New("missing required argument 'SubnetIds'")
-	}
 	if args == nil {
-		args = &ReplicationSubnetGroupArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.ReplicationSubnetGroupDescription == nil {
+		return nil, errors.New("invalid value for required argument 'ReplicationSubnetGroupDescription'")
+	}
+	if args.ReplicationSubnetGroupId == nil {
+		return nil, errors.New("invalid value for required argument 'ReplicationSubnetGroupId'")
+	}
+	if args.SubnetIds == nil {
+		return nil, errors.New("invalid value for required argument 'SubnetIds'")
 	}
 	var resource ReplicationSubnetGroup
 	err := ctx.RegisterResource("aws:dms/replicationSubnetGroup:ReplicationSubnetGroup", name, args, &resource, opts...)
@@ -150,4 +160,43 @@ type ReplicationSubnetGroupArgs struct {
 
 func (ReplicationSubnetGroupArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*replicationSubnetGroupArgs)(nil)).Elem()
+}
+
+type ReplicationSubnetGroupInput interface {
+	pulumi.Input
+
+	ToReplicationSubnetGroupOutput() ReplicationSubnetGroupOutput
+	ToReplicationSubnetGroupOutputWithContext(ctx context.Context) ReplicationSubnetGroupOutput
+}
+
+func (ReplicationSubnetGroup) ElementType() reflect.Type {
+	return reflect.TypeOf((*ReplicationSubnetGroup)(nil)).Elem()
+}
+
+func (i ReplicationSubnetGroup) ToReplicationSubnetGroupOutput() ReplicationSubnetGroupOutput {
+	return i.ToReplicationSubnetGroupOutputWithContext(context.Background())
+}
+
+func (i ReplicationSubnetGroup) ToReplicationSubnetGroupOutputWithContext(ctx context.Context) ReplicationSubnetGroupOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(ReplicationSubnetGroupOutput)
+}
+
+type ReplicationSubnetGroupOutput struct {
+	*pulumi.OutputState
+}
+
+func (ReplicationSubnetGroupOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*ReplicationSubnetGroupOutput)(nil)).Elem()
+}
+
+func (o ReplicationSubnetGroupOutput) ToReplicationSubnetGroupOutput() ReplicationSubnetGroupOutput {
+	return o
+}
+
+func (o ReplicationSubnetGroupOutput) ToReplicationSubnetGroupOutputWithContext(ctx context.Context) ReplicationSubnetGroupOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(ReplicationSubnetGroupOutput{})
 }

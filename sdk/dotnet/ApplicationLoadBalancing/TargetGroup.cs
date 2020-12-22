@@ -82,6 +82,14 @@ namespace Pulumi.Aws.ApplicationLoadBalancing
     /// 
     /// }
     /// ```
+    /// 
+    /// ## Import
+    /// 
+    /// Target Groups can be imported using their ARN, e.g.
+    /// 
+    /// ```sh
+    ///  $ pulumi import aws:applicationloadbalancing/targetGroup:TargetGroup app_front_end arn:aws:elasticloadbalancing:us-west-2:187416307283:targetgroup/app-front-end/20cfe21448b66314
+    /// ```
     /// </summary>
     [Obsolete(@"aws.applicationloadbalancing.TargetGroup has been deprecated in favor of aws.alb.TargetGroup")]
     public partial class TargetGroup : Pulumi.CustomResource
@@ -141,7 +149,7 @@ namespace Pulumi.Aws.ApplicationLoadBalancing
         public Output<int?> Port { get; private set; } = null!;
 
         /// <summary>
-        /// The protocol to use for routing traffic to the targets. Should be one of "TCP", "TLS", "UDP", "TCP_UDP", "HTTP" or "HTTPS". Required when `target_type` is `instance` or `ip`. Does not apply when `target_type` is `lambda`.
+        /// The protocol to use for routing traffic to the targets. Should be one of `GENEVE`, `HTTP`, `HTTPS`, `TCP`, `TCP_UDP`, `TLS`, or `UDP`. Required when `target_type` is `instance` or `ip`. Does not apply when `target_type` is `lambda`.
         /// </summary>
         [Output("protocol")]
         public Output<string?> Protocol { get; private set; } = null!;
@@ -159,7 +167,7 @@ namespace Pulumi.Aws.ApplicationLoadBalancing
         public Output<int?> SlowStart { get; private set; } = null!;
 
         /// <summary>
-        /// A Stickiness block. Stickiness blocks are documented below. `stickiness` is only valid if used with Load Balancers of type `Application`
+        /// A Stickiness block. Stickiness blocks are documented below.
         /// </summary>
         [Output("stickiness")]
         public Output<Outputs.TargetGroupStickiness> Stickiness { get; private set; } = null!;
@@ -276,7 +284,7 @@ namespace Pulumi.Aws.ApplicationLoadBalancing
         public Input<int>? Port { get; set; }
 
         /// <summary>
-        /// The protocol to use for routing traffic to the targets. Should be one of "TCP", "TLS", "UDP", "TCP_UDP", "HTTP" or "HTTPS". Required when `target_type` is `instance` or `ip`. Does not apply when `target_type` is `lambda`.
+        /// The protocol to use for routing traffic to the targets. Should be one of `GENEVE`, `HTTP`, `HTTPS`, `TCP`, `TCP_UDP`, `TLS`, or `UDP`. Required when `target_type` is `instance` or `ip`. Does not apply when `target_type` is `lambda`.
         /// </summary>
         [Input("protocol")]
         public Input<string>? Protocol { get; set; }
@@ -294,7 +302,7 @@ namespace Pulumi.Aws.ApplicationLoadBalancing
         public Input<int>? SlowStart { get; set; }
 
         /// <summary>
-        /// A Stickiness block. Stickiness blocks are documented below. `stickiness` is only valid if used with Load Balancers of type `Application`
+        /// A Stickiness block. Stickiness blocks are documented below.
         /// </summary>
         [Input("stickiness")]
         public Input<Inputs.TargetGroupStickinessArgs>? Stickiness { get; set; }
@@ -390,7 +398,7 @@ namespace Pulumi.Aws.ApplicationLoadBalancing
         public Input<int>? Port { get; set; }
 
         /// <summary>
-        /// The protocol to use for routing traffic to the targets. Should be one of "TCP", "TLS", "UDP", "TCP_UDP", "HTTP" or "HTTPS". Required when `target_type` is `instance` or `ip`. Does not apply when `target_type` is `lambda`.
+        /// The protocol to use for routing traffic to the targets. Should be one of `GENEVE`, `HTTP`, `HTTPS`, `TCP`, `TCP_UDP`, `TLS`, or `UDP`. Required when `target_type` is `instance` or `ip`. Does not apply when `target_type` is `lambda`.
         /// </summary>
         [Input("protocol")]
         public Input<string>? Protocol { get; set; }
@@ -408,7 +416,7 @@ namespace Pulumi.Aws.ApplicationLoadBalancing
         public Input<int>? SlowStart { get; set; }
 
         /// <summary>
-        /// A Stickiness block. Stickiness blocks are documented below. `stickiness` is only valid if used with Load Balancers of type `Application`
+        /// A Stickiness block. Stickiness blocks are documented below.
         /// </summary>
         [Input("stickiness")]
         public Input<Inputs.TargetGroupStickinessGetArgs>? Stickiness { get; set; }

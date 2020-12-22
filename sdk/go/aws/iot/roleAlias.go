@@ -4,6 +4,7 @@
 package iot
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -11,6 +12,47 @@ import (
 )
 
 // Provides an IoT role alias.
+//
+// ## Example Usage
+//
+// ```go
+// package main
+//
+// import (
+// 	"fmt"
+//
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/iam"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/iot"
+// 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
+// )
+//
+// func main() {
+// 	pulumi.Run(func(ctx *pulumi.Context) error {
+// 		role, err := iam.NewRole(ctx, "role", &iam.RoleArgs{
+// 			AssumeRolePolicy: pulumi.String(fmt.Sprintf("%v%v%v%v%v%v%v%v%v%v", "{\n", "  \"Version\": \"2012-10-17\",\n", "  \"Statement\": [\n", "    {\n", "      \"Effect\": \"Allow\",\n", "      \"Principal\": {\"Service\": \"credentials.iot.amazonaws.com\",\n", "      \"Action\": \"sts:AssumeRole\"\n", "    }\n", "  ]\n", "}\n")),
+// 		})
+// 		if err != nil {
+// 			return err
+// 		}
+// 		_, err = iot.NewRoleAlias(ctx, "alias", &iot.RoleAliasArgs{
+// 			Alias:   pulumi.String("Thermostat-dynamodb-access-role-alias"),
+// 			RoleArn: role.Arn,
+// 		})
+// 		if err != nil {
+// 			return err
+// 		}
+// 		return nil
+// 	})
+// }
+// ```
+//
+// ## Import
+//
+// IOT Role Alias can be imported via the alias, e.g.
+//
+// ```sh
+//  $ pulumi import aws:iot/roleAlias:RoleAlias example myalias
+// ```
 type RoleAlias struct {
 	pulumi.CustomResourceState
 
@@ -27,14 +69,15 @@ type RoleAlias struct {
 // NewRoleAlias registers a new resource with the given unique name, arguments, and options.
 func NewRoleAlias(ctx *pulumi.Context,
 	name string, args *RoleAliasArgs, opts ...pulumi.ResourceOption) (*RoleAlias, error) {
-	if args == nil || args.Alias == nil {
-		return nil, errors.New("missing required argument 'Alias'")
-	}
-	if args == nil || args.RoleArn == nil {
-		return nil, errors.New("missing required argument 'RoleArn'")
-	}
 	if args == nil {
-		args = &RoleAliasArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.Alias == nil {
+		return nil, errors.New("invalid value for required argument 'Alias'")
+	}
+	if args.RoleArn == nil {
+		return nil, errors.New("invalid value for required argument 'RoleArn'")
 	}
 	var resource RoleAlias
 	err := ctx.RegisterResource("aws:iot/roleAlias:RoleAlias", name, args, &resource, opts...)
@@ -104,4 +147,43 @@ type RoleAliasArgs struct {
 
 func (RoleAliasArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*roleAliasArgs)(nil)).Elem()
+}
+
+type RoleAliasInput interface {
+	pulumi.Input
+
+	ToRoleAliasOutput() RoleAliasOutput
+	ToRoleAliasOutputWithContext(ctx context.Context) RoleAliasOutput
+}
+
+func (RoleAlias) ElementType() reflect.Type {
+	return reflect.TypeOf((*RoleAlias)(nil)).Elem()
+}
+
+func (i RoleAlias) ToRoleAliasOutput() RoleAliasOutput {
+	return i.ToRoleAliasOutputWithContext(context.Background())
+}
+
+func (i RoleAlias) ToRoleAliasOutputWithContext(ctx context.Context) RoleAliasOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(RoleAliasOutput)
+}
+
+type RoleAliasOutput struct {
+	*pulumi.OutputState
+}
+
+func (RoleAliasOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*RoleAliasOutput)(nil)).Elem()
+}
+
+func (o RoleAliasOutput) ToRoleAliasOutput() RoleAliasOutput {
+	return o
+}
+
+func (o RoleAliasOutput) ToRoleAliasOutputWithContext(ctx context.Context) RoleAliasOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(RoleAliasOutput{})
 }

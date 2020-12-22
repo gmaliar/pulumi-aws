@@ -4,6 +4,7 @@
 package kinesis
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
@@ -14,6 +15,8 @@ import (
 //
 // For more details, see the [Amazon Kinesis Analytics Documentation](https://docs.aws.amazon.com/kinesisanalytics/latest/dev/what-is.html).
 //
+// > **Note:** To manage Amazon Kinesis Data Analytics for Apache Flink applications, use the [`kinesisanalyticsv2.Application`](https://www.terraform.io/docs/providers/aws/r/kinesisanalyticsv2_application.html) resource.
+//
 // ## Example Usage
 //
 // ```go
@@ -22,7 +25,7 @@ import (
 // import (
 // 	"fmt"
 //
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/kinesis"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/kinesis"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -36,11 +39,11 @@ import (
 // 		}
 // 		_, err = kinesis.NewAnalyticsApplication(ctx, "testApplication", &kinesis.AnalyticsApplicationArgs{
 // 			Inputs: &kinesis.AnalyticsApplicationInputsArgs{
+// 				NamePrefix: pulumi.String("test_prefix"),
 // 				KinesisStream: &kinesis.AnalyticsApplicationInputsKinesisStreamArgs{
 // 					ResourceArn: testStream.Arn,
-// 					RoleArn:     pulumi.String(aws_iam_role.Test.Arn),
+// 					RoleArn:     pulumi.Any(aws_iam_role.Test.Arn),
 // 				},
-// 				NamePrefix: pulumi.String("test_prefix"),
 // 				Parallelism: &kinesis.AnalyticsApplicationInputsParallelismArgs{
 // 					Count: pulumi.Int(1),
 // 				},
@@ -69,6 +72,14 @@ import (
 // 		return nil
 // 	})
 // }
+// ```
+//
+// ## Import
+//
+// Kinesis Analytics Application can be imported by using ARN, e.g.
+//
+// ```sh
+//  $ pulumi import aws:kinesis/analyticsApplication:AnalyticsApplication example arn:aws:kinesisanalytics:us-west-2:1234567890:application/example
 // ```
 type AnalyticsApplication struct {
 	pulumi.CustomResourceState
@@ -109,6 +120,7 @@ func NewAnalyticsApplication(ctx *pulumi.Context,
 	if args == nil {
 		args = &AnalyticsApplicationArgs{}
 	}
+
 	var resource AnalyticsApplication
 	err := ctx.RegisterResource("aws:kinesis/analyticsApplication:AnalyticsApplication", name, args, &resource, opts...)
 	if err != nil {
@@ -241,4 +253,43 @@ type AnalyticsApplicationArgs struct {
 
 func (AnalyticsApplicationArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*analyticsApplicationArgs)(nil)).Elem()
+}
+
+type AnalyticsApplicationInput interface {
+	pulumi.Input
+
+	ToAnalyticsApplicationOutput() AnalyticsApplicationOutput
+	ToAnalyticsApplicationOutputWithContext(ctx context.Context) AnalyticsApplicationOutput
+}
+
+func (AnalyticsApplication) ElementType() reflect.Type {
+	return reflect.TypeOf((*AnalyticsApplication)(nil)).Elem()
+}
+
+func (i AnalyticsApplication) ToAnalyticsApplicationOutput() AnalyticsApplicationOutput {
+	return i.ToAnalyticsApplicationOutputWithContext(context.Background())
+}
+
+func (i AnalyticsApplication) ToAnalyticsApplicationOutputWithContext(ctx context.Context) AnalyticsApplicationOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(AnalyticsApplicationOutput)
+}
+
+type AnalyticsApplicationOutput struct {
+	*pulumi.OutputState
+}
+
+func (AnalyticsApplicationOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*AnalyticsApplicationOutput)(nil)).Elem()
+}
+
+func (o AnalyticsApplicationOutput) ToAnalyticsApplicationOutput() AnalyticsApplicationOutput {
+	return o
+}
+
+func (o AnalyticsApplicationOutput) ToAnalyticsApplicationOutputWithContext(ctx context.Context) AnalyticsApplicationOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(AnalyticsApplicationOutput{})
 }

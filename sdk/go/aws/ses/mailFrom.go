@@ -4,6 +4,7 @@
 package ses
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -22,8 +23,8 @@ import (
 // import (
 // 	"fmt"
 //
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/route53"
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/ses"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/route53"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/ses"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -45,25 +46,25 @@ import (
 // 			return err
 // 		}
 // 		_, err = route53.NewRecord(ctx, "exampleSesDomainMailFromMx", &route53.RecordArgs{
-// 			Name: exampleMailFrom.MailFromDomain,
+// 			ZoneId: pulumi.Any(aws_route53_zone.Example.Id),
+// 			Name:   exampleMailFrom.MailFromDomain,
+// 			Type:   pulumi.String("MX"),
+// 			Ttl:    pulumi.Int(600),
 // 			Records: pulumi.StringArray{
 // 				pulumi.String("10 feedback-smtp.us-east-1.amazonses.com"),
 // 			},
-// 			Ttl:    pulumi.Int(600),
-// 			Type:   pulumi.String("MX"),
-// 			ZoneId: pulumi.String(aws_route53_zone.Example.Id),
 // 		})
 // 		if err != nil {
 // 			return err
 // 		}
 // 		_, err = route53.NewRecord(ctx, "exampleSesDomainMailFromTxt", &route53.RecordArgs{
-// 			Name: exampleMailFrom.MailFromDomain,
+// 			ZoneId: pulumi.Any(aws_route53_zone.Example.Id),
+// 			Name:   exampleMailFrom.MailFromDomain,
+// 			Type:   pulumi.String("TXT"),
+// 			Ttl:    pulumi.Int(600),
 // 			Records: pulumi.StringArray{
 // 				pulumi.String("v=spf1 include:amazonses.com -all"),
 // 			},
-// 			Ttl:    pulumi.Int(600),
-// 			Type:   pulumi.String("TXT"),
-// 			ZoneId: pulumi.String(aws_route53_zone.Example.Id),
 // 		})
 // 		if err != nil {
 // 			return err
@@ -71,6 +72,14 @@ import (
 // 		return nil
 // 	})
 // }
+// ```
+//
+// ## Import
+//
+// MAIL FROM domain can be imported using the `domain` attribute, e.g.
+//
+// ```sh
+//  $ pulumi import aws:ses/mailFrom:MailFrom example example.com
 // ```
 type MailFrom struct {
 	pulumi.CustomResourceState
@@ -86,14 +95,15 @@ type MailFrom struct {
 // NewMailFrom registers a new resource with the given unique name, arguments, and options.
 func NewMailFrom(ctx *pulumi.Context,
 	name string, args *MailFromArgs, opts ...pulumi.ResourceOption) (*MailFrom, error) {
-	if args == nil || args.Domain == nil {
-		return nil, errors.New("missing required argument 'Domain'")
-	}
-	if args == nil || args.MailFromDomain == nil {
-		return nil, errors.New("missing required argument 'MailFromDomain'")
-	}
 	if args == nil {
-		args = &MailFromArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.Domain == nil {
+		return nil, errors.New("invalid value for required argument 'Domain'")
+	}
+	if args.MailFromDomain == nil {
+		return nil, errors.New("invalid value for required argument 'MailFromDomain'")
 	}
 	var resource MailFrom
 	err := ctx.RegisterResource("aws:ses/mailFrom:MailFrom", name, args, &resource, opts...)
@@ -159,4 +169,43 @@ type MailFromArgs struct {
 
 func (MailFromArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*mailFromArgs)(nil)).Elem()
+}
+
+type MailFromInput interface {
+	pulumi.Input
+
+	ToMailFromOutput() MailFromOutput
+	ToMailFromOutputWithContext(ctx context.Context) MailFromOutput
+}
+
+func (MailFrom) ElementType() reflect.Type {
+	return reflect.TypeOf((*MailFrom)(nil)).Elem()
+}
+
+func (i MailFrom) ToMailFromOutput() MailFromOutput {
+	return i.ToMailFromOutputWithContext(context.Background())
+}
+
+func (i MailFrom) ToMailFromOutputWithContext(ctx context.Context) MailFromOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(MailFromOutput)
+}
+
+type MailFromOutput struct {
+	*pulumi.OutputState
+}
+
+func (MailFromOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*MailFromOutput)(nil)).Elem()
+}
+
+func (o MailFromOutput) ToMailFromOutput() MailFromOutput {
+	return o
+}
+
+func (o MailFromOutput) ToMailFromOutputWithContext(ctx context.Context) MailFromOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(MailFromOutput{})
 }

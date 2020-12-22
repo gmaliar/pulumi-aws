@@ -4,6 +4,7 @@
 package iam
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -20,7 +21,7 @@ import (
 // import (
 // 	"fmt"
 //
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/iam"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/iam"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -33,8 +34,8 @@ import (
 // 			return err
 // 		}
 // 		_, err = iam.NewGroupPolicy(ctx, "myDeveloperPolicy", &iam.GroupPolicyArgs{
-// 			Group:  myDevelopers.ID(),
-// 			Policy: pulumi.String(fmt.Sprintf("%v%v%v%v%v%v%v%v%v%v%v%v%v", "{\n", "  \"Version\": \"2012-10-17\",\n", "  \"Statement\": [\n", "    {\n", "      \"Action\": [\n", "        \"ec2:Describe*\"\n", "      ],\n", "      \"Effect\": \"Allow\",\n", "      \"Resource\": \"*\"\n", "    }\n", "  ]\n", "}\n", "\n")),
+// 			Group:  myDevelopers.Name,
+// 			Policy: pulumi.String(fmt.Sprintf("%v%v%v%v%v%v%v%v%v%v%v%v", "{\n", "  \"Version\": \"2012-10-17\",\n", "  \"Statement\": [\n", "    {\n", "      \"Action\": [\n", "        \"ec2:Describe*\"\n", "      ],\n", "      \"Effect\": \"Allow\",\n", "      \"Resource\": \"*\"\n", "    }\n", "  ]\n", "}\n")),
 // 		})
 // 		if err != nil {
 // 			return err
@@ -42,6 +43,14 @@ import (
 // 		return nil
 // 	})
 // }
+// ```
+//
+// ## Import
+//
+// IAM Group Policies can be imported using the `group_name:group_policy_name`, e.g.
+//
+// ```sh
+//  $ pulumi import aws:iam/groupPolicy:GroupPolicy mypolicy group_of_mypolicy_name:mypolicy_name
 // ```
 type GroupPolicy struct {
 	pulumi.CustomResourceState
@@ -61,14 +70,15 @@ type GroupPolicy struct {
 // NewGroupPolicy registers a new resource with the given unique name, arguments, and options.
 func NewGroupPolicy(ctx *pulumi.Context,
 	name string, args *GroupPolicyArgs, opts ...pulumi.ResourceOption) (*GroupPolicy, error) {
-	if args == nil || args.Group == nil {
-		return nil, errors.New("missing required argument 'Group'")
-	}
-	if args == nil || args.Policy == nil {
-		return nil, errors.New("missing required argument 'Policy'")
-	}
 	if args == nil {
-		args = &GroupPolicyArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.Group == nil {
+		return nil, errors.New("invalid value for required argument 'Group'")
+	}
+	if args.Policy == nil {
+		return nil, errors.New("invalid value for required argument 'Policy'")
 	}
 	var resource GroupPolicy
 	err := ctx.RegisterResource("aws:iam/groupPolicy:GroupPolicy", name, args, &resource, opts...)
@@ -150,4 +160,43 @@ type GroupPolicyArgs struct {
 
 func (GroupPolicyArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*groupPolicyArgs)(nil)).Elem()
+}
+
+type GroupPolicyInput interface {
+	pulumi.Input
+
+	ToGroupPolicyOutput() GroupPolicyOutput
+	ToGroupPolicyOutputWithContext(ctx context.Context) GroupPolicyOutput
+}
+
+func (GroupPolicy) ElementType() reflect.Type {
+	return reflect.TypeOf((*GroupPolicy)(nil)).Elem()
+}
+
+func (i GroupPolicy) ToGroupPolicyOutput() GroupPolicyOutput {
+	return i.ToGroupPolicyOutputWithContext(context.Background())
+}
+
+func (i GroupPolicy) ToGroupPolicyOutputWithContext(ctx context.Context) GroupPolicyOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(GroupPolicyOutput)
+}
+
+type GroupPolicyOutput struct {
+	*pulumi.OutputState
+}
+
+func (GroupPolicyOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*GroupPolicyOutput)(nil)).Elem()
+}
+
+func (o GroupPolicyOutput) ToGroupPolicyOutput() GroupPolicyOutput {
+	return o
+}
+
+func (o GroupPolicyOutput) ToGroupPolicyOutputWithContext(ctx context.Context) GroupPolicyOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(GroupPolicyOutput{})
 }

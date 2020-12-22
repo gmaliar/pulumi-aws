@@ -16,7 +16,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/ec2transitgateway"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/ec2transitgateway"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -51,7 +51,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/ec2transitgateway"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/ec2transitgateway"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -89,13 +89,15 @@ type LookupRouteTableArgs struct {
 
 // A collection of values returned by getRouteTable.
 type LookupRouteTableResult struct {
+	// EC2 Transit Gateway Route Table Amazon Resource Name (ARN).
+	Arn string `pulumi:"arn"`
 	// Boolean whether this is the default association route table for the EC2 Transit Gateway
 	DefaultAssociationRouteTable bool `pulumi:"defaultAssociationRouteTable"`
 	// Boolean whether this is the default propagation route table for the EC2 Transit Gateway
 	DefaultPropagationRouteTable bool                  `pulumi:"defaultPropagationRouteTable"`
 	Filters                      []GetRouteTableFilter `pulumi:"filters"`
 	// EC2 Transit Gateway Route Table identifier
-	Id *string `pulumi:"id"`
+	Id string `pulumi:"id"`
 	// Key-value tags for the EC2 Transit Gateway Route Table
 	Tags map[string]string `pulumi:"tags"`
 	// EC2 Transit Gateway identifier

@@ -4,6 +4,7 @@
 package cloudwatch
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -18,25 +19,25 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/cloudwatch"
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/iam"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/cloudwatch"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/iam"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
 // func main() {
 // 	pulumi.Run(func(ctx *pulumi.Context) error {
 // 		testDestination, err := cloudwatch.NewLogDestination(ctx, "testDestination", &cloudwatch.LogDestinationArgs{
-// 			RoleArn:   pulumi.String(aws_iam_role.Iam_for_cloudwatch.Arn),
-// 			TargetArn: pulumi.String(aws_kinesis_stream.Kinesis_for_cloudwatch.Arn),
+// 			RoleArn:   pulumi.Any(aws_iam_role.Iam_for_cloudwatch.Arn),
+// 			TargetArn: pulumi.Any(aws_kinesis_stream.Kinesis_for_cloudwatch.Arn),
 // 		})
 // 		if err != nil {
 // 			return err
 // 		}
 // 		_, err = cloudwatch.NewLogDestinationPolicy(ctx, "testDestinationPolicyLogDestinationPolicy", &cloudwatch.LogDestinationPolicyArgs{
+// 			DestinationName: testDestination.Name,
 // 			AccessPolicy: testDestinationPolicyPolicyDocument.ApplyT(func(testDestinationPolicyPolicyDocument iam.GetPolicyDocumentResult) (string, error) {
 // 				return testDestinationPolicyPolicyDocument.Json, nil
 // 			}).(pulumi.StringOutput),
-// 			DestinationName: testDestination.Name,
 // 		})
 // 		if err != nil {
 // 			return err
@@ -44,6 +45,14 @@ import (
 // 		return nil
 // 	})
 // }
+// ```
+//
+// ## Import
+//
+// CloudWatch Logs destination policies can be imported using the `destination_name`, e.g.
+//
+// ```sh
+//  $ pulumi import aws:cloudwatch/logDestinationPolicy:LogDestinationPolicy test_destination_policy test_destination
 // ```
 type LogDestinationPolicy struct {
 	pulumi.CustomResourceState
@@ -57,14 +66,15 @@ type LogDestinationPolicy struct {
 // NewLogDestinationPolicy registers a new resource with the given unique name, arguments, and options.
 func NewLogDestinationPolicy(ctx *pulumi.Context,
 	name string, args *LogDestinationPolicyArgs, opts ...pulumi.ResourceOption) (*LogDestinationPolicy, error) {
-	if args == nil || args.AccessPolicy == nil {
-		return nil, errors.New("missing required argument 'AccessPolicy'")
-	}
-	if args == nil || args.DestinationName == nil {
-		return nil, errors.New("missing required argument 'DestinationName'")
-	}
 	if args == nil {
-		args = &LogDestinationPolicyArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.AccessPolicy == nil {
+		return nil, errors.New("invalid value for required argument 'AccessPolicy'")
+	}
+	if args.DestinationName == nil {
+		return nil, errors.New("invalid value for required argument 'DestinationName'")
 	}
 	var resource LogDestinationPolicy
 	err := ctx.RegisterResource("aws:cloudwatch/logDestinationPolicy:LogDestinationPolicy", name, args, &resource, opts...)
@@ -122,4 +132,43 @@ type LogDestinationPolicyArgs struct {
 
 func (LogDestinationPolicyArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*logDestinationPolicyArgs)(nil)).Elem()
+}
+
+type LogDestinationPolicyInput interface {
+	pulumi.Input
+
+	ToLogDestinationPolicyOutput() LogDestinationPolicyOutput
+	ToLogDestinationPolicyOutputWithContext(ctx context.Context) LogDestinationPolicyOutput
+}
+
+func (LogDestinationPolicy) ElementType() reflect.Type {
+	return reflect.TypeOf((*LogDestinationPolicy)(nil)).Elem()
+}
+
+func (i LogDestinationPolicy) ToLogDestinationPolicyOutput() LogDestinationPolicyOutput {
+	return i.ToLogDestinationPolicyOutputWithContext(context.Background())
+}
+
+func (i LogDestinationPolicy) ToLogDestinationPolicyOutputWithContext(ctx context.Context) LogDestinationPolicyOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(LogDestinationPolicyOutput)
+}
+
+type LogDestinationPolicyOutput struct {
+	*pulumi.OutputState
+}
+
+func (LogDestinationPolicyOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*LogDestinationPolicyOutput)(nil)).Elem()
+}
+
+func (o LogDestinationPolicyOutput) ToLogDestinationPolicyOutput() LogDestinationPolicyOutput {
+	return o
+}
+
+func (o LogDestinationPolicyOutput) ToLogDestinationPolicyOutputWithContext(ctx context.Context) LogDestinationPolicyOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(LogDestinationPolicyOutput{})
 }

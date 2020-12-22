@@ -13,10 +13,18 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const testDestination = new aws.cloudwatch.LogDestination("test_destination", {
- *     roleArn: aws_iam_role_iam_for_cloudwatch.arn,
- *     targetArn: aws_kinesis_stream_kinesis_for_cloudwatch.arn,
+ * const testDestination = new aws.cloudwatch.LogDestination("testDestination", {
+ *     roleArn: aws_iam_role.iam_for_cloudwatch.arn,
+ *     targetArn: aws_kinesis_stream.kinesis_for_cloudwatch.arn,
  * });
+ * ```
+ *
+ * ## Import
+ *
+ * CloudWatch Logs destinations can be imported using the `name`, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:cloudwatch/logDestination:LogDestination test_destination test_destination
  * ```
  */
 export class LogDestination extends pulumi.CustomResource {
@@ -82,10 +90,10 @@ export class LogDestination extends pulumi.CustomResource {
             inputs["targetArn"] = state ? state.targetArn : undefined;
         } else {
             const args = argsOrState as LogDestinationArgs | undefined;
-            if (!args || args.roleArn === undefined) {
+            if ((!args || args.roleArn === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'roleArn'");
             }
-            if (!args || args.targetArn === undefined) {
+            if ((!args || args.targetArn === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'targetArn'");
             }
             inputs["name"] = args ? args.name : undefined;

@@ -13,23 +13,29 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const example = new aws.cognito.UserPool("example", {
- *     autoVerifiedAttributes: ["email"],
- * });
- * const exampleProvider = new aws.cognito.IdentityProvider("example_provider", {
- *     attributeMapping: {
- *         email: "email",
- *         username: "sub",
- *     },
+ * const example = new aws.cognito.UserPool("example", {autoVerifiedAttributes: ["email"]});
+ * const exampleProvider = new aws.cognito.IdentityProvider("exampleProvider", {
+ *     userPoolId: example.id,
+ *     providerName: "Google",
+ *     providerType: "Google",
  *     providerDetails: {
  *         authorize_scopes: "email",
  *         client_id: "your client_id",
  *         client_secret: "your client_secret",
  *     },
- *     providerName: "Google",
- *     providerType: "Google",
- *     userPoolId: example.id,
+ *     attributeMapping: {
+ *         email: "email",
+ *         username: "sub",
+ *     },
  * });
+ * ```
+ *
+ * ## Import
+ *
+ * `aws_cognito_identity_provider` resources can be imported using their User Pool ID and Provider Name, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:cognito/identityProvider:IdentityProvider example xxx_yyyyy:example
  * ```
  */
 export class IdentityProvider extends pulumi.CustomResource {
@@ -105,16 +111,16 @@ export class IdentityProvider extends pulumi.CustomResource {
             inputs["userPoolId"] = state ? state.userPoolId : undefined;
         } else {
             const args = argsOrState as IdentityProviderArgs | undefined;
-            if (!args || args.providerDetails === undefined) {
+            if ((!args || args.providerDetails === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'providerDetails'");
             }
-            if (!args || args.providerName === undefined) {
+            if ((!args || args.providerName === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'providerName'");
             }
-            if (!args || args.providerType === undefined) {
+            if ((!args || args.providerType === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'providerType'");
             }
-            if (!args || args.userPoolId === undefined) {
+            if ((!args || args.userPoolId === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'userPoolId'");
             }
             inputs["attributeMapping"] = args ? args.attributeMapping : undefined;

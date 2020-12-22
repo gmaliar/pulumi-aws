@@ -2,8 +2,7 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 /**
@@ -15,21 +14,21 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const foo = pulumi.output(aws.ec2.getCustomerGateway({
+ * const foo = aws.ec2.getCustomerGateway({
  *     filters: [{
  *         name: "tag:Name",
  *         values: ["foo-prod"],
  *     }],
- * }, { async: true }));
+ * });
  * const main = new aws.ec2.VpnGateway("main", {
- *     amazonSideAsn: "7224",
- *     vpcId: aws_vpc_main.id,
+ *     vpcId: aws_vpc.main.id,
+ *     amazonSideAsn: 7224,
  * });
  * const transit = new aws.ec2.VpnConnection("transit", {
- *     customerGatewayId: foo.id!,
- *     staticRoutesOnly: false,
- *     type: foo.type,
  *     vpnGatewayId: main.id,
+ *     customerGatewayId: foo.then(foo => foo.id),
+ *     type: foo.then(foo => foo.type),
+ *     staticRoutesOnly: false,
  * });
  * ```
  */
@@ -80,7 +79,7 @@ export interface GetCustomerGatewayResult {
      */
     readonly bgpAsn: number;
     readonly filters?: outputs.ec2.GetCustomerGatewayFilter[];
-    readonly id?: string;
+    readonly id: string;
     /**
      * (Optional) The IP address of the gateway's Internet-routable external interface.
      */

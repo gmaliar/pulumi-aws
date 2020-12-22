@@ -27,14 +27,16 @@ namespace Pulumi.Aws.ElasticLoadBalancingV2
     ///         var testTargetGroup = new Aws.LB.TargetGroup("testTargetGroup", new Aws.LB.TargetGroupArgs
     ///         {
     ///         });
+    ///         // ... other configuration ...
     ///         var testInstance = new Aws.Ec2.Instance("testInstance", new Aws.Ec2.InstanceArgs
     ///         {
     ///         });
+    ///         // ... other configuration ...
     ///         var testTargetGroupAttachment = new Aws.LB.TargetGroupAttachment("testTargetGroupAttachment", new Aws.LB.TargetGroupAttachmentArgs
     ///         {
-    ///             Port = 80,
     ///             TargetGroupArn = testTargetGroup.Arn,
     ///             TargetId = testInstance.Id,
+    ///             Port = 80,
     ///         });
     ///     }
     /// 
@@ -57,6 +59,7 @@ namespace Pulumi.Aws.ElasticLoadBalancingV2
     ///         var testFunction = new Aws.Lambda.Function("testFunction", new Aws.Lambda.FunctionArgs
     ///         {
     ///         });
+    ///         // ... other configuration ...
     ///         var withLb = new Aws.Lambda.Permission("withLb", new Aws.Lambda.PermissionArgs
     ///         {
     ///             Action = "lambda:InvokeFunction",
@@ -72,13 +75,17 @@ namespace Pulumi.Aws.ElasticLoadBalancingV2
     ///         {
     ///             DependsOn = 
     ///             {
-    ///                 "aws_lambda_permission.with_lb",
+    ///                 withLb,
     ///             },
     ///         });
     ///     }
     /// 
     /// }
     /// ```
+    /// 
+    /// ## Import
+    /// 
+    /// Target Group Attachments cannot be imported.
     /// </summary>
     [Obsolete(@"aws.elasticloadbalancingv2.TargetGroupAttachment has been deprecated in favor of aws.lb.TargetGroupAttachment")]
     public partial class TargetGroupAttachment : Pulumi.CustomResource

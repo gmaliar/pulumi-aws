@@ -103,6 +103,14 @@ namespace Pulumi.Aws.Glue
     /// 
     /// }
     /// ```
+    /// 
+    /// ## Import
+    /// 
+    /// Glue Tables can be imported with their catalog ID (usually AWS account ID), database name, and table name, e.g.
+    /// 
+    /// ```sh
+    ///  $ pulumi import aws:glue/catalogTable:CatalogTable MyTable 123456789012:MyDatabase:MyTable
+    /// ```
     /// </summary>
     public partial class CatalogTable : Pulumi.CustomResource
     {
@@ -149,7 +157,13 @@ namespace Pulumi.Aws.Glue
         public Output<ImmutableDictionary<string, string>?> Parameters { get; private set; } = null!;
 
         /// <summary>
-        /// A list of columns by which the table is partitioned. Only primitive types are supported as partition keys.
+        /// A list of partition indexes. see Partition Index below.
+        /// </summary>
+        [Output("partitionIndices")]
+        public Output<ImmutableArray<Outputs.CatalogTablePartitionIndex>> PartitionIndices { get; private set; } = null!;
+
+        /// <summary>
+        /// A list of columns by which the table is partitioned. Only primitive types are supported as partition keys. see Partition Keys below.
         /// </summary>
         [Output("partitionKeys")]
         public Output<ImmutableArray<Outputs.CatalogTablePartitionKey>> PartitionKeys { get; private set; } = null!;
@@ -167,7 +181,7 @@ namespace Pulumi.Aws.Glue
         public Output<Outputs.CatalogTableStorageDescriptor?> StorageDescriptor { get; private set; } = null!;
 
         /// <summary>
-        /// The type of this table (EXTERNAL_TABLE, VIRTUAL_VIEW, etc.).
+        /// The type of this table (EXTERNAL_TABLE, VIRTUAL_VIEW, etc.). While optional, some Athena DDL queries such as `ALTER TABLE` and `SHOW CREATE TABLE` will fail if this argument is empty.
         /// </summary>
         [Output("tableType")]
         public Output<string?> TableType { get; private set; } = null!;
@@ -272,11 +286,23 @@ namespace Pulumi.Aws.Glue
             set => _parameters = value;
         }
 
+        [Input("partitionIndices")]
+        private InputList<Inputs.CatalogTablePartitionIndexArgs>? _partitionIndices;
+
+        /// <summary>
+        /// A list of partition indexes. see Partition Index below.
+        /// </summary>
+        public InputList<Inputs.CatalogTablePartitionIndexArgs> PartitionIndices
+        {
+            get => _partitionIndices ?? (_partitionIndices = new InputList<Inputs.CatalogTablePartitionIndexArgs>());
+            set => _partitionIndices = value;
+        }
+
         [Input("partitionKeys")]
         private InputList<Inputs.CatalogTablePartitionKeyArgs>? _partitionKeys;
 
         /// <summary>
-        /// A list of columns by which the table is partitioned. Only primitive types are supported as partition keys.
+        /// A list of columns by which the table is partitioned. Only primitive types are supported as partition keys. see Partition Keys below.
         /// </summary>
         public InputList<Inputs.CatalogTablePartitionKeyArgs> PartitionKeys
         {
@@ -297,7 +323,7 @@ namespace Pulumi.Aws.Glue
         public Input<Inputs.CatalogTableStorageDescriptorArgs>? StorageDescriptor { get; set; }
 
         /// <summary>
-        /// The type of this table (EXTERNAL_TABLE, VIRTUAL_VIEW, etc.).
+        /// The type of this table (EXTERNAL_TABLE, VIRTUAL_VIEW, etc.). While optional, some Athena DDL queries such as `ALTER TABLE` and `SHOW CREATE TABLE` will fail if this argument is empty.
         /// </summary>
         [Input("tableType")]
         public Input<string>? TableType { get; set; }
@@ -369,11 +395,23 @@ namespace Pulumi.Aws.Glue
             set => _parameters = value;
         }
 
+        [Input("partitionIndices")]
+        private InputList<Inputs.CatalogTablePartitionIndexGetArgs>? _partitionIndices;
+
+        /// <summary>
+        /// A list of partition indexes. see Partition Index below.
+        /// </summary>
+        public InputList<Inputs.CatalogTablePartitionIndexGetArgs> PartitionIndices
+        {
+            get => _partitionIndices ?? (_partitionIndices = new InputList<Inputs.CatalogTablePartitionIndexGetArgs>());
+            set => _partitionIndices = value;
+        }
+
         [Input("partitionKeys")]
         private InputList<Inputs.CatalogTablePartitionKeyGetArgs>? _partitionKeys;
 
         /// <summary>
-        /// A list of columns by which the table is partitioned. Only primitive types are supported as partition keys.
+        /// A list of columns by which the table is partitioned. Only primitive types are supported as partition keys. see Partition Keys below.
         /// </summary>
         public InputList<Inputs.CatalogTablePartitionKeyGetArgs> PartitionKeys
         {
@@ -394,7 +432,7 @@ namespace Pulumi.Aws.Glue
         public Input<Inputs.CatalogTableStorageDescriptorGetArgs>? StorageDescriptor { get; set; }
 
         /// <summary>
-        /// The type of this table (EXTERNAL_TABLE, VIRTUAL_VIEW, etc.).
+        /// The type of this table (EXTERNAL_TABLE, VIRTUAL_VIEW, etc.). While optional, some Athena DDL queries such as `ALTER TABLE` and `SHOW CREATE TABLE` will fail if this argument is empty.
         /// </summary>
         [Input("tableType")]
         public Input<string>? TableType { get; set; }

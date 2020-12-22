@@ -4,13 +4,16 @@
 package workspaces
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 )
 
-// Provides a directory registration in AWS WorkSpaces Service
+// Provides a WorkSpaces directory in AWS WorkSpaces Service.
+//
+// > **NOTE:** AWS WorkSpaces service requires [`workspaces_DefaultRole`](https://docs.aws.amazon.com/workspaces/latest/adminguide/workspaces-access-control.html#create-default-role) IAM role to operate normally.
 //
 // ## Example Usage
 //
@@ -18,55 +21,133 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/directoryservice"
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/ec2"
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/workspaces"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/directoryservice"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/ec2"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/iam"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/workspaces"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
 // func main() {
 // 	pulumi.Run(func(ctx *pulumi.Context) error {
-// 		mainVpc, err := ec2.NewVpc(ctx, "mainVpc", &ec2.VpcArgs{
+// 		workspaces, err := iam.GetPolicyDocument(ctx, &iam.GetPolicyDocumentArgs{
+// 			Statements: []iam.GetPolicyDocumentStatement{
+// 				iam.GetPolicyDocumentStatement{
+// 					Actions: []string{
+// 						"sts:AssumeRole",
+// 					},
+// 					Principals: []iam.GetPolicyDocumentStatementPrincipal{
+// 						iam.GetPolicyDocumentStatementPrincipal{
+// 							Type: "Service",
+// 							Identifiers: []string{
+// 								"workspaces.amazonaws.com",
+// 							},
+// 						},
+// 					},
+// 				},
+// 			},
+// 		}, nil)
+// 		if err != nil {
+// 			return err
+// 		}
+// 		workspacesDefault, err := iam.NewRole(ctx, "workspacesDefault", &iam.RoleArgs{
+// 			AssumeRolePolicy: pulumi.String(workspaces.Json),
+// 		})
+// 		if err != nil {
+// 			return err
+// 		}
+// 		workspacesDefaultServiceAccess, err := iam.NewRolePolicyAttachment(ctx, "workspacesDefaultServiceAccess", &iam.RolePolicyAttachmentArgs{
+// 			Role:      workspacesDefault.Name,
+// 			PolicyArn: pulumi.String("arn:aws:iam::aws:policy/AmazonWorkSpacesServiceAccess"),
+// 		})
+// 		if err != nil {
+// 			return err
+// 		}
+// 		workspacesDefaultSelfServiceAccess, err := iam.NewRolePolicyAttachment(ctx, "workspacesDefaultSelfServiceAccess", &iam.RolePolicyAttachmentArgs{
+// 			Role:      workspacesDefault.Name,
+// 			PolicyArn: pulumi.String("arn:aws:iam::aws:policy/AmazonWorkSpacesSelfServiceAccess"),
+// 		})
+// 		if err != nil {
+// 			return err
+// 		}
+// 		exampleVpc, err := ec2.NewVpc(ctx, "exampleVpc", &ec2.VpcArgs{
 // 			CidrBlock: pulumi.String("10.0.0.0/16"),
 // 		})
 // 		if err != nil {
 // 			return err
 // 		}
-// 		_, err = ec2.NewSubnet(ctx, "private_a", &ec2.SubnetArgs{
+// 		exampleC, err := ec2.NewSubnet(ctx, "exampleC", &ec2.SubnetArgs{
+// 			VpcId:            exampleVpc.ID(),
+// 			AvailabilityZone: pulumi.String("us-east-1c"),
+// 			CidrBlock:        pulumi.String("10.0.2.0/24"),
+// 		})
+// 		if err != nil {
+// 			return err
+// 		}
+// 		exampleD, err := ec2.NewSubnet(ctx, "exampleD", &ec2.SubnetArgs{
+// 			VpcId:            exampleVpc.ID(),
+// 			AvailabilityZone: pulumi.String("us-east-1d"),
+// 			CidrBlock:        pulumi.String("10.0.3.0/24"),
+// 		})
+// 		if err != nil {
+// 			return err
+// 		}
+// 		_, err = workspaces.NewDirectory(ctx, "exampleDirectory", &workspaces.DirectoryArgs{
+// 			DirectoryId: pulumi.String(exampleDirectoryservice / directoryDirectory.Id),
+// 			SubnetIds: pulumi.StringArray{
+// 				exampleC.ID(),
+// 				exampleD.ID(),
+// 			},
+// 			Tags: pulumi.StringMap{
+// 				"Example": pulumi.String("true"),
+// 			},
+// 			SelfServicePermissions: &workspaces.DirectorySelfServicePermissionsArgs{
+// 				ChangeComputeType:  pulumi.Bool(true),
+// 				IncreaseVolumeSize: pulumi.Bool(true),
+// 				RebuildWorkspace:   pulumi.Bool(true),
+// 				RestartWorkspace:   pulumi.Bool(true),
+// 				SwitchRunningMode:  pulumi.Bool(true),
+// 			},
+// 			WorkspaceCreationProperties: &workspaces.DirectoryWorkspaceCreationPropertiesArgs{
+// 				CustomSecurityGroupId:           pulumi.Any(aws_security_group.Example.Id),
+// 				DefaultOu:                       pulumi.String("OU=AWS,DC=Workgroup,DC=Example,DC=com"),
+// 				EnableInternetAccess:            pulumi.Bool(true),
+// 				EnableMaintenanceMode:           pulumi.Bool(true),
+// 				UserEnabledAsLocalAdministrator: pulumi.Bool(true),
+// 			},
+// 		}, pulumi.DependsOn([]pulumi.Resource{
+// 			workspacesDefaultServiceAccess,
+// 			workspacesDefaultSelfServiceAccess,
+// 		}))
+// 		if err != nil {
+// 			return err
+// 		}
+// 		exampleA, err := ec2.NewSubnet(ctx, "exampleA", &ec2.SubnetArgs{
+// 			VpcId:            exampleVpc.ID(),
 // 			AvailabilityZone: pulumi.String("us-east-1a"),
 // 			CidrBlock:        pulumi.String("10.0.0.0/24"),
-// 			VpcId:            mainVpc.ID(),
 // 		})
 // 		if err != nil {
 // 			return err
 // 		}
-// 		_, err = ec2.NewSubnet(ctx, "private_b", &ec2.SubnetArgs{
+// 		exampleB, err := ec2.NewSubnet(ctx, "exampleB", &ec2.SubnetArgs{
+// 			VpcId:            exampleVpc.ID(),
 // 			AvailabilityZone: pulumi.String("us-east-1b"),
 // 			CidrBlock:        pulumi.String("10.0.1.0/24"),
-// 			VpcId:            mainVpc.ID(),
 // 		})
 // 		if err != nil {
 // 			return err
 // 		}
-// 		mainDirectory, err := directoryservice.NewDirectory(ctx, "mainDirectory", &directoryservice.DirectoryArgs{
+// 		_, err = directoryservice.NewDirectory(ctx, "exampleDirectoryservice_directoryDirectory", &directoryservice.DirectoryArgs{
+// 			Name:     pulumi.String("corp.example.com"),
 // 			Password: pulumi.String("#S1ncerely"),
 // 			Size:     pulumi.String("Small"),
 // 			VpcSettings: &directoryservice.DirectoryVpcSettingsArgs{
+// 				VpcId: exampleVpc.ID(),
 // 				SubnetIds: pulumi.StringArray{
-// 					private_a.ID(),
-// 					private_b.ID(),
+// 					exampleA.ID(),
+// 					exampleB.ID(),
 // 				},
-// 				VpcId: mainVpc.ID(),
-// 			},
-// 		})
-// 		if err != nil {
-// 			return err
-// 		}
-// 		_, err = workspaces.NewDirectory(ctx, "mainWorkspaces_directoryDirectory", &workspaces.DirectoryArgs{
-// 			DirectoryId: mainDirectory.ID(),
-// 			SelfServicePermissions: &workspaces.DirectorySelfServicePermissionsArgs{
-// 				IncreaseVolumeSize: pulumi.Bool(true),
-// 				RebuildWorkspace:   pulumi.Bool(true),
 // 			},
 // 		})
 // 		if err != nil {
@@ -75,6 +156,43 @@ import (
 // 		return nil
 // 	})
 // }
+// ```
+// ### IP Groups
+//
+// ```go
+// package main
+//
+// import (
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/workspaces"
+// 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
+// )
+//
+// func main() {
+// 	pulumi.Run(func(ctx *pulumi.Context) error {
+// 		exampleIpGroup, err := workspaces.NewIpGroup(ctx, "exampleIpGroup", nil)
+// 		if err != nil {
+// 			return err
+// 		}
+// 		_, err = workspaces.NewDirectory(ctx, "exampleDirectory", &workspaces.DirectoryArgs{
+// 			DirectoryId: pulumi.Any(aws_directory_service_directory.Example.Id),
+// 			IpGroupIds: pulumi.StringArray{
+// 				exampleIpGroup.ID(),
+// 			},
+// 		})
+// 		if err != nil {
+// 			return err
+// 		}
+// 		return nil
+// 	})
+// }
+// ```
+//
+// ## Import
+//
+// Workspaces directory can be imported using the directory ID, e.g.
+//
+// ```sh
+//  $ pulumi import aws:workspaces/directory:Directory main d-4444444444
 // ```
 type Directory struct {
 	pulumi.CustomResourceState
@@ -97,12 +215,14 @@ type Directory struct {
 	IpGroupIds pulumi.StringArrayOutput `pulumi:"ipGroupIds"`
 	// The registration code for the directory. This is the code that users enter in their Amazon WorkSpaces client application to connect to the directory.
 	RegistrationCode pulumi.StringOutput `pulumi:"registrationCode"`
-	// The permissions to enable or disable self-service capabilities.
+	// Permissions to enable or disable self-service capabilities. Defined below.
 	SelfServicePermissions DirectorySelfServicePermissionsOutput `pulumi:"selfServicePermissions"`
 	// The identifiers of the subnets where the directory resides.
 	SubnetIds pulumi.StringArrayOutput `pulumi:"subnetIds"`
 	// A map of tags assigned to the WorkSpaces directory.
 	Tags pulumi.StringMapOutput `pulumi:"tags"`
+	// Default properties that are used for creating WorkSpaces. Defined below.
+	WorkspaceCreationProperties DirectoryWorkspaceCreationPropertiesOutput `pulumi:"workspaceCreationProperties"`
 	// The identifier of the security group that is assigned to new WorkSpaces.
 	WorkspaceSecurityGroupId pulumi.StringOutput `pulumi:"workspaceSecurityGroupId"`
 }
@@ -110,11 +230,12 @@ type Directory struct {
 // NewDirectory registers a new resource with the given unique name, arguments, and options.
 func NewDirectory(ctx *pulumi.Context,
 	name string, args *DirectoryArgs, opts ...pulumi.ResourceOption) (*Directory, error) {
-	if args == nil || args.DirectoryId == nil {
-		return nil, errors.New("missing required argument 'DirectoryId'")
-	}
 	if args == nil {
-		args = &DirectoryArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.DirectoryId == nil {
+		return nil, errors.New("invalid value for required argument 'DirectoryId'")
 	}
 	var resource Directory
 	err := ctx.RegisterResource("aws:workspaces/directory:Directory", name, args, &resource, opts...)
@@ -156,12 +277,14 @@ type directoryState struct {
 	IpGroupIds []string `pulumi:"ipGroupIds"`
 	// The registration code for the directory. This is the code that users enter in their Amazon WorkSpaces client application to connect to the directory.
 	RegistrationCode *string `pulumi:"registrationCode"`
-	// The permissions to enable or disable self-service capabilities.
+	// Permissions to enable or disable self-service capabilities. Defined below.
 	SelfServicePermissions *DirectorySelfServicePermissions `pulumi:"selfServicePermissions"`
 	// The identifiers of the subnets where the directory resides.
 	SubnetIds []string `pulumi:"subnetIds"`
 	// A map of tags assigned to the WorkSpaces directory.
 	Tags map[string]string `pulumi:"tags"`
+	// Default properties that are used for creating WorkSpaces. Defined below.
+	WorkspaceCreationProperties *DirectoryWorkspaceCreationProperties `pulumi:"workspaceCreationProperties"`
 	// The identifier of the security group that is assigned to new WorkSpaces.
 	WorkspaceSecurityGroupId *string `pulumi:"workspaceSecurityGroupId"`
 }
@@ -185,12 +308,14 @@ type DirectoryState struct {
 	IpGroupIds pulumi.StringArrayInput
 	// The registration code for the directory. This is the code that users enter in their Amazon WorkSpaces client application to connect to the directory.
 	RegistrationCode pulumi.StringPtrInput
-	// The permissions to enable or disable self-service capabilities.
+	// Permissions to enable or disable self-service capabilities. Defined below.
 	SelfServicePermissions DirectorySelfServicePermissionsPtrInput
 	// The identifiers of the subnets where the directory resides.
 	SubnetIds pulumi.StringArrayInput
 	// A map of tags assigned to the WorkSpaces directory.
 	Tags pulumi.StringMapInput
+	// Default properties that are used for creating WorkSpaces. Defined below.
+	WorkspaceCreationProperties DirectoryWorkspaceCreationPropertiesPtrInput
 	// The identifier of the security group that is assigned to new WorkSpaces.
 	WorkspaceSecurityGroupId pulumi.StringPtrInput
 }
@@ -202,26 +327,73 @@ func (DirectoryState) ElementType() reflect.Type {
 type directoryArgs struct {
 	// The directory identifier for registration in WorkSpaces service.
 	DirectoryId string `pulumi:"directoryId"`
-	// The permissions to enable or disable self-service capabilities.
+	// The identifiers of the IP access control groups associated with the directory.
+	IpGroupIds []string `pulumi:"ipGroupIds"`
+	// Permissions to enable or disable self-service capabilities. Defined below.
 	SelfServicePermissions *DirectorySelfServicePermissions `pulumi:"selfServicePermissions"`
 	// The identifiers of the subnets where the directory resides.
 	SubnetIds []string `pulumi:"subnetIds"`
 	// A map of tags assigned to the WorkSpaces directory.
 	Tags map[string]string `pulumi:"tags"`
+	// Default properties that are used for creating WorkSpaces. Defined below.
+	WorkspaceCreationProperties *DirectoryWorkspaceCreationProperties `pulumi:"workspaceCreationProperties"`
 }
 
 // The set of arguments for constructing a Directory resource.
 type DirectoryArgs struct {
 	// The directory identifier for registration in WorkSpaces service.
 	DirectoryId pulumi.StringInput
-	// The permissions to enable or disable self-service capabilities.
+	// The identifiers of the IP access control groups associated with the directory.
+	IpGroupIds pulumi.StringArrayInput
+	// Permissions to enable or disable self-service capabilities. Defined below.
 	SelfServicePermissions DirectorySelfServicePermissionsPtrInput
 	// The identifiers of the subnets where the directory resides.
 	SubnetIds pulumi.StringArrayInput
 	// A map of tags assigned to the WorkSpaces directory.
 	Tags pulumi.StringMapInput
+	// Default properties that are used for creating WorkSpaces. Defined below.
+	WorkspaceCreationProperties DirectoryWorkspaceCreationPropertiesPtrInput
 }
 
 func (DirectoryArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*directoryArgs)(nil)).Elem()
+}
+
+type DirectoryInput interface {
+	pulumi.Input
+
+	ToDirectoryOutput() DirectoryOutput
+	ToDirectoryOutputWithContext(ctx context.Context) DirectoryOutput
+}
+
+func (Directory) ElementType() reflect.Type {
+	return reflect.TypeOf((*Directory)(nil)).Elem()
+}
+
+func (i Directory) ToDirectoryOutput() DirectoryOutput {
+	return i.ToDirectoryOutputWithContext(context.Background())
+}
+
+func (i Directory) ToDirectoryOutputWithContext(ctx context.Context) DirectoryOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(DirectoryOutput)
+}
+
+type DirectoryOutput struct {
+	*pulumi.OutputState
+}
+
+func (DirectoryOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*DirectoryOutput)(nil)).Elem()
+}
+
+func (o DirectoryOutput) ToDirectoryOutput() DirectoryOutput {
+	return o
+}
+
+func (o DirectoryOutput) ToDirectoryOutputWithContext(ctx context.Context) DirectoryOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(DirectoryOutput{})
 }

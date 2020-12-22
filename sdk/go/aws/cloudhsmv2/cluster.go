@@ -4,6 +4,7 @@
 package cloudhsmv2
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -16,25 +17,25 @@ import (
 // [AWS CloudHSM User Guide](https://docs.aws.amazon.com/cloudhsm/latest/userguide/introduction.html) and the [Amazon
 // CloudHSM API Reference][2].
 //
-// > **NOTE:** CloudHSM can take up to several minutes to be set up.
-// Practically no single attribute can be updated except TAGS.
+// > **NOTE:** A CloudHSM Cluster can take several minutes to set up.
+// Practically no single attribute can be updated, except for `tags`.
 // If you need to delete a cluster, you have to remove its HSM modules first.
-// To initialize cluster, you have to add an hsm instance to the cluster then sign CSR and upload it.
+// To initialize cluster, you have to add an HSM instance to the cluster, then sign CSR and upload it.
 type Cluster struct {
 	pulumi.CustomResourceState
 
 	// The list of cluster certificates.
 	// * `cluster_certificates.0.cluster_certificate` - The cluster certificate issued (signed) by the issuing certificate authority (CA) of the cluster's owner.
-	// * `cluster_certificates.0.cluster_csr` - The certificate signing request (CSR). Available only in UNINITIALIZED state after an hsm instance is added to the cluster.
+	// * `cluster_certificates.0.cluster_csr` - The certificate signing request (CSR). Available only in `UNINITIALIZED` state after an HSM instance is added to the cluster.
 	// * `cluster_certificates.0.aws_hardware_certificate` - The HSM hardware certificate issued (signed) by AWS CloudHSM.
 	// * `cluster_certificates.0.hsm_certificate` - The HSM certificate issued (signed) by the HSM hardware.
 	// * `cluster_certificates.0.manufacturer_hardware_certificate` - The HSM hardware certificate issued (signed) by the hardware manufacturer.
 	ClusterCertificates ClusterClusterCertificateArrayOutput `pulumi:"clusterCertificates"`
 	// The id of the CloudHSM cluster.
 	ClusterId pulumi.StringOutput `pulumi:"clusterId"`
-	// The state of the cluster.
+	// The state of the CloudHSM cluster.
 	ClusterState pulumi.StringOutput `pulumi:"clusterState"`
-	// The type of HSM module in the cluster. Currently, only hsm1.medium is supported.
+	// The type of HSM module in the cluster. Currently, only `hsm1.medium` is supported.
 	HsmType pulumi.StringOutput `pulumi:"hsmType"`
 	// The ID of the security group associated with the CloudHSM cluster.
 	SecurityGroupId pulumi.StringOutput `pulumi:"securityGroupId"`
@@ -51,14 +52,15 @@ type Cluster struct {
 // NewCluster registers a new resource with the given unique name, arguments, and options.
 func NewCluster(ctx *pulumi.Context,
 	name string, args *ClusterArgs, opts ...pulumi.ResourceOption) (*Cluster, error) {
-	if args == nil || args.HsmType == nil {
-		return nil, errors.New("missing required argument 'HsmType'")
-	}
-	if args == nil || args.SubnetIds == nil {
-		return nil, errors.New("missing required argument 'SubnetIds'")
-	}
 	if args == nil {
-		args = &ClusterArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.HsmType == nil {
+		return nil, errors.New("invalid value for required argument 'HsmType'")
+	}
+	if args.SubnetIds == nil {
+		return nil, errors.New("invalid value for required argument 'SubnetIds'")
 	}
 	var resource Cluster
 	err := ctx.RegisterResource("aws:cloudhsmv2/cluster:Cluster", name, args, &resource, opts...)
@@ -84,16 +86,16 @@ func GetCluster(ctx *pulumi.Context,
 type clusterState struct {
 	// The list of cluster certificates.
 	// * `cluster_certificates.0.cluster_certificate` - The cluster certificate issued (signed) by the issuing certificate authority (CA) of the cluster's owner.
-	// * `cluster_certificates.0.cluster_csr` - The certificate signing request (CSR). Available only in UNINITIALIZED state after an hsm instance is added to the cluster.
+	// * `cluster_certificates.0.cluster_csr` - The certificate signing request (CSR). Available only in `UNINITIALIZED` state after an HSM instance is added to the cluster.
 	// * `cluster_certificates.0.aws_hardware_certificate` - The HSM hardware certificate issued (signed) by AWS CloudHSM.
 	// * `cluster_certificates.0.hsm_certificate` - The HSM certificate issued (signed) by the HSM hardware.
 	// * `cluster_certificates.0.manufacturer_hardware_certificate` - The HSM hardware certificate issued (signed) by the hardware manufacturer.
 	ClusterCertificates []ClusterClusterCertificate `pulumi:"clusterCertificates"`
 	// The id of the CloudHSM cluster.
 	ClusterId *string `pulumi:"clusterId"`
-	// The state of the cluster.
+	// The state of the CloudHSM cluster.
 	ClusterState *string `pulumi:"clusterState"`
-	// The type of HSM module in the cluster. Currently, only hsm1.medium is supported.
+	// The type of HSM module in the cluster. Currently, only `hsm1.medium` is supported.
 	HsmType *string `pulumi:"hsmType"`
 	// The ID of the security group associated with the CloudHSM cluster.
 	SecurityGroupId *string `pulumi:"securityGroupId"`
@@ -110,16 +112,16 @@ type clusterState struct {
 type ClusterState struct {
 	// The list of cluster certificates.
 	// * `cluster_certificates.0.cluster_certificate` - The cluster certificate issued (signed) by the issuing certificate authority (CA) of the cluster's owner.
-	// * `cluster_certificates.0.cluster_csr` - The certificate signing request (CSR). Available only in UNINITIALIZED state after an hsm instance is added to the cluster.
+	// * `cluster_certificates.0.cluster_csr` - The certificate signing request (CSR). Available only in `UNINITIALIZED` state after an HSM instance is added to the cluster.
 	// * `cluster_certificates.0.aws_hardware_certificate` - The HSM hardware certificate issued (signed) by AWS CloudHSM.
 	// * `cluster_certificates.0.hsm_certificate` - The HSM certificate issued (signed) by the HSM hardware.
 	// * `cluster_certificates.0.manufacturer_hardware_certificate` - The HSM hardware certificate issued (signed) by the hardware manufacturer.
 	ClusterCertificates ClusterClusterCertificateArrayInput
 	// The id of the CloudHSM cluster.
 	ClusterId pulumi.StringPtrInput
-	// The state of the cluster.
+	// The state of the CloudHSM cluster.
 	ClusterState pulumi.StringPtrInput
-	// The type of HSM module in the cluster. Currently, only hsm1.medium is supported.
+	// The type of HSM module in the cluster. Currently, only `hsm1.medium` is supported.
 	HsmType pulumi.StringPtrInput
 	// The ID of the security group associated with the CloudHSM cluster.
 	SecurityGroupId pulumi.StringPtrInput
@@ -138,7 +140,7 @@ func (ClusterState) ElementType() reflect.Type {
 }
 
 type clusterArgs struct {
-	// The type of HSM module in the cluster. Currently, only hsm1.medium is supported.
+	// The type of HSM module in the cluster. Currently, only `hsm1.medium` is supported.
 	HsmType string `pulumi:"hsmType"`
 	// The id of Cloud HSM v2 cluster backup to be restored.
 	SourceBackupIdentifier *string `pulumi:"sourceBackupIdentifier"`
@@ -150,7 +152,7 @@ type clusterArgs struct {
 
 // The set of arguments for constructing a Cluster resource.
 type ClusterArgs struct {
-	// The type of HSM module in the cluster. Currently, only hsm1.medium is supported.
+	// The type of HSM module in the cluster. Currently, only `hsm1.medium` is supported.
 	HsmType pulumi.StringInput
 	// The id of Cloud HSM v2 cluster backup to be restored.
 	SourceBackupIdentifier pulumi.StringPtrInput
@@ -162,4 +164,43 @@ type ClusterArgs struct {
 
 func (ClusterArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*clusterArgs)(nil)).Elem()
+}
+
+type ClusterInput interface {
+	pulumi.Input
+
+	ToClusterOutput() ClusterOutput
+	ToClusterOutputWithContext(ctx context.Context) ClusterOutput
+}
+
+func (Cluster) ElementType() reflect.Type {
+	return reflect.TypeOf((*Cluster)(nil)).Elem()
+}
+
+func (i Cluster) ToClusterOutput() ClusterOutput {
+	return i.ToClusterOutputWithContext(context.Background())
+}
+
+func (i Cluster) ToClusterOutputWithContext(ctx context.Context) ClusterOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(ClusterOutput)
+}
+
+type ClusterOutput struct {
+	*pulumi.OutputState
+}
+
+func (ClusterOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*ClusterOutput)(nil)).Elem()
+}
+
+func (o ClusterOutput) ToClusterOutput() ClusterOutput {
+	return o
+}
+
+func (o ClusterOutput) ToClusterOutputWithContext(ctx context.Context) ClusterOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(ClusterOutput{})
 }

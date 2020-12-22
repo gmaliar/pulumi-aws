@@ -24,16 +24,22 @@ namespace Pulumi.Aws.DirectConnect
     ///     {
     ///         var example = new Aws.DirectConnect.GatewayAssociationProposal("example", new Aws.DirectConnect.GatewayAssociationProposalArgs
     ///         {
-    ///             AssociatedGatewayId = aws_vpn_gateway.Example.Id,
     ///             DxGatewayId = aws_dx_gateway.Example.Id,
     ///             DxGatewayOwnerAccountId = aws_dx_gateway.Example.Owner_account_id,
+    ///             AssociatedGatewayId = aws_vpn_gateway.Example.Id,
     ///         });
     ///     }
     /// 
     /// }
     /// ```
     /// 
-    /// A full example of how to create a VPN Gateway in one AWS account, create a Direct Connect Gateway in a second AWS account, and associate the VPN Gateway with the Direct Connect Gateway via the `aws.directconnect.GatewayAssociationProposal` and `aws.directconnect.GatewayAssociation` resources can be found in [the `./examples/dx-gateway-cross-account-vgw-association` directory within the Github Repository](https://github.com/providers/provider-aws/tree/master/examples/dx-gateway-cross-account-vgw-association).
+    /// ## Import
+    /// 
+    /// Direct Connect Gateway Association Proposals can be imported using the proposal ID, e.g.
+    /// 
+    /// ```sh
+    ///  $ pulumi import aws:directconnect/gatewayAssociationProposal:GatewayAssociationProposal example ac90e981-b718-4364-872d-65478c84fafe
+    /// ```
     /// </summary>
     public partial class GatewayAssociationProposal : Pulumi.CustomResource
     {
@@ -47,7 +53,7 @@ namespace Pulumi.Aws.DirectConnect
         /// The ID of the VGW or transit gateway with which to associate the Direct Connect gateway.
         /// </summary>
         [Output("associatedGatewayId")]
-        public Output<string?> AssociatedGatewayId { get; private set; } = null!;
+        public Output<string> AssociatedGatewayId { get; private set; } = null!;
 
         /// <summary>
         /// The ID of the AWS account that owns the VGW or transit gateway with which to associate the Direct Connect gateway.
@@ -72,12 +78,6 @@ namespace Pulumi.Aws.DirectConnect
         /// </summary>
         [Output("dxGatewayOwnerAccountId")]
         public Output<string> DxGatewayOwnerAccountId { get; private set; } = null!;
-
-        /// <summary>
-        /// *Deprecated:* Use `associated_gateway_id` instead. Virtual Gateway identifier to associate with the Direct Connect Gateway.
-        /// </summary>
-        [Output("vpnGatewayId")]
-        public Output<string?> VpnGatewayId { get; private set; } = null!;
 
 
         /// <summary>
@@ -140,8 +140,8 @@ namespace Pulumi.Aws.DirectConnect
         /// <summary>
         /// The ID of the VGW or transit gateway with which to associate the Direct Connect gateway.
         /// </summary>
-        [Input("associatedGatewayId")]
-        public Input<string>? AssociatedGatewayId { get; set; }
+        [Input("associatedGatewayId", required: true)]
+        public Input<string> AssociatedGatewayId { get; set; } = null!;
 
         /// <summary>
         /// Direct Connect Gateway identifier.
@@ -154,12 +154,6 @@ namespace Pulumi.Aws.DirectConnect
         /// </summary>
         [Input("dxGatewayOwnerAccountId", required: true)]
         public Input<string> DxGatewayOwnerAccountId { get; set; } = null!;
-
-        /// <summary>
-        /// *Deprecated:* Use `associated_gateway_id` instead. Virtual Gateway identifier to associate with the Direct Connect Gateway.
-        /// </summary>
-        [Input("vpnGatewayId")]
-        public Input<string>? VpnGatewayId { get; set; }
 
         public GatewayAssociationProposalArgs()
         {
@@ -209,12 +203,6 @@ namespace Pulumi.Aws.DirectConnect
         /// </summary>
         [Input("dxGatewayOwnerAccountId")]
         public Input<string>? DxGatewayOwnerAccountId { get; set; }
-
-        /// <summary>
-        /// *Deprecated:* Use `associated_gateway_id` instead. Virtual Gateway identifier to associate with the Direct Connect Gateway.
-        /// </summary>
-        [Input("vpnGatewayId")]
-        public Input<string>? VpnGatewayId { get; set; }
 
         public GatewayAssociationProposalState()
         {

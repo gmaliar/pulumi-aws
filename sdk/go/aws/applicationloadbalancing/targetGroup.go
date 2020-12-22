@@ -4,6 +4,7 @@
 package applicationloadbalancing
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
@@ -20,8 +21,8 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/ec2"
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/lb"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/ec2"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/lb"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -51,8 +52,8 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/ec2"
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/lb"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/ec2"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/lb"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -83,7 +84,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/lb"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/lb"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -98,6 +99,14 @@ import (
 // 		return nil
 // 	})
 // }
+// ```
+//
+// ## Import
+//
+// Target Groups can be imported using their ARN, e.g.
+//
+// ```sh
+//  $ pulumi import aws:applicationloadbalancing/targetGroup:TargetGroup app_front_end arn:aws:elasticloadbalancing:us-west-2:187416307283:targetgroup/app-front-end/20cfe21448b66314
 // ```
 //
 // Deprecated: aws.applicationloadbalancing.TargetGroup has been deprecated in favor of aws.alb.TargetGroup
@@ -122,13 +131,13 @@ type TargetGroup struct {
 	NamePrefix pulumi.StringPtrOutput `pulumi:"namePrefix"`
 	// The port on which targets receive traffic, unless overridden when registering a specific target. Required when `targetType` is `instance` or `ip`. Does not apply when `targetType` is `lambda`.
 	Port pulumi.IntPtrOutput `pulumi:"port"`
-	// The protocol to use for routing traffic to the targets. Should be one of "TCP", "TLS", "UDP", "TCP_UDP", "HTTP" or "HTTPS". Required when `targetType` is `instance` or `ip`. Does not apply when `targetType` is `lambda`.
+	// The protocol to use for routing traffic to the targets. Should be one of `GENEVE`, `HTTP`, `HTTPS`, `TCP`, `TCP_UDP`, `TLS`, or `UDP`. Required when `targetType` is `instance` or `ip`. Does not apply when `targetType` is `lambda`.
 	Protocol pulumi.StringPtrOutput `pulumi:"protocol"`
 	// Boolean to enable / disable support for proxy protocol v2 on Network Load Balancers. See [doc](https://docs.aws.amazon.com/elasticloadbalancing/latest/network/load-balancer-target-groups.html#proxy-protocol) for more information.
 	ProxyProtocolV2 pulumi.BoolPtrOutput `pulumi:"proxyProtocolV2"`
 	// The amount time for targets to warm up before the load balancer sends them a full share of requests. The range is 30-900 seconds or 0 to disable. The default value is 0 seconds.
 	SlowStart pulumi.IntPtrOutput `pulumi:"slowStart"`
-	// A Stickiness block. Stickiness blocks are documented below. `stickiness` is only valid if used with Load Balancers of type `Application`
+	// A Stickiness block. Stickiness blocks are documented below.
 	Stickiness TargetGroupStickinessOutput `pulumi:"stickiness"`
 	// A map of tags to assign to the resource.
 	Tags pulumi.StringMapOutput `pulumi:"tags"`
@@ -149,6 +158,7 @@ func NewTargetGroup(ctx *pulumi.Context,
 	if args == nil {
 		args = &TargetGroupArgs{}
 	}
+
 	var resource TargetGroup
 	err := ctx.RegisterResource("aws:applicationloadbalancing/targetGroup:TargetGroup", name, args, &resource, opts...)
 	if err != nil {
@@ -189,13 +199,13 @@ type targetGroupState struct {
 	NamePrefix *string `pulumi:"namePrefix"`
 	// The port on which targets receive traffic, unless overridden when registering a specific target. Required when `targetType` is `instance` or `ip`. Does not apply when `targetType` is `lambda`.
 	Port *int `pulumi:"port"`
-	// The protocol to use for routing traffic to the targets. Should be one of "TCP", "TLS", "UDP", "TCP_UDP", "HTTP" or "HTTPS". Required when `targetType` is `instance` or `ip`. Does not apply when `targetType` is `lambda`.
+	// The protocol to use for routing traffic to the targets. Should be one of `GENEVE`, `HTTP`, `HTTPS`, `TCP`, `TCP_UDP`, `TLS`, or `UDP`. Required when `targetType` is `instance` or `ip`. Does not apply when `targetType` is `lambda`.
 	Protocol *string `pulumi:"protocol"`
 	// Boolean to enable / disable support for proxy protocol v2 on Network Load Balancers. See [doc](https://docs.aws.amazon.com/elasticloadbalancing/latest/network/load-balancer-target-groups.html#proxy-protocol) for more information.
 	ProxyProtocolV2 *bool `pulumi:"proxyProtocolV2"`
 	// The amount time for targets to warm up before the load balancer sends them a full share of requests. The range is 30-900 seconds or 0 to disable. The default value is 0 seconds.
 	SlowStart *int `pulumi:"slowStart"`
-	// A Stickiness block. Stickiness blocks are documented below. `stickiness` is only valid if used with Load Balancers of type `Application`
+	// A Stickiness block. Stickiness blocks are documented below.
 	Stickiness *TargetGroupStickiness `pulumi:"stickiness"`
 	// A map of tags to assign to the resource.
 	Tags map[string]string `pulumi:"tags"`
@@ -229,13 +239,13 @@ type TargetGroupState struct {
 	NamePrefix pulumi.StringPtrInput
 	// The port on which targets receive traffic, unless overridden when registering a specific target. Required when `targetType` is `instance` or `ip`. Does not apply when `targetType` is `lambda`.
 	Port pulumi.IntPtrInput
-	// The protocol to use for routing traffic to the targets. Should be one of "TCP", "TLS", "UDP", "TCP_UDP", "HTTP" or "HTTPS". Required when `targetType` is `instance` or `ip`. Does not apply when `targetType` is `lambda`.
+	// The protocol to use for routing traffic to the targets. Should be one of `GENEVE`, `HTTP`, `HTTPS`, `TCP`, `TCP_UDP`, `TLS`, or `UDP`. Required when `targetType` is `instance` or `ip`. Does not apply when `targetType` is `lambda`.
 	Protocol pulumi.StringPtrInput
 	// Boolean to enable / disable support for proxy protocol v2 on Network Load Balancers. See [doc](https://docs.aws.amazon.com/elasticloadbalancing/latest/network/load-balancer-target-groups.html#proxy-protocol) for more information.
 	ProxyProtocolV2 pulumi.BoolPtrInput
 	// The amount time for targets to warm up before the load balancer sends them a full share of requests. The range is 30-900 seconds or 0 to disable. The default value is 0 seconds.
 	SlowStart pulumi.IntPtrInput
-	// A Stickiness block. Stickiness blocks are documented below. `stickiness` is only valid if used with Load Balancers of type `Application`
+	// A Stickiness block. Stickiness blocks are documented below.
 	Stickiness TargetGroupStickinessPtrInput
 	// A map of tags to assign to the resource.
 	Tags pulumi.StringMapInput
@@ -269,13 +279,13 @@ type targetGroupArgs struct {
 	NamePrefix *string `pulumi:"namePrefix"`
 	// The port on which targets receive traffic, unless overridden when registering a specific target. Required when `targetType` is `instance` or `ip`. Does not apply when `targetType` is `lambda`.
 	Port *int `pulumi:"port"`
-	// The protocol to use for routing traffic to the targets. Should be one of "TCP", "TLS", "UDP", "TCP_UDP", "HTTP" or "HTTPS". Required when `targetType` is `instance` or `ip`. Does not apply when `targetType` is `lambda`.
+	// The protocol to use for routing traffic to the targets. Should be one of `GENEVE`, `HTTP`, `HTTPS`, `TCP`, `TCP_UDP`, `TLS`, or `UDP`. Required when `targetType` is `instance` or `ip`. Does not apply when `targetType` is `lambda`.
 	Protocol *string `pulumi:"protocol"`
 	// Boolean to enable / disable support for proxy protocol v2 on Network Load Balancers. See [doc](https://docs.aws.amazon.com/elasticloadbalancing/latest/network/load-balancer-target-groups.html#proxy-protocol) for more information.
 	ProxyProtocolV2 *bool `pulumi:"proxyProtocolV2"`
 	// The amount time for targets to warm up before the load balancer sends them a full share of requests. The range is 30-900 seconds or 0 to disable. The default value is 0 seconds.
 	SlowStart *int `pulumi:"slowStart"`
-	// A Stickiness block. Stickiness blocks are documented below. `stickiness` is only valid if used with Load Balancers of type `Application`
+	// A Stickiness block. Stickiness blocks are documented below.
 	Stickiness *TargetGroupStickiness `pulumi:"stickiness"`
 	// A map of tags to assign to the resource.
 	Tags map[string]string `pulumi:"tags"`
@@ -306,13 +316,13 @@ type TargetGroupArgs struct {
 	NamePrefix pulumi.StringPtrInput
 	// The port on which targets receive traffic, unless overridden when registering a specific target. Required when `targetType` is `instance` or `ip`. Does not apply when `targetType` is `lambda`.
 	Port pulumi.IntPtrInput
-	// The protocol to use for routing traffic to the targets. Should be one of "TCP", "TLS", "UDP", "TCP_UDP", "HTTP" or "HTTPS". Required when `targetType` is `instance` or `ip`. Does not apply when `targetType` is `lambda`.
+	// The protocol to use for routing traffic to the targets. Should be one of `GENEVE`, `HTTP`, `HTTPS`, `TCP`, `TCP_UDP`, `TLS`, or `UDP`. Required when `targetType` is `instance` or `ip`. Does not apply when `targetType` is `lambda`.
 	Protocol pulumi.StringPtrInput
 	// Boolean to enable / disable support for proxy protocol v2 on Network Load Balancers. See [doc](https://docs.aws.amazon.com/elasticloadbalancing/latest/network/load-balancer-target-groups.html#proxy-protocol) for more information.
 	ProxyProtocolV2 pulumi.BoolPtrInput
 	// The amount time for targets to warm up before the load balancer sends them a full share of requests. The range is 30-900 seconds or 0 to disable. The default value is 0 seconds.
 	SlowStart pulumi.IntPtrInput
-	// A Stickiness block. Stickiness blocks are documented below. `stickiness` is only valid if used with Load Balancers of type `Application`
+	// A Stickiness block. Stickiness blocks are documented below.
 	Stickiness TargetGroupStickinessPtrInput
 	// A map of tags to assign to the resource.
 	Tags pulumi.StringMapInput
@@ -329,4 +339,43 @@ type TargetGroupArgs struct {
 
 func (TargetGroupArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*targetGroupArgs)(nil)).Elem()
+}
+
+type TargetGroupInput interface {
+	pulumi.Input
+
+	ToTargetGroupOutput() TargetGroupOutput
+	ToTargetGroupOutputWithContext(ctx context.Context) TargetGroupOutput
+}
+
+func (TargetGroup) ElementType() reflect.Type {
+	return reflect.TypeOf((*TargetGroup)(nil)).Elem()
+}
+
+func (i TargetGroup) ToTargetGroupOutput() TargetGroupOutput {
+	return i.ToTargetGroupOutputWithContext(context.Background())
+}
+
+func (i TargetGroup) ToTargetGroupOutputWithContext(ctx context.Context) TargetGroupOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(TargetGroupOutput)
+}
+
+type TargetGroupOutput struct {
+	*pulumi.OutputState
+}
+
+func (TargetGroupOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*TargetGroupOutput)(nil)).Elem()
+}
+
+func (o TargetGroupOutput) ToTargetGroupOutput() TargetGroupOutput {
+	return o
+}
+
+func (o TargetGroupOutput) ToTargetGroupOutputWithContext(ctx context.Context) TargetGroupOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(TargetGroupOutput{})
 }

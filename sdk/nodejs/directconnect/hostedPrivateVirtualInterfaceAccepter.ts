@@ -15,24 +15,39 @@ import * as utilities from "../utilities";
  * import * as aws from "@pulumi/aws";
  *
  * const accepter = new aws.Provider("accepter", {});
- * const accepterCallerIdentity = pulumi.output(aws.getCallerIdentity({ provider: accepter, async: true }));
+ * // Accepter's credentials.
+ * const accepterCallerIdentity = aws.getCallerIdentity({});
  * // Accepter's side of the VIF.
- * const vpnGw = new aws.ec2.VpnGateway("vpn_gw", {}, { provider: accepter });
+ * const vpnGw = new aws.ec2.VpnGateway("vpnGw", {}, {
+ *     provider: aws.accepter,
+ * });
  * // Creator's side of the VIF
  * const creator = new aws.directconnect.HostedPrivateVirtualInterface("creator", {
+ *     connectionId: "dxcon-zzzzzzzz",
+ *     ownerAccountId: accepterCallerIdentity.then(accepterCallerIdentity => accepterCallerIdentity.accountId),
+ *     vlan: 4094,
  *     addressFamily: "ipv4",
  *     bgpAsn: 65352,
- *     connectionId: "dxcon-zzzzzzzz",
- *     ownerAccountId: accepterCallerIdentity.accountId,
- *     vlan: 4094,
- * }, { dependsOn: [vpnGw] });
- * const accepterHostedPrivateVirtualInterfaceAccepter = new aws.directconnect.HostedPrivateVirtualInterfaceAccepter("accepter", {
+ * }, {
+ *     dependsOn: [vpnGw],
+ * });
+ * const accepterHostedPrivateVirtualInterfaceAccepter = new aws.directconnect.HostedPrivateVirtualInterfaceAccepter("accepterHostedPrivateVirtualInterfaceAccepter", {
+ *     virtualInterfaceId: creator.id,
+ *     vpnGatewayId: vpnGw.id,
  *     tags: {
  *         Side: "Accepter",
  *     },
- *     virtualInterfaceId: creator.id,
- *     vpnGatewayId: vpnGw.id,
- * }, { provider: accepter });
+ * }, {
+ *     provider: aws.accepter,
+ * });
+ * ```
+ *
+ * ## Import
+ *
+ * Direct Connect hosted private virtual interfaces can be imported using the `vif id`, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:directconnect/hostedPrivateVirtualInterfaceAccepter:HostedPrivateVirtualInterfaceAccepter test dxvif-33cc44dd
  * ```
  */
 export class HostedPrivateVirtualInterfaceAccepter extends pulumi.CustomResource {
@@ -103,7 +118,7 @@ export class HostedPrivateVirtualInterfaceAccepter extends pulumi.CustomResource
             inputs["vpnGatewayId"] = state ? state.vpnGatewayId : undefined;
         } else {
             const args = argsOrState as HostedPrivateVirtualInterfaceAccepterArgs | undefined;
-            if (!args || args.virtualInterfaceId === undefined) {
+            if ((!args || args.virtualInterfaceId === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'virtualInterfaceId'");
             }
             inputs["dxGatewayId"] = args ? args.dxGatewayId : undefined;

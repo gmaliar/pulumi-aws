@@ -13,12 +13,20 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const vpnGw = new aws.ec2.VpnGateway("vpn_gw", {
+ * const vpnGw = new aws.ec2.VpnGateway("vpnGw", {
+ *     vpcId: aws_vpc.main.id,
  *     tags: {
  *         Name: "main",
  *     },
- *     vpcId: aws_vpc_main.id,
  * });
+ * ```
+ *
+ * ## Import
+ *
+ * VPN Gateways can be imported using the `vpn gateway id`, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:ec2/vpnGateway:VpnGateway testvpngateway vgw-9a4cacf3
  * ```
  */
 export class VpnGateway extends pulumi.CustomResource {

@@ -4,6 +4,7 @@
 package batch
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -26,23 +27,23 @@ import (
 // import (
 // 	"fmt"
 //
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/batch"
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/ec2"
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/iam"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/batch"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/ec2"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/iam"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
 // func main() {
 // 	pulumi.Run(func(ctx *pulumi.Context) error {
 // 		ecsInstanceRoleRole, err := iam.NewRole(ctx, "ecsInstanceRoleRole", &iam.RoleArgs{
-// 			AssumeRolePolicy: pulumi.String(fmt.Sprintf("%v%v%v%v%v%v%v%v%v%v%v%v%v", "{\n", "    \"Version\": \"2012-10-17\",\n", "    \"Statement\": [\n", "	{\n", "	    \"Action\": \"sts:AssumeRole\",\n", "	    \"Effect\": \"Allow\",\n", "	    \"Principal\": {\n", "		\"Service\": \"ec2.amazonaws.com\"\n", "	    }\n", "	}\n", "    ]\n", "}\n", "\n")),
+// 			AssumeRolePolicy: pulumi.String(fmt.Sprintf("%v%v%v%v%v%v%v%v%v%v%v%v", "{\n", "    \"Version\": \"2012-10-17\",\n", "    \"Statement\": [\n", "	{\n", "	    \"Action\": \"sts:AssumeRole\",\n", "	    \"Effect\": \"Allow\",\n", "	    \"Principal\": {\n", "		\"Service\": \"ec2.amazonaws.com\"\n", "	    }\n", "	}\n", "    ]\n", "}\n")),
 // 		})
 // 		if err != nil {
 // 			return err
 // 		}
 // 		_, err = iam.NewRolePolicyAttachment(ctx, "ecsInstanceRoleRolePolicyAttachment", &iam.RolePolicyAttachmentArgs{
-// 			PolicyArn: pulumi.String("arn:aws:iam::aws:policy/service-role/AmazonEC2ContainerServiceforEC2Role"),
 // 			Role:      ecsInstanceRoleRole.Name,
+// 			PolicyArn: pulumi.String("arn:aws:iam::aws:policy/service-role/AmazonEC2ContainerServiceforEC2Role"),
 // 		})
 // 		if err != nil {
 // 			return err
@@ -54,29 +55,14 @@ import (
 // 			return err
 // 		}
 // 		awsBatchServiceRoleRole, err := iam.NewRole(ctx, "awsBatchServiceRoleRole", &iam.RoleArgs{
-// 			AssumeRolePolicy: pulumi.String(fmt.Sprintf("%v%v%v%v%v%v%v%v%v%v%v%v%v", "{\n", "    \"Version\": \"2012-10-17\",\n", "    \"Statement\": [\n", "	{\n", "	    \"Action\": \"sts:AssumeRole\",\n", "	    \"Effect\": \"Allow\",\n", "	    \"Principal\": {\n", "		\"Service\": \"batch.amazonaws.com\"\n", "	    }\n", "	}\n", "    ]\n", "}\n", "\n")),
+// 			AssumeRolePolicy: pulumi.String(fmt.Sprintf("%v%v%v%v%v%v%v%v%v%v%v%v", "{\n", "    \"Version\": \"2012-10-17\",\n", "    \"Statement\": [\n", "	{\n", "	    \"Action\": \"sts:AssumeRole\",\n", "	    \"Effect\": \"Allow\",\n", "	    \"Principal\": {\n", "		\"Service\": \"batch.amazonaws.com\"\n", "	    }\n", "	}\n", "    ]\n", "}\n")),
 // 		})
 // 		if err != nil {
 // 			return err
 // 		}
-// 		_, err = iam.NewRolePolicyAttachment(ctx, "awsBatchServiceRoleRolePolicyAttachment", &iam.RolePolicyAttachmentArgs{
-// 			PolicyArn: pulumi.String("arn:aws:iam::aws:policy/service-role/AWSBatchServiceRole"),
+// 		awsBatchServiceRoleRolePolicyAttachment, err := iam.NewRolePolicyAttachment(ctx, "awsBatchServiceRoleRolePolicyAttachment", &iam.RolePolicyAttachmentArgs{
 // 			Role:      awsBatchServiceRoleRole.Name,
-// 		})
-// 		if err != nil {
-// 			return err
-// 		}
-// 		sampleSecurityGroup, err := ec2.NewSecurityGroup(ctx, "sampleSecurityGroup", &ec2.SecurityGroupArgs{
-// 			Egress: ec2.SecurityGroupEgressArray{
-// 				&ec2.SecurityGroupEgressArgs{
-// 					CidrBlocks: pulumi.StringArray{
-// 						pulumi.String("0.0.0.0/0"),
-// 					},
-// 					FromPort: pulumi.Int(0),
-// 					Protocol: pulumi.String("-1"),
-// 					ToPort:   pulumi.Int(0),
-// 				},
-// 			},
+// 			PolicyArn: pulumi.String("arn:aws:iam::aws:policy/service-role/AWSBatchServiceRole"),
 // 		})
 // 		if err != nil {
 // 			return err
@@ -87,9 +73,25 @@ import (
 // 		if err != nil {
 // 			return err
 // 		}
+// 		sampleSecurityGroup, err := ec2.NewSecurityGroup(ctx, "sampleSecurityGroup", &ec2.SecurityGroupArgs{
+// 			VpcId: sampleVpc.ID(),
+// 			Egress: ec2.SecurityGroupEgressArray{
+// 				&ec2.SecurityGroupEgressArgs{
+// 					FromPort: pulumi.Int(0),
+// 					ToPort:   pulumi.Int(0),
+// 					Protocol: pulumi.String("-1"),
+// 					CidrBlocks: pulumi.StringArray{
+// 						pulumi.String("0.0.0.0/0"),
+// 					},
+// 				},
+// 			},
+// 		})
+// 		if err != nil {
+// 			return err
+// 		}
 // 		sampleSubnet, err := ec2.NewSubnet(ctx, "sampleSubnet", &ec2.SubnetArgs{
-// 			CidrBlock: pulumi.String("10.1.1.0/24"),
 // 			VpcId:     sampleVpc.ID(),
+// 			CidrBlock: pulumi.String("10.1.1.0/24"),
 // 		})
 // 		if err != nil {
 // 			return err
@@ -114,7 +116,7 @@ import (
 // 			ServiceRole: awsBatchServiceRoleRole.Arn,
 // 			Type:        pulumi.String("MANAGED"),
 // 		}, pulumi.DependsOn([]pulumi.Resource{
-// 			"aws_iam_role_policy_attachment.aws_batch_service_role",
+// 			awsBatchServiceRoleRolePolicyAttachment,
 // 		}))
 // 		if err != nil {
 // 			return err
@@ -123,6 +125,16 @@ import (
 // 	})
 // }
 // ```
+//
+// ## Import
+//
+// AWS Batch compute can be imported using the `compute_environment_name`, e.g.
+//
+// ```sh
+//  $ pulumi import aws:batch/computeEnvironment:ComputeEnvironment sample sample
+// ```
+//
+//  [1]http://docs.aws.amazon.com/batch/latest/userguide/what-is-batch.html [2]http://docs.aws.amazon.com/batch/latest/userguide/compute_environments.html [3]http://docs.aws.amazon.com/batch/latest/userguide/troubleshooting.html [4]https://docs.aws.amazon.com/batch/latest/userguide/allocation-strategies.html
 type ComputeEnvironment struct {
 	pulumi.CustomResourceState
 
@@ -144,6 +156,8 @@ type ComputeEnvironment struct {
 	Status pulumi.StringOutput `pulumi:"status"`
 	// A short, human-readable string to provide additional details about the current status of the compute environment.
 	StatusReason pulumi.StringOutput `pulumi:"statusReason"`
+	// Key-value pair tags to be applied to resources that are launched in the compute environment.
+	Tags pulumi.StringMapOutput `pulumi:"tags"`
 	// The type of compute environment. Valid items are `EC2` or `SPOT`.
 	Type pulumi.StringOutput `pulumi:"type"`
 }
@@ -151,14 +165,15 @@ type ComputeEnvironment struct {
 // NewComputeEnvironment registers a new resource with the given unique name, arguments, and options.
 func NewComputeEnvironment(ctx *pulumi.Context,
 	name string, args *ComputeEnvironmentArgs, opts ...pulumi.ResourceOption) (*ComputeEnvironment, error) {
-	if args == nil || args.ServiceRole == nil {
-		return nil, errors.New("missing required argument 'ServiceRole'")
-	}
-	if args == nil || args.Type == nil {
-		return nil, errors.New("missing required argument 'Type'")
-	}
 	if args == nil {
-		args = &ComputeEnvironmentArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.ServiceRole == nil {
+		return nil, errors.New("invalid value for required argument 'ServiceRole'")
+	}
+	if args.Type == nil {
+		return nil, errors.New("invalid value for required argument 'Type'")
 	}
 	var resource ComputeEnvironment
 	err := ctx.RegisterResource("aws:batch/computeEnvironment:ComputeEnvironment", name, args, &resource, opts...)
@@ -200,6 +215,8 @@ type computeEnvironmentState struct {
 	Status *string `pulumi:"status"`
 	// A short, human-readable string to provide additional details about the current status of the compute environment.
 	StatusReason *string `pulumi:"statusReason"`
+	// Key-value pair tags to be applied to resources that are launched in the compute environment.
+	Tags map[string]string `pulumi:"tags"`
 	// The type of compute environment. Valid items are `EC2` or `SPOT`.
 	Type *string `pulumi:"type"`
 }
@@ -223,6 +240,8 @@ type ComputeEnvironmentState struct {
 	Status pulumi.StringPtrInput
 	// A short, human-readable string to provide additional details about the current status of the compute environment.
 	StatusReason pulumi.StringPtrInput
+	// Key-value pair tags to be applied to resources that are launched in the compute environment.
+	Tags pulumi.StringMapInput
 	// The type of compute environment. Valid items are `EC2` or `SPOT`.
 	Type pulumi.StringPtrInput
 }
@@ -242,6 +261,8 @@ type computeEnvironmentArgs struct {
 	ServiceRole string `pulumi:"serviceRole"`
 	// The state of the compute environment. If the state is `ENABLED`, then the compute environment accepts jobs from a queue and can scale out automatically based on queues. Valid items are `ENABLED` or `DISABLED`. Defaults to `ENABLED`.
 	State *string `pulumi:"state"`
+	// Key-value pair tags to be applied to resources that are launched in the compute environment.
+	Tags map[string]string `pulumi:"tags"`
 	// The type of compute environment. Valid items are `EC2` or `SPOT`.
 	Type string `pulumi:"type"`
 }
@@ -258,10 +279,51 @@ type ComputeEnvironmentArgs struct {
 	ServiceRole pulumi.StringInput
 	// The state of the compute environment. If the state is `ENABLED`, then the compute environment accepts jobs from a queue and can scale out automatically based on queues. Valid items are `ENABLED` or `DISABLED`. Defaults to `ENABLED`.
 	State pulumi.StringPtrInput
+	// Key-value pair tags to be applied to resources that are launched in the compute environment.
+	Tags pulumi.StringMapInput
 	// The type of compute environment. Valid items are `EC2` or `SPOT`.
 	Type pulumi.StringInput
 }
 
 func (ComputeEnvironmentArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*computeEnvironmentArgs)(nil)).Elem()
+}
+
+type ComputeEnvironmentInput interface {
+	pulumi.Input
+
+	ToComputeEnvironmentOutput() ComputeEnvironmentOutput
+	ToComputeEnvironmentOutputWithContext(ctx context.Context) ComputeEnvironmentOutput
+}
+
+func (ComputeEnvironment) ElementType() reflect.Type {
+	return reflect.TypeOf((*ComputeEnvironment)(nil)).Elem()
+}
+
+func (i ComputeEnvironment) ToComputeEnvironmentOutput() ComputeEnvironmentOutput {
+	return i.ToComputeEnvironmentOutputWithContext(context.Background())
+}
+
+func (i ComputeEnvironment) ToComputeEnvironmentOutputWithContext(ctx context.Context) ComputeEnvironmentOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(ComputeEnvironmentOutput)
+}
+
+type ComputeEnvironmentOutput struct {
+	*pulumi.OutputState
+}
+
+func (ComputeEnvironmentOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*ComputeEnvironmentOutput)(nil)).Elem()
+}
+
+func (o ComputeEnvironmentOutput) ToComputeEnvironmentOutput() ComputeEnvironmentOutput {
+	return o
+}
+
+func (o ComputeEnvironmentOutput) ToComputeEnvironmentOutputWithContext(ctx context.Context) ComputeEnvironmentOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(ComputeEnvironmentOutput{})
 }

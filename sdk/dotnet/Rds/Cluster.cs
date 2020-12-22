@@ -49,7 +49,6 @@ namespace Pulumi.Aws.Rds
     ///                 "us-west-2c",
     ///             },
     ///             BackupRetentionPeriod = 5,
-    ///             ClusterIdentifier = "aurora-cluster-demo",
     ///             DatabaseName = "mydb",
     ///             Engine = "aurora-mysql",
     ///             EngineVersion = "5.7.mysql_aurora.2.03.2",
@@ -80,7 +79,6 @@ namespace Pulumi.Aws.Rds
     ///                 "us-west-2c",
     ///             },
     ///             BackupRetentionPeriod = 5,
-    ///             ClusterIdentifier = "aurora-cluster-demo",
     ///             DatabaseName = "mydb",
     ///             MasterPassword = "bar",
     ///             MasterUsername = "foo",
@@ -109,7 +107,6 @@ namespace Pulumi.Aws.Rds
     ///                 "us-west-2c",
     ///             },
     ///             BackupRetentionPeriod = 5,
-    ///             ClusterIdentifier = "aurora-cluster-demo",
     ///             DatabaseName = "mydb",
     ///             Engine = "aurora-postgresql",
     ///             MasterPassword = "bar",
@@ -134,7 +131,6 @@ namespace Pulumi.Aws.Rds
     ///     {
     ///         var example = new Aws.Rds.Cluster("example", new Aws.Rds.ClusterArgs
     ///         {
-    ///             ClusterIdentifier = "example",
     ///             DbSubnetGroupName = aws_db_subnet_group.Example.Name,
     ///             EngineMode = "multimaster",
     ///             MasterPassword = "barbarbarbar",
@@ -145,9 +141,23 @@ namespace Pulumi.Aws.Rds
     /// 
     /// }
     /// ```
+    /// 
+    /// ## Import
+    /// 
+    /// RDS Clusters can be imported using the `cluster_identifier`, e.g.
+    /// 
+    /// ```sh
+    ///  $ pulumi import aws:rds/cluster:Cluster aurora_cluster aurora-prod-cluster
+    /// ```
     /// </summary>
     public partial class Cluster : Pulumi.CustomResource
     {
+        /// <summary>
+        /// Enable to allow major engine version upgrades when changing engine versions. Defaults to `false`.
+        /// </summary>
+        [Output("allowMajorVersionUpgrade")]
+        public Output<bool?> AllowMajorVersionUpgrade { get; private set; } = null!;
+
         /// <summary>
         /// Specifies whether any cluster modifications are applied immediately, or during the next maintenance window. Default is `false`. See [Amazon RDS Documentation for more information.](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Overview.DBInstance.Modifying.html)
         /// </summary>
@@ -239,7 +249,7 @@ namespace Pulumi.Aws.Rds
         public Output<bool?> EnableHttpEndpoint { get; private set; } = null!;
 
         /// <summary>
-        /// List of log types to export to cloudwatch. If omitted, no logs will be exported. The following log types are supported: `audit`, `error`, `general`, `slowquery`, `postgresql` (PostgreSQL).
+        /// Set of log types to export to cloudwatch. If omitted, no logs will be exported. The following log types are supported: `audit`, `error`, `general`, `slowquery`, `postgresql` (PostgreSQL).
         /// </summary>
         [Output("enabledCloudwatchLogsExports")]
         public Output<ImmutableArray<string>> EnabledCloudwatchLogsExports { get; private set; } = null!;
@@ -257,7 +267,7 @@ namespace Pulumi.Aws.Rds
         public Output<string?> Engine { get; private set; } = null!;
 
         /// <summary>
-        /// The database engine mode. Valid values: `global`, `multimaster`, `parallelquery`, `provisioned`, `serverless`. Defaults to: `provisioned`. See the [RDS User Guide](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/aurora-serverless.html) for limitations when using `serverless`.
+        /// The database engine mode. Valid values: `global` (only valid for Aurora MySQL 1.21 and earlier), `multimaster`, `parallelquery`, `provisioned`, `serverless`. Defaults to: `provisioned`. See the [RDS User Guide](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/aurora-serverless.html) for limitations when using `serverless`.
         /// </summary>
         [Output("engineMode")]
         public Output<string?> EngineMode { get; private set; } = null!;
@@ -342,10 +352,16 @@ namespace Pulumi.Aws.Rds
         public Output<string> ReaderEndpoint { get; private set; } = null!;
 
         /// <summary>
-        /// ARN of a source DB cluster or DB instance if this DB cluster is to be created as a Read Replica.
+        /// ARN of the source DB cluster or DB instance if this DB cluster is created as a Read Replica.
         /// </summary>
         [Output("replicationSourceIdentifier")]
         public Output<string?> ReplicationSourceIdentifier { get; private set; } = null!;
+
+        /// <summary>
+        /// Nested attribute for [point in time restore](https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/USER_PIT.html). More details below.
+        /// </summary>
+        [Output("restoreToPointInTime")]
+        public Output<Outputs.ClusterRestoreToPointInTime?> RestoreToPointInTime { get; private set; } = null!;
 
         [Output("s3Import")]
         public Output<Outputs.ClusterS3Import?> S3Import { get; private set; } = null!;
@@ -375,10 +391,10 @@ namespace Pulumi.Aws.Rds
         public Output<string?> SourceRegion { get; private set; } = null!;
 
         /// <summary>
-        /// Specifies whether the DB cluster is encrypted. The default is `false` for `provisioned` `engine_mode` and `true` for `serverless` `engine_mode`.
+        /// Specifies whether the DB cluster is encrypted
         /// </summary>
         [Output("storageEncrypted")]
-        public Output<bool?> StorageEncrypted { get; private set; } = null!;
+        public Output<bool> StorageEncrypted { get; private set; } = null!;
 
         /// <summary>
         /// A map of tags to assign to the DB cluster.
@@ -438,6 +454,12 @@ namespace Pulumi.Aws.Rds
 
     public sealed class ClusterArgs : Pulumi.ResourceArgs
     {
+        /// <summary>
+        /// Enable to allow major engine version upgrades when changing engine versions. Defaults to `false`.
+        /// </summary>
+        [Input("allowMajorVersionUpgrade")]
+        public Input<bool>? AllowMajorVersionUpgrade { get; set; }
+
         /// <summary>
         /// Specifies whether any cluster modifications are applied immediately, or during the next maintenance window. Default is `false`. See [Amazon RDS Documentation for more information.](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Overview.DBInstance.Modifying.html)
         /// </summary>
@@ -532,7 +554,7 @@ namespace Pulumi.Aws.Rds
         private InputList<string>? _enabledCloudwatchLogsExports;
 
         /// <summary>
-        /// List of log types to export to cloudwatch. If omitted, no logs will be exported. The following log types are supported: `audit`, `error`, `general`, `slowquery`, `postgresql` (PostgreSQL).
+        /// Set of log types to export to cloudwatch. If omitted, no logs will be exported. The following log types are supported: `audit`, `error`, `general`, `slowquery`, `postgresql` (PostgreSQL).
         /// </summary>
         public InputList<string> EnabledCloudwatchLogsExports
         {
@@ -544,13 +566,13 @@ namespace Pulumi.Aws.Rds
         /// The name of the database engine to be used for this DB cluster. Defaults to `aurora`. Valid Values: `aurora`, `aurora-mysql`, `aurora-postgresql`
         /// </summary>
         [Input("engine")]
-        public Input<string>? Engine { get; set; }
+        public InputUnion<string, Pulumi.Aws.Rds.EngineType>? Engine { get; set; }
 
         /// <summary>
-        /// The database engine mode. Valid values: `global`, `multimaster`, `parallelquery`, `provisioned`, `serverless`. Defaults to: `provisioned`. See the [RDS User Guide](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/aurora-serverless.html) for limitations when using `serverless`.
+        /// The database engine mode. Valid values: `global` (only valid for Aurora MySQL 1.21 and earlier), `multimaster`, `parallelquery`, `provisioned`, `serverless`. Defaults to: `provisioned`. See the [RDS User Guide](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/aurora-serverless.html) for limitations when using `serverless`.
         /// </summary>
         [Input("engineMode")]
-        public Input<string>? EngineMode { get; set; }
+        public InputUnion<string, Pulumi.Aws.Rds.EngineMode>? EngineMode { get; set; }
 
         /// <summary>
         /// The database engine version. Updating this argument results in an outage. See the [Aurora MySQL](https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/AuroraMySQL.Updates.html) and [Aurora Postgres](https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/AuroraPostgreSQL.Updates.html) documentation for your configured engine to determine this value. For example with Aurora MySQL 2, a potential value for this argument is `5.7.mysql_aurora.2.03.2`.
@@ -625,10 +647,16 @@ namespace Pulumi.Aws.Rds
         public Input<string>? PreferredMaintenanceWindow { get; set; }
 
         /// <summary>
-        /// ARN of a source DB cluster or DB instance if this DB cluster is to be created as a Read Replica.
+        /// ARN of the source DB cluster or DB instance if this DB cluster is created as a Read Replica.
         /// </summary>
         [Input("replicationSourceIdentifier")]
         public Input<string>? ReplicationSourceIdentifier { get; set; }
+
+        /// <summary>
+        /// Nested attribute for [point in time restore](https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/USER_PIT.html). More details below.
+        /// </summary>
+        [Input("restoreToPointInTime")]
+        public Input<Inputs.ClusterRestoreToPointInTimeArgs>? RestoreToPointInTime { get; set; }
 
         [Input("s3Import")]
         public Input<Inputs.ClusterS3ImportArgs>? S3Import { get; set; }
@@ -658,7 +686,7 @@ namespace Pulumi.Aws.Rds
         public Input<string>? SourceRegion { get; set; }
 
         /// <summary>
-        /// Specifies whether the DB cluster is encrypted. The default is `false` for `provisioned` `engine_mode` and `true` for `serverless` `engine_mode`.
+        /// Specifies whether the DB cluster is encrypted
         /// </summary>
         [Input("storageEncrypted")]
         public Input<bool>? StorageEncrypted { get; set; }
@@ -694,6 +722,12 @@ namespace Pulumi.Aws.Rds
 
     public sealed class ClusterState : Pulumi.ResourceArgs
     {
+        /// <summary>
+        /// Enable to allow major engine version upgrades when changing engine versions. Defaults to `false`.
+        /// </summary>
+        [Input("allowMajorVersionUpgrade")]
+        public Input<bool>? AllowMajorVersionUpgrade { get; set; }
+
         /// <summary>
         /// Specifies whether any cluster modifications are applied immediately, or during the next maintenance window. Default is `false`. See [Amazon RDS Documentation for more information.](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Overview.DBInstance.Modifying.html)
         /// </summary>
@@ -800,7 +834,7 @@ namespace Pulumi.Aws.Rds
         private InputList<string>? _enabledCloudwatchLogsExports;
 
         /// <summary>
-        /// List of log types to export to cloudwatch. If omitted, no logs will be exported. The following log types are supported: `audit`, `error`, `general`, `slowquery`, `postgresql` (PostgreSQL).
+        /// Set of log types to export to cloudwatch. If omitted, no logs will be exported. The following log types are supported: `audit`, `error`, `general`, `slowquery`, `postgresql` (PostgreSQL).
         /// </summary>
         public InputList<string> EnabledCloudwatchLogsExports
         {
@@ -818,13 +852,13 @@ namespace Pulumi.Aws.Rds
         /// The name of the database engine to be used for this DB cluster. Defaults to `aurora`. Valid Values: `aurora`, `aurora-mysql`, `aurora-postgresql`
         /// </summary>
         [Input("engine")]
-        public Input<string>? Engine { get; set; }
+        public InputUnion<string, Pulumi.Aws.Rds.EngineType>? Engine { get; set; }
 
         /// <summary>
-        /// The database engine mode. Valid values: `global`, `multimaster`, `parallelquery`, `provisioned`, `serverless`. Defaults to: `provisioned`. See the [RDS User Guide](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/aurora-serverless.html) for limitations when using `serverless`.
+        /// The database engine mode. Valid values: `global` (only valid for Aurora MySQL 1.21 and earlier), `multimaster`, `parallelquery`, `provisioned`, `serverless`. Defaults to: `provisioned`. See the [RDS User Guide](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/aurora-serverless.html) for limitations when using `serverless`.
         /// </summary>
         [Input("engineMode")]
-        public Input<string>? EngineMode { get; set; }
+        public InputUnion<string, Pulumi.Aws.Rds.EngineMode>? EngineMode { get; set; }
 
         /// <summary>
         /// The database engine version. Updating this argument results in an outage. See the [Aurora MySQL](https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/AuroraMySQL.Updates.html) and [Aurora Postgres](https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/AuroraPostgreSQL.Updates.html) documentation for your configured engine to determine this value. For example with Aurora MySQL 2, a potential value for this argument is `5.7.mysql_aurora.2.03.2`.
@@ -912,10 +946,16 @@ namespace Pulumi.Aws.Rds
         public Input<string>? ReaderEndpoint { get; set; }
 
         /// <summary>
-        /// ARN of a source DB cluster or DB instance if this DB cluster is to be created as a Read Replica.
+        /// ARN of the source DB cluster or DB instance if this DB cluster is created as a Read Replica.
         /// </summary>
         [Input("replicationSourceIdentifier")]
         public Input<string>? ReplicationSourceIdentifier { get; set; }
+
+        /// <summary>
+        /// Nested attribute for [point in time restore](https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/USER_PIT.html). More details below.
+        /// </summary>
+        [Input("restoreToPointInTime")]
+        public Input<Inputs.ClusterRestoreToPointInTimeGetArgs>? RestoreToPointInTime { get; set; }
 
         [Input("s3Import")]
         public Input<Inputs.ClusterS3ImportGetArgs>? S3Import { get; set; }
@@ -945,7 +985,7 @@ namespace Pulumi.Aws.Rds
         public Input<string>? SourceRegion { get; set; }
 
         /// <summary>
-        /// Specifies whether the DB cluster is encrypted. The default is `false` for `provisioned` `engine_mode` and `true` for `serverless` `engine_mode`.
+        /// Specifies whether the DB cluster is encrypted
         /// </summary>
         [Input("storageEncrypted")]
         public Input<bool>? StorageEncrypted { get; set; }

@@ -18,8 +18,8 @@ import * as utilities from "../utilities";
  * import * as aws from "@pulumi/aws";
  *
  * const example = new aws.ec2.VpnGatewayRoutePropagation("example", {
- *     routeTableId: aws_route_table_example.id,
- *     vpnGatewayId: aws_vpn_gateway_example.id,
+ *     vpnGatewayId: aws_vpn_gateway.example.id,
+ *     routeTableId: aws_route_table.example.id,
  * });
  * ```
  */
@@ -76,10 +76,10 @@ export class VpnGatewayRoutePropagation extends pulumi.CustomResource {
             inputs["vpnGatewayId"] = state ? state.vpnGatewayId : undefined;
         } else {
             const args = argsOrState as VpnGatewayRoutePropagationArgs | undefined;
-            if (!args || args.routeTableId === undefined) {
+            if ((!args || args.routeTableId === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'routeTableId'");
             }
-            if (!args || args.vpnGatewayId === undefined) {
+            if ((!args || args.vpnGatewayId === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'vpnGatewayId'");
             }
             inputs["routeTableId"] = args ? args.routeTableId : undefined;

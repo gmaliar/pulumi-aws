@@ -4,6 +4,7 @@
 package applicationloadbalancing
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -20,8 +21,8 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/ec2"
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/lb"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/ec2"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/lb"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -36,9 +37,9 @@ import (
 // 			return err
 // 		}
 // 		_, err = lb.NewTargetGroupAttachment(ctx, "testTargetGroupAttachment", &lb.TargetGroupAttachmentArgs{
-// 			Port:           pulumi.Int(80),
 // 			TargetGroupArn: testTargetGroup.Arn,
 // 			TargetId:       testInstance.ID(),
+// 			Port:           pulumi.Int(80),
 // 		})
 // 		if err != nil {
 // 			return err
@@ -53,8 +54,8 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/lambda"
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/lb"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/lambda"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/lb"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -70,7 +71,7 @@ import (
 // 		if err != nil {
 // 			return err
 // 		}
-// 		_, err = lambda.NewPermission(ctx, "withLb", &lambda.PermissionArgs{
+// 		withLb, err := lambda.NewPermission(ctx, "withLb", &lambda.PermissionArgs{
 // 			Action:    pulumi.String("lambda:InvokeFunction"),
 // 			Function:  testFunction.Arn,
 // 			Principal: pulumi.String("elasticloadbalancing.amazonaws.com"),
@@ -83,7 +84,7 @@ import (
 // 			TargetGroupArn: testTargetGroup.Arn,
 // 			TargetId:       testFunction.Arn,
 // 		}, pulumi.DependsOn([]pulumi.Resource{
-// 			"aws_lambda_permission.with_lb",
+// 			withLb,
 // 		}))
 // 		if err != nil {
 // 			return err
@@ -92,6 +93,10 @@ import (
 // 	})
 // }
 // ```
+//
+// ## Import
+//
+// Target Group Attachments cannot be imported.
 //
 // Deprecated: aws.applicationloadbalancing.TargetGroupAttachment has been deprecated in favor of aws.alb.TargetGroupAttachment
 type TargetGroupAttachment struct {
@@ -110,14 +115,15 @@ type TargetGroupAttachment struct {
 // NewTargetGroupAttachment registers a new resource with the given unique name, arguments, and options.
 func NewTargetGroupAttachment(ctx *pulumi.Context,
 	name string, args *TargetGroupAttachmentArgs, opts ...pulumi.ResourceOption) (*TargetGroupAttachment, error) {
-	if args == nil || args.TargetGroupArn == nil {
-		return nil, errors.New("missing required argument 'TargetGroupArn'")
-	}
-	if args == nil || args.TargetId == nil {
-		return nil, errors.New("missing required argument 'TargetId'")
-	}
 	if args == nil {
-		args = &TargetGroupAttachmentArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.TargetGroupArn == nil {
+		return nil, errors.New("invalid value for required argument 'TargetGroupArn'")
+	}
+	if args.TargetId == nil {
+		return nil, errors.New("invalid value for required argument 'TargetId'")
 	}
 	var resource TargetGroupAttachment
 	err := ctx.RegisterResource("aws:applicationloadbalancing/targetGroupAttachment:TargetGroupAttachment", name, args, &resource, opts...)
@@ -191,4 +197,43 @@ type TargetGroupAttachmentArgs struct {
 
 func (TargetGroupAttachmentArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*targetGroupAttachmentArgs)(nil)).Elem()
+}
+
+type TargetGroupAttachmentInput interface {
+	pulumi.Input
+
+	ToTargetGroupAttachmentOutput() TargetGroupAttachmentOutput
+	ToTargetGroupAttachmentOutputWithContext(ctx context.Context) TargetGroupAttachmentOutput
+}
+
+func (TargetGroupAttachment) ElementType() reflect.Type {
+	return reflect.TypeOf((*TargetGroupAttachment)(nil)).Elem()
+}
+
+func (i TargetGroupAttachment) ToTargetGroupAttachmentOutput() TargetGroupAttachmentOutput {
+	return i.ToTargetGroupAttachmentOutputWithContext(context.Background())
+}
+
+func (i TargetGroupAttachment) ToTargetGroupAttachmentOutputWithContext(ctx context.Context) TargetGroupAttachmentOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(TargetGroupAttachmentOutput)
+}
+
+type TargetGroupAttachmentOutput struct {
+	*pulumi.OutputState
+}
+
+func (TargetGroupAttachmentOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*TargetGroupAttachmentOutput)(nil)).Elem()
+}
+
+func (o TargetGroupAttachmentOutput) ToTargetGroupAttachmentOutput() TargetGroupAttachmentOutput {
+	return o
+}
+
+func (o TargetGroupAttachmentOutput) ToTargetGroupAttachmentOutputWithContext(ctx context.Context) TargetGroupAttachmentOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(TargetGroupAttachmentOutput{})
 }

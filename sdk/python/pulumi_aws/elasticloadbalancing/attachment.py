@@ -5,24 +5,25 @@
 import warnings
 import pulumi
 import pulumi.runtime
-from typing import Union
-from .. import utilities, tables
+from typing import Any, Mapping, Optional, Sequence, Union
+from .. import _utilities, _tables
 
-warnings.warn("aws.elasticloadbalancing.Attachment has been deprecated in favor of aws.elb.Attachment", DeprecationWarning)
+__all__ = ['Attachment']
+
+warnings.warn("""aws.elasticloadbalancing.Attachment has been deprecated in favor of aws.elb.Attachment""", DeprecationWarning)
 
 
 class Attachment(pulumi.CustomResource):
-    elb: pulumi.Output[str]
-    """
-    The name of the ELB.
-    """
-    instance: pulumi.Output[str]
-    """
-    Instance ID to place in the ELB pool.
-    """
-    warnings.warn("aws.elasticloadbalancing.Attachment has been deprecated in favor of aws.elb.Attachment", DeprecationWarning)
+    warnings.warn("""aws.elasticloadbalancing.Attachment has been deprecated in favor of aws.elb.Attachment""", DeprecationWarning)
 
-    def __init__(__self__, resource_name, opts=None, elb=None, instance=None, __props__=None, __name__=None, __opts__=None):
+    def __init__(__self__,
+                 resource_name: str,
+                 opts: Optional[pulumi.ResourceOptions] = None,
+                 elb: Optional[pulumi.Input[str]] = None,
+                 instance: Optional[pulumi.Input[str]] = None,
+                 __props__=None,
+                 __name__=None,
+                 __opts__=None):
         """
         Attaches an EC2 instance to an Elastic Load Balancer (ELB). For attaching resources with Application Load Balancer (ALB) or Network Load Balancer (NLB), see the `lb.TargetGroupAttachment` resource.
 
@@ -62,16 +63,16 @@ class Attachment(pulumi.CustomResource):
         if not isinstance(opts, pulumi.ResourceOptions):
             raise TypeError('Expected resource options to be a ResourceOptions instance')
         if opts.version is None:
-            opts.version = utilities.get_version()
+            opts.version = _utilities.get_version()
         if opts.id is None:
             if __props__ is not None:
                 raise TypeError('__props__ is only valid when passed in combination with a valid opts.id to get an existing resource')
             __props__ = dict()
 
-            if elb is None:
+            if elb is None and not opts.urn:
                 raise TypeError("Missing required property 'elb'")
             __props__['elb'] = elb
-            if instance is None:
+            if instance is None and not opts.urn:
                 raise TypeError("Missing required property 'instance'")
             __props__['instance'] = instance
         super(Attachment, __self__).__init__(
@@ -81,13 +82,17 @@ class Attachment(pulumi.CustomResource):
             opts)
 
     @staticmethod
-    def get(resource_name, id, opts=None, elb=None, instance=None):
+    def get(resource_name: str,
+            id: pulumi.Input[str],
+            opts: Optional[pulumi.ResourceOptions] = None,
+            elb: Optional[pulumi.Input[str]] = None,
+            instance: Optional[pulumi.Input[str]] = None) -> 'Attachment':
         """
         Get an existing Attachment resource's state with the given name, id, and optional extra
         properties used to qualify the lookup.
 
         :param str resource_name: The unique name of the resulting resource.
-        :param str id: The unique provider ID of the resource to lookup.
+        :param pulumi.Input[str] id: The unique provider ID of the resource to lookup.
         :param pulumi.ResourceOptions opts: Options for the resource.
         :param pulumi.Input[str] elb: The name of the ELB.
         :param pulumi.Input[str] instance: Instance ID to place in the ELB pool.
@@ -100,8 +105,25 @@ class Attachment(pulumi.CustomResource):
         __props__["instance"] = instance
         return Attachment(resource_name, opts=opts, __props__=__props__)
 
+    @property
+    @pulumi.getter
+    def elb(self) -> pulumi.Output[str]:
+        """
+        The name of the ELB.
+        """
+        return pulumi.get(self, "elb")
+
+    @property
+    @pulumi.getter
+    def instance(self) -> pulumi.Output[str]:
+        """
+        Instance ID to place in the ELB pool.
+        """
+        return pulumi.get(self, "instance")
+
     def translate_output_property(self, prop):
-        return tables._CAMEL_TO_SNAKE_CASE_TABLE.get(prop) or prop
+        return _tables.CAMEL_TO_SNAKE_CASE_TABLE.get(prop) or prop
 
     def translate_input_property(self, prop):
-        return tables._SNAKE_TO_CAMEL_CASE_TABLE.get(prop) or prop
+        return _tables.SNAKE_TO_CAMEL_CASE_TABLE.get(prop) or prop
+

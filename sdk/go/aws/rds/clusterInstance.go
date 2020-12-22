@@ -4,6 +4,7 @@
 package rds
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -33,7 +34,7 @@ import (
 // import (
 // 	"fmt"
 //
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/rds"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/rds"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -45,10 +46,9 @@ import (
 // 				pulumi.String("us-west-2b"),
 // 				pulumi.String("us-west-2c"),
 // 			},
-// 			ClusterIdentifier: pulumi.String("aurora-cluster-demo"),
-// 			DatabaseName:      pulumi.String("mydb"),
-// 			MasterPassword:    pulumi.String("barbut8chars"),
-// 			MasterUsername:    pulumi.String("foo"),
+// 			DatabaseName:   pulumi.String("mydb"),
+// 			MasterUsername: pulumi.String("foo"),
+// 			MasterPassword: pulumi.String("barbut8chars"),
 // 		})
 // 		if err != nil {
 // 			return err
@@ -56,11 +56,11 @@ import (
 // 		var clusterInstances []*rds.ClusterInstance
 // 		for key0, val0 := range 2 {
 // 			__res, err := rds.NewClusterInstance(ctx, fmt.Sprintf("clusterInstances-%v", key0), &rds.ClusterInstanceArgs{
+// 				Identifier:        pulumi.String(fmt.Sprintf("%v%v", "aurora-cluster-demo-", val0)),
 // 				ClusterIdentifier: _default.ID(),
+// 				InstanceClass:     pulumi.String("db.r4.large"),
 // 				Engine:            _default.Engine,
 // 				EngineVersion:     _default.EngineVersion,
-// 				Identifier:        pulumi.String(fmt.Sprintf("%v%v", "aurora-cluster-demo-", val0)),
-// 				InstanceClass:     pulumi.String("db.r4.large"),
 // 			})
 // 			if err != nil {
 // 				return err
@@ -70,6 +70,14 @@ import (
 // 		return nil
 // 	})
 // }
+// ```
+//
+// ## Import
+//
+// RDS Cluster Instances can be imported using the `identifier`, e.g.
+//
+// ```sh
+//  $ pulumi import aws:rds/clusterInstance:ClusterInstance prod_instance_1 aurora-cluster-instance-1
 // ```
 type ClusterInstance struct {
 	pulumi.CustomResourceState
@@ -102,7 +110,7 @@ type ClusterInstance struct {
 	// see [Comparison between Aurora MySQL 1 and Aurora MySQL 2](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/AuroraMySQL.Updates.20180206.html)
 	// in the Amazon RDS User Guide.
 	Engine pulumi.StringPtrOutput `pulumi:"engine"`
-	// The database engine version.
+	// The database engine version
 	EngineVersion pulumi.StringOutput `pulumi:"engineVersion"`
 	// The indentifier for the RDS instance, if omitted, this provider will assign a random, unique identifier.
 	Identifier pulumi.StringOutput `pulumi:"identifier"`
@@ -148,14 +156,15 @@ type ClusterInstance struct {
 // NewClusterInstance registers a new resource with the given unique name, arguments, and options.
 func NewClusterInstance(ctx *pulumi.Context,
 	name string, args *ClusterInstanceArgs, opts ...pulumi.ResourceOption) (*ClusterInstance, error) {
-	if args == nil || args.ClusterIdentifier == nil {
-		return nil, errors.New("missing required argument 'ClusterIdentifier'")
-	}
-	if args == nil || args.InstanceClass == nil {
-		return nil, errors.New("missing required argument 'InstanceClass'")
-	}
 	if args == nil {
-		args = &ClusterInstanceArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.ClusterIdentifier == nil {
+		return nil, errors.New("invalid value for required argument 'ClusterIdentifier'")
+	}
+	if args.InstanceClass == nil {
+		return nil, errors.New("invalid value for required argument 'InstanceClass'")
 	}
 	var resource ClusterInstance
 	err := ctx.RegisterResource("aws:rds/clusterInstance:ClusterInstance", name, args, &resource, opts...)
@@ -207,7 +216,7 @@ type clusterInstanceState struct {
 	// see [Comparison between Aurora MySQL 1 and Aurora MySQL 2](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/AuroraMySQL.Updates.20180206.html)
 	// in the Amazon RDS User Guide.
 	Engine *string `pulumi:"engine"`
-	// The database engine version.
+	// The database engine version
 	EngineVersion *string `pulumi:"engineVersion"`
 	// The indentifier for the RDS instance, if omitted, this provider will assign a random, unique identifier.
 	Identifier *string `pulumi:"identifier"`
@@ -279,7 +288,7 @@ type ClusterInstanceState struct {
 	// see [Comparison between Aurora MySQL 1 and Aurora MySQL 2](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/AuroraMySQL.Updates.20180206.html)
 	// in the Amazon RDS User Guide.
 	Engine pulumi.StringPtrInput
-	// The database engine version.
+	// The database engine version
 	EngineVersion pulumi.StringPtrInput
 	// The indentifier for the RDS instance, if omitted, this provider will assign a random, unique identifier.
 	Identifier pulumi.StringPtrInput
@@ -349,7 +358,7 @@ type clusterInstanceArgs struct {
 	// see [Comparison between Aurora MySQL 1 and Aurora MySQL 2](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/AuroraMySQL.Updates.20180206.html)
 	// in the Amazon RDS User Guide.
 	Engine *string `pulumi:"engine"`
-	// The database engine version.
+	// The database engine version
 	EngineVersion *string `pulumi:"engineVersion"`
 	// The indentifier for the RDS instance, if omitted, this provider will assign a random, unique identifier.
 	Identifier *string `pulumi:"identifier"`
@@ -357,7 +366,7 @@ type clusterInstanceArgs struct {
 	IdentifierPrefix *string `pulumi:"identifierPrefix"`
 	// The instance class to use. For details on CPU
 	// and memory, see [Scaling Aurora DB Instances](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Aurora.Managing.html). Aurora uses `db.*` instance classes/types. Please see [AWS Documentation](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Concepts.DBInstanceClass.html) for currently available instance classes and complete details.
-	InstanceClass interface{} `pulumi:"instanceClass"`
+	InstanceClass string `pulumi:"instanceClass"`
 	// The interval, in seconds, between points when Enhanced Monitoring metrics are collected for the DB instance. To disable collecting Enhanced Monitoring metrics, specify 0. The default is 0. Valid Values: 0, 1, 5, 10, 15, 30, 60.
 	MonitoringInterval *int `pulumi:"monitoringInterval"`
 	// The ARN for the IAM role that permits RDS to send
@@ -408,7 +417,7 @@ type ClusterInstanceArgs struct {
 	// see [Comparison between Aurora MySQL 1 and Aurora MySQL 2](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/AuroraMySQL.Updates.20180206.html)
 	// in the Amazon RDS User Guide.
 	Engine pulumi.StringPtrInput
-	// The database engine version.
+	// The database engine version
 	EngineVersion pulumi.StringPtrInput
 	// The indentifier for the RDS instance, if omitted, this provider will assign a random, unique identifier.
 	Identifier pulumi.StringPtrInput
@@ -416,7 +425,7 @@ type ClusterInstanceArgs struct {
 	IdentifierPrefix pulumi.StringPtrInput
 	// The instance class to use. For details on CPU
 	// and memory, see [Scaling Aurora DB Instances](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Aurora.Managing.html). Aurora uses `db.*` instance classes/types. Please see [AWS Documentation](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Concepts.DBInstanceClass.html) for currently available instance classes and complete details.
-	InstanceClass pulumi.Input
+	InstanceClass pulumi.StringInput
 	// The interval, in seconds, between points when Enhanced Monitoring metrics are collected for the DB instance. To disable collecting Enhanced Monitoring metrics, specify 0. The default is 0. Valid Values: 0, 1, 5, 10, 15, 30, 60.
 	MonitoringInterval pulumi.IntPtrInput
 	// The ARN for the IAM role that permits RDS to send
@@ -445,4 +454,43 @@ type ClusterInstanceArgs struct {
 
 func (ClusterInstanceArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*clusterInstanceArgs)(nil)).Elem()
+}
+
+type ClusterInstanceInput interface {
+	pulumi.Input
+
+	ToClusterInstanceOutput() ClusterInstanceOutput
+	ToClusterInstanceOutputWithContext(ctx context.Context) ClusterInstanceOutput
+}
+
+func (ClusterInstance) ElementType() reflect.Type {
+	return reflect.TypeOf((*ClusterInstance)(nil)).Elem()
+}
+
+func (i ClusterInstance) ToClusterInstanceOutput() ClusterInstanceOutput {
+	return i.ToClusterInstanceOutputWithContext(context.Background())
+}
+
+func (i ClusterInstance) ToClusterInstanceOutputWithContext(ctx context.Context) ClusterInstanceOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(ClusterInstanceOutput)
+}
+
+type ClusterInstanceOutput struct {
+	*pulumi.OutputState
+}
+
+func (ClusterInstanceOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*ClusterInstanceOutput)(nil)).Elem()
+}
+
+func (o ClusterInstanceOutput) ToClusterInstanceOutput() ClusterInstanceOutput {
+	return o
+}
+
+func (o ClusterInstanceOutput) ToClusterInstanceOutputWithContext(ctx context.Context) ClusterInstanceOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(ClusterInstanceOutput{})
 }

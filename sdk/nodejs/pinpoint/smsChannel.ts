@@ -14,9 +14,15 @@ import * as utilities from "../utilities";
  * import * as aws from "@pulumi/aws";
  *
  * const app = new aws.pinpoint.App("app", {});
- * const sms = new aws.pinpoint.SmsChannel("sms", {
- *     applicationId: app.applicationId,
- * });
+ * const sms = new aws.pinpoint.SmsChannel("sms", {applicationId: app.applicationId});
+ * ```
+ *
+ * ## Import
+ *
+ * Pinpoint SMS Channel can be imported using the `application-id`, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:pinpoint/smsChannel:SmsChannel sms application-id
  * ```
  */
 export class SmsChannel extends pulumi.CustomResource {
@@ -92,7 +98,7 @@ export class SmsChannel extends pulumi.CustomResource {
             inputs["transactionalMessagesPerSecond"] = state ? state.transactionalMessagesPerSecond : undefined;
         } else {
             const args = argsOrState as SmsChannelArgs | undefined;
-            if (!args || args.applicationId === undefined) {
+            if ((!args || args.applicationId === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'applicationId'");
             }
             inputs["applicationId"] = args ? args.applicationId : undefined;

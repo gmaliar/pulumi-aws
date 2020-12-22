@@ -39,7 +39,7 @@ namespace Pulumi.Aws.Ram
     ///             },
     ///         }, new CustomResourceOptions
     ///         {
-    ///             Provider = "aws.alternate",
+    ///             Provider = aws.Alternate,
     ///         });
     ///         var receiver = Output.Create(Aws.GetCallerIdentity.InvokeAsync());
     ///         var senderInvite = new Aws.Ram.PrincipalAssociation("senderInvite", new Aws.Ram.PrincipalAssociationArgs
@@ -48,7 +48,7 @@ namespace Pulumi.Aws.Ram
     ///             ResourceShareArn = senderShare.Arn,
     ///         }, new CustomResourceOptions
     ///         {
-    ///             Provider = "aws.alternate",
+    ///             Provider = aws.Alternate,
     ///         });
     ///         var receiverAccept = new Aws.Ram.ResourceShareAccepter("receiverAccept", new Aws.Ram.ResourceShareAccepterArgs
     ///         {
@@ -57,6 +57,14 @@ namespace Pulumi.Aws.Ram
     ///     }
     /// 
     /// }
+    /// ```
+    /// 
+    /// ## Import
+    /// 
+    /// Resource share accepters can be imported using the resource share ARN, e.g.
+    /// 
+    /// ```sh
+    ///  $ pulumi import aws:ram/resourceShareAccepter:ResourceShareAccepter example arn:aws:ram:us-east-1:123456789012:resource-share/c4b56393-e8d9-89d9-6dc9-883752de4767
     /// ```
     /// </summary>
     public partial class ResourceShareAccepter : Pulumi.CustomResource

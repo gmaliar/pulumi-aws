@@ -13,38 +13,39 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const testGraphQLApi = new aws.appsync.GraphQLApi("test", {
+ * const exampleGraphQLApi = new aws.appsync.GraphQLApi("exampleGraphQLApi", {
  *     authenticationType: "API_KEY",
  *     schema: `type Mutation {
- *     putPost(id: ID!, title: String!): Post
+ *   putPost(id: ID!, title: String!): Post
  * }
  *
  * type Post {
- *     id: ID!
- *     title: String!
+ *   id: ID!
+ *   title: String!
  * }
  *
  * type Query {
- *     singlePost(id: ID!): Post
+ *   singlePost(id: ID!): Post
  * }
  *
  * schema {
- *     query: Query
- *     mutation: Mutation
+ *   query: Query
+ *   mutation: Mutation
  * }
  * `,
  * });
- * const testDataSource = new aws.appsync.DataSource("test", {
- *     apiId: testGraphQLApi.id,
+ * const exampleDataSource = new aws.appsync.DataSource("exampleDataSource", {
+ *     apiId: exampleGraphQLApi.id,
+ *     name: "example",
+ *     type: "HTTP",
  *     httpConfig: {
  *         endpoint: "http://example.com",
  *     },
- *     type: "HTTP",
  * });
- * const testFunction = new aws.appsync.Function("test", {
- *     apiId: testGraphQLApi.id,
- *     dataSource: testDataSource.name,
- *     name: "tf_example",
+ * const exampleFunction = new aws.appsync.Function("exampleFunction", {
+ *     apiId: exampleGraphQLApi.id,
+ *     dataSource: exampleDataSource.name,
+ *     name: "example",
  *     requestMappingTemplate: `{
  *     "version": "2018-05-29",
  *     "method": "GET",
@@ -61,6 +62,14 @@ import * as utilities from "../utilities";
  * #end
  * `,
  * });
+ * ```
+ *
+ * ## Import
+ *
+ * `aws_appsync_function` can be imported using the AppSync API ID and Function ID separated by `-`, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:appsync/function:Function example xxxxx-yyyyy
  * ```
  */
 export class Function extends pulumi.CustomResource {
@@ -151,16 +160,16 @@ export class Function extends pulumi.CustomResource {
             inputs["responseMappingTemplate"] = state ? state.responseMappingTemplate : undefined;
         } else {
             const args = argsOrState as FunctionArgs | undefined;
-            if (!args || args.apiId === undefined) {
+            if ((!args || args.apiId === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'apiId'");
             }
-            if (!args || args.dataSource === undefined) {
+            if ((!args || args.dataSource === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'dataSource'");
             }
-            if (!args || args.requestMappingTemplate === undefined) {
+            if ((!args || args.requestMappingTemplate === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'requestMappingTemplate'");
             }
-            if (!args || args.responseMappingTemplate === undefined) {
+            if ((!args || args.responseMappingTemplate === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'responseMappingTemplate'");
             }
             inputs["apiId"] = args ? args.apiId : undefined;

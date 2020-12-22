@@ -4,6 +4,7 @@
 package ec2
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -18,7 +19,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/ec2"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/ec2"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -48,6 +49,14 @@ import (
 // 	})
 // }
 // ```
+//
+// ## Import
+//
+// `aws_ec2_local_gateway_route_table_vpc_association` can be imported by using the Local Gateway Route Table VPC Association identifier, e.g.
+//
+// ```sh
+//  $ pulumi import aws:ec2/localGatewayRouteTableVpcAssociation:LocalGatewayRouteTableVpcAssociation example lgw-vpc-assoc-1234567890abcdef
+// ```
 type LocalGatewayRouteTableVpcAssociation struct {
 	pulumi.CustomResourceState
 
@@ -63,14 +72,15 @@ type LocalGatewayRouteTableVpcAssociation struct {
 // NewLocalGatewayRouteTableVpcAssociation registers a new resource with the given unique name, arguments, and options.
 func NewLocalGatewayRouteTableVpcAssociation(ctx *pulumi.Context,
 	name string, args *LocalGatewayRouteTableVpcAssociationArgs, opts ...pulumi.ResourceOption) (*LocalGatewayRouteTableVpcAssociation, error) {
-	if args == nil || args.LocalGatewayRouteTableId == nil {
-		return nil, errors.New("missing required argument 'LocalGatewayRouteTableId'")
-	}
-	if args == nil || args.VpcId == nil {
-		return nil, errors.New("missing required argument 'VpcId'")
-	}
 	if args == nil {
-		args = &LocalGatewayRouteTableVpcAssociationArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.LocalGatewayRouteTableId == nil {
+		return nil, errors.New("invalid value for required argument 'LocalGatewayRouteTableId'")
+	}
+	if args.VpcId == nil {
+		return nil, errors.New("invalid value for required argument 'VpcId'")
 	}
 	var resource LocalGatewayRouteTableVpcAssociation
 	err := ctx.RegisterResource("aws:ec2/localGatewayRouteTableVpcAssociation:LocalGatewayRouteTableVpcAssociation", name, args, &resource, opts...)
@@ -138,4 +148,43 @@ type LocalGatewayRouteTableVpcAssociationArgs struct {
 
 func (LocalGatewayRouteTableVpcAssociationArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*localGatewayRouteTableVpcAssociationArgs)(nil)).Elem()
+}
+
+type LocalGatewayRouteTableVpcAssociationInput interface {
+	pulumi.Input
+
+	ToLocalGatewayRouteTableVpcAssociationOutput() LocalGatewayRouteTableVpcAssociationOutput
+	ToLocalGatewayRouteTableVpcAssociationOutputWithContext(ctx context.Context) LocalGatewayRouteTableVpcAssociationOutput
+}
+
+func (LocalGatewayRouteTableVpcAssociation) ElementType() reflect.Type {
+	return reflect.TypeOf((*LocalGatewayRouteTableVpcAssociation)(nil)).Elem()
+}
+
+func (i LocalGatewayRouteTableVpcAssociation) ToLocalGatewayRouteTableVpcAssociationOutput() LocalGatewayRouteTableVpcAssociationOutput {
+	return i.ToLocalGatewayRouteTableVpcAssociationOutputWithContext(context.Background())
+}
+
+func (i LocalGatewayRouteTableVpcAssociation) ToLocalGatewayRouteTableVpcAssociationOutputWithContext(ctx context.Context) LocalGatewayRouteTableVpcAssociationOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(LocalGatewayRouteTableVpcAssociationOutput)
+}
+
+type LocalGatewayRouteTableVpcAssociationOutput struct {
+	*pulumi.OutputState
+}
+
+func (LocalGatewayRouteTableVpcAssociationOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*LocalGatewayRouteTableVpcAssociationOutput)(nil)).Elem()
+}
+
+func (o LocalGatewayRouteTableVpcAssociationOutput) ToLocalGatewayRouteTableVpcAssociationOutput() LocalGatewayRouteTableVpcAssociationOutput {
+	return o
+}
+
+func (o LocalGatewayRouteTableVpcAssociationOutput) ToLocalGatewayRouteTableVpcAssociationOutputWithContext(ctx context.Context) LocalGatewayRouteTableVpcAssociationOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(LocalGatewayRouteTableVpcAssociationOutput{})
 }

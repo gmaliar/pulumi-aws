@@ -11,23 +11,26 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const defaultCluster = new aws.neptune.Cluster("default", {
- *     applyImmediately: true,
- *     backupRetentionPeriod: 5,
+ * const defaultCluster = new aws.neptune.Cluster("defaultCluster", {
  *     clusterIdentifier: "neptune-cluster-demo",
  *     engine: "neptune",
- *     iamDatabaseAuthenticationEnabled: true,
+ *     backupRetentionPeriod: 5,
  *     preferredBackupWindow: "07:00-09:00",
  *     skipFinalSnapshot: true,
+ *     iamDatabaseAuthenticationEnabled: "true",
+ *     applyImmediately: "true",
  * });
  * const example = new aws.neptune.ClusterInstance("example", {
- *     applyImmediately: true,
  *     clusterIdentifier: defaultCluster.id,
  *     engine: "neptune",
  *     instanceClass: "db.r4.large",
+ *     applyImmediately: "true",
  * });
- * const defaultTopic = new aws.sns.Topic("default", {});
- * const defaultEventSubscription = new aws.neptune.EventSubscription("default", {
+ * const defaultTopic = new aws.sns.Topic("defaultTopic", {});
+ * const defaultEventSubscription = new aws.neptune.EventSubscription("defaultEventSubscription", {
+ *     snsTopicArn: defaultTopic.arn,
+ *     sourceType: "db-instance",
+ *     sourceIds: [example.id],
  *     eventCategories: [
  *         "maintenance",
  *         "availability",
@@ -42,9 +45,6 @@ import * as utilities from "../utilities";
  *         "configuration change",
  *         "read replica",
  *     ],
- *     snsTopicArn: defaultTopic.arn,
- *     sourceIds: [example.id],
- *     sourceType: "db-instance",
  *     tags: {
  *         env: "test",
  *     },
@@ -57,6 +57,14 @@ import * as utilities from "../utilities";
  * * `id` - The name of the Neptune event notification subscription.
  * * `arn` - The Amazon Resource Name of the Neptune event notification subscription.
  * * `customerAwsId` - The AWS customer account associated with the Neptune event notification subscription.
+ *
+ * ## Import
+ *
+ * `aws_neptune_event_subscription` can be imported by using the event subscription name, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:neptune/eventSubscription:EventSubscription example my-event-subscription
+ * ```
  */
 export class EventSubscription extends pulumi.CustomResource {
     /**
@@ -145,7 +153,7 @@ export class EventSubscription extends pulumi.CustomResource {
             inputs["tags"] = state ? state.tags : undefined;
         } else {
             const args = argsOrState as EventSubscriptionArgs | undefined;
-            if (!args || args.snsTopicArn === undefined) {
+            if ((!args || args.snsTopicArn === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'snsTopicArn'");
             }
             inputs["enabled"] = args ? args.enabled : undefined;

@@ -16,7 +16,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/ec2transitgateway"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/ec2transitgateway"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -45,7 +45,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/ec2transitgateway"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/ec2transitgateway"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -101,7 +101,7 @@ type LookupTransitGatewayResult struct {
 	DnsSupport string                    `pulumi:"dnsSupport"`
 	Filters    []GetTransitGatewayFilter `pulumi:"filters"`
 	// EC2 Transit Gateway identifier
-	Id *string `pulumi:"id"`
+	Id string `pulumi:"id"`
 	// Identifier of the AWS account that owns the EC2 Transit Gateway
 	OwnerId string `pulumi:"ownerId"`
 	// Identifier of the default propagation route table.

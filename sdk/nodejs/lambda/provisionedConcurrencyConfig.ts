@@ -32,6 +32,14 @@ import * as utilities from "../utilities";
  *     qualifier: aws_lambda_function.example.version,
  * });
  * ```
+ *
+ * ## Import
+ *
+ * Lambda Provisioned Concurrency Configs can be imported using the `function_name` and `qualifier` separated by a colon (`:`), e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:lambda/provisionedConcurrencyConfig:ProvisionedConcurrencyConfig example my_function:production
+ * ```
  */
 export class ProvisionedConcurrencyConfig extends pulumi.CustomResource {
     /**
@@ -91,13 +99,13 @@ export class ProvisionedConcurrencyConfig extends pulumi.CustomResource {
             inputs["qualifier"] = state ? state.qualifier : undefined;
         } else {
             const args = argsOrState as ProvisionedConcurrencyConfigArgs | undefined;
-            if (!args || args.functionName === undefined) {
+            if ((!args || args.functionName === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'functionName'");
             }
-            if (!args || args.provisionedConcurrentExecutions === undefined) {
+            if ((!args || args.provisionedConcurrentExecutions === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'provisionedConcurrentExecutions'");
             }
-            if (!args || args.qualifier === undefined) {
+            if ((!args || args.qualifier === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'qualifier'");
             }
             inputs["functionName"] = args ? args.functionName : undefined;

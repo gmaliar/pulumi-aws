@@ -2,8 +2,7 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 /**
@@ -15,22 +14,22 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const exampleVpc = new aws.ec2.Vpc("example", {
+ * const exampleVpc = new aws.ec2.Vpc("exampleVpc", {
  *     cidrBlock: "10.0.0.0/16",
- *     enableDnsHostnames: true,
  *     enableDnsSupport: true,
+ *     enableDnsHostnames: true,
  * });
- * const examplePrivateDnsNamespace = new aws.servicediscovery.PrivateDnsNamespace("example", {
+ * const examplePrivateDnsNamespace = new aws.servicediscovery.PrivateDnsNamespace("examplePrivateDnsNamespace", {
  *     description: "example",
  *     vpc: exampleVpc.id,
  * });
- * const exampleService = new aws.servicediscovery.Service("example", {
+ * const exampleService = new aws.servicediscovery.Service("exampleService", {
  *     dnsConfig: {
+ *         namespaceId: examplePrivateDnsNamespace.id,
  *         dnsRecords: [{
  *             ttl: 10,
  *             type: "A",
  *         }],
- *         namespaceId: examplePrivateDnsNamespace.id,
  *         routingPolicy: "MULTIVALUE",
  *     },
  *     healthCheckCustomConfig: {
@@ -43,16 +42,14 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const examplePublicDnsNamespace = new aws.servicediscovery.PublicDnsNamespace("example", {
- *     description: "example",
- * });
- * const exampleService = new aws.servicediscovery.Service("example", {
+ * const examplePublicDnsNamespace = new aws.servicediscovery.PublicDnsNamespace("examplePublicDnsNamespace", {description: "example"});
+ * const exampleService = new aws.servicediscovery.Service("exampleService", {
  *     dnsConfig: {
+ *         namespaceId: examplePublicDnsNamespace.id,
  *         dnsRecords: [{
  *             ttl: 10,
  *             type: "A",
  *         }],
- *         namespaceId: examplePublicDnsNamespace.id,
  *     },
  *     healthCheckConfig: {
  *         failureThreshold: 10,
@@ -60,6 +57,14 @@ import * as utilities from "../utilities";
  *         type: "HTTP",
  *     },
  * });
+ * ```
+ *
+ * ## Import
+ *
+ * Service Discovery Service can be imported using the service ID, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:servicediscovery/service:Service example 0123456789
  * ```
  */
 export class Service extends pulumi.CustomResource {

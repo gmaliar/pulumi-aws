@@ -13,21 +13,30 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const sfnStateMachine = new aws.sfn.StateMachine("sfn_state_machine", {
- *     definition: pulumi.interpolate`{
+ * // ...
+ * const sfnStateMachine = new aws.sfn.StateMachine("sfnStateMachine", {
+ *     roleArn: aws_iam_role.iam_for_sfn.arn,
+ *     definition: `{
  *   "Comment": "A Hello World example of the Amazon States Language using an AWS Lambda Function",
  *   "StartAt": "HelloWorld",
  *   "States": {
  *     "HelloWorld": {
  *       "Type": "Task",
- *       "Resource": "${aws_lambda_function_lambda.arn}",
+ *       "Resource": "${aws_lambda_function.lambda.arn}",
  *       "End": true
  *     }
  *   }
  * }
  * `,
- *     roleArn: aws_iam_role_iam_for_sfn.arn,
  * });
+ * ```
+ *
+ * ## Import
+ *
+ * State Machines can be imported using the `arn`, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:sfn/stateMachine:StateMachine foo arn:aws:states:eu-west-1:123456789098:stateMachine:bar
  * ```
  */
 export class StateMachine extends pulumi.CustomResource {
@@ -108,10 +117,10 @@ export class StateMachine extends pulumi.CustomResource {
             inputs["tags"] = state ? state.tags : undefined;
         } else {
             const args = argsOrState as StateMachineArgs | undefined;
-            if (!args || args.definition === undefined) {
+            if ((!args || args.definition === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'definition'");
             }
-            if (!args || args.roleArn === undefined) {
+            if ((!args || args.roleArn === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'roleArn'");
             }
             inputs["definition"] = args ? args.definition : undefined;

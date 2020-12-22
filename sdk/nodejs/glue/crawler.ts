@@ -2,8 +2,7 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 /**
@@ -17,11 +16,11 @@ import * as utilities from "../utilities";
  * import * as aws from "@pulumi/aws";
  *
  * const example = new aws.glue.Crawler("example", {
- *     databaseName: aws_glue_catalog_database_example.name,
+ *     databaseName: aws_glue_catalog_database.example.name,
+ *     role: aws_iam_role.example.arn,
  *     dynamodbTargets: [{
  *         path: "table-name",
  *     }],
- *     role: aws_iam_role_example.arn,
  * });
  * ```
  * ### JDBC Target
@@ -31,12 +30,12 @@ import * as utilities from "../utilities";
  * import * as aws from "@pulumi/aws";
  *
  * const example = new aws.glue.Crawler("example", {
- *     databaseName: aws_glue_catalog_database_example.name,
+ *     databaseName: aws_glue_catalog_database.example.name,
+ *     role: aws_iam_role.example.arn,
  *     jdbcTargets: [{
- *         connectionName: aws_glue_connection_example.name,
- *         path: "database-name/%",
+ *         connectionName: aws_glue_connection.example.name,
+ *         path: `database-name/%`,
  *     }],
- *     role: aws_iam_role_example.arn,
  * });
  * ```
  * ### S3 Target
@@ -46,10 +45,10 @@ import * as utilities from "../utilities";
  * import * as aws from "@pulumi/aws";
  *
  * const example = new aws.glue.Crawler("example", {
- *     databaseName: aws_glue_catalog_database_example.name,
- *     role: aws_iam_role_example.arn,
+ *     databaseName: aws_glue_catalog_database.example.name,
+ *     role: aws_iam_role.example.arn,
  *     s3Targets: [{
- *         path: pulumi.interpolate`s3://${aws_s3_bucket_example.bucket}`,
+ *         path: `s3://${aws_s3_bucket.example.bucket}`,
  *     }],
  * });
  * ```
@@ -60,10 +59,15 @@ import * as utilities from "../utilities";
  * import * as aws from "@pulumi/aws";
  *
  * const example = new aws.glue.Crawler("example", {
+ *     databaseName: aws_glue_catalog_database.example.name,
+ *     role: aws_iam_role.example.arn,
  *     catalogTargets: [{
- *         databaseName: aws_glue_catalog_database_example.name,
- *         tables: [aws_glue_catalog_table_example.name],
+ *         databaseName: aws_glue_catalog_database.example.name,
+ *         tables: [aws_glue_catalog_table.example.name],
  *     }],
+ *     schemaChangePolicy: {
+ *         deleteBehavior: "LOG",
+ *     },
  *     configuration: `{
  *   "Version":1.0,
  *   "Grouping": {
@@ -71,12 +75,57 @@ import * as utilities from "../utilities";
  *   }
  * }
  * `,
- *     databaseName: aws_glue_catalog_database_example.name,
- *     role: aws_iam_role_example.arn,
- *     schemaChangePolicy: {
- *         deleteBehavior: "LOG",
- *     },
  * });
+ * ```
+ * ### MongoDB Target
+ *
+ * ```typescript
+ * import * as pulumi from "@pulumi/pulumi";
+ * import * as aws from "@pulumi/aws";
+ *
+ * const example = new aws.glue.Crawler("example", {
+ *     databaseName: aws_glue_catalog_database.example.name,
+ *     role: aws_iam_role.example.arn,
+ *     mongodbTargets: [{
+ *         connectionName: aws_glue_connection.example.name,
+ *         path: `database-name/%`,
+ *     }],
+ * });
+ * ```
+ * ### Configuration Settings
+ *
+ * ```typescript
+ * import * as pulumi from "@pulumi/pulumi";
+ * import * as aws from "@pulumi/aws";
+ *
+ * const eventsCrawler = new aws.glue.Crawler("eventsCrawler", {
+ *     databaseName: aws_glue_catalog_database.glue_database.name,
+ *     schedule: "cron(0 1 * * ? *)",
+ *     role: aws_iam_role.glue_role.arn,
+ *     tags: _var.tags,
+ *     configuration: JSON.stringify({
+ *         Grouping: {
+ *             TableGroupingPolicy: "CombineCompatibleSchemas",
+ *         },
+ *         CrawlerOutput: {
+ *             Partitions: {
+ *                 AddOrUpdateBehavior: "InheritFromTable",
+ *             },
+ *         },
+ *         Version: 1,
+ *     }),
+ *     s3Targets: [{
+ *         path: `s3://${aws_s3_bucket.data_lake_bucket.bucket}`,
+ *     }],
+ * });
+ * ```
+ *
+ * ## Import
+ *
+ * Glue Crawlers can be imported using `name`, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:glue/crawler:Crawler MyJob MyJob
  * ```
  */
 export class Crawler extends pulumi.CustomResource {
@@ -117,7 +166,7 @@ export class Crawler extends pulumi.CustomResource {
      */
     public readonly classifiers!: pulumi.Output<string[] | undefined>;
     /**
-     * JSON string of configuration information.
+     * JSON string of configuration information. For more details see [Setting Crawler Configuration Options](https://docs.aws.amazon.com/glue/latest/dg/crawler-configuration.html).
      */
     public readonly configuration!: pulumi.Output<string | undefined>;
     /**
@@ -136,6 +185,10 @@ export class Crawler extends pulumi.CustomResource {
      * List of nested JBDC target arguments. See below.
      */
     public readonly jdbcTargets!: pulumi.Output<outputs.glue.CrawlerJdbcTarget[] | undefined>;
+    /**
+     * List nested MongoDB target arguments. See below.
+     */
+    public readonly mongodbTargets!: pulumi.Output<outputs.glue.CrawlerMongodbTarget[] | undefined>;
     /**
      * Name of the crawler.
      */
@@ -189,6 +242,7 @@ export class Crawler extends pulumi.CustomResource {
             inputs["description"] = state ? state.description : undefined;
             inputs["dynamodbTargets"] = state ? state.dynamodbTargets : undefined;
             inputs["jdbcTargets"] = state ? state.jdbcTargets : undefined;
+            inputs["mongodbTargets"] = state ? state.mongodbTargets : undefined;
             inputs["name"] = state ? state.name : undefined;
             inputs["role"] = state ? state.role : undefined;
             inputs["s3Targets"] = state ? state.s3Targets : undefined;
@@ -199,10 +253,10 @@ export class Crawler extends pulumi.CustomResource {
             inputs["tags"] = state ? state.tags : undefined;
         } else {
             const args = argsOrState as CrawlerArgs | undefined;
-            if (!args || args.databaseName === undefined) {
+            if ((!args || args.databaseName === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'databaseName'");
             }
-            if (!args || args.role === undefined) {
+            if ((!args || args.role === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'role'");
             }
             inputs["catalogTargets"] = args ? args.catalogTargets : undefined;
@@ -212,6 +266,7 @@ export class Crawler extends pulumi.CustomResource {
             inputs["description"] = args ? args.description : undefined;
             inputs["dynamodbTargets"] = args ? args.dynamodbTargets : undefined;
             inputs["jdbcTargets"] = args ? args.jdbcTargets : undefined;
+            inputs["mongodbTargets"] = args ? args.mongodbTargets : undefined;
             inputs["name"] = args ? args.name : undefined;
             inputs["role"] = args ? args.role : undefined;
             inputs["s3Targets"] = args ? args.s3Targets : undefined;
@@ -247,7 +302,7 @@ export interface CrawlerState {
      */
     readonly classifiers?: pulumi.Input<pulumi.Input<string>[]>;
     /**
-     * JSON string of configuration information.
+     * JSON string of configuration information. For more details see [Setting Crawler Configuration Options](https://docs.aws.amazon.com/glue/latest/dg/crawler-configuration.html).
      */
     readonly configuration?: pulumi.Input<string>;
     /**
@@ -266,6 +321,10 @@ export interface CrawlerState {
      * List of nested JBDC target arguments. See below.
      */
     readonly jdbcTargets?: pulumi.Input<pulumi.Input<inputs.glue.CrawlerJdbcTarget>[]>;
+    /**
+     * List nested MongoDB target arguments. See below.
+     */
+    readonly mongodbTargets?: pulumi.Input<pulumi.Input<inputs.glue.CrawlerMongodbTarget>[]>;
     /**
      * Name of the crawler.
      */
@@ -310,7 +369,7 @@ export interface CrawlerArgs {
      */
     readonly classifiers?: pulumi.Input<pulumi.Input<string>[]>;
     /**
-     * JSON string of configuration information.
+     * JSON string of configuration information. For more details see [Setting Crawler Configuration Options](https://docs.aws.amazon.com/glue/latest/dg/crawler-configuration.html).
      */
     readonly configuration?: pulumi.Input<string>;
     /**
@@ -329,6 +388,10 @@ export interface CrawlerArgs {
      * List of nested JBDC target arguments. See below.
      */
     readonly jdbcTargets?: pulumi.Input<pulumi.Input<inputs.glue.CrawlerJdbcTarget>[]>;
+    /**
+     * List nested MongoDB target arguments. See below.
+     */
+    readonly mongodbTargets?: pulumi.Input<pulumi.Input<inputs.glue.CrawlerMongodbTarget>[]>;
     /**
      * Name of the crawler.
      */

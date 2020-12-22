@@ -6,6 +6,68 @@ import * as utilities from "../utilities";
 
 /**
  * Creates a WAFv2 Web ACL Association.
+ *
+ * > **NOTE on associating a WAFv2 Web ACL with a Cloudfront distribution:** Do not use this resource to associate a WAFv2 Web ACL with a Cloudfront Distribution. The [AWS API call backing this resource](https://docs.aws.amazon.com/waf/latest/APIReference/API_AssociateWebACL.html) notes that you should use the [`webAclId`][2] property on the [`cloudfrontDistribution`][2] instead.
+ *
+ * [1]: https://docs.aws.amazon.com/waf/latest/APIReference/API_AssociateWebACL.html
+ * [2]: https://www.terraform.io/docs/providers/aws/r/cloudfront_distribution.html#web_acl_id
+ *
+ * ## Example Usage
+ *
+ * ```typescript
+ * import * as pulumi from "@pulumi/pulumi";
+ * import * as aws from "@pulumi/aws";
+ *
+ * const exampleRestApi = new aws.apigateway.RestApi("exampleRestApi", {});
+ * const exampleResource = new aws.apigateway.Resource("exampleResource", {
+ *     restApi: exampleRestApi.id,
+ *     parentId: exampleRestApi.rootResourceId,
+ *     pathPart: "mytestresource",
+ * });
+ * const exampleMethod = new aws.apigateway.Method("exampleMethod", {
+ *     restApi: exampleRestApi.id,
+ *     resourceId: exampleResource.id,
+ *     httpMethod: "GET",
+ *     authorization: "NONE",
+ * });
+ * const exampleIntegration = new aws.apigateway.Integration("exampleIntegration", {
+ *     restApi: exampleRestApi.id,
+ *     resourceId: exampleResource.id,
+ *     httpMethod: exampleMethod.httpMethod,
+ *     type: "MOCK",
+ * });
+ * const exampleDeployment = new aws.apigateway.Deployment("exampleDeployment", {restApi: exampleRestApi.id}, {
+ *     dependsOn: [exampleIntegration],
+ * });
+ * const exampleStage = new aws.apigateway.Stage("exampleStage", {
+ *     stageName: "test",
+ *     restApi: exampleRestApi.id,
+ *     deployment: exampleDeployment.id,
+ * });
+ * const exampleWebAcl = new aws.wafv2.WebAcl("exampleWebAcl", {
+ *     scope: "REGIONAL",
+ *     defaultAction: {
+ *         allow: {},
+ *     },
+ *     visibilityConfig: {
+ *         cloudwatchMetricsEnabled: false,
+ *         metricName: "friendly-metric-name",
+ *         sampledRequestsEnabled: false,
+ *     },
+ * });
+ * const exampleWebAclAssociation = new aws.wafv2.WebAclAssociation("exampleWebAclAssociation", {
+ *     resourceArn: exampleStage.arn,
+ *     webAclArn: exampleWebAcl.arn,
+ * });
+ * ```
+ *
+ * ## Import
+ *
+ * WAFv2 Web ACL Association can be imported using `WEB_ACL_ARN,RESOURCE_ARN` e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:wafv2/webAclAssociation:WebAclAssociation example arn:aws:wafv2:...7ce849ea,arn:aws:apigateway:...ages/name
+ * ```
  */
 export class WebAclAssociation extends pulumi.CustomResource {
     /**
@@ -60,10 +122,10 @@ export class WebAclAssociation extends pulumi.CustomResource {
             inputs["webAclArn"] = state ? state.webAclArn : undefined;
         } else {
             const args = argsOrState as WebAclAssociationArgs | undefined;
-            if (!args || args.resourceArn === undefined) {
+            if ((!args || args.resourceArn === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'resourceArn'");
             }
-            if (!args || args.webAclArn === undefined) {
+            if ((!args || args.webAclArn === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'webAclArn'");
             }
             inputs["resourceArn"] = args ? args.resourceArn : undefined;

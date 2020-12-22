@@ -10,225 +10,13 @@ using Pulumi.Serialization;
 namespace Pulumi.Aws.AutoScaling
 {
     /// <summary>
-    /// Provides an AutoScaling Group resource.
+    /// ## Import
     /// 
-    /// &gt; **Note:** You must specify either `launch_configuration`, `launch_template`, or `mixed_instances_policy`.
+    /// AutoScaling Groups can be imported using the `name`, e.g.
     /// 
-    /// ## Example Usage
-    /// 
-    /// ```csharp
-    /// using Pulumi;
-    /// using Aws = Pulumi.Aws;
-    /// 
-    /// class MyStack : Stack
-    /// {
-    ///     public MyStack()
-    ///     {
-    ///         var test = new Aws.Ec2.PlacementGroup("test", new Aws.Ec2.PlacementGroupArgs
-    ///         {
-    ///             Strategy = "cluster",
-    ///         });
-    ///         var bar = new Aws.AutoScaling.Group("bar", new Aws.AutoScaling.GroupArgs
-    ///         {
-    ///             DesiredCapacity = 4,
-    ///             ForceDelete = true,
-    ///             HealthCheckGracePeriod = 300,
-    ///             HealthCheckType = "ELB",
-    ///             InitialLifecycleHooks = 
-    ///             {
-    ///                 new Aws.AutoScaling.Inputs.GroupInitialLifecycleHookArgs
-    ///                 {
-    ///                     DefaultResult = "CONTINUE",
-    ///                     HeartbeatTimeout = 2000,
-    ///                     LifecycleTransition = "autoscaling:EC2_INSTANCE_LAUNCHING",
-    ///                     Name = "foobar",
-    ///                     NotificationMetadata = @"{
-    ///   ""foo"": ""bar""
-    /// }
-    /// 
-    /// ",
-    ///                     NotificationTargetArn = "arn:aws:sqs:us-east-1:444455556666:queue1*",
-    ///                     RoleArn = "arn:aws:iam::123456789012:role/S3Access",
-    ///                 },
-    ///             },
-    ///             LaunchConfiguration = aws_launch_configuration.Foobar.Name,
-    ///             MaxSize = 5,
-    ///             MinSize = 2,
-    ///             PlacementGroup = test.Id,
-    ///             Tags = 
-    ///             {
-    ///                 new Aws.AutoScaling.Inputs.GroupTagArgs
-    ///                 {
-    ///                     Key = "foo",
-    ///                     PropagateAtLaunch = true,
-    ///                     Value = "bar",
-    ///                 },
-    ///                 new Aws.AutoScaling.Inputs.GroupTagArgs
-    ///                 {
-    ///                     Key = "lorem",
-    ///                     PropagateAtLaunch = false,
-    ///                     Value = "ipsum",
-    ///                 },
-    ///             },
-    ///             VpcZoneIdentifiers = 
-    ///             {
-    ///                 aws_subnet.Example1.Id,
-    ///                 aws_subnet.Example2.Id,
-    ///             },
-    ///         });
-    ///     }
-    /// 
-    /// }
+    /// ```sh
+    ///  $ pulumi import aws:autoscaling/group:Group web web-asg
     /// ```
-    /// ### With Latest Version Of Launch Template
-    /// 
-    /// ```csharp
-    /// using Pulumi;
-    /// using Aws = Pulumi.Aws;
-    /// 
-    /// class MyStack : Stack
-    /// {
-    ///     public MyStack()
-    ///     {
-    ///         var foobar = new Aws.Ec2.LaunchTemplate("foobar", new Aws.Ec2.LaunchTemplateArgs
-    ///         {
-    ///             ImageId = "ami-1a2b3c",
-    ///             InstanceType = "t2.micro",
-    ///             NamePrefix = "foobar",
-    ///         });
-    ///         var bar = new Aws.AutoScaling.Group("bar", new Aws.AutoScaling.GroupArgs
-    ///         {
-    ///             AvailabilityZones = 
-    ///             {
-    ///                 "us-east-1a",
-    ///             },
-    ///             DesiredCapacity = 1,
-    ///             LaunchTemplate = new Aws.AutoScaling.Inputs.GroupLaunchTemplateArgs
-    ///             {
-    ///                 Id = foobar.Id,
-    ///                 Version = "$Latest",
-    ///             },
-    ///             MaxSize = 1,
-    ///             MinSize = 1,
-    ///         });
-    ///     }
-    /// 
-    /// }
-    /// ```
-    /// ### Mixed Instances Policy
-    /// 
-    /// ```csharp
-    /// using Pulumi;
-    /// using Aws = Pulumi.Aws;
-    /// 
-    /// class MyStack : Stack
-    /// {
-    ///     public MyStack()
-    ///     {
-    ///         var exampleLaunchTemplate = new Aws.Ec2.LaunchTemplate("exampleLaunchTemplate", new Aws.Ec2.LaunchTemplateArgs
-    ///         {
-    ///             ImageId = data.Aws_ami.Example.Id,
-    ///             InstanceType = "c5.large",
-    ///             NamePrefix = "example",
-    ///         });
-    ///         var exampleGroup = new Aws.AutoScaling.Group("exampleGroup", new Aws.AutoScaling.GroupArgs
-    ///         {
-    ///             AvailabilityZones = 
-    ///             {
-    ///                 "us-east-1a",
-    ///             },
-    ///             DesiredCapacity = 1,
-    ///             MaxSize = 1,
-    ///             MinSize = 1,
-    ///             MixedInstancesPolicy = new Aws.AutoScaling.Inputs.GroupMixedInstancesPolicyArgs
-    ///             {
-    ///                 LaunchTemplate = new Aws.AutoScaling.Inputs.GroupMixedInstancesPolicyLaunchTemplateArgs
-    ///                 {
-    ///                     LaunchTemplateSpecification = new Aws.AutoScaling.Inputs.GroupMixedInstancesPolicyLaunchTemplateLaunchTemplateSpecificationArgs
-    ///                     {
-    ///                         LaunchTemplateId = exampleLaunchTemplate.Id,
-    ///                     },
-    ///                     Override = 
-    ///                     {
-    ///                         
-    ///                         {
-    ///                             { "instanceType", "c4.large" },
-    ///                             { "weightedCapacity", "3" },
-    ///                         },
-    ///                         
-    ///                         {
-    ///                             { "instanceType", "c3.large" },
-    ///                             { "weightedCapacity", "2" },
-    ///                         },
-    ///                     },
-    ///                 },
-    ///             },
-    ///         });
-    ///     }
-    /// 
-    /// }
-    /// ```
-    /// ## Waiting for Capacity
-    /// 
-    /// A newly-created ASG is initially empty and begins to scale to `min_size` (or
-    /// `desired_capacity`, if specified) by launching instances using the provided
-    /// Launch Configuration. These instances take time to launch and boot.
-    /// 
-    /// On ASG Update, changes to these values also take time to result in the target
-    /// number of instances providing service.
-    /// 
-    /// This provider provides two mechanisms to help consistently manage ASG scale up
-    /// time across dependent resources.
-    /// 
-    /// #### Waiting for ASG Capacity
-    /// 
-    /// The first is default behavior. This provider waits after ASG creation for
-    /// `min_size` (or `desired_capacity`, if specified) healthy instances to show up
-    /// in the ASG before continuing.
-    /// 
-    /// If `min_size` or `desired_capacity` are changed in a subsequent update,
-    /// this provider will also wait for the correct number of healthy instances before
-    /// continuing.
-    /// 
-    /// This provider considers an instance "healthy" when the ASG reports `HealthStatus:
-    /// "Healthy"` and `LifecycleState: "InService"`. See the [AWS AutoScaling
-    /// Docs](https://docs.aws.amazon.com/AutoScaling/latest/DeveloperGuide/AutoScalingGroupLifecycle.html)
-    /// for more information on an ASG's lifecycle.
-    /// 
-    /// This provider will wait for healthy instances for up to
-    /// `wait_for_capacity_timeout`. If ASG creation is taking more than a few minutes,
-    /// it's worth investigating for scaling activity errors, which can be caused by
-    /// problems with the selected Launch Configuration.
-    /// 
-    /// Setting `wait_for_capacity_timeout` to `"0"` disables ASG Capacity waiting.
-    /// 
-    /// #### Waiting for ELB Capacity
-    /// 
-    /// The second mechanism is optional, and affects ASGs with attached ELBs specified
-    /// via the `load_balancers` attribute or with ALBs specified with `target_group_arns`.
-    /// 
-    /// The `min_elb_capacity` parameter causes this provider to wait for at least the
-    /// requested number of instances to show up `"InService"` in all attached ELBs
-    /// during ASG creation.  It has no effect on ASG updates.
-    /// 
-    /// If `wait_for_elb_capacity` is set, this provider will wait for exactly that number
-    /// of Instances to be `"InService"` in all attached ELBs on both creation and
-    /// updates.
-    /// 
-    /// These parameters can be used to ensure that service is being provided before
-    /// this provider moves on. If new instances don't pass the ELB's health checks for any
-    /// reason, the deployment will time out, and the ASG will be marked as
-    /// tainted (i.e. marked to be destroyed in a follow up run).
-    /// 
-    /// As with ASG Capacity, this provider will wait for up to `wait_for_capacity_timeout`
-    /// for the proper number of instances to be healthy.
-    /// 
-    /// #### Troubleshooting Capacity Waiting Timeouts
-    /// 
-    /// If ASG creation takes more than a few minutes, this could indicate one of a
-    /// number of configuration problems. See the [AWS Docs on Load Balancer
-    /// Troubleshooting](https://docs.aws.amazon.com/ElasticLoadBalancing/latest/DeveloperGuide/elb-troubleshooting.html)
-    /// for more information.
     /// </summary>
     public partial class Group : Pulumi.CustomResource
     {
@@ -239,10 +27,16 @@ namespace Pulumi.Aws.AutoScaling
         public Output<string> Arn { get; private set; } = null!;
 
         /// <summary>
-        /// A list of one or more availability zones for the group. This parameter should not be specified when using `vpc_zone_identifier`.
+        /// A list of one or more availability zones for the group. Used for EC2-Classic and default subnets when not specified with `vpc_zone_identifier` argument. Conflicts with `vpc_zone_identifier`.
         /// </summary>
         [Output("availabilityZones")]
         public Output<ImmutableArray<string>> AvailabilityZones { get; private set; } = null!;
+
+        /// <summary>
+        /// Indicates whether capacity rebalance is enabled. Otherwise, capacity rebalance is disabled.
+        /// </summary>
+        [Output("capacityRebalance")]
+        public Output<bool?> CapacityRebalance { get; private set; } = null!;
 
         /// <summary>
         /// The amount of time, in seconds, after a scaling activity completes before another scaling activity can start.
@@ -410,7 +204,7 @@ namespace Pulumi.Aws.AutoScaling
         public Output<ImmutableArray<ImmutableDictionary<string, string>>> TagsCollection { get; private set; } = null!;
 
         /// <summary>
-        /// A list of `aws.alb.TargetGroup` ARNs, for use with Application or Network Load Balancing.
+        /// A set of `aws.alb.TargetGroup` ARNs, for use with Application or Network Load Balancing.
         /// </summary>
         [Output("targetGroupArns")]
         public Output<ImmutableArray<string>> TargetGroupArns { get; private set; } = null!;
@@ -422,7 +216,7 @@ namespace Pulumi.Aws.AutoScaling
         public Output<ImmutableArray<string>> TerminationPolicies { get; private set; } = null!;
 
         /// <summary>
-        /// A list of subnet IDs to launch resources in.
+        /// A list of subnet IDs to launch resources in. Subnets automatically determine which availability zones the group will reside. Conflicts with `availability_zones`.
         /// </summary>
         [Output("vpcZoneIdentifiers")]
         public Output<ImmutableArray<string>> VpcZoneIdentifiers { get; private set; } = null!;
@@ -497,13 +291,19 @@ namespace Pulumi.Aws.AutoScaling
         private InputList<string>? _availabilityZones;
 
         /// <summary>
-        /// A list of one or more availability zones for the group. This parameter should not be specified when using `vpc_zone_identifier`.
+        /// A list of one or more availability zones for the group. Used for EC2-Classic and default subnets when not specified with `vpc_zone_identifier` argument. Conflicts with `vpc_zone_identifier`.
         /// </summary>
         public InputList<string> AvailabilityZones
         {
             get => _availabilityZones ?? (_availabilityZones = new InputList<string>());
             set => _availabilityZones = value;
         }
+
+        /// <summary>
+        /// Indicates whether capacity rebalance is enabled. Otherwise, capacity rebalance is disabled.
+        /// </summary>
+        [Input("capacityRebalance")]
+        public Input<bool>? CapacityRebalance { get; set; }
 
         /// <summary>
         /// The amount of time, in seconds, after a scaling activity completes before another scaling activity can start.
@@ -612,7 +412,7 @@ namespace Pulumi.Aws.AutoScaling
         /// The granularity to associate with the metrics to collect. The only valid value is `1Minute`. Default is `1Minute`.
         /// </summary>
         [Input("metricsGranularity")]
-        public Input<string>? MetricsGranularity { get; set; }
+        public InputUnion<string, Pulumi.Aws.AutoScaling.MetricsGranularity>? MetricsGranularity { get; set; }
 
         /// <summary>
         /// Setting this causes this provider to wait for
@@ -710,7 +510,7 @@ namespace Pulumi.Aws.AutoScaling
         private InputList<string>? _targetGroupArns;
 
         /// <summary>
-        /// A list of `aws.alb.TargetGroup` ARNs, for use with Application or Network Load Balancing.
+        /// A set of `aws.alb.TargetGroup` ARNs, for use with Application or Network Load Balancing.
         /// </summary>
         public InputList<string> TargetGroupArns
         {
@@ -734,7 +534,7 @@ namespace Pulumi.Aws.AutoScaling
         private InputList<string>? _vpcZoneIdentifiers;
 
         /// <summary>
-        /// A list of subnet IDs to launch resources in.
+        /// A list of subnet IDs to launch resources in. Subnets automatically determine which availability zones the group will reside. Conflicts with `availability_zones`.
         /// </summary>
         public InputList<string> VpcZoneIdentifiers
         {
@@ -779,13 +579,19 @@ namespace Pulumi.Aws.AutoScaling
         private InputList<string>? _availabilityZones;
 
         /// <summary>
-        /// A list of one or more availability zones for the group. This parameter should not be specified when using `vpc_zone_identifier`.
+        /// A list of one or more availability zones for the group. Used for EC2-Classic and default subnets when not specified with `vpc_zone_identifier` argument. Conflicts with `vpc_zone_identifier`.
         /// </summary>
         public InputList<string> AvailabilityZones
         {
             get => _availabilityZones ?? (_availabilityZones = new InputList<string>());
             set => _availabilityZones = value;
         }
+
+        /// <summary>
+        /// Indicates whether capacity rebalance is enabled. Otherwise, capacity rebalance is disabled.
+        /// </summary>
+        [Input("capacityRebalance")]
+        public Input<bool>? CapacityRebalance { get; set; }
 
         /// <summary>
         /// The amount of time, in seconds, after a scaling activity completes before another scaling activity can start.
@@ -894,7 +700,7 @@ namespace Pulumi.Aws.AutoScaling
         /// The granularity to associate with the metrics to collect. The only valid value is `1Minute`. Default is `1Minute`.
         /// </summary>
         [Input("metricsGranularity")]
-        public Input<string>? MetricsGranularity { get; set; }
+        public InputUnion<string, Pulumi.Aws.AutoScaling.MetricsGranularity>? MetricsGranularity { get; set; }
 
         /// <summary>
         /// Setting this causes this provider to wait for
@@ -992,7 +798,7 @@ namespace Pulumi.Aws.AutoScaling
         private InputList<string>? _targetGroupArns;
 
         /// <summary>
-        /// A list of `aws.alb.TargetGroup` ARNs, for use with Application or Network Load Balancing.
+        /// A set of `aws.alb.TargetGroup` ARNs, for use with Application or Network Load Balancing.
         /// </summary>
         public InputList<string> TargetGroupArns
         {
@@ -1016,7 +822,7 @@ namespace Pulumi.Aws.AutoScaling
         private InputList<string>? _vpcZoneIdentifiers;
 
         /// <summary>
-        /// A list of subnet IDs to launch resources in.
+        /// A list of subnet IDs to launch resources in. Subnets automatically determine which availability zones the group will reside. Conflicts with `availability_zones`.
         /// </summary>
         public InputList<string> VpcZoneIdentifiers
         {

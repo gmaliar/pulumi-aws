@@ -5,20 +5,21 @@
 import warnings
 import pulumi
 import pulumi.runtime
-from typing import Union
-from .. import utilities, tables
+from typing import Any, Mapping, Optional, Sequence, Union
+from .. import _utilities, _tables
+
+__all__ = ['DomainPolicy']
 
 
 class DomainPolicy(pulumi.CustomResource):
-    access_policies: pulumi.Output[str]
-    """
-    IAM policy document specifying the access policies for the domain
-    """
-    domain_name: pulumi.Output[str]
-    """
-    Name of the domain.
-    """
-    def __init__(__self__, resource_name, opts=None, access_policies=None, domain_name=None, __props__=None, __name__=None, __opts__=None):
+    def __init__(__self__,
+                 resource_name: str,
+                 opts: Optional[pulumi.ResourceOptions] = None,
+                 access_policies: Optional[pulumi.Input[str]] = None,
+                 domain_name: Optional[pulumi.Input[str]] = None,
+                 __props__=None,
+                 __name__=None,
+                 __opts__=None):
         """
         Allows setting policy to an Elasticsearch domain while referencing domain attributes (e.g. ARN)
 
@@ -30,6 +31,7 @@ class DomainPolicy(pulumi.CustomResource):
 
         example = aws.elasticsearch.Domain("example", elasticsearch_version="2.3")
         main = aws.elasticsearch.DomainPolicy("main",
+            domain_name=example.domain_name,
             access_policies=example.arn.apply(lambda arn: f\"\"\"{{
             "Version": "2012-10-17",
             "Statement": [
@@ -44,14 +46,12 @@ class DomainPolicy(pulumi.CustomResource):
                 }}
             ]
         }}
-
-        \"\"\"),
-            domain_name=example.domain_name)
+        \"\"\"))
         ```
 
         :param str resource_name: The name of the resource.
         :param pulumi.ResourceOptions opts: Options for the resource.
-        :param pulumi.Input[dict] access_policies: IAM policy document specifying the access policies for the domain
+        :param pulumi.Input[str] access_policies: IAM policy document specifying the access policies for the domain
         :param pulumi.Input[str] domain_name: Name of the domain.
         """
         if __name__ is not None:
@@ -65,16 +65,16 @@ class DomainPolicy(pulumi.CustomResource):
         if not isinstance(opts, pulumi.ResourceOptions):
             raise TypeError('Expected resource options to be a ResourceOptions instance')
         if opts.version is None:
-            opts.version = utilities.get_version()
+            opts.version = _utilities.get_version()
         if opts.id is None:
             if __props__ is not None:
                 raise TypeError('__props__ is only valid when passed in combination with a valid opts.id to get an existing resource')
             __props__ = dict()
 
-            if access_policies is None:
+            if access_policies is None and not opts.urn:
                 raise TypeError("Missing required property 'access_policies'")
             __props__['access_policies'] = access_policies
-            if domain_name is None:
+            if domain_name is None and not opts.urn:
                 raise TypeError("Missing required property 'domain_name'")
             __props__['domain_name'] = domain_name
         super(DomainPolicy, __self__).__init__(
@@ -84,15 +84,19 @@ class DomainPolicy(pulumi.CustomResource):
             opts)
 
     @staticmethod
-    def get(resource_name, id, opts=None, access_policies=None, domain_name=None):
+    def get(resource_name: str,
+            id: pulumi.Input[str],
+            opts: Optional[pulumi.ResourceOptions] = None,
+            access_policies: Optional[pulumi.Input[str]] = None,
+            domain_name: Optional[pulumi.Input[str]] = None) -> 'DomainPolicy':
         """
         Get an existing DomainPolicy resource's state with the given name, id, and optional extra
         properties used to qualify the lookup.
 
         :param str resource_name: The unique name of the resulting resource.
-        :param str id: The unique provider ID of the resource to lookup.
+        :param pulumi.Input[str] id: The unique provider ID of the resource to lookup.
         :param pulumi.ResourceOptions opts: Options for the resource.
-        :param pulumi.Input[dict] access_policies: IAM policy document specifying the access policies for the domain
+        :param pulumi.Input[str] access_policies: IAM policy document specifying the access policies for the domain
         :param pulumi.Input[str] domain_name: Name of the domain.
         """
         opts = pulumi.ResourceOptions.merge(opts, pulumi.ResourceOptions(id=id))
@@ -103,8 +107,25 @@ class DomainPolicy(pulumi.CustomResource):
         __props__["domain_name"] = domain_name
         return DomainPolicy(resource_name, opts=opts, __props__=__props__)
 
+    @property
+    @pulumi.getter(name="accessPolicies")
+    def access_policies(self) -> pulumi.Output[str]:
+        """
+        IAM policy document specifying the access policies for the domain
+        """
+        return pulumi.get(self, "access_policies")
+
+    @property
+    @pulumi.getter(name="domainName")
+    def domain_name(self) -> pulumi.Output[str]:
+        """
+        Name of the domain.
+        """
+        return pulumi.get(self, "domain_name")
+
     def translate_output_property(self, prop):
-        return tables._CAMEL_TO_SNAKE_CASE_TABLE.get(prop) or prop
+        return _tables.CAMEL_TO_SNAKE_CASE_TABLE.get(prop) or prop
 
     def translate_input_property(self, prop):
-        return tables._SNAKE_TO_CAMEL_CASE_TABLE.get(prop) or prop
+        return _tables.SNAKE_TO_CAMEL_CASE_TABLE.get(prop) or prop
+

@@ -17,23 +17,31 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const alternate = new aws.Provider("alternate", {
- *     profile: "profile1",
- * });
- * const senderShare = new aws.ram.ResourceShare("sender_share", {
+ * const alternate = new aws.Provider("alternate", {profile: "profile1"});
+ * const senderShare = new aws.ram.ResourceShare("senderShare", {
  *     allowExternalPrincipals: true,
  *     tags: {
  *         Name: "tf-test-resource-share",
  *     },
- * }, { provider: alternate });
- * const receiver = pulumi.output(aws.getCallerIdentity({ async: true }));
- * const senderInvite = new aws.ram.PrincipalAssociation("sender_invite", {
- *     principal: receiver.accountId,
- *     resourceShareArn: senderShare.arn,
- * }, { provider: alternate });
- * const receiverAccept = new aws.ram.ResourceShareAccepter("receiver_accept", {
- *     shareArn: senderInvite.resourceShareArn,
+ * }, {
+ *     provider: aws.alternate,
  * });
+ * const receiver = aws.getCallerIdentity({});
+ * const senderInvite = new aws.ram.PrincipalAssociation("senderInvite", {
+ *     principal: receiver.then(receiver => receiver.accountId),
+ *     resourceShareArn: senderShare.arn,
+ * }, {
+ *     provider: aws.alternate,
+ * });
+ * const receiverAccept = new aws.ram.ResourceShareAccepter("receiverAccept", {shareArn: senderInvite.resourceShareArn});
+ * ```
+ *
+ * ## Import
+ *
+ * Resource share accepters can be imported using the resource share ARN, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:ram/resourceShareAccepter:ResourceShareAccepter example arn:aws:ram:us-east-1:123456789012:resource-share/c4b56393-e8d9-89d9-6dc9-883752de4767
  * ```
  */
 export class ResourceShareAccepter extends pulumi.CustomResource {
@@ -119,7 +127,7 @@ export class ResourceShareAccepter extends pulumi.CustomResource {
             inputs["status"] = state ? state.status : undefined;
         } else {
             const args = argsOrState as ResourceShareAccepterArgs | undefined;
-            if (!args || args.shareArn === undefined) {
+            if ((!args || args.shareArn === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'shareArn'");
             }
             inputs["shareArn"] = args ? args.shareArn : undefined;

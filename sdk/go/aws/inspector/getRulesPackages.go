@@ -17,7 +17,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/inspector"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/inspector"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -42,9 +42,9 @@ import (
 // 			return err
 // 		}
 // 		_, err = inspector.NewAssessmentTemplate(ctx, "assessmentAssessmentTemplate", &inspector.AssessmentTemplateArgs{
+// 			TargetArn:        assessmentAssessmentTarget.Arn,
 // 			Duration:         pulumi.Int(60),
 // 			RulesPackageArns: toPulumiStringArray(rules.Arns),
-// 			TargetArn:        assessmentAssessmentTarget.Arn,
 // 		})
 // 		if err != nil {
 // 			return err

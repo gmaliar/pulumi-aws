@@ -22,17 +22,25 @@ import * as utilities from "../utilities";
  * const group1 = new aws.iam.Group("group1", {});
  * const group2 = new aws.iam.Group("group2", {});
  * const example1 = new aws.iam.UserGroupMembership("example1", {
+ *     user: user1.name,
  *     groups: [
  *         group1.name,
  *         group2.name,
  *     ],
- *     user: user1.name,
  * });
  * const group3 = new aws.iam.Group("group3", {});
  * const example2 = new aws.iam.UserGroupMembership("example2", {
- *     groups: [group3.name],
  *     user: user1.name,
+ *     groups: [group3.name],
  * });
+ * ```
+ *
+ * ## Import
+ *
+ * IAM user group membership can be imported using the user name and group names separated by `/`.
+ *
+ * ```sh
+ *  $ pulumi import aws:iam/userGroupMembership:UserGroupMembership example1 user1/group1/group2
  * ```
  */
 export class UserGroupMembership extends pulumi.CustomResource {
@@ -88,10 +96,10 @@ export class UserGroupMembership extends pulumi.CustomResource {
             inputs["user"] = state ? state.user : undefined;
         } else {
             const args = argsOrState as UserGroupMembershipArgs | undefined;
-            if (!args || args.groups === undefined) {
+            if ((!args || args.groups === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'groups'");
             }
-            if (!args || args.user === undefined) {
+            if ((!args || args.user === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'user'");
             }
             inputs["groups"] = args ? args.groups : undefined;

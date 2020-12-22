@@ -16,11 +16,19 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const defaultBucket = new aws.s3.Bucket("default", {});
- * const defaultSpotDatafeedSubscription = new aws.ec2.SpotDatafeedSubscription("default", {
+ * const defaultBucket = new aws.s3.Bucket("defaultBucket", {});
+ * const defaultSpotDatafeedSubscription = new aws.ec2.SpotDatafeedSubscription("defaultSpotDatafeedSubscription", {
  *     bucket: defaultBucket.bucket,
  *     prefix: "my_subdirectory",
  * });
+ * ```
+ *
+ * ## Import
+ *
+ * A Spot Datafeed Subscription can be imported using the word `spot-datafeed-subscription`, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:ec2/spotDatafeedSubscription:SpotDatafeedSubscription mysubscription spot-datafeed-subscription
  * ```
  */
 export class SpotDatafeedSubscription extends pulumi.CustomResource {
@@ -76,7 +84,7 @@ export class SpotDatafeedSubscription extends pulumi.CustomResource {
             inputs["prefix"] = state ? state.prefix : undefined;
         } else {
             const args = argsOrState as SpotDatafeedSubscriptionArgs | undefined;
-            if (!args || args.bucket === undefined) {
+            if ((!args || args.bucket === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'bucket'");
             }
             inputs["bucket"] = args ? args.bucket : undefined;

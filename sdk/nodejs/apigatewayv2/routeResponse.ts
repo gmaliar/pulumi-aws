@@ -16,10 +16,18 @@ import * as utilities from "../utilities";
  * import * as aws from "@pulumi/aws";
  *
  * const example = new aws.apigatewayv2.RouteResponse("example", {
- *     apiId: aws_apigatewayv2_api_example.id,
- *     routeId: aws_apigatewayv2_route_example.id,
- *     routeResponseKey: "$default",
+ *     apiId: aws_apigatewayv2_api.example.id,
+ *     routeId: aws_apigatewayv2_route.example.id,
+ *     routeResponseKey: `$default`,
  * });
+ * ```
+ *
+ * ## Import
+ *
+ * `aws_apigatewayv2_route_response` can be imported by using the API identifier, route identifier and route response identifier, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:apigatewayv2/routeResponse:RouteResponse example aabbccddee/1122334/998877
  * ```
  */
 export class RouteResponse extends pulumi.CustomResource {
@@ -90,13 +98,13 @@ export class RouteResponse extends pulumi.CustomResource {
             inputs["routeResponseKey"] = state ? state.routeResponseKey : undefined;
         } else {
             const args = argsOrState as RouteResponseArgs | undefined;
-            if (!args || args.apiId === undefined) {
+            if ((!args || args.apiId === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'apiId'");
             }
-            if (!args || args.routeId === undefined) {
+            if ((!args || args.routeId === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'routeId'");
             }
-            if (!args || args.routeResponseKey === undefined) {
+            if ((!args || args.routeResponseKey === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'routeResponseKey'");
             }
             inputs["apiId"] = args ? args.apiId : undefined;

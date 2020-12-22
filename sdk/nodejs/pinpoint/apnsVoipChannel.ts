@@ -14,14 +14,22 @@ import * as utilities from "../utilities";
  * ```typescript
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
- * import * as fs from "fs";
+ * import * from "fs";
  *
  * const app = new aws.pinpoint.App("app", {});
- * const apnsVoip = new aws.pinpoint.ApnsVoipChannel("apns_voip", {
+ * const apnsVoip = new aws.pinpoint.ApnsVoipChannel("apnsVoip", {
  *     applicationId: app.applicationId,
- *     certificate: fs.readFileSync("./certificate.pem", "utf-8"),
- *     privateKey: fs.readFileSync("./private_key.key", "utf-8"),
+ *     certificate: fs.readFileSync("./certificate.pem"),
+ *     privateKey: fs.readFileSync("./private_key.key"),
  * });
+ * ```
+ *
+ * ## Import
+ *
+ * Pinpoint APNs VoIP Channel can be imported using the `application-id`, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:pinpoint/apnsVoipChannel:ApnsVoipChannel apns_voip application-id
  * ```
  */
 export class ApnsVoipChannel extends pulumi.CustomResource {
@@ -65,7 +73,7 @@ export class ApnsVoipChannel extends pulumi.CustomResource {
      */
     public readonly certificate!: pulumi.Output<string | undefined>;
     /**
-     * The default authentication method used for APNs. 
+     * The default authentication method used for APNs.
      * __NOTE__: Amazon Pinpoint uses this default for every APNs push notification that you send using the console.
      * You can override the default when you send a message programmatically using the Amazon Pinpoint API, the AWS CLI, or an AWS SDK.
      * If your default authentication type fails, Amazon Pinpoint doesn't attempt to use the other authentication type.
@@ -115,7 +123,7 @@ export class ApnsVoipChannel extends pulumi.CustomResource {
             inputs["tokenKeyId"] = state ? state.tokenKeyId : undefined;
         } else {
             const args = argsOrState as ApnsVoipChannelArgs | undefined;
-            if (!args || args.applicationId === undefined) {
+            if ((!args || args.applicationId === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'applicationId'");
             }
             inputs["applicationId"] = args ? args.applicationId : undefined;
@@ -156,7 +164,7 @@ export interface ApnsVoipChannelState {
      */
     readonly certificate?: pulumi.Input<string>;
     /**
-     * The default authentication method used for APNs. 
+     * The default authentication method used for APNs.
      * __NOTE__: Amazon Pinpoint uses this default for every APNs push notification that you send using the console.
      * You can override the default when you send a message programmatically using the Amazon Pinpoint API, the AWS CLI, or an AWS SDK.
      * If your default authentication type fails, Amazon Pinpoint doesn't attempt to use the other authentication type.
@@ -201,7 +209,7 @@ export interface ApnsVoipChannelArgs {
      */
     readonly certificate?: pulumi.Input<string>;
     /**
-     * The default authentication method used for APNs. 
+     * The default authentication method used for APNs.
      * __NOTE__: Amazon Pinpoint uses this default for every APNs push notification that you send using the console.
      * You can override the default when you send a message programmatically using the Amazon Pinpoint API, the AWS CLI, or an AWS SDK.
      * If your default authentication type fails, Amazon Pinpoint doesn't attempt to use the other authentication type.

@@ -25,15 +25,15 @@ namespace Pulumi.Aws.Rds
     ///         var bar = new Aws.Rds.Instance("bar", new Aws.Rds.InstanceArgs
     ///         {
     ///             AllocatedStorage = 10,
-    ///             BackupRetentionPeriod = 0,
     ///             Engine = "MySQL",
     ///             EngineVersion = "5.6.21",
     ///             InstanceClass = "db.t2.micro",
-    ///             MaintenanceWindow = "Fri:09:00-Fri:09:30",
     ///             Name = "baz",
-    ///             ParameterGroupName = "default.mysql5.6",
     ///             Password = "barbarbarbar",
     ///             Username = "foo",
+    ///             MaintenanceWindow = "Fri:09:00-Fri:09:30",
+    ///             BackupRetentionPeriod = 0,
+    ///             ParameterGroupName = "default.mysql5.6",
     ///         });
     ///         var test = new Aws.Rds.Snapshot("test", new Aws.Rds.SnapshotArgs
     ///         {
@@ -43,6 +43,14 @@ namespace Pulumi.Aws.Rds
     ///     }
     /// 
     /// }
+    /// ```
+    /// 
+    /// ## Import
+    /// 
+    /// `aws_db_snapshot` can be imported by using the snapshot identifier, e.g.
+    /// 
+    /// ```sh
+    ///  $ pulumi import aws:rds/snapshot:Snapshot example my-snapshot
     /// ```
     /// </summary>
     public partial class Snapshot : Pulumi.CustomResource

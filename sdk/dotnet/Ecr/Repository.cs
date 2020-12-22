@@ -34,6 +34,14 @@ namespace Pulumi.Aws.Ecr
     /// 
     /// }
     /// ```
+    /// 
+    /// ## Import
+    /// 
+    /// ECR Repositories can be imported using the `name`, e.g.
+    /// 
+    /// ```sh
+    ///  $ pulumi import aws:ecr/repository:Repository service test-service
+    /// ```
     /// </summary>
     public partial class Repository : Pulumi.CustomResource
     {
@@ -42,6 +50,12 @@ namespace Pulumi.Aws.Ecr
         /// </summary>
         [Output("arn")]
         public Output<string> Arn { get; private set; } = null!;
+
+        /// <summary>
+        /// Encryption configuration for the repository. See below for schema.
+        /// </summary>
+        [Output("encryptionConfigurations")]
+        public Output<ImmutableArray<Outputs.RepositoryEncryptionConfiguration>> EncryptionConfigurations { get; private set; } = null!;
 
         /// <summary>
         /// Configuration block that defines image scanning configuration for the repository. By default, image scanning must be manually triggered. See the [ECR User Guide](https://docs.aws.amazon.com/AmazonECR/latest/userguide/image-scanning.html) for more information about image scanning.
@@ -125,6 +139,18 @@ namespace Pulumi.Aws.Ecr
 
     public sealed class RepositoryArgs : Pulumi.ResourceArgs
     {
+        [Input("encryptionConfigurations")]
+        private InputList<Inputs.RepositoryEncryptionConfigurationArgs>? _encryptionConfigurations;
+
+        /// <summary>
+        /// Encryption configuration for the repository. See below for schema.
+        /// </summary>
+        public InputList<Inputs.RepositoryEncryptionConfigurationArgs> EncryptionConfigurations
+        {
+            get => _encryptionConfigurations ?? (_encryptionConfigurations = new InputList<Inputs.RepositoryEncryptionConfigurationArgs>());
+            set => _encryptionConfigurations = value;
+        }
+
         /// <summary>
         /// Configuration block that defines image scanning configuration for the repository. By default, image scanning must be manually triggered. See the [ECR User Guide](https://docs.aws.amazon.com/AmazonECR/latest/userguide/image-scanning.html) for more information about image scanning.
         /// </summary>
@@ -167,6 +193,18 @@ namespace Pulumi.Aws.Ecr
         /// </summary>
         [Input("arn")]
         public Input<string>? Arn { get; set; }
+
+        [Input("encryptionConfigurations")]
+        private InputList<Inputs.RepositoryEncryptionConfigurationGetArgs>? _encryptionConfigurations;
+
+        /// <summary>
+        /// Encryption configuration for the repository. See below for schema.
+        /// </summary>
+        public InputList<Inputs.RepositoryEncryptionConfigurationGetArgs> EncryptionConfigurations
+        {
+            get => _encryptionConfigurations ?? (_encryptionConfigurations = new InputList<Inputs.RepositoryEncryptionConfigurationGetArgs>());
+            set => _encryptionConfigurations = value;
+        }
 
         /// <summary>
         /// Configuration block that defines image scanning configuration for the repository. By default, image scanning must be manually triggered. See the [ECR User Guide](https://docs.aws.amazon.com/AmazonECR/latest/userguide/image-scanning.html) for more information about image scanning.

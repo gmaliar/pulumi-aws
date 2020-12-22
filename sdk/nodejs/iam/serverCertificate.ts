@@ -25,11 +25,11 @@ import * as utilities from "../utilities";
  * ```typescript
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
- * import * as fs from "fs";
+ * import * from "fs";
  *
- * const testCert = new aws.iam.ServerCertificate("test_cert", {
- *     certificateBody: fs.readFileSync("self-ca-cert.pem", "utf-8"),
- *     privateKey: fs.readFileSync("test-key.pem", "utf-8"),
+ * const testCert = new aws.iam.ServerCertificate("testCert", {
+ *     certificateBody: fs.readFileSync("self-ca-cert.pem"),
+ *     privateKey: fs.readFileSync("test-key.pem"),
  * });
  * ```
  *
@@ -63,12 +63,12 @@ import * as utilities from "../utilities";
  * ```typescript
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
- * import * as fs from "fs";
+ * import * from "fs";
  *
- * const testCert = new aws.iam.ServerCertificate("test_cert", {
- *     certificateBody: fs.readFileSync("self-ca-cert.pem", "utf-8"),
+ * const testCert = new aws.iam.ServerCertificate("testCert", {
  *     namePrefix: "example-cert",
- *     privateKey: fs.readFileSync("test-key.pem", "utf-8"),
+ *     certificateBody: fs.readFileSync("self-ca-cert.pem"),
+ *     privateKey: fs.readFileSync("test-key.pem"),
  * });
  * const ourapp = new aws.elb.LoadBalancer("ourapp", {
  *     availabilityZones: ["us-west-2a"],
@@ -82,6 +82,16 @@ import * as utilities from "../utilities";
  *     }],
  * });
  * ```
+ *
+ * ## Import
+ *
+ * IAM Server Certificates can be imported using the `name`, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:iam/serverCertificate:ServerCertificate certificate example.com-certificate-until-2018
+ * ```
+ *
+ *  [1]https://docs.aws.amazon.com/IAM/latest/UserGuide/Using_Identifiers.html [2]https://docs.aws.amazon.com/IAM/latest/UserGuide/ManagingServerCerts.html [lifecycle]/docs/configuration/resources.html
  */
 export class ServerCertificate extends pulumi.CustomResource {
     /**
@@ -169,10 +179,10 @@ export class ServerCertificate extends pulumi.CustomResource {
             inputs["privateKey"] = state ? state.privateKey : undefined;
         } else {
             const args = argsOrState as ServerCertificateArgs | undefined;
-            if (!args || args.certificateBody === undefined) {
+            if ((!args || args.certificateBody === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'certificateBody'");
             }
-            if (!args || args.privateKey === undefined) {
+            if ((!args || args.privateKey === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'privateKey'");
             }
             inputs["arn"] = args ? args.arn : undefined;

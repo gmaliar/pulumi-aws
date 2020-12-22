@@ -2,8 +2,7 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 /**
@@ -16,10 +15,10 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const ecs_mongo = aws_ecs_task_definition_mongo.id.apply(id => aws.ecs.getContainerDefinition({
+ * const ecs-mongo = aws.ecs.getContainerDefinition({
+ *     taskDefinition: aws_ecs_task_definition.mongo.id,
  *     containerName: "mongodb",
- *     taskDefinition: id,
- * }, { async: true }));
+ * });
  * ```
  */
 export function getContainerDefinition(args: GetContainerDefinitionArgs, opts?: pulumi.InvokeOptions): Promise<GetContainerDefinitionResult> {

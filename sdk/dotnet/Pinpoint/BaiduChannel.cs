@@ -29,13 +29,21 @@ namespace Pulumi.Aws.Pinpoint
     ///         });
     ///         var channel = new Aws.Pinpoint.BaiduChannel("channel", new Aws.Pinpoint.BaiduChannelArgs
     ///         {
-    ///             ApiKey = "",
     ///             ApplicationId = app.ApplicationId,
+    ///             ApiKey = "",
     ///             SecretKey = "",
     ///         });
     ///     }
     /// 
     /// }
+    /// ```
+    /// 
+    /// ## Import
+    /// 
+    /// Pinpoint Baidu Channel can be imported using the `application-id`, e.g.
+    /// 
+    /// ```sh
+    ///  $ pulumi import aws:pinpoint/baiduChannel:BaiduChannel channel application-id
     /// ```
     /// </summary>
     public partial class BaiduChannel : Pulumi.CustomResource

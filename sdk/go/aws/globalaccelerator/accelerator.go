@@ -4,6 +4,7 @@
 package globalaccelerator
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
@@ -17,7 +18,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/globalaccelerator"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/globalaccelerator"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -38,6 +39,14 @@ import (
 // 		return nil
 // 	})
 // }
+// ```
+//
+// ## Import
+//
+// Global Accelerator accelerators can be imported using the `id`, e.g.
+//
+// ```sh
+//  $ pulumi import aws:globalaccelerator/accelerator:Accelerator example arn:aws:globalaccelerator::111111111111:accelerator/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
 // ```
 type Accelerator struct {
 	pulumi.CustomResourceState
@@ -68,6 +77,7 @@ func NewAccelerator(ctx *pulumi.Context,
 	if args == nil {
 		args = &AcceleratorArgs{}
 	}
+
 	var resource Accelerator
 	err := ctx.RegisterResource("aws:globalaccelerator/accelerator:Accelerator", name, args, &resource, opts...)
 	if err != nil {
@@ -164,4 +174,43 @@ type AcceleratorArgs struct {
 
 func (AcceleratorArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*acceleratorArgs)(nil)).Elem()
+}
+
+type AcceleratorInput interface {
+	pulumi.Input
+
+	ToAcceleratorOutput() AcceleratorOutput
+	ToAcceleratorOutputWithContext(ctx context.Context) AcceleratorOutput
+}
+
+func (Accelerator) ElementType() reflect.Type {
+	return reflect.TypeOf((*Accelerator)(nil)).Elem()
+}
+
+func (i Accelerator) ToAcceleratorOutput() AcceleratorOutput {
+	return i.ToAcceleratorOutputWithContext(context.Background())
+}
+
+func (i Accelerator) ToAcceleratorOutputWithContext(ctx context.Context) AcceleratorOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(AcceleratorOutput)
+}
+
+type AcceleratorOutput struct {
+	*pulumi.OutputState
+}
+
+func (AcceleratorOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*AcceleratorOutput)(nil)).Elem()
+}
+
+func (o AcceleratorOutput) ToAcceleratorOutput() AcceleratorOutput {
+	return o
+}
+
+func (o AcceleratorOutput) ToAcceleratorOutputWithContext(ctx context.Context) AcceleratorOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(AcceleratorOutput{})
 }

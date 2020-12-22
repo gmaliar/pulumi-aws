@@ -20,9 +20,15 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const example = new aws.ebs.DefaultKmsKey("example", {
- *     keyArn: aws_kms_key_example.arn,
- * });
+ * const example = new aws.ebs.DefaultKmsKey("example", {keyArn: aws_kms_key.example.arn});
+ * ```
+ *
+ * ## Import
+ *
+ * The EBS default KMS CMK can be imported with the KMS key ARN, e.g. console
+ *
+ * ```sh
+ *  $ pulumi import aws:ebs/defaultKmsKey:DefaultKmsKey example arn:aws:kms:us-east-1:123456789012:key/abcd-1234
  * ```
  */
 export class DefaultKmsKey extends pulumi.CustomResource {
@@ -73,7 +79,7 @@ export class DefaultKmsKey extends pulumi.CustomResource {
             inputs["keyArn"] = state ? state.keyArn : undefined;
         } else {
             const args = argsOrState as DefaultKmsKeyArgs | undefined;
-            if (!args || args.keyArn === undefined) {
+            if ((!args || args.keyArn === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'keyArn'");
             }
             inputs["keyArn"] = args ? args.keyArn : undefined;

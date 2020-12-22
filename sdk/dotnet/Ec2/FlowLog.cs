@@ -42,7 +42,6 @@ namespace Pulumi.Aws.Ec2
     ///     }
     ///   ]
     /// }
-    /// 
     /// ",
     ///         });
     ///         var exampleFlowLog = new Aws.Ec2.FlowLog("exampleFlowLog", new Aws.Ec2.FlowLogArgs
@@ -54,6 +53,7 @@ namespace Pulumi.Aws.Ec2
     ///         });
     ///         var exampleRolePolicy = new Aws.Iam.RolePolicy("exampleRolePolicy", new Aws.Iam.RolePolicyArgs
     ///         {
+    ///             Role = exampleRole.Id,
     ///             Policy = @"{
     ///   ""Version"": ""2012-10-17"",
     ///   ""Statement"": [
@@ -70,9 +70,7 @@ namespace Pulumi.Aws.Ec2
     ///     }
     ///   ]
     /// }
-    /// 
     /// ",
-    ///             Role = exampleRole.Id,
     ///         });
     ///     }
     /// 
@@ -101,6 +99,14 @@ namespace Pulumi.Aws.Ec2
     ///     }
     /// 
     /// }
+    /// ```
+    /// 
+    /// ## Import
+    /// 
+    /// Flow Logs can be imported using the `id`, e.g.
+    /// 
+    /// ```sh
+    ///  $ pulumi import aws:ec2/flowLog:FlowLog test_flow_log fl-1a2b3c4d
     /// ```
     /// </summary>
     public partial class FlowLog : Pulumi.CustomResource

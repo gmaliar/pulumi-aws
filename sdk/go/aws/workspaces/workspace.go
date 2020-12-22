@@ -4,6 +4,7 @@
 package workspaces
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -12,8 +13,60 @@ import (
 
 // Provides a workspace in [AWS Workspaces](https://docs.aws.amazon.com/workspaces/latest/adminguide/amazon-workspaces.html) Service
 //
-// > **NOTE:** During deletion of an `workspaces.Workspace` resource, the service role `workspaces_DefaultRole` must be attached to the
-// policy `arn:aws:iam::aws:policy/AmazonWorkSpacesServiceAccess`, or it will leak the ENI that the Workspaces service creates for the Workspace.
+// > **NOTE:** AWS WorkSpaces service requires [`workspaces_DefaultRole`](https://docs.aws.amazon.com/workspaces/latest/adminguide/workspaces-access-control.html#create-default-role) IAM role to operate normally.
+//
+// ## Example Usage
+//
+// ```go
+// package main
+//
+// import (
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/workspaces"
+// 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
+// )
+//
+// func main() {
+// 	pulumi.Run(func(ctx *pulumi.Context) error {
+// 		opt0 := "wsb-bh8rsxt14"
+// 		valueWindows10, err := workspaces.GetBundle(ctx, &workspaces.GetBundleArgs{
+// 			BundleId: &opt0,
+// 		}, nil)
+// 		if err != nil {
+// 			return err
+// 		}
+// 		_, err = workspaces.NewWorkspace(ctx, "example", &workspaces.WorkspaceArgs{
+// 			DirectoryId:                 pulumi.Any(aws_workspaces_directory.Example.Id),
+// 			BundleId:                    pulumi.String(valueWindows10.Id),
+// 			UserName:                    pulumi.String("john.doe"),
+// 			RootVolumeEncryptionEnabled: pulumi.Bool(true),
+// 			UserVolumeEncryptionEnabled: pulumi.Bool(true),
+// 			VolumeEncryptionKey:         pulumi.String("alias/aws/workspaces"),
+// 			WorkspaceProperties: &workspaces.WorkspaceWorkspacePropertiesArgs{
+// 				ComputeTypeName:                     pulumi.String("VALUE"),
+// 				UserVolumeSizeGib:                   pulumi.Int(10),
+// 				RootVolumeSizeGib:                   pulumi.Int(80),
+// 				RunningMode:                         pulumi.String("AUTO_STOP"),
+// 				RunningModeAutoStopTimeoutInMinutes: pulumi.Int(60),
+// 			},
+// 			Tags: pulumi.StringMap{
+// 				"Department": pulumi.String("IT"),
+// 			},
+// 		})
+// 		if err != nil {
+// 			return err
+// 		}
+// 		return nil
+// 	})
+// }
+// ```
+//
+// ## Import
+//
+// Workspaces can be imported using their ID, e.g.
+//
+// ```sh
+//  $ pulumi import aws:workspaces/workspace:Workspace example ws-9z9zmbkhv
+// ```
 type Workspace struct {
 	pulumi.CustomResourceState
 
@@ -44,17 +97,18 @@ type Workspace struct {
 // NewWorkspace registers a new resource with the given unique name, arguments, and options.
 func NewWorkspace(ctx *pulumi.Context,
 	name string, args *WorkspaceArgs, opts ...pulumi.ResourceOption) (*Workspace, error) {
-	if args == nil || args.BundleId == nil {
-		return nil, errors.New("missing required argument 'BundleId'")
-	}
-	if args == nil || args.DirectoryId == nil {
-		return nil, errors.New("missing required argument 'DirectoryId'")
-	}
-	if args == nil || args.UserName == nil {
-		return nil, errors.New("missing required argument 'UserName'")
-	}
 	if args == nil {
-		args = &WorkspaceArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.BundleId == nil {
+		return nil, errors.New("invalid value for required argument 'BundleId'")
+	}
+	if args.DirectoryId == nil {
+		return nil, errors.New("invalid value for required argument 'DirectoryId'")
+	}
+	if args.UserName == nil {
+		return nil, errors.New("invalid value for required argument 'UserName'")
 	}
 	var resource Workspace
 	err := ctx.RegisterResource("aws:workspaces/workspace:Workspace", name, args, &resource, opts...)
@@ -172,4 +226,43 @@ type WorkspaceArgs struct {
 
 func (WorkspaceArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*workspaceArgs)(nil)).Elem()
+}
+
+type WorkspaceInput interface {
+	pulumi.Input
+
+	ToWorkspaceOutput() WorkspaceOutput
+	ToWorkspaceOutputWithContext(ctx context.Context) WorkspaceOutput
+}
+
+func (Workspace) ElementType() reflect.Type {
+	return reflect.TypeOf((*Workspace)(nil)).Elem()
+}
+
+func (i Workspace) ToWorkspaceOutput() WorkspaceOutput {
+	return i.ToWorkspaceOutputWithContext(context.Background())
+}
+
+func (i Workspace) ToWorkspaceOutputWithContext(ctx context.Context) WorkspaceOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(WorkspaceOutput)
+}
+
+type WorkspaceOutput struct {
+	*pulumi.OutputState
+}
+
+func (WorkspaceOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*WorkspaceOutput)(nil)).Elem()
+}
+
+func (o WorkspaceOutput) ToWorkspaceOutput() WorkspaceOutput {
+	return o
+}
+
+func (o WorkspaceOutput) ToWorkspaceOutputWithContext(ctx context.Context) WorkspaceOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(WorkspaceOutput{})
 }

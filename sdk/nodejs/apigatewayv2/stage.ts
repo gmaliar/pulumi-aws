@@ -2,8 +2,7 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 /**
@@ -17,9 +16,15 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const example = new aws.apigatewayv2.Stage("example", {
- *     apiId: aws_apigatewayv2_api_example.id,
- * });
+ * const example = new aws.apigatewayv2.Stage("example", {apiId: aws_apigatewayv2_api.example.id});
+ * ```
+ *
+ * ## Import
+ *
+ * `aws_apigatewayv2_stage` can be imported by using the API identifier and stage name, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:apigatewayv2/stage:Stage example aabbccddee/example-stage
  * ```
  */
 export class Stage extends pulumi.CustomResource {
@@ -77,18 +82,17 @@ export class Stage extends pulumi.CustomResource {
      */
     public readonly defaultRouteSettings!: pulumi.Output<outputs.apigatewayv2.StageDefaultRouteSettings | undefined>;
     /**
-     * The deployment identifier of the stage. Use the `aws.apigatewayv2.Deployment` resource to configure a deployment.
+     * The deployment identifier of the stage. Use the [`aws.apigatewayv2.Deployment`](https://www.terraform.io/docs/providers/aws/r/apigatewayv2_deployment.html) resource to configure a deployment.
      */
-    public readonly deploymentId!: pulumi.Output<string | undefined>;
+    public readonly deploymentId!: pulumi.Output<string>;
     /**
-     * The description for the stage.
+     * The description for the stage. Must be less than or equal to 1024 characters in length.
      */
     public readonly description!: pulumi.Output<string | undefined>;
     /**
-     * The ARN prefix to be used in an `aws.lambda.Permission`'s `sourceArn` attribute
-     * or in an `aws.iam.Policy` to authorize access to the [`@connections` API](https://docs.aws.amazon.com/apigateway/latest/developerguide/apigateway-how-to-call-websocket-api-connections.html).
+     * The ARN prefix to be used in an `aws.lambda.Permission` `sourceArn` attribute.
+     * For WebSocket APIs this attribute can additionally be used in an `aws.iam.Policy` to authorize access to the [`@connections` API](https://docs.aws.amazon.com/apigateway/latest/developerguide/apigateway-how-to-call-websocket-api-connections.html).
      * See the [Amazon API Gateway Developer Guide](https://docs.aws.amazon.com/apigateway/latest/developerguide/apigateway-websocket-control-access-iam.html) for details.
-     * Set only for WebSocket APIs.
      */
     public /*out*/ readonly executionArn!: pulumi.Output<string>;
     /**
@@ -97,7 +101,7 @@ export class Stage extends pulumi.CustomResource {
      */
     public /*out*/ readonly invokeUrl!: pulumi.Output<string>;
     /**
-     * The name of the stage.
+     * The name of the stage. Must be between 1 and 128 characters in length.
      */
     public readonly name!: pulumi.Output<string>;
     /**
@@ -141,7 +145,7 @@ export class Stage extends pulumi.CustomResource {
             inputs["tags"] = state ? state.tags : undefined;
         } else {
             const args = argsOrState as StageArgs | undefined;
-            if (!args || args.apiId === undefined) {
+            if ((!args || args.apiId === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'apiId'");
             }
             inputs["accessLogSettings"] = args ? args.accessLogSettings : undefined;
@@ -201,18 +205,17 @@ export interface StageState {
      */
     readonly defaultRouteSettings?: pulumi.Input<inputs.apigatewayv2.StageDefaultRouteSettings>;
     /**
-     * The deployment identifier of the stage. Use the `aws.apigatewayv2.Deployment` resource to configure a deployment.
+     * The deployment identifier of the stage. Use the [`aws.apigatewayv2.Deployment`](https://www.terraform.io/docs/providers/aws/r/apigatewayv2_deployment.html) resource to configure a deployment.
      */
     readonly deploymentId?: pulumi.Input<string>;
     /**
-     * The description for the stage.
+     * The description for the stage. Must be less than or equal to 1024 characters in length.
      */
     readonly description?: pulumi.Input<string>;
     /**
-     * The ARN prefix to be used in an `aws.lambda.Permission`'s `sourceArn` attribute
-     * or in an `aws.iam.Policy` to authorize access to the [`@connections` API](https://docs.aws.amazon.com/apigateway/latest/developerguide/apigateway-how-to-call-websocket-api-connections.html).
+     * The ARN prefix to be used in an `aws.lambda.Permission` `sourceArn` attribute.
+     * For WebSocket APIs this attribute can additionally be used in an `aws.iam.Policy` to authorize access to the [`@connections` API](https://docs.aws.amazon.com/apigateway/latest/developerguide/apigateway-how-to-call-websocket-api-connections.html).
      * See the [Amazon API Gateway Developer Guide](https://docs.aws.amazon.com/apigateway/latest/developerguide/apigateway-websocket-control-access-iam.html) for details.
-     * Set only for WebSocket APIs.
      */
     readonly executionArn?: pulumi.Input<string>;
     /**
@@ -221,7 +224,7 @@ export interface StageState {
      */
     readonly invokeUrl?: pulumi.Input<string>;
     /**
-     * The name of the stage.
+     * The name of the stage. Must be between 1 and 128 characters in length.
      */
     readonly name?: pulumi.Input<string>;
     /**
@@ -265,15 +268,15 @@ export interface StageArgs {
      */
     readonly defaultRouteSettings?: pulumi.Input<inputs.apigatewayv2.StageDefaultRouteSettings>;
     /**
-     * The deployment identifier of the stage. Use the `aws.apigatewayv2.Deployment` resource to configure a deployment.
+     * The deployment identifier of the stage. Use the [`aws.apigatewayv2.Deployment`](https://www.terraform.io/docs/providers/aws/r/apigatewayv2_deployment.html) resource to configure a deployment.
      */
     readonly deploymentId?: pulumi.Input<string>;
     /**
-     * The description for the stage.
+     * The description for the stage. Must be less than or equal to 1024 characters in length.
      */
     readonly description?: pulumi.Input<string>;
     /**
-     * The name of the stage.
+     * The name of the stage. Must be between 1 and 128 characters in length.
      */
     readonly name?: pulumi.Input<string>;
     /**

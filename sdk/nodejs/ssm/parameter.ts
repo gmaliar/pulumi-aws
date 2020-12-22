@@ -2,9 +2,8 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
-
-import {ParameterType} from "./index";
 
 /**
  * Provides an SSM Parameter resource.
@@ -29,29 +28,37 @@ import {ParameterType} from "./index";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const defaultInstance = new aws.rds.Instance("default", {
+ * const _default = new aws.rds.Instance("default", {
  *     allocatedStorage: 10,
- *     dbSubnetGroupName: "my_database_subnet_group",
+ *     storageType: "gp2",
  *     engine: "mysql",
  *     engineVersion: "5.7.16",
  *     instanceClass: "db.t2.micro",
  *     name: "mydb",
- *     parameterGroupName: "default.mysql5.7",
- *     password: var_database_master_password,
- *     storageType: "gp2",
  *     username: "foo",
+ *     password: _var.database_master_password,
+ *     dbSubnetGroupName: "my_database_subnet_group",
+ *     parameterGroupName: "default.mysql5.7",
  * });
  * const secret = new aws.ssm.Parameter("secret", {
  *     description: "The parameter description",
- *     tags: {
- *         environment: var_environment,
- *     },
  *     type: "SecureString",
- *     value: var_database_master_password,
+ *     value: _var.database_master_password,
+ *     tags: {
+ *         environment: "production",
+ *     },
  * });
  * ```
  *
  * > **Note:** The unencrypted value of a SecureString will be stored in the raw state as plain-text.
+ *
+ * ## Import
+ *
+ * SSM Parameters can be imported using the `parameter store name`, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:ssm/parameter:Parameter my_param /my_path/my_paramname
+ * ```
  */
 export class Parameter extends pulumi.CustomResource {
     /**
@@ -90,6 +97,11 @@ export class Parameter extends pulumi.CustomResource {
      */
     public readonly arn!: pulumi.Output<string>;
     /**
+     * The dataType of the parameter. Valid values: text and aws:ec2:image for AMI format, see the [Native parameter support for Amazon Machine Image IDs
+     * ](https://docs.aws.amazon.com/systems-manager/latest/userguide/parameter-store-ec2-aliases.html)
+     */
+    public readonly dataType!: pulumi.Output<string>;
+    /**
      * The description of the parameter.
      */
     public readonly description!: pulumi.Output<string | undefined>;
@@ -116,7 +128,7 @@ export class Parameter extends pulumi.CustomResource {
     /**
      * The type of the parameter. Valid types are `String`, `StringList` and `SecureString`.
      */
-    public readonly type!: pulumi.Output<ParameterType>;
+    public readonly type!: pulumi.Output<string>;
     /**
      * The value of the parameter.
      */
@@ -140,6 +152,7 @@ export class Parameter extends pulumi.CustomResource {
             const state = argsOrState as ParameterState | undefined;
             inputs["allowedPattern"] = state ? state.allowedPattern : undefined;
             inputs["arn"] = state ? state.arn : undefined;
+            inputs["dataType"] = state ? state.dataType : undefined;
             inputs["description"] = state ? state.description : undefined;
             inputs["keyId"] = state ? state.keyId : undefined;
             inputs["name"] = state ? state.name : undefined;
@@ -151,14 +164,15 @@ export class Parameter extends pulumi.CustomResource {
             inputs["version"] = state ? state.version : undefined;
         } else {
             const args = argsOrState as ParameterArgs | undefined;
-            if (!args || args.type === undefined) {
+            if ((!args || args.type === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'type'");
             }
-            if (!args || args.value === undefined) {
+            if ((!args || args.value === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'value'");
             }
             inputs["allowedPattern"] = args ? args.allowedPattern : undefined;
             inputs["arn"] = args ? args.arn : undefined;
+            inputs["dataType"] = args ? args.dataType : undefined;
             inputs["description"] = args ? args.description : undefined;
             inputs["keyId"] = args ? args.keyId : undefined;
             inputs["name"] = args ? args.name : undefined;
@@ -193,6 +207,11 @@ export interface ParameterState {
      */
     readonly arn?: pulumi.Input<string>;
     /**
+     * The dataType of the parameter. Valid values: text and aws:ec2:image for AMI format, see the [Native parameter support for Amazon Machine Image IDs
+     * ](https://docs.aws.amazon.com/systems-manager/latest/userguide/parameter-store-ec2-aliases.html)
+     */
+    readonly dataType?: pulumi.Input<string>;
+    /**
      * The description of the parameter.
      */
     readonly description?: pulumi.Input<string>;
@@ -219,7 +238,7 @@ export interface ParameterState {
     /**
      * The type of the parameter. Valid types are `String`, `StringList` and `SecureString`.
      */
-    readonly type?: pulumi.Input<ParameterType>;
+    readonly type?: pulumi.Input<string | enums.ssm.ParameterType>;
     /**
      * The value of the parameter.
      */
@@ -243,6 +262,11 @@ export interface ParameterArgs {
      */
     readonly arn?: pulumi.Input<string>;
     /**
+     * The dataType of the parameter. Valid values: text and aws:ec2:image for AMI format, see the [Native parameter support for Amazon Machine Image IDs
+     * ](https://docs.aws.amazon.com/systems-manager/latest/userguide/parameter-store-ec2-aliases.html)
+     */
+    readonly dataType?: pulumi.Input<string>;
+    /**
      * The description of the parameter.
      */
     readonly description?: pulumi.Input<string>;
@@ -269,7 +293,7 @@ export interface ParameterArgs {
     /**
      * The type of the parameter. Valid types are `String`, `StringList` and `SecureString`.
      */
-    readonly type: pulumi.Input<ParameterType>;
+    readonly type: pulumi.Input<string | enums.ssm.ParameterType>;
     /**
      * The value of the parameter.
      */

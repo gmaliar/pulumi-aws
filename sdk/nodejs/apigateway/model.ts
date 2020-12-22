@@ -15,18 +15,24 @@ import {RestApi} from "./index";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const myDemoAPI = new aws.apigateway.RestApi("MyDemoAPI", {
- *     description: "This is my API for demonstration purposes",
- * });
- * const myDemoModel = new aws.apigateway.Model("MyDemoModel", {
- *     contentType: "application/json",
- *     description: "a JSON schema",
+ * const myDemoAPI = new aws.apigateway.RestApi("myDemoAPI", {description: "This is my API for demonstration purposes"});
+ * const myDemoModel = new aws.apigateway.Model("myDemoModel", {
  *     restApi: myDemoAPI.id,
+ *     description: "a JSON schema",
+ *     contentType: "application/json",
  *     schema: `{
  *   "type": "object"
  * }
  * `,
  * });
+ * ```
+ *
+ * ## Import
+ *
+ * `aws_api_gateway_model` can be imported using `REST-API-ID/NAME`, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:apigateway/model:Model example 12345abcde/example
  * ```
  */
 export class Model extends pulumi.CustomResource {
@@ -97,10 +103,10 @@ export class Model extends pulumi.CustomResource {
             inputs["schema"] = state ? state.schema : undefined;
         } else {
             const args = argsOrState as ModelArgs | undefined;
-            if (!args || args.contentType === undefined) {
+            if ((!args || args.contentType === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'contentType'");
             }
-            if (!args || args.restApi === undefined) {
+            if ((!args || args.restApi === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'restApi'");
             }
             inputs["contentType"] = args ? args.contentType : undefined;

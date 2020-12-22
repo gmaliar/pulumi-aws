@@ -32,18 +32,18 @@ namespace Pulumi.Aws.S3
     ///         var testInventory = new Aws.S3.Inventory("testInventory", new Aws.S3.InventoryArgs
     ///         {
     ///             Bucket = testBucket.Id,
-    ///             Destination = new Aws.S3.Inputs.InventoryDestinationArgs
-    ///             {
-    ///                 Bucket = new Aws.S3.Inputs.InventoryDestinationBucketArgs
-    ///                 {
-    ///                     BucketArn = inventory.Arn,
-    ///                     Format = "ORC",
-    ///                 },
-    ///             },
     ///             IncludedObjectVersions = "All",
     ///             Schedule = new Aws.S3.Inputs.InventoryScheduleArgs
     ///             {
     ///                 Frequency = "Daily",
+    ///             },
+    ///             Destination = new Aws.S3.Inputs.InventoryDestinationArgs
+    ///             {
+    ///                 Bucket = new Aws.S3.Inputs.InventoryDestinationBucketArgs
+    ///                 {
+    ///                     Format = "ORC",
+    ///                     BucketArn = inventory.Arn,
+    ///                 },
     ///             },
     ///         });
     ///     }
@@ -69,34 +69,42 @@ namespace Pulumi.Aws.S3
     ///         var test_prefix = new Aws.S3.Inventory("test-prefix", new Aws.S3.InventoryArgs
     ///         {
     ///             Bucket = test.Id,
-    ///             Destination = new Aws.S3.Inputs.InventoryDestinationArgs
+    ///             IncludedObjectVersions = "All",
+    ///             Schedule = new Aws.S3.Inputs.InventoryScheduleArgs
     ///             {
-    ///                 Bucket = new Aws.S3.Inputs.InventoryDestinationBucketArgs
-    ///                 {
-    ///                     BucketArn = inventory.Arn,
-    ///                     Format = "ORC",
-    ///                     Prefix = "inventory",
-    ///                 },
+    ///                 Frequency = "Daily",
     ///             },
     ///             Filter = new Aws.S3.Inputs.InventoryFilterArgs
     ///             {
     ///                 Prefix = "documents/",
     ///             },
-    ///             IncludedObjectVersions = "All",
-    ///             Schedule = new Aws.S3.Inputs.InventoryScheduleArgs
+    ///             Destination = new Aws.S3.Inputs.InventoryDestinationArgs
     ///             {
-    ///                 Frequency = "Daily",
+    ///                 Bucket = new Aws.S3.Inputs.InventoryDestinationBucketArgs
+    ///                 {
+    ///                     Format = "ORC",
+    ///                     BucketArn = inventory.Arn,
+    ///                     Prefix = "inventory",
+    ///                 },
     ///             },
     ///         });
     ///     }
     /// 
     /// }
     /// ```
+    /// 
+    /// ## Import
+    /// 
+    /// S3 bucket inventory configurations can be imported using `bucket:inventory`, e.g.
+    /// 
+    /// ```sh
+    ///  $ pulumi import aws:s3/inventory:Inventory my-bucket-entire-bucket my-bucket:EntireBucket
+    /// ```
     /// </summary>
     public partial class Inventory : Pulumi.CustomResource
     {
         /// <summary>
-        /// The name of the bucket where the inventory configuration will be stored.
+        /// The name of the source bucket that inventory lists the objects for.
         /// </summary>
         [Output("bucket")]
         public Output<string> Bucket { get; private set; } = null!;
@@ -191,7 +199,7 @@ namespace Pulumi.Aws.S3
     public sealed class InventoryArgs : Pulumi.ResourceArgs
     {
         /// <summary>
-        /// The name of the bucket where the inventory configuration will be stored.
+        /// The name of the source bucket that inventory lists the objects for.
         /// </summary>
         [Input("bucket", required: true)]
         public Input<string> Bucket { get; set; } = null!;
@@ -253,7 +261,7 @@ namespace Pulumi.Aws.S3
     public sealed class InventoryState : Pulumi.ResourceArgs
     {
         /// <summary>
-        /// The name of the bucket where the inventory configuration will be stored.
+        /// The name of the source bucket that inventory lists the objects for.
         /// </summary>
         [Input("bucket")]
         public Input<string>? Bucket { get; set; }

@@ -2,8 +2,7 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 /**
@@ -15,9 +14,15 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const web = new aws.opsworks.StaticWebLayer("web", {
- *     stackId: aws_opsworks_stack_main.id,
- * });
+ * const web = new aws.opsworks.StaticWebLayer("web", {stackId: aws_opsworks_stack.main.id});
+ * ```
+ *
+ * ## Import
+ *
+ * OpsWorks static web server Layers can be imported using the `id`, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:opsworks/staticWebLayer:StaticWebLayer bar 00000000-0000-0000-0000-000000000000
  * ```
  */
 export class StaticWebLayer extends pulumi.CustomResource {
@@ -155,7 +160,7 @@ export class StaticWebLayer extends pulumi.CustomResource {
             inputs["useEbsOptimizedInstances"] = state ? state.useEbsOptimizedInstances : undefined;
         } else {
             const args = argsOrState as StaticWebLayerArgs | undefined;
-            if (!args || args.stackId === undefined) {
+            if ((!args || args.stackId === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'stackId'");
             }
             inputs["autoAssignElasticIps"] = args ? args.autoAssignElasticIps : undefined;

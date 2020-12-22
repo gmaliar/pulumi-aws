@@ -15,16 +15,24 @@ import * as utilities from "../utilities";
  *
  * const main = new aws.apigateway.RestApi("main", {});
  * const test = new aws.apigateway.Response("test", {
+ *     restApiId: main.id,
+ *     statusCode: "401",
+ *     responseType: "UNAUTHORIZED",
+ *     responseTemplates: {
+ *         "application/json": `{'message':$context.error.messageString}`,
+ *     },
  *     responseParameters: {
  *         "gatewayresponse.header.Authorization": "'Basic'",
  *     },
- *     responseTemplates: {
- *         "application/json": "{'message':$context.error.messageString}",
- *     },
- *     responseType: "UNAUTHORIZED",
- *     restApiId: main.id,
- *     statusCode: "401",
  * });
+ * ```
+ *
+ * ## Import
+ *
+ * `aws_api_gateway_gateway_response` can be imported using `REST-API-ID/RESPONSE-TYPE`, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:apigateway/response:Response example 12345abcde/UNAUTHORIZED
  * ```
  */
 export class Response extends pulumi.CustomResource {
@@ -95,10 +103,10 @@ export class Response extends pulumi.CustomResource {
             inputs["statusCode"] = state ? state.statusCode : undefined;
         } else {
             const args = argsOrState as ResponseArgs | undefined;
-            if (!args || args.responseType === undefined) {
+            if ((!args || args.responseType === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'responseType'");
             }
-            if (!args || args.restApiId === undefined) {
+            if ((!args || args.restApiId === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'restApiId'");
             }
             inputs["responseParameters"] = args ? args.responseParameters : undefined;

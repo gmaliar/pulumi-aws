@@ -14,22 +14,50 @@ namespace Pulumi.Aws.AppMesh.Outputs
     public sealed class VirtualNodeSpecListener
     {
         /// <summary>
+        /// The connection pool information for the listener.
+        /// </summary>
+        public readonly Outputs.VirtualNodeSpecListenerConnectionPool? ConnectionPool;
+        /// <summary>
         /// The health check information for the listener.
         /// </summary>
         public readonly Outputs.VirtualNodeSpecListenerHealthCheck? HealthCheck;
         /// <summary>
+        /// The outlier detection information for the listener.
+        /// </summary>
+        public readonly Outputs.VirtualNodeSpecListenerOutlierDetection? OutlierDetection;
+        /// <summary>
         /// The port mapping information for the listener.
         /// </summary>
         public readonly Outputs.VirtualNodeSpecListenerPortMapping PortMapping;
+        /// <summary>
+        /// Timeouts for different protocols.
+        /// </summary>
+        public readonly Outputs.VirtualNodeSpecListenerTimeout? Timeout;
+        /// <summary>
+        /// The Transport Layer Security (TLS) properties for the listener
+        /// </summary>
+        public readonly Outputs.VirtualNodeSpecListenerTls? Tls;
 
         [OutputConstructor]
         private VirtualNodeSpecListener(
+            Outputs.VirtualNodeSpecListenerConnectionPool? connectionPool,
+
             Outputs.VirtualNodeSpecListenerHealthCheck? healthCheck,
 
-            Outputs.VirtualNodeSpecListenerPortMapping portMapping)
+            Outputs.VirtualNodeSpecListenerOutlierDetection? outlierDetection,
+
+            Outputs.VirtualNodeSpecListenerPortMapping portMapping,
+
+            Outputs.VirtualNodeSpecListenerTimeout? timeout,
+
+            Outputs.VirtualNodeSpecListenerTls? tls)
         {
+            ConnectionPool = connectionPool;
             HealthCheck = healthCheck;
+            OutlierDetection = outlierDetection;
             PortMapping = portMapping;
+            Timeout = timeout;
+            Tls = tls;
         }
     }
 }

@@ -4,6 +4,7 @@
 package elasticache
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
@@ -27,7 +28,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/elasticache"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/elasticache"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -53,7 +54,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/elasticache"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/elasticache"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -82,14 +83,14 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/elasticache"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/elasticache"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
 // func main() {
 // 	pulumi.Run(func(ctx *pulumi.Context) error {
 // 		_, err := elasticache.NewCluster(ctx, "replica", &elasticache.ClusterArgs{
-// 			ReplicationGroupId: pulumi.String(aws_elasticache_replication_group.Example.Id),
+// 			ReplicationGroupId: pulumi.Any(aws_elasticache_replication_group.Example.Id),
 // 		})
 // 		if err != nil {
 // 			return err
@@ -97,6 +98,14 @@ import (
 // 		return nil
 // 	})
 // }
+// ```
+//
+// ## Import
+//
+// ElastiCache Clusters can be imported using the `cluster_id`, e.g.
+//
+// ```sh
+//  $ pulumi import aws:elasticache/cluster:Cluster my_cluster my_cluster
 // ```
 type Cluster struct {
 	pulumi.CustomResourceState
@@ -170,7 +179,7 @@ type Cluster struct {
 	// retain automatic cache cluster snapshots before deleting them. For example, if you set
 	// SnapshotRetentionLimit to 5, then a snapshot that was taken today will be retained for 5 days
 	// before being deleted. If the value of SnapshotRetentionLimit is set to zero (0), backups are turned off.
-	// Please note that setting a `snapshotRetentionLimit` is not supported on cache.t1.micro or cache.t2.* cache nodes
+	// Please note that setting a `snapshotRetentionLimit` is not supported on cache.t1.micro cache nodes
 	SnapshotRetentionLimit pulumi.IntPtrOutput `pulumi:"snapshotRetentionLimit"`
 	// The daily time range (in UTC) during which ElastiCache will
 	// begin taking a daily snapshot of your cache cluster. Example: 05:00-09:00
@@ -188,6 +197,7 @@ func NewCluster(ctx *pulumi.Context,
 	if args == nil {
 		args = &ClusterArgs{}
 	}
+
 	var resource Cluster
 	err := ctx.RegisterResource("aws:elasticache/cluster:Cluster", name, args, &resource, opts...)
 	if err != nil {
@@ -279,7 +289,7 @@ type clusterState struct {
 	// retain automatic cache cluster snapshots before deleting them. For example, if you set
 	// SnapshotRetentionLimit to 5, then a snapshot that was taken today will be retained for 5 days
 	// before being deleted. If the value of SnapshotRetentionLimit is set to zero (0), backups are turned off.
-	// Please note that setting a `snapshotRetentionLimit` is not supported on cache.t1.micro or cache.t2.* cache nodes
+	// Please note that setting a `snapshotRetentionLimit` is not supported on cache.t1.micro cache nodes
 	SnapshotRetentionLimit *int `pulumi:"snapshotRetentionLimit"`
 	// The daily time range (in UTC) during which ElastiCache will
 	// begin taking a daily snapshot of your cache cluster. Example: 05:00-09:00
@@ -361,7 +371,7 @@ type ClusterState struct {
 	// retain automatic cache cluster snapshots before deleting them. For example, if you set
 	// SnapshotRetentionLimit to 5, then a snapshot that was taken today will be retained for 5 days
 	// before being deleted. If the value of SnapshotRetentionLimit is set to zero (0), backups are turned off.
-	// Please note that setting a `snapshotRetentionLimit` is not supported on cache.t1.micro or cache.t2.* cache nodes
+	// Please note that setting a `snapshotRetentionLimit` is not supported on cache.t1.micro cache nodes
 	SnapshotRetentionLimit pulumi.IntPtrInput
 	// The daily time range (in UTC) during which ElastiCache will
 	// begin taking a daily snapshot of your cache cluster. Example: 05:00-09:00
@@ -439,7 +449,7 @@ type clusterArgs struct {
 	// retain automatic cache cluster snapshots before deleting them. For example, if you set
 	// SnapshotRetentionLimit to 5, then a snapshot that was taken today will be retained for 5 days
 	// before being deleted. If the value of SnapshotRetentionLimit is set to zero (0), backups are turned off.
-	// Please note that setting a `snapshotRetentionLimit` is not supported on cache.t1.micro or cache.t2.* cache nodes
+	// Please note that setting a `snapshotRetentionLimit` is not supported on cache.t1.micro cache nodes
 	SnapshotRetentionLimit *int `pulumi:"snapshotRetentionLimit"`
 	// The daily time range (in UTC) during which ElastiCache will
 	// begin taking a daily snapshot of your cache cluster. Example: 05:00-09:00
@@ -514,7 +524,7 @@ type ClusterArgs struct {
 	// retain automatic cache cluster snapshots before deleting them. For example, if you set
 	// SnapshotRetentionLimit to 5, then a snapshot that was taken today will be retained for 5 days
 	// before being deleted. If the value of SnapshotRetentionLimit is set to zero (0), backups are turned off.
-	// Please note that setting a `snapshotRetentionLimit` is not supported on cache.t1.micro or cache.t2.* cache nodes
+	// Please note that setting a `snapshotRetentionLimit` is not supported on cache.t1.micro cache nodes
 	SnapshotRetentionLimit pulumi.IntPtrInput
 	// The daily time range (in UTC) during which ElastiCache will
 	// begin taking a daily snapshot of your cache cluster. Example: 05:00-09:00
@@ -528,4 +538,43 @@ type ClusterArgs struct {
 
 func (ClusterArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*clusterArgs)(nil)).Elem()
+}
+
+type ClusterInput interface {
+	pulumi.Input
+
+	ToClusterOutput() ClusterOutput
+	ToClusterOutputWithContext(ctx context.Context) ClusterOutput
+}
+
+func (Cluster) ElementType() reflect.Type {
+	return reflect.TypeOf((*Cluster)(nil)).Elem()
+}
+
+func (i Cluster) ToClusterOutput() ClusterOutput {
+	return i.ToClusterOutputWithContext(context.Background())
+}
+
+func (i Cluster) ToClusterOutputWithContext(ctx context.Context) ClusterOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(ClusterOutput)
+}
+
+type ClusterOutput struct {
+	*pulumi.OutputState
+}
+
+func (ClusterOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*ClusterOutput)(nil)).Elem()
+}
+
+func (o ClusterOutput) ToClusterOutput() ClusterOutput {
+	return o
+}
+
+func (o ClusterOutput) ToClusterOutputWithContext(ctx context.Context) ClusterOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(ClusterOutput{})
 }

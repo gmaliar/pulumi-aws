@@ -47,25 +47,25 @@ namespace Pulumi.Aws.Ssm
     ///         var @default = new Aws.Rds.Instance("default", new Aws.Rds.InstanceArgs
     ///         {
     ///             AllocatedStorage = 10,
-    ///             DbSubnetGroupName = "my_database_subnet_group",
+    ///             StorageType = "gp2",
     ///             Engine = "mysql",
     ///             EngineVersion = "5.7.16",
     ///             InstanceClass = "db.t2.micro",
     ///             Name = "mydb",
-    ///             ParameterGroupName = "default.mysql5.7",
-    ///             Password = @var.Database_master_password,
-    ///             StorageType = "gp2",
     ///             Username = "foo",
+    ///             Password = @var.Database_master_password,
+    ///             DbSubnetGroupName = "my_database_subnet_group",
+    ///             ParameterGroupName = "default.mysql5.7",
     ///         });
     ///         var secret = new Aws.Ssm.Parameter("secret", new Aws.Ssm.ParameterArgs
     ///         {
     ///             Description = "The parameter description",
-    ///             Tags = 
-    ///             {
-    ///                 { "environment", @var.Environment },
-    ///             },
     ///             Type = "SecureString",
     ///             Value = @var.Database_master_password,
+    ///             Tags = 
+    ///             {
+    ///                 { "environment", "production" },
+    ///             },
     ///         });
     ///     }
     /// 
@@ -73,6 +73,14 @@ namespace Pulumi.Aws.Ssm
     /// ```
     /// 
     /// &gt; **Note:** The unencrypted value of a SecureString will be stored in the raw state as plain-text.
+    /// 
+    /// ## Import
+    /// 
+    /// SSM Parameters can be imported using the `parameter store name`, e.g.
+    /// 
+    /// ```sh
+    ///  $ pulumi import aws:ssm/parameter:Parameter my_param /my_path/my_paramname
+    /// ```
     /// </summary>
     public partial class Parameter : Pulumi.CustomResource
     {
@@ -87,6 +95,13 @@ namespace Pulumi.Aws.Ssm
         /// </summary>
         [Output("arn")]
         public Output<string> Arn { get; private set; } = null!;
+
+        /// <summary>
+        /// The data_type of the parameter. Valid values: text and aws:ec2:image for AMI format, see the [Native parameter support for Amazon Machine Image IDs
+        /// ](https://docs.aws.amazon.com/systems-manager/latest/userguide/parameter-store-ec2-aliases.html)
+        /// </summary>
+        [Output("dataType")]
+        public Output<string> DataType { get; private set; } = null!;
 
         /// <summary>
         /// The description of the parameter.
@@ -201,6 +216,13 @@ namespace Pulumi.Aws.Ssm
         public Input<string>? Arn { get; set; }
 
         /// <summary>
+        /// The data_type of the parameter. Valid values: text and aws:ec2:image for AMI format, see the [Native parameter support for Amazon Machine Image IDs
+        /// ](https://docs.aws.amazon.com/systems-manager/latest/userguide/parameter-store-ec2-aliases.html)
+        /// </summary>
+        [Input("dataType")]
+        public Input<string>? DataType { get; set; }
+
+        /// <summary>
         /// The description of the parameter.
         /// </summary>
         [Input("description")]
@@ -246,7 +268,7 @@ namespace Pulumi.Aws.Ssm
         /// The type of the parameter. Valid types are `String`, `StringList` and `SecureString`.
         /// </summary>
         [Input("type", required: true)]
-        public Input<string> Type { get; set; } = null!;
+        public InputUnion<string, Pulumi.Aws.Ssm.ParameterType> Type { get; set; } = null!;
 
         /// <summary>
         /// The value of the parameter.
@@ -272,6 +294,13 @@ namespace Pulumi.Aws.Ssm
         /// </summary>
         [Input("arn")]
         public Input<string>? Arn { get; set; }
+
+        /// <summary>
+        /// The data_type of the parameter. Valid values: text and aws:ec2:image for AMI format, see the [Native parameter support for Amazon Machine Image IDs
+        /// ](https://docs.aws.amazon.com/systems-manager/latest/userguide/parameter-store-ec2-aliases.html)
+        /// </summary>
+        [Input("dataType")]
+        public Input<string>? DataType { get; set; }
 
         /// <summary>
         /// The description of the parameter.
@@ -319,7 +348,7 @@ namespace Pulumi.Aws.Ssm
         /// The type of the parameter. Valid types are `String`, `StringList` and `SecureString`.
         /// </summary>
         [Input("type")]
-        public Input<string>? Type { get; set; }
+        public InputUnion<string, Pulumi.Aws.Ssm.ParameterType>? Type { get; set; }
 
         /// <summary>
         /// The value of the parameter.

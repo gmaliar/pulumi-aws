@@ -16,9 +16,17 @@ import * as utilities from "../utilities";
  * import * as aws from "@pulumi/aws";
  *
  * const example = new aws.storagegateway.WorkingStorage("example", {
- *     diskId: aws_storagegateway_local_disk_example.id,
- *     gatewayArn: aws_storagegateway_gateway_example.arn,
+ *     diskId: data.aws_storagegateway_local_disk.example.id,
+ *     gatewayArn: aws_storagegateway_gateway.example.arn,
  * });
+ * ```
+ *
+ * ## Import
+ *
+ * `aws_storagegateway_working_storage` can be imported by using the gateway Amazon Resource Name (ARN) and local disk identifier separated with a colon (`:`), e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:storagegateway/workingStorage:WorkingStorage example arn:aws:storagegateway:us-east-1:123456789012:gateway/sgw-12345678:pci-0000:03:00.0-scsi-0:0:0:0
  * ```
  */
 export class WorkingStorage extends pulumi.CustomResource {
@@ -74,10 +82,10 @@ export class WorkingStorage extends pulumi.CustomResource {
             inputs["gatewayArn"] = state ? state.gatewayArn : undefined;
         } else {
             const args = argsOrState as WorkingStorageArgs | undefined;
-            if (!args || args.diskId === undefined) {
+            if ((!args || args.diskId === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'diskId'");
             }
-            if (!args || args.gatewayArn === undefined) {
+            if ((!args || args.gatewayArn === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'gatewayArn'");
             }
             inputs["diskId"] = args ? args.diskId : undefined;

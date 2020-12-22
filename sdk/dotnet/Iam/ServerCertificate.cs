@@ -94,8 +94,8 @@ namespace Pulumi.Aws.Iam
     ///     {
     ///         var testCert = new Aws.Iam.ServerCertificate("testCert", new Aws.Iam.ServerCertificateArgs
     ///         {
-    ///             CertificateBody = File.ReadAllText("self-ca-cert.pem"),
     ///             NamePrefix = "example-cert",
+    ///             CertificateBody = File.ReadAllText("self-ca-cert.pem"),
     ///             PrivateKey = File.ReadAllText("test-key.pem"),
     ///         });
     ///         var ourapp = new Aws.Elb.LoadBalancer("ourapp", new Aws.Elb.LoadBalancerArgs
@@ -121,6 +121,16 @@ namespace Pulumi.Aws.Iam
     /// 
     /// }
     /// ```
+    /// 
+    /// ## Import
+    /// 
+    /// IAM Server Certificates can be imported using the `name`, e.g.
+    /// 
+    /// ```sh
+    ///  $ pulumi import aws:iam/serverCertificate:ServerCertificate certificate example.com-certificate-until-2018
+    /// ```
+    /// 
+    ///  [1]https://docs.aws.amazon.com/IAM/latest/UserGuide/Using_Identifiers.html [2]https://docs.aws.amazon.com/IAM/latest/UserGuide/ManagingServerCerts.html [lifecycle]/docs/configuration/resources.html
     /// </summary>
     public partial class ServerCertificate : Pulumi.CustomResource
     {

@@ -4,6 +4,7 @@
 package directoryservice
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -11,6 +12,14 @@ import (
 )
 
 // Provides a Log subscription for AWS Directory Service that pushes logs to cloudwatch.
+//
+// ## Import
+//
+// Directory Service Log Subscriptions can be imported using the directory id, e.g.
+//
+// ```sh
+//  $ pulumi import aws:directoryservice/logService:LogService msad d-1234567890
+// ```
 type LogService struct {
 	pulumi.CustomResourceState
 
@@ -23,14 +32,15 @@ type LogService struct {
 // NewLogService registers a new resource with the given unique name, arguments, and options.
 func NewLogService(ctx *pulumi.Context,
 	name string, args *LogServiceArgs, opts ...pulumi.ResourceOption) (*LogService, error) {
-	if args == nil || args.DirectoryId == nil {
-		return nil, errors.New("missing required argument 'DirectoryId'")
-	}
-	if args == nil || args.LogGroupName == nil {
-		return nil, errors.New("missing required argument 'LogGroupName'")
-	}
 	if args == nil {
-		args = &LogServiceArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.DirectoryId == nil {
+		return nil, errors.New("invalid value for required argument 'DirectoryId'")
+	}
+	if args.LogGroupName == nil {
+		return nil, errors.New("invalid value for required argument 'LogGroupName'")
 	}
 	var resource LogService
 	err := ctx.RegisterResource("aws:directoryservice/logService:LogService", name, args, &resource, opts...)
@@ -88,4 +98,43 @@ type LogServiceArgs struct {
 
 func (LogServiceArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*logServiceArgs)(nil)).Elem()
+}
+
+type LogServiceInput interface {
+	pulumi.Input
+
+	ToLogServiceOutput() LogServiceOutput
+	ToLogServiceOutputWithContext(ctx context.Context) LogServiceOutput
+}
+
+func (LogService) ElementType() reflect.Type {
+	return reflect.TypeOf((*LogService)(nil)).Elem()
+}
+
+func (i LogService) ToLogServiceOutput() LogServiceOutput {
+	return i.ToLogServiceOutputWithContext(context.Background())
+}
+
+func (i LogService) ToLogServiceOutputWithContext(ctx context.Context) LogServiceOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(LogServiceOutput)
+}
+
+type LogServiceOutput struct {
+	*pulumi.OutputState
+}
+
+func (LogServiceOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*LogServiceOutput)(nil)).Elem()
+}
+
+func (o LogServiceOutput) ToLogServiceOutput() LogServiceOutput {
+	return o
+}
+
+func (o LogServiceOutput) ToLogServiceOutputWithContext(ctx context.Context) LogServiceOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(LogServiceOutput{})
 }

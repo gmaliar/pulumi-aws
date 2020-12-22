@@ -41,7 +41,6 @@ namespace Pulumi.Aws.Backup
     ///     }
     ///   ]
     /// }
-    /// 
     /// ",
     ///         });
     ///         var exampleRolePolicyAttachment = new Aws.Iam.RolePolicyAttachment("exampleRolePolicyAttachment", new Aws.Iam.RolePolicyAttachmentArgs
@@ -49,6 +48,7 @@ namespace Pulumi.Aws.Backup
     ///             PolicyArn = "arn:aws:iam::aws:policy/service-role/AWSBackupServiceRolePolicyForBackup",
     ///             Role = exampleRole.Name,
     ///         });
+    ///         // ... other configuration ...
     ///         var exampleSelection = new Aws.Backup.Selection("exampleSelection", new Aws.Backup.SelectionArgs
     ///         {
     ///             IamRoleArn = exampleRole.Arn,
@@ -75,8 +75,8 @@ namespace Pulumi.Aws.Backup
     ///             {
     ///                 new Aws.Backup.Inputs.SelectionSelectionTagArgs
     ///                 {
-    ///                     Key = "foo",
     ///                     Type = "STRINGEQUALS",
+    ///                     Key = "foo",
     ///                     Value = "bar",
     ///                 },
     ///             },
@@ -109,6 +109,14 @@ namespace Pulumi.Aws.Backup
     ///     }
     /// 
     /// }
+    /// ```
+    /// 
+    /// ## Import
+    /// 
+    /// Backup selection can be imported using the role plan_id and id separated by `|`.
+    /// 
+    /// ```sh
+    ///  $ pulumi import aws:backup/selection:Selection example plan-id|selection-id
     /// ```
     /// </summary>
     public partial class Selection : Pulumi.CustomResource

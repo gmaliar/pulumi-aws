@@ -2,8 +2,7 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 /**
@@ -26,28 +25,16 @@ import * as utilities from "../utilities";
  *
  * // Create a new load balancer
  * const bar = new aws.elb.LoadBalancer("bar", {
- *     accessLogs: {
- *         bucket: "foo",
- *         bucketPrefix: "bar",
- *         interval: 60,
- *     },
  *     availabilityZones: [
  *         "us-west-2a",
  *         "us-west-2b",
  *         "us-west-2c",
  *     ],
- *     connectionDraining: true,
- *     connectionDrainingTimeout: 400,
- *     crossZoneLoadBalancing: true,
- *     healthCheck: {
- *         healthyThreshold: 2,
- *         interval: 30,
- *         target: "HTTP:8000/",
- *         timeout: 3,
- *         unhealthyThreshold: 2,
+ *     accessLogs: {
+ *         bucket: "foo",
+ *         bucketPrefix: "bar",
+ *         interval: 60,
  *     },
- *     idleTimeout: 400,
- *     instances: [aws_instance_foo.id],
  *     listeners: [
  *         {
  *             instancePort: 8000,
@@ -63,6 +50,18 @@ import * as utilities from "../utilities";
  *             sslCertificateId: "arn:aws:iam::123456789012:server-certificate/certName",
  *         },
  *     ],
+ *     healthCheck: {
+ *         healthyThreshold: 2,
+ *         unhealthyThreshold: 2,
+ *         timeout: 3,
+ *         target: "HTTP:8000/",
+ *         interval: 30,
+ *     },
+ *     instances: [aws_instance.foo.id],
+ *     crossZoneLoadBalancing: true,
+ *     idleTimeout: 400,
+ *     connectionDraining: true,
+ *     connectionDrainingTimeout: 400,
  *     tags: {
  *         Name: "foobar-elb",
  *     },
@@ -75,6 +74,14 @@ import * as utilities from "../utilities";
  * P256 and P384 curves.  Using a certificate signed by a key using a different
  * curve could produce the error `ERR_SSL_VERSION_OR_CIPHER_MISMATCH` in your
  * browser.
+ *
+ * ## Import
+ *
+ * ELBs can be imported using the `name`, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:elasticloadbalancing/loadBalancer:LoadBalancer bar elb-production-12345
+ * ```
  *
  * @deprecated aws.elasticloadbalancing.LoadBalancer has been deprecated in favor of aws.elb.LoadBalancer
  */
@@ -231,7 +238,7 @@ export class LoadBalancer extends pulumi.CustomResource {
             inputs["zoneId"] = state ? state.zoneId : undefined;
         } else {
             const args = argsOrState as LoadBalancerArgs | undefined;
-            if (!args || args.listeners === undefined) {
+            if ((!args || args.listeners === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'listeners'");
             }
             inputs["accessLogs"] = args ? args.accessLogs : undefined;

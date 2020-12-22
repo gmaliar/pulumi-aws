@@ -14,11 +14,8 @@ import * as utilities from "../utilities";
  * import * as aws from "@pulumi/aws";
  *
  * const app = new aws.pinpoint.App("app", {});
- * const testStream = new aws.kinesis.Stream("test_stream", {
- *     shardCount: 1,
- * });
- * const testRole = new aws.iam.Role("test_role", {
- *     assumeRolePolicy: `{
+ * const testStream = new aws.kinesis.Stream("testStream", {shardCount: 1});
+ * const testRole = new aws.iam.Role("testRole", {assumeRolePolicy: `{
  *   "Version": "2012-10-17",
  *   "Statement": [
  *     {
@@ -31,14 +28,14 @@ import * as utilities from "../utilities";
  *     }
  *   ]
  * }
- * `,
- * });
+ * `});
  * const stream = new aws.pinpoint.EventStream("stream", {
  *     applicationId: app.applicationId,
  *     destinationStreamArn: testStream.arn,
  *     roleArn: testRole.arn,
  * });
- * const testRolePolicy = new aws.iam.RolePolicy("test_role_policy", {
+ * const testRolePolicy = new aws.iam.RolePolicy("testRolePolicy", {
+ *     role: testRole.id,
  *     policy: `{
  *   "Version": "2012-10-17",
  *   "Statement": {
@@ -53,8 +50,15 @@ import * as utilities from "../utilities";
  *   }
  * }
  * `,
- *     role: testRole.id,
  * });
+ * ```
+ *
+ * ## Import
+ *
+ * Pinpoint Event Stream can be imported using the `application-id`, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:pinpoint/eventStream:EventStream stream application-id
  * ```
  */
 export class EventStream extends pulumi.CustomResource {
@@ -115,13 +119,13 @@ export class EventStream extends pulumi.CustomResource {
             inputs["roleArn"] = state ? state.roleArn : undefined;
         } else {
             const args = argsOrState as EventStreamArgs | undefined;
-            if (!args || args.applicationId === undefined) {
+            if ((!args || args.applicationId === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'applicationId'");
             }
-            if (!args || args.destinationStreamArn === undefined) {
+            if ((!args || args.destinationStreamArn === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'destinationStreamArn'");
             }
-            if (!args || args.roleArn === undefined) {
+            if ((!args || args.roleArn === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'roleArn'");
             }
             inputs["applicationId"] = args ? args.applicationId : undefined;

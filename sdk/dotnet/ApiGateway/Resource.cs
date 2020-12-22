@@ -28,13 +28,21 @@ namespace Pulumi.Aws.ApiGateway
     ///         });
     ///         var myDemoResource = new Aws.ApiGateway.Resource("myDemoResource", new Aws.ApiGateway.ResourceArgs
     ///         {
+    ///             RestApi = myDemoAPI.Id,
     ///             ParentId = myDemoAPI.RootResourceId,
     ///             PathPart = "mydemoresource",
-    ///             RestApi = myDemoAPI.Id,
     ///         });
     ///     }
     /// 
     /// }
+    /// ```
+    /// 
+    /// ## Import
+    /// 
+    /// `aws_api_gateway_resource` can be imported using `REST-API-ID/RESOURCE-ID`, e.g.
+    /// 
+    /// ```sh
+    ///  $ pulumi import aws:apigateway/resource:Resource example 12345abcde/67890fghij
     /// ```
     /// </summary>
     public partial class Resource : Pulumi.CustomResource

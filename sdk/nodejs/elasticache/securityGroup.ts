@@ -18,10 +18,16 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const barEc2SecurityGroup = new aws.ec2.SecurityGroup("bar", {});
- * const barSecurityGroup = new aws.elasticache.SecurityGroup("bar", {
- *     securityGroupNames: [barEc2SecurityGroup.name],
- * });
+ * const barSecurityGroup = new aws.ec2.SecurityGroup("barSecurityGroup", {});
+ * const barElasticache_securityGroupSecurityGroup = new aws.elasticache.SecurityGroup("barElasticache/securityGroupSecurityGroup", {securityGroupNames: [barSecurityGroup.name]});
+ * ```
+ *
+ * ## Import
+ *
+ * ElastiCache Security Groups can be imported by name, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:elasticache/securityGroup:SecurityGroup my_ec_security_group ec-security-group-1
  * ```
  */
 export class SecurityGroup extends pulumi.CustomResource {
@@ -83,7 +89,7 @@ export class SecurityGroup extends pulumi.CustomResource {
             inputs["securityGroupNames"] = state ? state.securityGroupNames : undefined;
         } else {
             const args = argsOrState as SecurityGroupArgs | undefined;
-            if (!args || args.securityGroupNames === undefined) {
+            if ((!args || args.securityGroupNames === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'securityGroupNames'");
             }
             inputs["description"] = (args ? args.description : undefined) || "Managed by Pulumi";

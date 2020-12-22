@@ -43,6 +43,7 @@ namespace Pulumi.Aws.Outputs
         public readonly string? Codecommit;
         public readonly string? Codedeploy;
         public readonly string? Codepipeline;
+        public readonly string? Codestarconnections;
         public readonly string? Cognitoidentity;
         public readonly string? Cognitoidp;
         public readonly string? Configservice;
@@ -60,6 +61,7 @@ namespace Pulumi.Aws.Outputs
         public readonly string? Dynamodb;
         public readonly string? Ec2;
         public readonly string? Ecr;
+        public readonly string? Ecrpublic;
         public readonly string? Ecs;
         public readonly string? Efs;
         public readonly string? Eks;
@@ -80,6 +82,7 @@ namespace Pulumi.Aws.Outputs
         public readonly string? Greengrass;
         public readonly string? Guardduty;
         public readonly string? Iam;
+        public readonly string? Identitystore;
         public readonly string? Imagebuilder;
         public readonly string? Inspector;
         public readonly string? Iot;
@@ -87,7 +90,6 @@ namespace Pulumi.Aws.Outputs
         public readonly string? Iotevents;
         public readonly string? Kafka;
         public readonly string? Kinesis;
-        public readonly string? KinesisAnalytics;
         public readonly string? Kinesisanalytics;
         public readonly string? Kinesisanalyticsv2;
         public readonly string? Kinesisvideo;
@@ -98,6 +100,7 @@ namespace Pulumi.Aws.Outputs
         public readonly string? Licensemanager;
         public readonly string? Lightsail;
         public readonly string? Macie;
+        public readonly string? Macie2;
         public readonly string? Managedblockchain;
         public readonly string? Marketplacecatalog;
         public readonly string? Mediaconnect;
@@ -107,7 +110,9 @@ namespace Pulumi.Aws.Outputs
         public readonly string? Mediastore;
         public readonly string? Mediastoredata;
         public readonly string? Mq;
+        public readonly string? Mwaa;
         public readonly string? Neptune;
+        public readonly string? Networkfirewall;
         public readonly string? Networkmanager;
         public readonly string? Opsworks;
         public readonly string? Organizations;
@@ -117,7 +122,6 @@ namespace Pulumi.Aws.Outputs
         public readonly string? Pricing;
         public readonly string? Qldb;
         public readonly string? Quicksight;
-        public readonly string? R53;
         public readonly string? Ram;
         public readonly string? Rds;
         public readonly string? Redshift;
@@ -128,6 +132,7 @@ namespace Pulumi.Aws.Outputs
         public readonly string? Route53resolver;
         public readonly string? S3;
         public readonly string? S3control;
+        public readonly string? S3outposts;
         public readonly string? Sagemaker;
         public readonly string? Sdb;
         public readonly string? Secretsmanager;
@@ -138,14 +143,17 @@ namespace Pulumi.Aws.Outputs
         public readonly string? Servicequotas;
         public readonly string? Ses;
         public readonly string? Shield;
+        public readonly string? Signer;
         public readonly string? Sns;
         public readonly string? Sqs;
         public readonly string? Ssm;
+        public readonly string? Ssoadmin;
         public readonly string? Stepfunctions;
         public readonly string? Storagegateway;
         public readonly string? Sts;
         public readonly string? Swf;
         public readonly string? Synthetics;
+        public readonly string? Timestreamwrite;
         public readonly string? Transfer;
         public readonly string? Waf;
         public readonly string? Wafregional;
@@ -217,6 +225,8 @@ namespace Pulumi.Aws.Outputs
 
             string? codepipeline,
 
+            string? codestarconnections,
+
             string? cognitoidentity,
 
             string? cognitoidp,
@@ -250,6 +260,8 @@ namespace Pulumi.Aws.Outputs
             string? ec2,
 
             string? ecr,
+
+            string? ecrpublic,
 
             string? ecs,
 
@@ -291,6 +303,8 @@ namespace Pulumi.Aws.Outputs
 
             string? iam,
 
+            string? identitystore,
+
             string? imagebuilder,
 
             string? inspector,
@@ -304,8 +318,6 @@ namespace Pulumi.Aws.Outputs
             string? kafka,
 
             string? kinesis,
-
-            string? kinesisAnalytics,
 
             string? kinesisanalytics,
 
@@ -327,6 +339,8 @@ namespace Pulumi.Aws.Outputs
 
             string? macie,
 
+            string? macie2,
+
             string? managedblockchain,
 
             string? marketplacecatalog,
@@ -345,7 +359,11 @@ namespace Pulumi.Aws.Outputs
 
             string? mq,
 
+            string? mwaa,
+
             string? neptune,
+
+            string? networkfirewall,
 
             string? networkmanager,
 
@@ -364,8 +382,6 @@ namespace Pulumi.Aws.Outputs
             string? qldb,
 
             string? quicksight,
-
-            string? r53,
 
             string? ram,
 
@@ -387,6 +403,8 @@ namespace Pulumi.Aws.Outputs
 
             string? s3control,
 
+            string? s3outposts,
+
             string? sagemaker,
 
             string? sdb,
@@ -407,11 +425,15 @@ namespace Pulumi.Aws.Outputs
 
             string? shield,
 
+            string? signer,
+
             string? sns,
 
             string? sqs,
 
             string? ssm,
+
+            string? ssoadmin,
 
             string? stepfunctions,
 
@@ -422,6 +444,8 @@ namespace Pulumi.Aws.Outputs
             string? swf,
 
             string? synthetics,
+
+            string? timestreamwrite,
 
             string? transfer,
 
@@ -469,6 +493,7 @@ namespace Pulumi.Aws.Outputs
             Codecommit = codecommit;
             Codedeploy = codedeploy;
             Codepipeline = codepipeline;
+            Codestarconnections = codestarconnections;
             Cognitoidentity = cognitoidentity;
             Cognitoidp = cognitoidp;
             Configservice = configservice;
@@ -486,6 +511,7 @@ namespace Pulumi.Aws.Outputs
             Dynamodb = dynamodb;
             Ec2 = ec2;
             Ecr = ecr;
+            Ecrpublic = ecrpublic;
             Ecs = ecs;
             Efs = efs;
             Eks = eks;
@@ -506,6 +532,7 @@ namespace Pulumi.Aws.Outputs
             Greengrass = greengrass;
             Guardduty = guardduty;
             Iam = iam;
+            Identitystore = identitystore;
             Imagebuilder = imagebuilder;
             Inspector = inspector;
             Iot = iot;
@@ -513,7 +540,6 @@ namespace Pulumi.Aws.Outputs
             Iotevents = iotevents;
             Kafka = kafka;
             Kinesis = kinesis;
-            KinesisAnalytics = kinesisAnalytics;
             Kinesisanalytics = kinesisanalytics;
             Kinesisanalyticsv2 = kinesisanalyticsv2;
             Kinesisvideo = kinesisvideo;
@@ -524,6 +550,7 @@ namespace Pulumi.Aws.Outputs
             Licensemanager = licensemanager;
             Lightsail = lightsail;
             Macie = macie;
+            Macie2 = macie2;
             Managedblockchain = managedblockchain;
             Marketplacecatalog = marketplacecatalog;
             Mediaconnect = mediaconnect;
@@ -533,7 +560,9 @@ namespace Pulumi.Aws.Outputs
             Mediastore = mediastore;
             Mediastoredata = mediastoredata;
             Mq = mq;
+            Mwaa = mwaa;
             Neptune = neptune;
+            Networkfirewall = networkfirewall;
             Networkmanager = networkmanager;
             Opsworks = opsworks;
             Organizations = organizations;
@@ -543,7 +572,6 @@ namespace Pulumi.Aws.Outputs
             Pricing = pricing;
             Qldb = qldb;
             Quicksight = quicksight;
-            R53 = r53;
             Ram = ram;
             Rds = rds;
             Redshift = redshift;
@@ -554,6 +582,7 @@ namespace Pulumi.Aws.Outputs
             Route53resolver = route53resolver;
             S3 = s3;
             S3control = s3control;
+            S3outposts = s3outposts;
             Sagemaker = sagemaker;
             Sdb = sdb;
             Secretsmanager = secretsmanager;
@@ -564,14 +593,17 @@ namespace Pulumi.Aws.Outputs
             Servicequotas = servicequotas;
             Ses = ses;
             Shield = shield;
+            Signer = signer;
             Sns = sns;
             Sqs = sqs;
             Ssm = ssm;
+            Ssoadmin = ssoadmin;
             Stepfunctions = stepfunctions;
             Storagegateway = storagegateway;
             Sts = sts;
             Swf = swf;
             Synthetics = synthetics;
+            Timestreamwrite = timestreamwrite;
             Transfer = transfer;
             Waf = waf;
             Wafregional = wafregional;

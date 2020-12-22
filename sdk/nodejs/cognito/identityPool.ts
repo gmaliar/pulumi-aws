@@ -2,8 +2,7 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 /**
@@ -14,12 +13,11 @@ import * as utilities from "../utilities";
  * ```typescript
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
- * import * as fs from "fs";
+ * import * from "fs";
  *
- * const defaultSamlProvider = new aws.iam.SamlProvider("default", {
- *     samlMetadataDocument: fs.readFileSync("saml-metadata.xml", "utf-8"),
- * });
+ * const _default = new aws.iam.SamlProvider("default", {samlMetadataDocument: fs.readFileSync("saml-metadata.xml")});
  * const main = new aws.cognito.IdentityPool("main", {
+ *     identityPoolName: "identity pool",
  *     allowUnauthenticatedIdentities: false,
  *     cognitoIdentityProviders: [
  *         {
@@ -33,14 +31,21 @@ import * as utilities from "../utilities";
  *             serverSideTokenCheck: false,
  *         },
  *     ],
- *     identityPoolName: "identity pool",
- *     openidConnectProviderArns: ["arn:aws:iam::123456789012:oidc-provider/foo.example.com"],
- *     samlProviderArns: [defaultSamlProvider.arn],
  *     supportedLoginProviders: {
- *         "accounts.google.com": "123456789012.apps.googleusercontent.com",
  *         "graph.facebook.com": "7346241598935552",
+ *         "accounts.google.com": "123456789012.apps.googleusercontent.com",
  *     },
+ *     samlProviderArns: [_default.arn],
+ *     openidConnectProviderArns: ["arn:aws:iam::123456789012:oidc-provider/id.example.com"],
  * });
+ * ```
+ *
+ * ## Import
+ *
+ * Cognito Identity Pool can be imported using the name, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:cognito/identityPool:IdentityPool mypool <identity-pool-id>
  * ```
  */
 export class IdentityPool extends pulumi.CustomResource {
@@ -93,7 +98,7 @@ export class IdentityPool extends pulumi.CustomResource {
      */
     public readonly identityPoolName!: pulumi.Output<string>;
     /**
-     * A list of OpendID Connect provider ARNs.
+     * Set of OpendID Connect provider ARNs.
      */
     public readonly openidConnectProviderArns!: pulumi.Output<string[] | undefined>;
     /**
@@ -132,7 +137,7 @@ export class IdentityPool extends pulumi.CustomResource {
             inputs["tags"] = state ? state.tags : undefined;
         } else {
             const args = argsOrState as IdentityPoolArgs | undefined;
-            if (!args || args.identityPoolName === undefined) {
+            if ((!args || args.identityPoolName === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'identityPoolName'");
             }
             inputs["allowUnauthenticatedIdentities"] = args ? args.allowUnauthenticatedIdentities : undefined;
@@ -182,7 +187,7 @@ export interface IdentityPoolState {
      */
     readonly identityPoolName?: pulumi.Input<string>;
     /**
-     * A list of OpendID Connect provider ARNs.
+     * Set of OpendID Connect provider ARNs.
      */
     readonly openidConnectProviderArns?: pulumi.Input<pulumi.Input<string>[]>;
     /**
@@ -221,7 +226,7 @@ export interface IdentityPoolArgs {
      */
     readonly identityPoolName: pulumi.Input<string>;
     /**
-     * A list of OpendID Connect provider ARNs.
+     * Set of OpendID Connect provider ARNs.
      */
     readonly openidConnectProviderArns?: pulumi.Input<pulumi.Input<string>[]>;
     /**

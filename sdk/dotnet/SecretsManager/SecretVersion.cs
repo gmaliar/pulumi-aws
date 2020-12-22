@@ -34,6 +34,43 @@ namespace Pulumi.Aws.SecretsManager
     /// 
     /// }
     /// ```
+    /// ### Key-Value Pairs
+    /// 
+    /// Secrets Manager also accepts key-value pairs in JSON.
+    /// 
+    /// ```csharp
+    /// using System.Collections.Generic;
+    /// using System.Text.Json;
+    /// using Pulumi;
+    /// using Aws = Pulumi.Aws;
+    /// 
+    /// class MyStack : Stack
+    /// {
+    ///     public MyStack()
+    ///     {
+    ///         var config = new Config();
+    ///         var example = config.GetObject&lt;dynamic&gt;("example") ?? 
+    ///         {
+    ///             { "key1", "value1" },
+    ///             { "key2", "value2" },
+    ///         };
+    ///         var exampleSecretVersion = new Aws.SecretsManager.SecretVersion("exampleSecretVersion", new Aws.SecretsManager.SecretVersionArgs
+    ///         {
+    ///             SecretId = aws_secretsmanager_secret.Example.Id,
+    ///             SecretString = JsonSerializer.Serialize(example),
+    ///         });
+    ///     }
+    /// 
+    /// }
+    /// ```
+    /// 
+    /// ## Import
+    /// 
+    /// `aws_secretsmanager_secret_version` can be imported by using the secret ID and version ID, e.g.
+    /// 
+    /// ```sh
+    ///  $ pulumi import aws:secretsmanager/secretVersion:SecretVersion example 'arn:aws:secretsmanager:us-east-1:123456789012:secret:example-123456|xxxxx-xxxxxxx-xxxxxxx-xxxxx'
+    /// ```
     /// </summary>
     public partial class SecretVersion : Pulumi.CustomResource
     {

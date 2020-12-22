@@ -4,6 +4,7 @@
 package ec2
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -21,8 +22,8 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/ebs"
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/ec2"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/ebs"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/ec2"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -31,7 +32,7 @@ import (
 // 		web, err := ec2.NewInstance(ctx, "web", &ec2.InstanceArgs{
 // 			Ami:              pulumi.String("ami-21f78e11"),
 // 			AvailabilityZone: pulumi.String("us-west-2a"),
-// 			InstanceType:     pulumi.String("t1.micro"),
+// 			InstanceType:     pulumi.String("t2.micro"),
 // 			Tags: pulumi.StringMap{
 // 				"Name": pulumi.String("HelloWorld"),
 // 			},
@@ -48,8 +49,8 @@ import (
 // 		}
 // 		_, err = ec2.NewVolumeAttachment(ctx, "ebsAtt", &ec2.VolumeAttachmentArgs{
 // 			DeviceName: pulumi.String("/dev/sdh"),
-// 			InstanceId: web.ID(),
 // 			VolumeId:   example.ID(),
+// 			InstanceId: web.ID(),
 // 		})
 // 		if err != nil {
 // 			return err
@@ -58,6 +59,16 @@ import (
 // 	})
 // }
 // ```
+//
+// ## Import
+//
+// EBS Volume Attachments can be imported using `DEVICE_NAME:VOLUME_ID:INSTANCE_ID`, e.g.
+//
+// ```sh
+//  $ pulumi import aws:ec2/volumeAttachment:VolumeAttachment example /dev/sdh:vol-049df61146c4d7901:i-12345678
+// ```
+//
+//  [1]https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/device_naming.html#available-ec2-device-names [2]https://docs.aws.amazon.com/AWSEC2/latest/WindowsGuide/device_naming.html#available-ec2-device-names [3]https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-detaching-volume.html
 type VolumeAttachment struct {
 	pulumi.CustomResourceState
 
@@ -84,17 +95,18 @@ type VolumeAttachment struct {
 // NewVolumeAttachment registers a new resource with the given unique name, arguments, and options.
 func NewVolumeAttachment(ctx *pulumi.Context,
 	name string, args *VolumeAttachmentArgs, opts ...pulumi.ResourceOption) (*VolumeAttachment, error) {
-	if args == nil || args.DeviceName == nil {
-		return nil, errors.New("missing required argument 'DeviceName'")
-	}
-	if args == nil || args.InstanceId == nil {
-		return nil, errors.New("missing required argument 'InstanceId'")
-	}
-	if args == nil || args.VolumeId == nil {
-		return nil, errors.New("missing required argument 'VolumeId'")
-	}
 	if args == nil {
-		args = &VolumeAttachmentArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.DeviceName == nil {
+		return nil, errors.New("invalid value for required argument 'DeviceName'")
+	}
+	if args.InstanceId == nil {
+		return nil, errors.New("invalid value for required argument 'InstanceId'")
+	}
+	if args.VolumeId == nil {
+		return nil, errors.New("invalid value for required argument 'VolumeId'")
 	}
 	var resource VolumeAttachment
 	err := ctx.RegisterResource("aws:ec2/volumeAttachment:VolumeAttachment", name, args, &resource, opts...)
@@ -208,4 +220,43 @@ type VolumeAttachmentArgs struct {
 
 func (VolumeAttachmentArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*volumeAttachmentArgs)(nil)).Elem()
+}
+
+type VolumeAttachmentInput interface {
+	pulumi.Input
+
+	ToVolumeAttachmentOutput() VolumeAttachmentOutput
+	ToVolumeAttachmentOutputWithContext(ctx context.Context) VolumeAttachmentOutput
+}
+
+func (VolumeAttachment) ElementType() reflect.Type {
+	return reflect.TypeOf((*VolumeAttachment)(nil)).Elem()
+}
+
+func (i VolumeAttachment) ToVolumeAttachmentOutput() VolumeAttachmentOutput {
+	return i.ToVolumeAttachmentOutputWithContext(context.Background())
+}
+
+func (i VolumeAttachment) ToVolumeAttachmentOutputWithContext(ctx context.Context) VolumeAttachmentOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(VolumeAttachmentOutput)
+}
+
+type VolumeAttachmentOutput struct {
+	*pulumi.OutputState
+}
+
+func (VolumeAttachmentOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*VolumeAttachmentOutput)(nil)).Elem()
+}
+
+func (o VolumeAttachmentOutput) ToVolumeAttachmentOutput() VolumeAttachmentOutput {
+	return o
+}
+
+func (o VolumeAttachmentOutput) ToVolumeAttachmentOutputWithContext(ctx context.Context) VolumeAttachmentOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(VolumeAttachmentOutput{})
 }

@@ -10,11 +10,117 @@ import (
 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 )
 
+type GatewayGatewayNetworkInterface struct {
+	// The Internet Protocol version 4 (IPv4) address of the interface.
+	Ipv4Address *string `pulumi:"ipv4Address"`
+}
+
+// GatewayGatewayNetworkInterfaceInput is an input type that accepts GatewayGatewayNetworkInterfaceArgs and GatewayGatewayNetworkInterfaceOutput values.
+// You can construct a concrete instance of `GatewayGatewayNetworkInterfaceInput` via:
+//
+//          GatewayGatewayNetworkInterfaceArgs{...}
+type GatewayGatewayNetworkInterfaceInput interface {
+	pulumi.Input
+
+	ToGatewayGatewayNetworkInterfaceOutput() GatewayGatewayNetworkInterfaceOutput
+	ToGatewayGatewayNetworkInterfaceOutputWithContext(context.Context) GatewayGatewayNetworkInterfaceOutput
+}
+
+type GatewayGatewayNetworkInterfaceArgs struct {
+	// The Internet Protocol version 4 (IPv4) address of the interface.
+	Ipv4Address pulumi.StringPtrInput `pulumi:"ipv4Address"`
+}
+
+func (GatewayGatewayNetworkInterfaceArgs) ElementType() reflect.Type {
+	return reflect.TypeOf((*GatewayGatewayNetworkInterface)(nil)).Elem()
+}
+
+func (i GatewayGatewayNetworkInterfaceArgs) ToGatewayGatewayNetworkInterfaceOutput() GatewayGatewayNetworkInterfaceOutput {
+	return i.ToGatewayGatewayNetworkInterfaceOutputWithContext(context.Background())
+}
+
+func (i GatewayGatewayNetworkInterfaceArgs) ToGatewayGatewayNetworkInterfaceOutputWithContext(ctx context.Context) GatewayGatewayNetworkInterfaceOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(GatewayGatewayNetworkInterfaceOutput)
+}
+
+// GatewayGatewayNetworkInterfaceArrayInput is an input type that accepts GatewayGatewayNetworkInterfaceArray and GatewayGatewayNetworkInterfaceArrayOutput values.
+// You can construct a concrete instance of `GatewayGatewayNetworkInterfaceArrayInput` via:
+//
+//          GatewayGatewayNetworkInterfaceArray{ GatewayGatewayNetworkInterfaceArgs{...} }
+type GatewayGatewayNetworkInterfaceArrayInput interface {
+	pulumi.Input
+
+	ToGatewayGatewayNetworkInterfaceArrayOutput() GatewayGatewayNetworkInterfaceArrayOutput
+	ToGatewayGatewayNetworkInterfaceArrayOutputWithContext(context.Context) GatewayGatewayNetworkInterfaceArrayOutput
+}
+
+type GatewayGatewayNetworkInterfaceArray []GatewayGatewayNetworkInterfaceInput
+
+func (GatewayGatewayNetworkInterfaceArray) ElementType() reflect.Type {
+	return reflect.TypeOf((*[]GatewayGatewayNetworkInterface)(nil)).Elem()
+}
+
+func (i GatewayGatewayNetworkInterfaceArray) ToGatewayGatewayNetworkInterfaceArrayOutput() GatewayGatewayNetworkInterfaceArrayOutput {
+	return i.ToGatewayGatewayNetworkInterfaceArrayOutputWithContext(context.Background())
+}
+
+func (i GatewayGatewayNetworkInterfaceArray) ToGatewayGatewayNetworkInterfaceArrayOutputWithContext(ctx context.Context) GatewayGatewayNetworkInterfaceArrayOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(GatewayGatewayNetworkInterfaceArrayOutput)
+}
+
+type GatewayGatewayNetworkInterfaceOutput struct{ *pulumi.OutputState }
+
+func (GatewayGatewayNetworkInterfaceOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*GatewayGatewayNetworkInterface)(nil)).Elem()
+}
+
+func (o GatewayGatewayNetworkInterfaceOutput) ToGatewayGatewayNetworkInterfaceOutput() GatewayGatewayNetworkInterfaceOutput {
+	return o
+}
+
+func (o GatewayGatewayNetworkInterfaceOutput) ToGatewayGatewayNetworkInterfaceOutputWithContext(ctx context.Context) GatewayGatewayNetworkInterfaceOutput {
+	return o
+}
+
+// The Internet Protocol version 4 (IPv4) address of the interface.
+func (o GatewayGatewayNetworkInterfaceOutput) Ipv4Address() pulumi.StringPtrOutput {
+	return o.ApplyT(func(v GatewayGatewayNetworkInterface) *string { return v.Ipv4Address }).(pulumi.StringPtrOutput)
+}
+
+type GatewayGatewayNetworkInterfaceArrayOutput struct{ *pulumi.OutputState }
+
+func (GatewayGatewayNetworkInterfaceArrayOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*[]GatewayGatewayNetworkInterface)(nil)).Elem()
+}
+
+func (o GatewayGatewayNetworkInterfaceArrayOutput) ToGatewayGatewayNetworkInterfaceArrayOutput() GatewayGatewayNetworkInterfaceArrayOutput {
+	return o
+}
+
+func (o GatewayGatewayNetworkInterfaceArrayOutput) ToGatewayGatewayNetworkInterfaceArrayOutputWithContext(ctx context.Context) GatewayGatewayNetworkInterfaceArrayOutput {
+	return o
+}
+
+func (o GatewayGatewayNetworkInterfaceArrayOutput) Index(i pulumi.IntInput) GatewayGatewayNetworkInterfaceOutput {
+	return pulumi.All(o, i).ApplyT(func(vs []interface{}) GatewayGatewayNetworkInterface {
+		return vs[0].([]GatewayGatewayNetworkInterface)[vs[1].(int)]
+	}).(GatewayGatewayNetworkInterfaceOutput)
+}
+
 type GatewaySmbActiveDirectorySettings struct {
+	ActiveDirectoryStatus *string `pulumi:"activeDirectoryStatus"`
+	// List of IPv4 addresses, NetBIOS names, or host names of your domain server.
+	// If you need to specify the port number include it after the colon (“:”). For example, `mydc.mydomain.com:389`.
+	DomainControllers []string `pulumi:"domainControllers"`
 	// The name of the domain that you want the gateway to join.
 	DomainName string `pulumi:"domainName"`
+	// The organizational unit (OU) is a container in an Active Directory that can hold users, groups,
+	// computers, and other OUs and this parameter specifies the OU that the gateway will join within the AD domain.
+	OrganizationalUnit *string `pulumi:"organizationalUnit"`
 	// The password of the user who has permission to add the gateway to the Active Directory domain.
 	Password string `pulumi:"password"`
+	// Specifies the time in seconds, in which the JoinDomain operation must complete. The default is `20` seconds.
+	TimeoutInSeconds *int `pulumi:"timeoutInSeconds"`
 	// The user name of user who has permission to add the gateway to the Active Directory domain.
 	Username string `pulumi:"username"`
 }
@@ -31,10 +137,19 @@ type GatewaySmbActiveDirectorySettingsInput interface {
 }
 
 type GatewaySmbActiveDirectorySettingsArgs struct {
+	ActiveDirectoryStatus pulumi.StringPtrInput `pulumi:"activeDirectoryStatus"`
+	// List of IPv4 addresses, NetBIOS names, or host names of your domain server.
+	// If you need to specify the port number include it after the colon (“:”). For example, `mydc.mydomain.com:389`.
+	DomainControllers pulumi.StringArrayInput `pulumi:"domainControllers"`
 	// The name of the domain that you want the gateway to join.
 	DomainName pulumi.StringInput `pulumi:"domainName"`
+	// The organizational unit (OU) is a container in an Active Directory that can hold users, groups,
+	// computers, and other OUs and this parameter specifies the OU that the gateway will join within the AD domain.
+	OrganizationalUnit pulumi.StringPtrInput `pulumi:"organizationalUnit"`
 	// The password of the user who has permission to add the gateway to the Active Directory domain.
 	Password pulumi.StringInput `pulumi:"password"`
+	// Specifies the time in seconds, in which the JoinDomain operation must complete. The default is `20` seconds.
+	TimeoutInSeconds pulumi.IntPtrInput `pulumi:"timeoutInSeconds"`
 	// The user name of user who has permission to add the gateway to the Active Directory domain.
 	Username pulumi.StringInput `pulumi:"username"`
 }
@@ -115,15 +230,35 @@ func (o GatewaySmbActiveDirectorySettingsOutput) ToGatewaySmbActiveDirectorySett
 		return &v
 	}).(GatewaySmbActiveDirectorySettingsPtrOutput)
 }
+func (o GatewaySmbActiveDirectorySettingsOutput) ActiveDirectoryStatus() pulumi.StringPtrOutput {
+	return o.ApplyT(func(v GatewaySmbActiveDirectorySettings) *string { return v.ActiveDirectoryStatus }).(pulumi.StringPtrOutput)
+}
+
+// List of IPv4 addresses, NetBIOS names, or host names of your domain server.
+// If you need to specify the port number include it after the colon (“:”). For example, `mydc.mydomain.com:389`.
+func (o GatewaySmbActiveDirectorySettingsOutput) DomainControllers() pulumi.StringArrayOutput {
+	return o.ApplyT(func(v GatewaySmbActiveDirectorySettings) []string { return v.DomainControllers }).(pulumi.StringArrayOutput)
+}
 
 // The name of the domain that you want the gateway to join.
 func (o GatewaySmbActiveDirectorySettingsOutput) DomainName() pulumi.StringOutput {
 	return o.ApplyT(func(v GatewaySmbActiveDirectorySettings) string { return v.DomainName }).(pulumi.StringOutput)
 }
 
+// The organizational unit (OU) is a container in an Active Directory that can hold users, groups,
+// computers, and other OUs and this parameter specifies the OU that the gateway will join within the AD domain.
+func (o GatewaySmbActiveDirectorySettingsOutput) OrganizationalUnit() pulumi.StringPtrOutput {
+	return o.ApplyT(func(v GatewaySmbActiveDirectorySettings) *string { return v.OrganizationalUnit }).(pulumi.StringPtrOutput)
+}
+
 // The password of the user who has permission to add the gateway to the Active Directory domain.
 func (o GatewaySmbActiveDirectorySettingsOutput) Password() pulumi.StringOutput {
 	return o.ApplyT(func(v GatewaySmbActiveDirectorySettings) string { return v.Password }).(pulumi.StringOutput)
+}
+
+// Specifies the time in seconds, in which the JoinDomain operation must complete. The default is `20` seconds.
+func (o GatewaySmbActiveDirectorySettingsOutput) TimeoutInSeconds() pulumi.IntPtrOutput {
+	return o.ApplyT(func(v GatewaySmbActiveDirectorySettings) *int { return v.TimeoutInSeconds }).(pulumi.IntPtrOutput)
 }
 
 // The user name of user who has permission to add the gateway to the Active Directory domain.
@@ -149,6 +284,26 @@ func (o GatewaySmbActiveDirectorySettingsPtrOutput) Elem() GatewaySmbActiveDirec
 	return o.ApplyT(func(v *GatewaySmbActiveDirectorySettings) GatewaySmbActiveDirectorySettings { return *v }).(GatewaySmbActiveDirectorySettingsOutput)
 }
 
+func (o GatewaySmbActiveDirectorySettingsPtrOutput) ActiveDirectoryStatus() pulumi.StringPtrOutput {
+	return o.ApplyT(func(v *GatewaySmbActiveDirectorySettings) *string {
+		if v == nil {
+			return nil
+		}
+		return v.ActiveDirectoryStatus
+	}).(pulumi.StringPtrOutput)
+}
+
+// List of IPv4 addresses, NetBIOS names, or host names of your domain server.
+// If you need to specify the port number include it after the colon (“:”). For example, `mydc.mydomain.com:389`.
+func (o GatewaySmbActiveDirectorySettingsPtrOutput) DomainControllers() pulumi.StringArrayOutput {
+	return o.ApplyT(func(v *GatewaySmbActiveDirectorySettings) []string {
+		if v == nil {
+			return nil
+		}
+		return v.DomainControllers
+	}).(pulumi.StringArrayOutput)
+}
+
 // The name of the domain that you want the gateway to join.
 func (o GatewaySmbActiveDirectorySettingsPtrOutput) DomainName() pulumi.StringPtrOutput {
 	return o.ApplyT(func(v *GatewaySmbActiveDirectorySettings) *string {
@@ -156,6 +311,17 @@ func (o GatewaySmbActiveDirectorySettingsPtrOutput) DomainName() pulumi.StringPt
 			return nil
 		}
 		return &v.DomainName
+	}).(pulumi.StringPtrOutput)
+}
+
+// The organizational unit (OU) is a container in an Active Directory that can hold users, groups,
+// computers, and other OUs and this parameter specifies the OU that the gateway will join within the AD domain.
+func (o GatewaySmbActiveDirectorySettingsPtrOutput) OrganizationalUnit() pulumi.StringPtrOutput {
+	return o.ApplyT(func(v *GatewaySmbActiveDirectorySettings) *string {
+		if v == nil {
+			return nil
+		}
+		return v.OrganizationalUnit
 	}).(pulumi.StringPtrOutput)
 }
 
@@ -169,6 +335,16 @@ func (o GatewaySmbActiveDirectorySettingsPtrOutput) Password() pulumi.StringPtrO
 	}).(pulumi.StringPtrOutput)
 }
 
+// Specifies the time in seconds, in which the JoinDomain operation must complete. The default is `20` seconds.
+func (o GatewaySmbActiveDirectorySettingsPtrOutput) TimeoutInSeconds() pulumi.IntPtrOutput {
+	return o.ApplyT(func(v *GatewaySmbActiveDirectorySettings) *int {
+		if v == nil {
+			return nil
+		}
+		return v.TimeoutInSeconds
+	}).(pulumi.IntPtrOutput)
+}
+
 // The user name of user who has permission to add the gateway to the Active Directory domain.
 func (o GatewaySmbActiveDirectorySettingsPtrOutput) Username() pulumi.StringPtrOutput {
 	return o.ApplyT(func(v *GatewaySmbActiveDirectorySettings) *string {
@@ -179,15 +355,154 @@ func (o GatewaySmbActiveDirectorySettingsPtrOutput) Username() pulumi.StringPtrO
 	}).(pulumi.StringPtrOutput)
 }
 
+type NfsFileShareCacheAttributes struct {
+	// Refreshes a file share's cache by using Time To Live (TTL).
+	// TTL is the length of time since the last refresh after which access to the directory would cause the file gateway
+	// to first refresh that directory's contents from the Amazon S3 bucket. Valid Values: 300 to 2,592,000 seconds (5 minutes to 30 days)
+	CacheStaleTimeoutInSeconds *int `pulumi:"cacheStaleTimeoutInSeconds"`
+}
+
+// NfsFileShareCacheAttributesInput is an input type that accepts NfsFileShareCacheAttributesArgs and NfsFileShareCacheAttributesOutput values.
+// You can construct a concrete instance of `NfsFileShareCacheAttributesInput` via:
+//
+//          NfsFileShareCacheAttributesArgs{...}
+type NfsFileShareCacheAttributesInput interface {
+	pulumi.Input
+
+	ToNfsFileShareCacheAttributesOutput() NfsFileShareCacheAttributesOutput
+	ToNfsFileShareCacheAttributesOutputWithContext(context.Context) NfsFileShareCacheAttributesOutput
+}
+
+type NfsFileShareCacheAttributesArgs struct {
+	// Refreshes a file share's cache by using Time To Live (TTL).
+	// TTL is the length of time since the last refresh after which access to the directory would cause the file gateway
+	// to first refresh that directory's contents from the Amazon S3 bucket. Valid Values: 300 to 2,592,000 seconds (5 minutes to 30 days)
+	CacheStaleTimeoutInSeconds pulumi.IntPtrInput `pulumi:"cacheStaleTimeoutInSeconds"`
+}
+
+func (NfsFileShareCacheAttributesArgs) ElementType() reflect.Type {
+	return reflect.TypeOf((*NfsFileShareCacheAttributes)(nil)).Elem()
+}
+
+func (i NfsFileShareCacheAttributesArgs) ToNfsFileShareCacheAttributesOutput() NfsFileShareCacheAttributesOutput {
+	return i.ToNfsFileShareCacheAttributesOutputWithContext(context.Background())
+}
+
+func (i NfsFileShareCacheAttributesArgs) ToNfsFileShareCacheAttributesOutputWithContext(ctx context.Context) NfsFileShareCacheAttributesOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(NfsFileShareCacheAttributesOutput)
+}
+
+func (i NfsFileShareCacheAttributesArgs) ToNfsFileShareCacheAttributesPtrOutput() NfsFileShareCacheAttributesPtrOutput {
+	return i.ToNfsFileShareCacheAttributesPtrOutputWithContext(context.Background())
+}
+
+func (i NfsFileShareCacheAttributesArgs) ToNfsFileShareCacheAttributesPtrOutputWithContext(ctx context.Context) NfsFileShareCacheAttributesPtrOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(NfsFileShareCacheAttributesOutput).ToNfsFileShareCacheAttributesPtrOutputWithContext(ctx)
+}
+
+// NfsFileShareCacheAttributesPtrInput is an input type that accepts NfsFileShareCacheAttributesArgs, NfsFileShareCacheAttributesPtr and NfsFileShareCacheAttributesPtrOutput values.
+// You can construct a concrete instance of `NfsFileShareCacheAttributesPtrInput` via:
+//
+//          NfsFileShareCacheAttributesArgs{...}
+//
+//  or:
+//
+//          nil
+type NfsFileShareCacheAttributesPtrInput interface {
+	pulumi.Input
+
+	ToNfsFileShareCacheAttributesPtrOutput() NfsFileShareCacheAttributesPtrOutput
+	ToNfsFileShareCacheAttributesPtrOutputWithContext(context.Context) NfsFileShareCacheAttributesPtrOutput
+}
+
+type nfsFileShareCacheAttributesPtrType NfsFileShareCacheAttributesArgs
+
+func NfsFileShareCacheAttributesPtr(v *NfsFileShareCacheAttributesArgs) NfsFileShareCacheAttributesPtrInput {
+	return (*nfsFileShareCacheAttributesPtrType)(v)
+}
+
+func (*nfsFileShareCacheAttributesPtrType) ElementType() reflect.Type {
+	return reflect.TypeOf((**NfsFileShareCacheAttributes)(nil)).Elem()
+}
+
+func (i *nfsFileShareCacheAttributesPtrType) ToNfsFileShareCacheAttributesPtrOutput() NfsFileShareCacheAttributesPtrOutput {
+	return i.ToNfsFileShareCacheAttributesPtrOutputWithContext(context.Background())
+}
+
+func (i *nfsFileShareCacheAttributesPtrType) ToNfsFileShareCacheAttributesPtrOutputWithContext(ctx context.Context) NfsFileShareCacheAttributesPtrOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(NfsFileShareCacheAttributesPtrOutput)
+}
+
+type NfsFileShareCacheAttributesOutput struct{ *pulumi.OutputState }
+
+func (NfsFileShareCacheAttributesOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*NfsFileShareCacheAttributes)(nil)).Elem()
+}
+
+func (o NfsFileShareCacheAttributesOutput) ToNfsFileShareCacheAttributesOutput() NfsFileShareCacheAttributesOutput {
+	return o
+}
+
+func (o NfsFileShareCacheAttributesOutput) ToNfsFileShareCacheAttributesOutputWithContext(ctx context.Context) NfsFileShareCacheAttributesOutput {
+	return o
+}
+
+func (o NfsFileShareCacheAttributesOutput) ToNfsFileShareCacheAttributesPtrOutput() NfsFileShareCacheAttributesPtrOutput {
+	return o.ToNfsFileShareCacheAttributesPtrOutputWithContext(context.Background())
+}
+
+func (o NfsFileShareCacheAttributesOutput) ToNfsFileShareCacheAttributesPtrOutputWithContext(ctx context.Context) NfsFileShareCacheAttributesPtrOutput {
+	return o.ApplyT(func(v NfsFileShareCacheAttributes) *NfsFileShareCacheAttributes {
+		return &v
+	}).(NfsFileShareCacheAttributesPtrOutput)
+}
+
+// Refreshes a file share's cache by using Time To Live (TTL).
+// TTL is the length of time since the last refresh after which access to the directory would cause the file gateway
+// to first refresh that directory's contents from the Amazon S3 bucket. Valid Values: 300 to 2,592,000 seconds (5 minutes to 30 days)
+func (o NfsFileShareCacheAttributesOutput) CacheStaleTimeoutInSeconds() pulumi.IntPtrOutput {
+	return o.ApplyT(func(v NfsFileShareCacheAttributes) *int { return v.CacheStaleTimeoutInSeconds }).(pulumi.IntPtrOutput)
+}
+
+type NfsFileShareCacheAttributesPtrOutput struct{ *pulumi.OutputState }
+
+func (NfsFileShareCacheAttributesPtrOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((**NfsFileShareCacheAttributes)(nil)).Elem()
+}
+
+func (o NfsFileShareCacheAttributesPtrOutput) ToNfsFileShareCacheAttributesPtrOutput() NfsFileShareCacheAttributesPtrOutput {
+	return o
+}
+
+func (o NfsFileShareCacheAttributesPtrOutput) ToNfsFileShareCacheAttributesPtrOutputWithContext(ctx context.Context) NfsFileShareCacheAttributesPtrOutput {
+	return o
+}
+
+func (o NfsFileShareCacheAttributesPtrOutput) Elem() NfsFileShareCacheAttributesOutput {
+	return o.ApplyT(func(v *NfsFileShareCacheAttributes) NfsFileShareCacheAttributes { return *v }).(NfsFileShareCacheAttributesOutput)
+}
+
+// Refreshes a file share's cache by using Time To Live (TTL).
+// TTL is the length of time since the last refresh after which access to the directory would cause the file gateway
+// to first refresh that directory's contents from the Amazon S3 bucket. Valid Values: 300 to 2,592,000 seconds (5 minutes to 30 days)
+func (o NfsFileShareCacheAttributesPtrOutput) CacheStaleTimeoutInSeconds() pulumi.IntPtrOutput {
+	return o.ApplyT(func(v *NfsFileShareCacheAttributes) *int {
+		if v == nil {
+			return nil
+		}
+		return v.CacheStaleTimeoutInSeconds
+	}).(pulumi.IntPtrOutput)
+}
+
 type NfsFileShareNfsFileShareDefaults struct {
 	// The Unix directory mode in the string form "nnnn". Defaults to `"0777"`.
 	DirectoryMode *string `pulumi:"directoryMode"`
 	// The Unix file mode in the string form "nnnn". Defaults to `"0666"`.
 	FileMode *string `pulumi:"fileMode"`
 	// The default group ID for the file share (unless the files have another group ID specified). Defaults to `65534` (`nfsnobody`). Valid values: `0` through `4294967294`.
-	GroupId *int `pulumi:"groupId"`
+	GroupId *string `pulumi:"groupId"`
 	// The default owner ID for the file share (unless the files have another owner ID specified). Defaults to `65534` (`nfsnobody`). Valid values: `0` through `4294967294`.
-	OwnerId *int `pulumi:"ownerId"`
+	OwnerId *string `pulumi:"ownerId"`
 }
 
 // NfsFileShareNfsFileShareDefaultsInput is an input type that accepts NfsFileShareNfsFileShareDefaultsArgs and NfsFileShareNfsFileShareDefaultsOutput values.
@@ -207,9 +522,9 @@ type NfsFileShareNfsFileShareDefaultsArgs struct {
 	// The Unix file mode in the string form "nnnn". Defaults to `"0666"`.
 	FileMode pulumi.StringPtrInput `pulumi:"fileMode"`
 	// The default group ID for the file share (unless the files have another group ID specified). Defaults to `65534` (`nfsnobody`). Valid values: `0` through `4294967294`.
-	GroupId pulumi.IntPtrInput `pulumi:"groupId"`
+	GroupId pulumi.StringPtrInput `pulumi:"groupId"`
 	// The default owner ID for the file share (unless the files have another owner ID specified). Defaults to `65534` (`nfsnobody`). Valid values: `0` through `4294967294`.
-	OwnerId pulumi.IntPtrInput `pulumi:"ownerId"`
+	OwnerId pulumi.StringPtrInput `pulumi:"ownerId"`
 }
 
 func (NfsFileShareNfsFileShareDefaultsArgs) ElementType() reflect.Type {
@@ -300,13 +615,13 @@ func (o NfsFileShareNfsFileShareDefaultsOutput) FileMode() pulumi.StringPtrOutpu
 }
 
 // The default group ID for the file share (unless the files have another group ID specified). Defaults to `65534` (`nfsnobody`). Valid values: `0` through `4294967294`.
-func (o NfsFileShareNfsFileShareDefaultsOutput) GroupId() pulumi.IntPtrOutput {
-	return o.ApplyT(func(v NfsFileShareNfsFileShareDefaults) *int { return v.GroupId }).(pulumi.IntPtrOutput)
+func (o NfsFileShareNfsFileShareDefaultsOutput) GroupId() pulumi.StringPtrOutput {
+	return o.ApplyT(func(v NfsFileShareNfsFileShareDefaults) *string { return v.GroupId }).(pulumi.StringPtrOutput)
 }
 
 // The default owner ID for the file share (unless the files have another owner ID specified). Defaults to `65534` (`nfsnobody`). Valid values: `0` through `4294967294`.
-func (o NfsFileShareNfsFileShareDefaultsOutput) OwnerId() pulumi.IntPtrOutput {
-	return o.ApplyT(func(v NfsFileShareNfsFileShareDefaults) *int { return v.OwnerId }).(pulumi.IntPtrOutput)
+func (o NfsFileShareNfsFileShareDefaultsOutput) OwnerId() pulumi.StringPtrOutput {
+	return o.ApplyT(func(v NfsFileShareNfsFileShareDefaults) *string { return v.OwnerId }).(pulumi.StringPtrOutput)
 }
 
 type NfsFileShareNfsFileShareDefaultsPtrOutput struct{ *pulumi.OutputState }
@@ -348,28 +663,173 @@ func (o NfsFileShareNfsFileShareDefaultsPtrOutput) FileMode() pulumi.StringPtrOu
 }
 
 // The default group ID for the file share (unless the files have another group ID specified). Defaults to `65534` (`nfsnobody`). Valid values: `0` through `4294967294`.
-func (o NfsFileShareNfsFileShareDefaultsPtrOutput) GroupId() pulumi.IntPtrOutput {
-	return o.ApplyT(func(v *NfsFileShareNfsFileShareDefaults) *int {
+func (o NfsFileShareNfsFileShareDefaultsPtrOutput) GroupId() pulumi.StringPtrOutput {
+	return o.ApplyT(func(v *NfsFileShareNfsFileShareDefaults) *string {
 		if v == nil {
 			return nil
 		}
 		return v.GroupId
-	}).(pulumi.IntPtrOutput)
+	}).(pulumi.StringPtrOutput)
 }
 
 // The default owner ID for the file share (unless the files have another owner ID specified). Defaults to `65534` (`nfsnobody`). Valid values: `0` through `4294967294`.
-func (o NfsFileShareNfsFileShareDefaultsPtrOutput) OwnerId() pulumi.IntPtrOutput {
-	return o.ApplyT(func(v *NfsFileShareNfsFileShareDefaults) *int {
+func (o NfsFileShareNfsFileShareDefaultsPtrOutput) OwnerId() pulumi.StringPtrOutput {
+	return o.ApplyT(func(v *NfsFileShareNfsFileShareDefaults) *string {
 		if v == nil {
 			return nil
 		}
 		return v.OwnerId
+	}).(pulumi.StringPtrOutput)
+}
+
+type SmbFileShareCacheAttributes struct {
+	// Refreshes a file share's cache by using Time To Live (TTL).
+	// TTL is the length of time since the last refresh after which access to the directory would cause the file gateway
+	// to first refresh that directory's contents from the Amazon S3 bucket. Valid Values: 300 to 2,592,000 seconds (5 minutes to 30 days)
+	CacheStaleTimeoutInSeconds *int `pulumi:"cacheStaleTimeoutInSeconds"`
+}
+
+// SmbFileShareCacheAttributesInput is an input type that accepts SmbFileShareCacheAttributesArgs and SmbFileShareCacheAttributesOutput values.
+// You can construct a concrete instance of `SmbFileShareCacheAttributesInput` via:
+//
+//          SmbFileShareCacheAttributesArgs{...}
+type SmbFileShareCacheAttributesInput interface {
+	pulumi.Input
+
+	ToSmbFileShareCacheAttributesOutput() SmbFileShareCacheAttributesOutput
+	ToSmbFileShareCacheAttributesOutputWithContext(context.Context) SmbFileShareCacheAttributesOutput
+}
+
+type SmbFileShareCacheAttributesArgs struct {
+	// Refreshes a file share's cache by using Time To Live (TTL).
+	// TTL is the length of time since the last refresh after which access to the directory would cause the file gateway
+	// to first refresh that directory's contents from the Amazon S3 bucket. Valid Values: 300 to 2,592,000 seconds (5 minutes to 30 days)
+	CacheStaleTimeoutInSeconds pulumi.IntPtrInput `pulumi:"cacheStaleTimeoutInSeconds"`
+}
+
+func (SmbFileShareCacheAttributesArgs) ElementType() reflect.Type {
+	return reflect.TypeOf((*SmbFileShareCacheAttributes)(nil)).Elem()
+}
+
+func (i SmbFileShareCacheAttributesArgs) ToSmbFileShareCacheAttributesOutput() SmbFileShareCacheAttributesOutput {
+	return i.ToSmbFileShareCacheAttributesOutputWithContext(context.Background())
+}
+
+func (i SmbFileShareCacheAttributesArgs) ToSmbFileShareCacheAttributesOutputWithContext(ctx context.Context) SmbFileShareCacheAttributesOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(SmbFileShareCacheAttributesOutput)
+}
+
+func (i SmbFileShareCacheAttributesArgs) ToSmbFileShareCacheAttributesPtrOutput() SmbFileShareCacheAttributesPtrOutput {
+	return i.ToSmbFileShareCacheAttributesPtrOutputWithContext(context.Background())
+}
+
+func (i SmbFileShareCacheAttributesArgs) ToSmbFileShareCacheAttributesPtrOutputWithContext(ctx context.Context) SmbFileShareCacheAttributesPtrOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(SmbFileShareCacheAttributesOutput).ToSmbFileShareCacheAttributesPtrOutputWithContext(ctx)
+}
+
+// SmbFileShareCacheAttributesPtrInput is an input type that accepts SmbFileShareCacheAttributesArgs, SmbFileShareCacheAttributesPtr and SmbFileShareCacheAttributesPtrOutput values.
+// You can construct a concrete instance of `SmbFileShareCacheAttributesPtrInput` via:
+//
+//          SmbFileShareCacheAttributesArgs{...}
+//
+//  or:
+//
+//          nil
+type SmbFileShareCacheAttributesPtrInput interface {
+	pulumi.Input
+
+	ToSmbFileShareCacheAttributesPtrOutput() SmbFileShareCacheAttributesPtrOutput
+	ToSmbFileShareCacheAttributesPtrOutputWithContext(context.Context) SmbFileShareCacheAttributesPtrOutput
+}
+
+type smbFileShareCacheAttributesPtrType SmbFileShareCacheAttributesArgs
+
+func SmbFileShareCacheAttributesPtr(v *SmbFileShareCacheAttributesArgs) SmbFileShareCacheAttributesPtrInput {
+	return (*smbFileShareCacheAttributesPtrType)(v)
+}
+
+func (*smbFileShareCacheAttributesPtrType) ElementType() reflect.Type {
+	return reflect.TypeOf((**SmbFileShareCacheAttributes)(nil)).Elem()
+}
+
+func (i *smbFileShareCacheAttributesPtrType) ToSmbFileShareCacheAttributesPtrOutput() SmbFileShareCacheAttributesPtrOutput {
+	return i.ToSmbFileShareCacheAttributesPtrOutputWithContext(context.Background())
+}
+
+func (i *smbFileShareCacheAttributesPtrType) ToSmbFileShareCacheAttributesPtrOutputWithContext(ctx context.Context) SmbFileShareCacheAttributesPtrOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(SmbFileShareCacheAttributesPtrOutput)
+}
+
+type SmbFileShareCacheAttributesOutput struct{ *pulumi.OutputState }
+
+func (SmbFileShareCacheAttributesOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*SmbFileShareCacheAttributes)(nil)).Elem()
+}
+
+func (o SmbFileShareCacheAttributesOutput) ToSmbFileShareCacheAttributesOutput() SmbFileShareCacheAttributesOutput {
+	return o
+}
+
+func (o SmbFileShareCacheAttributesOutput) ToSmbFileShareCacheAttributesOutputWithContext(ctx context.Context) SmbFileShareCacheAttributesOutput {
+	return o
+}
+
+func (o SmbFileShareCacheAttributesOutput) ToSmbFileShareCacheAttributesPtrOutput() SmbFileShareCacheAttributesPtrOutput {
+	return o.ToSmbFileShareCacheAttributesPtrOutputWithContext(context.Background())
+}
+
+func (o SmbFileShareCacheAttributesOutput) ToSmbFileShareCacheAttributesPtrOutputWithContext(ctx context.Context) SmbFileShareCacheAttributesPtrOutput {
+	return o.ApplyT(func(v SmbFileShareCacheAttributes) *SmbFileShareCacheAttributes {
+		return &v
+	}).(SmbFileShareCacheAttributesPtrOutput)
+}
+
+// Refreshes a file share's cache by using Time To Live (TTL).
+// TTL is the length of time since the last refresh after which access to the directory would cause the file gateway
+// to first refresh that directory's contents from the Amazon S3 bucket. Valid Values: 300 to 2,592,000 seconds (5 minutes to 30 days)
+func (o SmbFileShareCacheAttributesOutput) CacheStaleTimeoutInSeconds() pulumi.IntPtrOutput {
+	return o.ApplyT(func(v SmbFileShareCacheAttributes) *int { return v.CacheStaleTimeoutInSeconds }).(pulumi.IntPtrOutput)
+}
+
+type SmbFileShareCacheAttributesPtrOutput struct{ *pulumi.OutputState }
+
+func (SmbFileShareCacheAttributesPtrOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((**SmbFileShareCacheAttributes)(nil)).Elem()
+}
+
+func (o SmbFileShareCacheAttributesPtrOutput) ToSmbFileShareCacheAttributesPtrOutput() SmbFileShareCacheAttributesPtrOutput {
+	return o
+}
+
+func (o SmbFileShareCacheAttributesPtrOutput) ToSmbFileShareCacheAttributesPtrOutputWithContext(ctx context.Context) SmbFileShareCacheAttributesPtrOutput {
+	return o
+}
+
+func (o SmbFileShareCacheAttributesPtrOutput) Elem() SmbFileShareCacheAttributesOutput {
+	return o.ApplyT(func(v *SmbFileShareCacheAttributes) SmbFileShareCacheAttributes { return *v }).(SmbFileShareCacheAttributesOutput)
+}
+
+// Refreshes a file share's cache by using Time To Live (TTL).
+// TTL is the length of time since the last refresh after which access to the directory would cause the file gateway
+// to first refresh that directory's contents from the Amazon S3 bucket. Valid Values: 300 to 2,592,000 seconds (5 minutes to 30 days)
+func (o SmbFileShareCacheAttributesPtrOutput) CacheStaleTimeoutInSeconds() pulumi.IntPtrOutput {
+	return o.ApplyT(func(v *SmbFileShareCacheAttributes) *int {
+		if v == nil {
+			return nil
+		}
+		return v.CacheStaleTimeoutInSeconds
 	}).(pulumi.IntPtrOutput)
 }
 
 func init() {
+	pulumi.RegisterOutputType(GatewayGatewayNetworkInterfaceOutput{})
+	pulumi.RegisterOutputType(GatewayGatewayNetworkInterfaceArrayOutput{})
 	pulumi.RegisterOutputType(GatewaySmbActiveDirectorySettingsOutput{})
 	pulumi.RegisterOutputType(GatewaySmbActiveDirectorySettingsPtrOutput{})
+	pulumi.RegisterOutputType(NfsFileShareCacheAttributesOutput{})
+	pulumi.RegisterOutputType(NfsFileShareCacheAttributesPtrOutput{})
 	pulumi.RegisterOutputType(NfsFileShareNfsFileShareDefaultsOutput{})
 	pulumi.RegisterOutputType(NfsFileShareNfsFileShareDefaultsPtrOutput{})
+	pulumi.RegisterOutputType(SmbFileShareCacheAttributesOutput{})
+	pulumi.RegisterOutputType(SmbFileShareCacheAttributesPtrOutput{})
 }

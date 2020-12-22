@@ -5,24 +5,22 @@
 import warnings
 import pulumi
 import pulumi.runtime
-from typing import Union
-from .. import utilities, tables
+from typing import Any, Mapping, Optional, Sequence, Union
+from .. import _utilities, _tables
+
+__all__ = ['TrafficMirrorFilter']
 
 
 class TrafficMirrorFilter(pulumi.CustomResource):
-    description: pulumi.Output[str]
-    """
-    A description of the filter.
-    """
-    network_services: pulumi.Output[list]
-    """
-    List of amazon network services that should be mirrored. Valid values: `amazon-dns`.
-    """
-    tags: pulumi.Output[dict]
-    """
-    Key-value map of resource tags.
-    """
-    def __init__(__self__, resource_name, opts=None, description=None, network_services=None, tags=None, __props__=None, __name__=None, __opts__=None):
+    def __init__(__self__,
+                 resource_name: str,
+                 opts: Optional[pulumi.ResourceOptions] = None,
+                 description: Optional[pulumi.Input[str]] = None,
+                 network_services: Optional[pulumi.Input[Sequence[pulumi.Input[str]]]] = None,
+                 tags: Optional[pulumi.Input[Mapping[str, pulumi.Input[str]]]] = None,
+                 __props__=None,
+                 __name__=None,
+                 __opts__=None):
         """
         Provides an Traffic mirror filter.\
         Read [limits and considerations](https://docs.aws.amazon.com/vpc/latest/mirroring/traffic-mirroring-considerations.html) for traffic mirroring
@@ -40,11 +38,19 @@ class TrafficMirrorFilter(pulumi.CustomResource):
             network_services=["amazon-dns"])
         ```
 
+        ## Import
+
+        Traffic mirror filter can be imported using the `id`, e.g.
+
+        ```sh
+         $ pulumi import aws:ec2/trafficMirrorFilter:TrafficMirrorFilter foo tmf-0fbb93ddf38198f64
+        ```
+
         :param str resource_name: The name of the resource.
         :param pulumi.ResourceOptions opts: Options for the resource.
         :param pulumi.Input[str] description: A description of the filter.
-        :param pulumi.Input[list] network_services: List of amazon network services that should be mirrored. Valid values: `amazon-dns`.
-        :param pulumi.Input[dict] tags: Key-value map of resource tags.
+        :param pulumi.Input[Sequence[pulumi.Input[str]]] network_services: List of amazon network services that should be mirrored. Valid values: `amazon-dns`.
+        :param pulumi.Input[Mapping[str, pulumi.Input[str]]] tags: Key-value map of resource tags.
         """
         if __name__ is not None:
             warnings.warn("explicit use of __name__ is deprecated", DeprecationWarning)
@@ -57,7 +63,7 @@ class TrafficMirrorFilter(pulumi.CustomResource):
         if not isinstance(opts, pulumi.ResourceOptions):
             raise TypeError('Expected resource options to be a ResourceOptions instance')
         if opts.version is None:
-            opts.version = utilities.get_version()
+            opts.version = _utilities.get_version()
         if opts.id is None:
             if __props__ is not None:
                 raise TypeError('__props__ is only valid when passed in combination with a valid opts.id to get an existing resource')
@@ -73,17 +79,22 @@ class TrafficMirrorFilter(pulumi.CustomResource):
             opts)
 
     @staticmethod
-    def get(resource_name, id, opts=None, description=None, network_services=None, tags=None):
+    def get(resource_name: str,
+            id: pulumi.Input[str],
+            opts: Optional[pulumi.ResourceOptions] = None,
+            description: Optional[pulumi.Input[str]] = None,
+            network_services: Optional[pulumi.Input[Sequence[pulumi.Input[str]]]] = None,
+            tags: Optional[pulumi.Input[Mapping[str, pulumi.Input[str]]]] = None) -> 'TrafficMirrorFilter':
         """
         Get an existing TrafficMirrorFilter resource's state with the given name, id, and optional extra
         properties used to qualify the lookup.
 
         :param str resource_name: The unique name of the resulting resource.
-        :param str id: The unique provider ID of the resource to lookup.
+        :param pulumi.Input[str] id: The unique provider ID of the resource to lookup.
         :param pulumi.ResourceOptions opts: Options for the resource.
         :param pulumi.Input[str] description: A description of the filter.
-        :param pulumi.Input[list] network_services: List of amazon network services that should be mirrored. Valid values: `amazon-dns`.
-        :param pulumi.Input[dict] tags: Key-value map of resource tags.
+        :param pulumi.Input[Sequence[pulumi.Input[str]]] network_services: List of amazon network services that should be mirrored. Valid values: `amazon-dns`.
+        :param pulumi.Input[Mapping[str, pulumi.Input[str]]] tags: Key-value map of resource tags.
         """
         opts = pulumi.ResourceOptions.merge(opts, pulumi.ResourceOptions(id=id))
 
@@ -94,8 +105,33 @@ class TrafficMirrorFilter(pulumi.CustomResource):
         __props__["tags"] = tags
         return TrafficMirrorFilter(resource_name, opts=opts, __props__=__props__)
 
+    @property
+    @pulumi.getter
+    def description(self) -> pulumi.Output[Optional[str]]:
+        """
+        A description of the filter.
+        """
+        return pulumi.get(self, "description")
+
+    @property
+    @pulumi.getter(name="networkServices")
+    def network_services(self) -> pulumi.Output[Optional[Sequence[str]]]:
+        """
+        List of amazon network services that should be mirrored. Valid values: `amazon-dns`.
+        """
+        return pulumi.get(self, "network_services")
+
+    @property
+    @pulumi.getter
+    def tags(self) -> pulumi.Output[Optional[Mapping[str, str]]]:
+        """
+        Key-value map of resource tags.
+        """
+        return pulumi.get(self, "tags")
+
     def translate_output_property(self, prop):
-        return tables._CAMEL_TO_SNAKE_CASE_TABLE.get(prop) or prop
+        return _tables.CAMEL_TO_SNAKE_CASE_TABLE.get(prop) or prop
 
     def translate_input_property(self, prop):
-        return tables._SNAKE_TO_CAMEL_CASE_TABLE.get(prop) or prop
+        return _tables.SNAKE_TO_CAMEL_CASE_TABLE.get(prop) or prop
+

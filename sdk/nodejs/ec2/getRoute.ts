@@ -2,8 +2,7 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 /**
@@ -23,18 +22,17 @@ import * as utilities from "../utilities";
  * import * as aws from "@pulumi/aws";
  *
  * const config = new pulumi.Config();
- * const subnetId = config.require("subnetId");
- *
- * const selected = pulumi.output(aws.ec2.getRouteTable({
+ * const subnetId = config.requireObject("subnetId");
+ * const selected = aws.ec2.getRouteTable({
  *     subnetId: subnetId,
- * }, { async: true }));
- * const route = aws_route_table_selected.id.apply(id => aws.ec2.getRoute({
+ * });
+ * const route = aws.ec2.getRoute({
+ *     routeTableId: aws_route_table.selected.id,
  *     destinationCidrBlock: "10.0.1.0/24",
- *     routeTableId: id,
- * }, { async: true }));
- * const interfaceNetworkInterface = route.apply(route => aws.ec2.getNetworkInterface({
- *     networkInterfaceId: route.networkInterfaceId!,
- * }, { async: true }));
+ * });
+ * const interface = route.then(route => aws.ec2.getNetworkInterface({
+ *     id: route.networkInterfaceId,
+ * }));
  * ```
  */
 export function getRoute(args: GetRouteArgs, opts?: pulumi.InvokeOptions): Promise<GetRouteResult> {
@@ -51,6 +49,7 @@ export function getRoute(args: GetRouteArgs, opts?: pulumi.InvokeOptions): Promi
         "egressOnlyGatewayId": args.egressOnlyGatewayId,
         "gatewayId": args.gatewayId,
         "instanceId": args.instanceId,
+        "localGatewayId": args.localGatewayId,
         "natGatewayId": args.natGatewayId,
         "networkInterfaceId": args.networkInterfaceId,
         "routeTableId": args.routeTableId,
@@ -83,6 +82,10 @@ export interface GetRouteArgs {
      * The Instance ID of the Route belonging to the Route Table.
      */
     readonly instanceId?: string;
+    /**
+     * The Local Gateway ID of the Route belonging to the Route Table.
+     */
+    readonly localGatewayId?: string;
     /**
      * The NAT Gateway ID of the Route belonging to the Route Table.
      */
@@ -118,6 +121,7 @@ export interface GetRouteResult {
      */
     readonly id: string;
     readonly instanceId: string;
+    readonly localGatewayId: string;
     readonly natGatewayId: string;
     readonly networkInterfaceId: string;
     readonly routeTableId: string;

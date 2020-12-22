@@ -21,6 +21,14 @@ import * as utilities from "../utilities";
  *     detectorId: exampleDetector.id,
  * });
  * ```
+ *
+ * ## Import
+ *
+ * GuardDuty Organization Configurations can be imported using the GuardDuty Detector ID, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:guardduty/organizationConfiguration:OrganizationConfiguration example 00b00fd5aecc0ab60a708659477e9617
+ * ```
  */
 export class OrganizationConfiguration extends pulumi.CustomResource {
     /**
@@ -75,10 +83,10 @@ export class OrganizationConfiguration extends pulumi.CustomResource {
             inputs["detectorId"] = state ? state.detectorId : undefined;
         } else {
             const args = argsOrState as OrganizationConfigurationArgs | undefined;
-            if (!args || args.autoEnable === undefined) {
+            if ((!args || args.autoEnable === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'autoEnable'");
             }
-            if (!args || args.detectorId === undefined) {
+            if ((!args || args.detectorId === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'detectorId'");
             }
             inputs["autoEnable"] = args ? args.autoEnable : undefined;

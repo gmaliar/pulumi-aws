@@ -2,8 +2,7 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 /**
@@ -85,6 +84,14 @@ import * as utilities from "../utilities";
  *     streamEnabled: true,
  *     streamViewType: "NEW_AND_OLD_IMAGES",
  * });
+ * ```
+ *
+ * ## Import
+ *
+ * DynamoDB tables can be imported using the `name`, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:dynamodb/table:Table basic-dynamodb-table GameScores
  * ```
  */
 export class Table extends pulumi.CustomResource {
@@ -233,10 +240,10 @@ export class Table extends pulumi.CustomResource {
             inputs["writeCapacity"] = state ? state.writeCapacity : undefined;
         } else {
             const args = argsOrState as TableArgs | undefined;
-            if (!args || args.attributes === undefined) {
+            if ((!args || args.attributes === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'attributes'");
             }
-            if (!args || args.hashKey === undefined) {
+            if ((!args || args.hashKey === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'hashKey'");
             }
             inputs["attributes"] = args ? args.attributes : undefined;

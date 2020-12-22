@@ -2,8 +2,7 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 /**
@@ -18,12 +17,20 @@ import * as utilities from "../utilities";
  * import * as aws from "@pulumi/aws";
  *
  * const example = new aws.datasync.LocationSmb("example", {
- *     agentArns: [aws_datasync_agent_example.arn],
- *     password: "ANotGreatPassword",
  *     serverHostname: "smb.example.com",
  *     subdirectory: "/exported/path",
  *     user: "Guest",
+ *     password: "ANotGreatPassword",
+ *     agentArns: [aws_datasync_agent.example.arn],
  * });
+ * ```
+ *
+ * ## Import
+ *
+ * `aws_datasync_location_smb` can be imported by using the Amazon Resource Name (ARN), e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:datasync/locationSmb:LocationSmb example arn:aws:datasync:us-east-1:123456789012:location/loc-12345678901234567
  * ```
  */
 export class LocationSmb extends pulumi.CustomResource {
@@ -116,19 +123,19 @@ export class LocationSmb extends pulumi.CustomResource {
             inputs["user"] = state ? state.user : undefined;
         } else {
             const args = argsOrState as LocationSmbArgs | undefined;
-            if (!args || args.agentArns === undefined) {
+            if ((!args || args.agentArns === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'agentArns'");
             }
-            if (!args || args.password === undefined) {
+            if ((!args || args.password === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'password'");
             }
-            if (!args || args.serverHostname === undefined) {
+            if ((!args || args.serverHostname === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'serverHostname'");
             }
-            if (!args || args.subdirectory === undefined) {
+            if ((!args || args.subdirectory === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'subdirectory'");
             }
-            if (!args || args.user === undefined) {
+            if ((!args || args.user === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'user'");
             }
             inputs["agentArns"] = args ? args.agentArns : undefined;

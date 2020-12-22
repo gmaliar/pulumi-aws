@@ -19,8 +19,8 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/route53"
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/s3"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/route53"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/s3"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -40,15 +40,15 @@ import (
 // 			return err
 // 		}
 // 		_, err = route53.NewRecord(ctx, "example", &route53.RecordArgs{
+// 			ZoneId: pulumi.String(testZone.Id),
+// 			Name:   pulumi.String("bucket"),
+// 			Type:   pulumi.String("A"),
 // 			Aliases: route53.RecordAliasArray{
 // 				&route53.RecordAliasArgs{
 // 					Name:   pulumi.String(selected.WebsiteDomain),
 // 					ZoneId: pulumi.String(selected.HostedZoneId),
 // 				},
 // 			},
-// 			Name:   pulumi.String("bucket"),
-// 			Type:   pulumi.String("A"),
-// 			ZoneId: pulumi.String(testZone.Id),
 // 		})
 // 		if err != nil {
 // 			return err
@@ -63,8 +63,8 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/cloudfront"
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/s3"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/cloudfront"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/s3"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //

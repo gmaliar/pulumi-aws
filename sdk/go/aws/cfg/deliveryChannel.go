@@ -4,6 +4,7 @@
 package cfg
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -22,9 +23,9 @@ import (
 // import (
 // 	"fmt"
 //
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/cfg"
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/iam"
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/s3"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/cfg"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/iam"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/s3"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -36,33 +37,33 @@ import (
 // 		if err != nil {
 // 			return err
 // 		}
-// 		_, err = cfg.NewDeliveryChannel(ctx, "fooDeliveryChannel", &cfg.DeliveryChannelArgs{
-// 			S3BucketName: bucket.Bucket,
-// 		}, pulumi.DependsOn([]pulumi.Resource{
-// 			"aws_config_configuration_recorder.foo",
-// 		}))
-// 		if err != nil {
-// 			return err
-// 		}
 // 		role, err := iam.NewRole(ctx, "role", &iam.RoleArgs{
-// 			AssumeRolePolicy: pulumi.String(fmt.Sprintf("%v%v%v%v%v%v%v%v%v%v%v%v%v%v", "{\n", "  \"Version\": \"2012-10-17\",\n", "  \"Statement\": [\n", "    {\n", "      \"Action\": \"sts:AssumeRole\",\n", "      \"Principal\": {\n", "        \"Service\": \"config.amazonaws.com\"\n", "      },\n", "      \"Effect\": \"Allow\",\n", "      \"Sid\": \"\"\n", "    }\n", "  ]\n", "}\n", "\n")),
+// 			AssumeRolePolicy: pulumi.String(fmt.Sprintf("%v%v%v%v%v%v%v%v%v%v%v%v%v", "{\n", "  \"Version\": \"2012-10-17\",\n", "  \"Statement\": [\n", "    {\n", "      \"Action\": \"sts:AssumeRole\",\n", "      \"Principal\": {\n", "        \"Service\": \"config.amazonaws.com\"\n", "      },\n", "      \"Effect\": \"Allow\",\n", "      \"Sid\": \"\"\n", "    }\n", "  ]\n", "}\n")),
 // 		})
 // 		if err != nil {
 // 			return err
 // 		}
-// 		_, err = cfg.NewRecorder(ctx, "fooRecorder", &cfg.RecorderArgs{
+// 		fooRecorder, err := cfg.NewRecorder(ctx, "fooRecorder", &cfg.RecorderArgs{
 // 			RoleArn: role.Arn,
 // 		})
 // 		if err != nil {
 // 			return err
 // 		}
+// 		_, err = cfg.NewDeliveryChannel(ctx, "fooDeliveryChannel", &cfg.DeliveryChannelArgs{
+// 			S3BucketName: bucket.Bucket,
+// 		}, pulumi.DependsOn([]pulumi.Resource{
+// 			fooRecorder,
+// 		}))
+// 		if err != nil {
+// 			return err
+// 		}
 // 		_, err = iam.NewRolePolicy(ctx, "rolePolicy", &iam.RolePolicyArgs{
+// 			Role: role.ID(),
 // 			Policy: pulumi.All(bucket.Arn, bucket.Arn).ApplyT(func(_args []interface{}) (string, error) {
 // 				bucketArn := _args[0].(string)
 // 				bucketArn1 := _args[1].(string)
-// 				return fmt.Sprintf("%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v", "{\n", "  \"Version\": \"2012-10-17\",\n", "  \"Statement\": [\n", "    {\n", "      \"Action\": [\n", "        \"s3:*\"\n", "      ],\n", "      \"Effect\": \"Allow\",\n", "      \"Resource\": [\n", "        \"", bucketArn, "\",\n", "        \"", bucketArn1, "/*\"\n", "      ]\n", "    }\n", "  ]\n", "}\n", "\n"), nil
+// 				return fmt.Sprintf("%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v", "{\n", "  \"Version\": \"2012-10-17\",\n", "  \"Statement\": [\n", "    {\n", "      \"Action\": [\n", "        \"s3:*\"\n", "      ],\n", "      \"Effect\": \"Allow\",\n", "      \"Resource\": [\n", "        \"", bucketArn, "\",\n", "        \"", bucketArn1, "/*\"\n", "      ]\n", "    }\n", "  ]\n", "}\n"), nil
 // 			}).(pulumi.StringOutput),
-// 			Role: role.ID(),
 // 		})
 // 		if err != nil {
 // 			return err
@@ -70,6 +71,14 @@ import (
 // 		return nil
 // 	})
 // }
+// ```
+//
+// ## Import
+//
+// Delivery Channel can be imported using the name, e.g.
+//
+// ```sh
+//  $ pulumi import aws:cfg/deliveryChannel:DeliveryChannel foo example
 // ```
 type DeliveryChannel struct {
 	pulumi.CustomResourceState
@@ -89,11 +98,12 @@ type DeliveryChannel struct {
 // NewDeliveryChannel registers a new resource with the given unique name, arguments, and options.
 func NewDeliveryChannel(ctx *pulumi.Context,
 	name string, args *DeliveryChannelArgs, opts ...pulumi.ResourceOption) (*DeliveryChannel, error) {
-	if args == nil || args.S3BucketName == nil {
-		return nil, errors.New("missing required argument 'S3BucketName'")
-	}
 	if args == nil {
-		args = &DeliveryChannelArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.S3BucketName == nil {
+		return nil, errors.New("invalid value for required argument 'S3BucketName'")
 	}
 	var resource DeliveryChannel
 	err := ctx.RegisterResource("aws:cfg/deliveryChannel:DeliveryChannel", name, args, &resource, opts...)
@@ -175,4 +185,43 @@ type DeliveryChannelArgs struct {
 
 func (DeliveryChannelArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*deliveryChannelArgs)(nil)).Elem()
+}
+
+type DeliveryChannelInput interface {
+	pulumi.Input
+
+	ToDeliveryChannelOutput() DeliveryChannelOutput
+	ToDeliveryChannelOutputWithContext(ctx context.Context) DeliveryChannelOutput
+}
+
+func (DeliveryChannel) ElementType() reflect.Type {
+	return reflect.TypeOf((*DeliveryChannel)(nil)).Elem()
+}
+
+func (i DeliveryChannel) ToDeliveryChannelOutput() DeliveryChannelOutput {
+	return i.ToDeliveryChannelOutputWithContext(context.Background())
+}
+
+func (i DeliveryChannel) ToDeliveryChannelOutputWithContext(ctx context.Context) DeliveryChannelOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(DeliveryChannelOutput)
+}
+
+type DeliveryChannelOutput struct {
+	*pulumi.OutputState
+}
+
+func (DeliveryChannelOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*DeliveryChannelOutput)(nil)).Elem()
+}
+
+func (o DeliveryChannelOutput) ToDeliveryChannelOutput() DeliveryChannelOutput {
+	return o
+}
+
+func (o DeliveryChannelOutput) ToDeliveryChannelOutputWithContext(ctx context.Context) DeliveryChannelOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(DeliveryChannelOutput{})
 }

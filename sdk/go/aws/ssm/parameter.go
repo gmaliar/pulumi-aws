@@ -4,6 +4,7 @@
 package ssm
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -11,6 +12,86 @@ import (
 )
 
 // Provides an SSM Parameter resource.
+//
+// ## Example Usage
+//
+// To store a basic string parameter:
+//
+// ```go
+// package main
+//
+// import (
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/ssm"
+// 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
+// )
+//
+// func main() {
+// 	pulumi.Run(func(ctx *pulumi.Context) error {
+// 		_, err := ssm.NewParameter(ctx, "foo", &ssm.ParameterArgs{
+// 			Type:  pulumi.String("String"),
+// 			Value: pulumi.String("bar"),
+// 		})
+// 		if err != nil {
+// 			return err
+// 		}
+// 		return nil
+// 	})
+// }
+// ```
+//
+// To store an encrypted string using the default SSM KMS key:
+//
+// ```go
+// package main
+//
+// import (
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/rds"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/ssm"
+// 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
+// )
+//
+// func main() {
+// 	pulumi.Run(func(ctx *pulumi.Context) error {
+// 		_, err := rds.NewInstance(ctx, "_default", &rds.InstanceArgs{
+// 			AllocatedStorage:   pulumi.Int(10),
+// 			StorageType:        pulumi.String("gp2"),
+// 			Engine:             pulumi.String("mysql"),
+// 			EngineVersion:      pulumi.String("5.7.16"),
+// 			InstanceClass:      pulumi.String("db.t2.micro"),
+// 			Name:               pulumi.String("mydb"),
+// 			Username:           pulumi.String("foo"),
+// 			Password:           pulumi.Any(_var.Database_master_password),
+// 			DbSubnetGroupName:  pulumi.String("my_database_subnet_group"),
+// 			ParameterGroupName: pulumi.String("default.mysql5.7"),
+// 		})
+// 		if err != nil {
+// 			return err
+// 		}
+// 		_, err = ssm.NewParameter(ctx, "secret", &ssm.ParameterArgs{
+// 			Description: pulumi.String("The parameter description"),
+// 			Type:        pulumi.String("SecureString"),
+// 			Value:       pulumi.Any(_var.Database_master_password),
+// 			Tags: pulumi.StringMap{
+// 				"environment": pulumi.String("production"),
+// 			},
+// 		})
+// 		if err != nil {
+// 			return err
+// 		}
+// 		return nil
+// 	})
+// }
+// ```
+//
+// > **Note:** The unencrypted value of a SecureString will be stored in the raw state as plain-text.
+//
+// ## Import
+//
+// SSM Parameters can be imported using the `parameter store name`, e.g.
+//
+// ```sh
+//  $ pulumi import aws:ssm/parameter:Parameter my_param /my_path/my_paramname
+// ```
 type Parameter struct {
 	pulumi.CustomResourceState
 
@@ -18,6 +99,9 @@ type Parameter struct {
 	AllowedPattern pulumi.StringPtrOutput `pulumi:"allowedPattern"`
 	// The ARN of the parameter.
 	Arn pulumi.StringOutput `pulumi:"arn"`
+	// The dataType of the parameter. Valid values: text and aws:ec2:image for AMI format, see the [Native parameter support for Amazon Machine Image IDs
+	// ](https://docs.aws.amazon.com/systems-manager/latest/userguide/parameter-store-ec2-aliases.html)
+	DataType pulumi.StringOutput `pulumi:"dataType"`
 	// The description of the parameter.
 	Description pulumi.StringPtrOutput `pulumi:"description"`
 	// The KMS key id or arn for encrypting a SecureString.
@@ -41,14 +125,15 @@ type Parameter struct {
 // NewParameter registers a new resource with the given unique name, arguments, and options.
 func NewParameter(ctx *pulumi.Context,
 	name string, args *ParameterArgs, opts ...pulumi.ResourceOption) (*Parameter, error) {
-	if args == nil || args.Type == nil {
-		return nil, errors.New("missing required argument 'Type'")
-	}
-	if args == nil || args.Value == nil {
-		return nil, errors.New("missing required argument 'Value'")
-	}
 	if args == nil {
-		args = &ParameterArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.Type == nil {
+		return nil, errors.New("invalid value for required argument 'Type'")
+	}
+	if args.Value == nil {
+		return nil, errors.New("invalid value for required argument 'Value'")
 	}
 	var resource Parameter
 	err := ctx.RegisterResource("aws:ssm/parameter:Parameter", name, args, &resource, opts...)
@@ -76,6 +161,9 @@ type parameterState struct {
 	AllowedPattern *string `pulumi:"allowedPattern"`
 	// The ARN of the parameter.
 	Arn *string `pulumi:"arn"`
+	// The dataType of the parameter. Valid values: text and aws:ec2:image for AMI format, see the [Native parameter support for Amazon Machine Image IDs
+	// ](https://docs.aws.amazon.com/systems-manager/latest/userguide/parameter-store-ec2-aliases.html)
+	DataType *string `pulumi:"dataType"`
 	// The description of the parameter.
 	Description *string `pulumi:"description"`
 	// The KMS key id or arn for encrypting a SecureString.
@@ -101,6 +189,9 @@ type ParameterState struct {
 	AllowedPattern pulumi.StringPtrInput
 	// The ARN of the parameter.
 	Arn pulumi.StringPtrInput
+	// The dataType of the parameter. Valid values: text and aws:ec2:image for AMI format, see the [Native parameter support for Amazon Machine Image IDs
+	// ](https://docs.aws.amazon.com/systems-manager/latest/userguide/parameter-store-ec2-aliases.html)
+	DataType pulumi.StringPtrInput
 	// The description of the parameter.
 	Description pulumi.StringPtrInput
 	// The KMS key id or arn for encrypting a SecureString.
@@ -130,6 +221,9 @@ type parameterArgs struct {
 	AllowedPattern *string `pulumi:"allowedPattern"`
 	// The ARN of the parameter.
 	Arn *string `pulumi:"arn"`
+	// The dataType of the parameter. Valid values: text and aws:ec2:image for AMI format, see the [Native parameter support for Amazon Machine Image IDs
+	// ](https://docs.aws.amazon.com/systems-manager/latest/userguide/parameter-store-ec2-aliases.html)
+	DataType *string `pulumi:"dataType"`
 	// The description of the parameter.
 	Description *string `pulumi:"description"`
 	// The KMS key id or arn for encrypting a SecureString.
@@ -154,6 +248,9 @@ type ParameterArgs struct {
 	AllowedPattern pulumi.StringPtrInput
 	// The ARN of the parameter.
 	Arn pulumi.StringPtrInput
+	// The dataType of the parameter. Valid values: text and aws:ec2:image for AMI format, see the [Native parameter support for Amazon Machine Image IDs
+	// ](https://docs.aws.amazon.com/systems-manager/latest/userguide/parameter-store-ec2-aliases.html)
+	DataType pulumi.StringPtrInput
 	// The description of the parameter.
 	Description pulumi.StringPtrInput
 	// The KMS key id or arn for encrypting a SecureString.
@@ -174,4 +271,43 @@ type ParameterArgs struct {
 
 func (ParameterArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*parameterArgs)(nil)).Elem()
+}
+
+type ParameterInput interface {
+	pulumi.Input
+
+	ToParameterOutput() ParameterOutput
+	ToParameterOutputWithContext(ctx context.Context) ParameterOutput
+}
+
+func (Parameter) ElementType() reflect.Type {
+	return reflect.TypeOf((*Parameter)(nil)).Elem()
+}
+
+func (i Parameter) ToParameterOutput() ParameterOutput {
+	return i.ToParameterOutputWithContext(context.Background())
+}
+
+func (i Parameter) ToParameterOutputWithContext(ctx context.Context) ParameterOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(ParameterOutput)
+}
+
+type ParameterOutput struct {
+	*pulumi.OutputState
+}
+
+func (ParameterOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*ParameterOutput)(nil)).Elem()
+}
+
+func (o ParameterOutput) ToParameterOutput() ParameterOutput {
+	return o
+}
+
+func (o ParameterOutput) ToParameterOutputWithContext(ctx context.Context) ParameterOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(ParameterOutput{})
 }

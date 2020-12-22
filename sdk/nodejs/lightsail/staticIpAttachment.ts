@@ -15,16 +15,16 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const testStaticIp = new aws.lightsail.StaticIp("test", {});
- * const testInstance = new aws.lightsail.Instance("test", {
+ * const testStaticIp = new aws.lightsail.StaticIp("testStaticIp", {});
+ * const testInstance = new aws.lightsail.Instance("testInstance", {
  *     availabilityZone: "us-east-1b",
  *     blueprintId: "string",
  *     bundleId: "string",
  *     keyPairName: "some_key_name",
  * });
- * const testStaticIpAttachment = new aws.lightsail.StaticIpAttachment("test", {
- *     instanceName: testInstance.id,
+ * const testStaticIpAttachment = new aws.lightsail.StaticIpAttachment("testStaticIpAttachment", {
  *     staticIpName: testStaticIp.id,
+ *     instanceName: testInstance.id,
  * });
  * ```
  */
@@ -86,10 +86,10 @@ export class StaticIpAttachment extends pulumi.CustomResource {
             inputs["staticIpName"] = state ? state.staticIpName : undefined;
         } else {
             const args = argsOrState as StaticIpAttachmentArgs | undefined;
-            if (!args || args.instanceName === undefined) {
+            if ((!args || args.instanceName === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'instanceName'");
             }
-            if (!args || args.staticIpName === undefined) {
+            if ((!args || args.staticIpName === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'staticIpName'");
             }
             inputs["instanceName"] = args ? args.instanceName : undefined;

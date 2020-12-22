@@ -2,8 +2,7 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 /**
@@ -18,31 +17,30 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const main = new aws.ec2.Vpc("main", {
- *     cidrBlock: "10.0.0.0/16",
- * });
+ * const main = new aws.ec2.Vpc("main", {cidrBlock: "10.0.0.0/16"});
  * const foo = new aws.ec2.Subnet("foo", {
+ *     vpcId: main.id,
  *     availabilityZone: "us-west-2a",
  *     cidrBlock: "10.0.1.0/24",
- *     vpcId: main.id,
  * });
- * const barSubnet = new aws.ec2.Subnet("bar", {
+ * const barSubnet = new aws.ec2.Subnet("barSubnet", {
+ *     vpcId: main.id,
  *     availabilityZone: "us-west-2b",
  *     cidrBlock: "10.0.2.0/24",
- *     vpcId: main.id,
  * });
- * const barDirectory = new aws.directoryservice.Directory("bar", {
+ * const barDirectory = new aws.directoryservice.Directory("barDirectory", {
+ *     name: "corp.notexample.com",
  *     password: "SuperSecretPassw0rd",
  *     size: "Small",
- *     tags: {
- *         Project: "foo",
- *     },
  *     vpcSettings: {
+ *         vpcId: main.id,
  *         subnetIds: [
  *             foo.id,
  *             barSubnet.id,
  *         ],
- *         vpcId: main.id,
+ *     },
+ *     tags: {
+ *         Project: "foo",
  *     },
  * });
  * ```
@@ -52,32 +50,31 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const main = new aws.ec2.Vpc("main", {
- *     cidrBlock: "10.0.0.0/16",
- * });
+ * const main = new aws.ec2.Vpc("main", {cidrBlock: "10.0.0.0/16"});
  * const foo = new aws.ec2.Subnet("foo", {
+ *     vpcId: main.id,
  *     availabilityZone: "us-west-2a",
  *     cidrBlock: "10.0.1.0/24",
- *     vpcId: main.id,
  * });
- * const barSubnet = new aws.ec2.Subnet("bar", {
+ * const barSubnet = new aws.ec2.Subnet("barSubnet", {
+ *     vpcId: main.id,
  *     availabilityZone: "us-west-2b",
  *     cidrBlock: "10.0.2.0/24",
- *     vpcId: main.id,
  * });
- * const barDirectory = new aws.directoryservice.Directory("bar", {
- *     edition: "Standard",
+ * const barDirectory = new aws.directoryservice.Directory("barDirectory", {
+ *     name: "corp.notexample.com",
  *     password: "SuperSecretPassw0rd",
- *     tags: {
- *         Project: "foo",
- *     },
+ *     edition: "Standard",
  *     type: "MicrosoftAD",
  *     vpcSettings: {
+ *         vpcId: main.id,
  *         subnetIds: [
  *             foo.id,
  *             barSubnet.id,
  *         ],
- *         vpcId: main.id,
+ *     },
+ *     tags: {
+ *         Project: "foo",
  *     },
  * });
  * ```
@@ -87,20 +84,22 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const main = new aws.ec2.Vpc("main", {
- *     cidrBlock: "10.0.0.0/16",
- * });
+ * const main = new aws.ec2.Vpc("main", {cidrBlock: "10.0.0.0/16"});
  * const foo = new aws.ec2.Subnet("foo", {
+ *     vpcId: main.id,
  *     availabilityZone: "us-west-2a",
  *     cidrBlock: "10.0.1.0/24",
- *     vpcId: main.id,
  * });
  * const bar = new aws.ec2.Subnet("bar", {
+ *     vpcId: main.id,
  *     availabilityZone: "us-west-2b",
  *     cidrBlock: "10.0.2.0/24",
- *     vpcId: main.id,
  * });
  * const connector = new aws.directoryservice.Directory("connector", {
+ *     name: "corp.notexample.com",
+ *     password: "SuperSecretPassw0rd",
+ *     size: "Small",
+ *     type: "ADConnector",
  *     connectSettings: {
  *         customerDnsIps: ["A.B.C.D"],
  *         customerUsername: "Admin",
@@ -110,10 +109,15 @@ import * as utilities from "../utilities";
  *         ],
  *         vpcId: main.id,
  *     },
- *     password: "SuperSecretPassw0rd",
- *     size: "Small",
- *     type: "ADConnector",
  * });
+ * ```
+ *
+ * ## Import
+ *
+ * DirectoryService directories can be imported using the directory `id`, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:directoryservice/directory:Directory sample d-926724cf57
  * ```
  */
 export class Directory extends pulumi.CustomResource {
@@ -234,7 +238,10 @@ export class Directory extends pulumi.CustomResource {
             inputs["vpcSettings"] = state ? state.vpcSettings : undefined;
         } else {
             const args = argsOrState as DirectoryArgs | undefined;
-            if (!args || args.password === undefined) {
+            if ((!args || args.name === undefined) && !(opts && opts.urn)) {
+                throw new Error("Missing required property 'name'");
+            }
+            if ((!args || args.password === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'password'");
             }
             inputs["alias"] = args ? args.alias : undefined;
@@ -357,7 +364,7 @@ export interface DirectoryArgs {
     /**
      * The fully qualified name for the directory, such as `corp.example.com`
      */
-    readonly name?: pulumi.Input<string>;
+    readonly name: pulumi.Input<string>;
     /**
      * The password for the directory administrator or connector user.
      */

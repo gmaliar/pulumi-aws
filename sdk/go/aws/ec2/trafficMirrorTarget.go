@@ -4,6 +4,7 @@
 package ec2
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
@@ -20,7 +21,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/ec2"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/ec2"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -28,14 +29,14 @@ import (
 // 	pulumi.Run(func(ctx *pulumi.Context) error {
 // 		_, err := ec2.NewTrafficMirrorTarget(ctx, "nlb", &ec2.TrafficMirrorTargetArgs{
 // 			Description:            pulumi.String("NLB target"),
-// 			NetworkLoadBalancerArn: pulumi.String(aws_lb.Lb.Arn),
+// 			NetworkLoadBalancerArn: pulumi.Any(aws_lb.Lb.Arn),
 // 		})
 // 		if err != nil {
 // 			return err
 // 		}
 // 		_, err = ec2.NewTrafficMirrorTarget(ctx, "eni", &ec2.TrafficMirrorTargetArgs{
 // 			Description:        pulumi.String("ENI target"),
-// 			NetworkInterfaceId: pulumi.String(aws_instance.Test.Primary_network_interface_id),
+// 			NetworkInterfaceId: pulumi.Any(aws_instance.Test.Primary_network_interface_id),
 // 		})
 // 		if err != nil {
 // 			return err
@@ -43,6 +44,14 @@ import (
 // 		return nil
 // 	})
 // }
+// ```
+//
+// ## Import
+//
+// Traffic mirror targets can be imported using the `id`, e.g.
+//
+// ```sh
+//  $ pulumi import aws:ec2/trafficMirrorTarget:TrafficMirrorTarget target tmt-0c13a005422b86606
 // ```
 type TrafficMirrorTarget struct {
 	pulumi.CustomResourceState
@@ -65,6 +74,7 @@ func NewTrafficMirrorTarget(ctx *pulumi.Context,
 	if args == nil {
 		args = &TrafficMirrorTargetArgs{}
 	}
+
 	var resource TrafficMirrorTarget
 	err := ctx.RegisterResource("aws:ec2/trafficMirrorTarget:TrafficMirrorTarget", name, args, &resource, opts...)
 	if err != nil {
@@ -141,4 +151,43 @@ type TrafficMirrorTargetArgs struct {
 
 func (TrafficMirrorTargetArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*trafficMirrorTargetArgs)(nil)).Elem()
+}
+
+type TrafficMirrorTargetInput interface {
+	pulumi.Input
+
+	ToTrafficMirrorTargetOutput() TrafficMirrorTargetOutput
+	ToTrafficMirrorTargetOutputWithContext(ctx context.Context) TrafficMirrorTargetOutput
+}
+
+func (TrafficMirrorTarget) ElementType() reflect.Type {
+	return reflect.TypeOf((*TrafficMirrorTarget)(nil)).Elem()
+}
+
+func (i TrafficMirrorTarget) ToTrafficMirrorTargetOutput() TrafficMirrorTargetOutput {
+	return i.ToTrafficMirrorTargetOutputWithContext(context.Background())
+}
+
+func (i TrafficMirrorTarget) ToTrafficMirrorTargetOutputWithContext(ctx context.Context) TrafficMirrorTargetOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(TrafficMirrorTargetOutput)
+}
+
+type TrafficMirrorTargetOutput struct {
+	*pulumi.OutputState
+}
+
+func (TrafficMirrorTargetOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*TrafficMirrorTargetOutput)(nil)).Elem()
+}
+
+func (o TrafficMirrorTargetOutput) ToTrafficMirrorTargetOutput() TrafficMirrorTargetOutput {
+	return o
+}
+
+func (o TrafficMirrorTargetOutput) ToTrafficMirrorTargetOutputWithContext(ctx context.Context) TrafficMirrorTargetOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(TrafficMirrorTargetOutput{})
 }

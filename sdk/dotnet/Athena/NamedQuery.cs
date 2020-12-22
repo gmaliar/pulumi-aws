@@ -46,18 +46,26 @@ namespace Pulumi.Aws.Athena
     ///         });
     ///         var hogeDatabase = new Aws.Athena.Database("hogeDatabase", new Aws.Athena.DatabaseArgs
     ///         {
-    ///             Bucket = hogeBucket.Id,
     ///             Name = "users",
+    ///             Bucket = hogeBucket.Id,
     ///         });
     ///         var foo = new Aws.Athena.NamedQuery("foo", new Aws.Athena.NamedQueryArgs
     ///         {
+    ///             Workgroup = testWorkgroup.Id,
     ///             Database = hogeDatabase.Name,
     ///             Query = hogeDatabase.Name.Apply(name =&gt; $"SELECT * FROM {name} limit 10;"),
-    ///             Workgroup = testWorkgroup.Id,
     ///         });
     ///     }
     /// 
     /// }
+    /// ```
+    /// 
+    /// ## Import
+    /// 
+    /// Athena Named Query can be imported using the query ID, e.g.
+    /// 
+    /// ```sh
+    ///  $ pulumi import aws:athena/namedQuery:NamedQuery example 0123456789
     /// ```
     /// </summary>
     public partial class NamedQuery : Pulumi.CustomResource

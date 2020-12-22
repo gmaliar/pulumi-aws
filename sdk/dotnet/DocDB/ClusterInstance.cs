@@ -32,15 +32,15 @@ namespace Pulumi.Aws.DocDB
     ///     {
     ///         var @default = new Aws.DocDB.Cluster("default", new Aws.DocDB.ClusterArgs
     ///         {
+    ///             ClusterIdentifier = "docdb-cluster-demo",
     ///             AvailabilityZones = 
     ///             {
     ///                 "us-west-2a",
     ///                 "us-west-2b",
     ///                 "us-west-2c",
     ///             },
-    ///             ClusterIdentifier = "docdb-cluster-demo",
-    ///             MasterPassword = "barbut8chars",
     ///             MasterUsername = "foo",
+    ///             MasterPassword = "barbut8chars",
     ///         });
     ///         var clusterInstances = new List&lt;Aws.DocDB.ClusterInstance&gt;();
     ///         for (var rangeIndex = 0; rangeIndex &lt; 2; rangeIndex++)
@@ -48,14 +48,22 @@ namespace Pulumi.Aws.DocDB
     ///             var range = new { Value = rangeIndex };
     ///             clusterInstances.Add(new Aws.DocDB.ClusterInstance($"clusterInstances-{range.Value}", new Aws.DocDB.ClusterInstanceArgs
     ///             {
-    ///                 ClusterIdentifier = @default.Id,
     ///                 Identifier = $"docdb-cluster-demo-{range.Value}",
+    ///                 ClusterIdentifier = @default.Id,
     ///                 InstanceClass = "db.r5.large",
     ///             }));
     ///         }
     ///     }
     /// 
     /// }
+    /// ```
+    /// 
+    /// ## Import
+    /// 
+    /// DocDB Cluster Instances can be imported using the `identifier`, e.g.
+    /// 
+    /// ```sh
+    ///  $ pulumi import aws:docdb/clusterInstance:ClusterInstance prod_instance_1 aurora-cluster-instance-1
     /// ```
     /// </summary>
     public partial class ClusterInstance : Pulumi.CustomResource
@@ -128,13 +136,13 @@ namespace Pulumi.Aws.DocDB
         public Output<string> EngineVersion { get; private set; } = null!;
 
         /// <summary>
-        /// The indentifier for the DocDB instance, if omitted, this provider will assign a random, unique identifier.
+        /// The identifier for the DocDB instance, if omitted, this provider will assign a random, unique identifier.
         /// </summary>
         [Output("identifier")]
         public Output<string> Identifier { get; private set; } = null!;
 
         /// <summary>
-        /// Creates a unique identifier beginning with the specified prefix. Conflicts with `identifer`.
+        /// Creates a unique identifier beginning with the specified prefix. Conflicts with `identifier`.
         /// </summary>
         [Output("identifierPrefix")]
         public Output<string> IdentifierPrefix { get; private set; } = null!;
@@ -288,13 +296,13 @@ namespace Pulumi.Aws.DocDB
         public Input<string>? Engine { get; set; }
 
         /// <summary>
-        /// The indentifier for the DocDB instance, if omitted, this provider will assign a random, unique identifier.
+        /// The identifier for the DocDB instance, if omitted, this provider will assign a random, unique identifier.
         /// </summary>
         [Input("identifier")]
         public Input<string>? Identifier { get; set; }
 
         /// <summary>
-        /// Creates a unique identifier beginning with the specified prefix. Conflicts with `identifer`.
+        /// Creates a unique identifier beginning with the specified prefix. Conflicts with `identifier`.
         /// </summary>
         [Input("identifierPrefix")]
         public Input<string>? IdentifierPrefix { get; set; }
@@ -412,13 +420,13 @@ namespace Pulumi.Aws.DocDB
         public Input<string>? EngineVersion { get; set; }
 
         /// <summary>
-        /// The indentifier for the DocDB instance, if omitted, this provider will assign a random, unique identifier.
+        /// The identifier for the DocDB instance, if omitted, this provider will assign a random, unique identifier.
         /// </summary>
         [Input("identifier")]
         public Input<string>? Identifier { get; set; }
 
         /// <summary>
-        /// Creates a unique identifier beginning with the specified prefix. Conflicts with `identifer`.
+        /// Creates a unique identifier beginning with the specified prefix. Conflicts with `identifier`.
         /// </summary>
         [Input("identifierPrefix")]
         public Input<string>? IdentifierPrefix { get; set; }

@@ -18,12 +18,20 @@ import * as utilities from "../utilities";
  * const available = pulumi.output(aws.getAvailabilityZones({ async: true }));
  * const currentRegion = pulumi.output(aws.getRegion({ async: true }));
  * const currentCallerIdentity = pulumi.output(aws.getCallerIdentity({ async: true }));
- * const fooEip = new aws.ec2.Eip("foo", {
+ * const exampleEip = new aws.ec2.Eip("example", {
  *     vpc: true,
  * });
- * const fooProtection = new aws.shield.Protection("foo", {
- *     resourceArn: pulumi.interpolate`arn:aws:ec2:${currentRegion.name!}:${currentCallerIdentity.accountId}:eip-allocation/${fooEip.id}`,
+ * const exampleProtection = new aws.shield.Protection("example", {
+ *     resourceArn: pulumi.interpolate`arn:aws:ec2:${currentRegion.name!}:${currentCallerIdentity.accountId}:eip-allocation/${exampleEip.id}`,
  * });
+ * ```
+ *
+ * ## Import
+ *
+ * Shield protection resources can be imported by specifying their ID e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:shield/protection:Protection example ff9592dc-22f3-4e88-afa1-7b29fde9669a
  * ```
  */
 export class Protection extends pulumi.CustomResource {
@@ -79,7 +87,7 @@ export class Protection extends pulumi.CustomResource {
             inputs["resourceArn"] = state ? state.resourceArn : undefined;
         } else {
             const args = argsOrState as ProtectionArgs | undefined;
-            if (!args || args.resourceArn === undefined) {
+            if ((!args || args.resourceArn === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'resourceArn'");
             }
             inputs["name"] = args ? args.name : undefined;

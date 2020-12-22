@@ -4,6 +4,7 @@
 package rds
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -18,7 +19,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/rds"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/rds"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -26,15 +27,15 @@ import (
 // 	pulumi.Run(func(ctx *pulumi.Context) error {
 // 		bar, err := rds.NewInstance(ctx, "bar", &rds.InstanceArgs{
 // 			AllocatedStorage:      pulumi.Int(10),
-// 			BackupRetentionPeriod: pulumi.Int(0),
 // 			Engine:                pulumi.String("MySQL"),
 // 			EngineVersion:         pulumi.String("5.6.21"),
 // 			InstanceClass:         pulumi.String("db.t2.micro"),
-// 			MaintenanceWindow:     pulumi.String("Fri:09:00-Fri:09:30"),
 // 			Name:                  pulumi.String("baz"),
-// 			ParameterGroupName:    pulumi.String("default.mysql5.6"),
 // 			Password:              pulumi.String("barbarbarbar"),
 // 			Username:              pulumi.String("foo"),
+// 			MaintenanceWindow:     pulumi.String("Fri:09:00-Fri:09:30"),
+// 			BackupRetentionPeriod: pulumi.Int(0),
+// 			ParameterGroupName:    pulumi.String("default.mysql5.6"),
 // 		})
 // 		if err != nil {
 // 			return err
@@ -49,6 +50,14 @@ import (
 // 		return nil
 // 	})
 // }
+// ```
+//
+// ## Import
+//
+// `aws_db_snapshot` can be imported by using the snapshot identifier, e.g.
+//
+// ```sh
+//  $ pulumi import aws:rds/snapshot:Snapshot example my-snapshot
 // ```
 type Snapshot struct {
 	pulumi.CustomResourceState
@@ -96,14 +105,15 @@ type Snapshot struct {
 // NewSnapshot registers a new resource with the given unique name, arguments, and options.
 func NewSnapshot(ctx *pulumi.Context,
 	name string, args *SnapshotArgs, opts ...pulumi.ResourceOption) (*Snapshot, error) {
-	if args == nil || args.DbInstanceIdentifier == nil {
-		return nil, errors.New("missing required argument 'DbInstanceIdentifier'")
-	}
-	if args == nil || args.DbSnapshotIdentifier == nil {
-		return nil, errors.New("missing required argument 'DbSnapshotIdentifier'")
-	}
 	if args == nil {
-		args = &SnapshotArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.DbInstanceIdentifier == nil {
+		return nil, errors.New("invalid value for required argument 'DbInstanceIdentifier'")
+	}
+	if args.DbSnapshotIdentifier == nil {
+		return nil, errors.New("invalid value for required argument 'DbSnapshotIdentifier'")
 	}
 	var resource Snapshot
 	err := ctx.RegisterResource("aws:rds/snapshot:Snapshot", name, args, &resource, opts...)
@@ -233,4 +243,43 @@ type SnapshotArgs struct {
 
 func (SnapshotArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*snapshotArgs)(nil)).Elem()
+}
+
+type SnapshotInput interface {
+	pulumi.Input
+
+	ToSnapshotOutput() SnapshotOutput
+	ToSnapshotOutputWithContext(ctx context.Context) SnapshotOutput
+}
+
+func (Snapshot) ElementType() reflect.Type {
+	return reflect.TypeOf((*Snapshot)(nil)).Elem()
+}
+
+func (i Snapshot) ToSnapshotOutput() SnapshotOutput {
+	return i.ToSnapshotOutputWithContext(context.Background())
+}
+
+func (i Snapshot) ToSnapshotOutputWithContext(ctx context.Context) SnapshotOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(SnapshotOutput)
+}
+
+type SnapshotOutput struct {
+	*pulumi.OutputState
+}
+
+func (SnapshotOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*SnapshotOutput)(nil)).Elem()
+}
+
+func (o SnapshotOutput) ToSnapshotOutput() SnapshotOutput {
+	return o
+}
+
+func (o SnapshotOutput) ToSnapshotOutputWithContext(ctx context.Context) SnapshotOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(SnapshotOutput{})
 }

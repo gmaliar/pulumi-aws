@@ -21,6 +21,14 @@ import * as utilities from "../utilities";
  *     certificatePem: "...",
  * });
  * ```
+ *
+ * ## Import
+ *
+ * Certificates can be imported using the `certificate_arn`, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:dms/certificate:Certificate test arn:aws:dms:us-west-2:123456789:cert:xxxxxxxxxx
+ * ```
  */
 export class Certificate extends pulumi.CustomResource {
     /**
@@ -85,7 +93,7 @@ export class Certificate extends pulumi.CustomResource {
             inputs["certificateWallet"] = state ? state.certificateWallet : undefined;
         } else {
             const args = argsOrState as CertificateArgs | undefined;
-            if (!args || args.certificateId === undefined) {
+            if ((!args || args.certificateId === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'certificateId'");
             }
             inputs["certificateId"] = args ? args.certificateId : undefined;

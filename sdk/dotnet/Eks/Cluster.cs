@@ -37,7 +37,6 @@ namespace Pulumi.Aws.Eks
     ///     }
     ///   ]
     /// }
-    /// 
     /// ",
     ///         });
     ///         var example_AmazonEKSClusterPolicy = new Aws.Iam.RolePolicyAttachment("example-AmazonEKSClusterPolicy", new Aws.Iam.RolePolicyAttachmentArgs
@@ -45,9 +44,11 @@ namespace Pulumi.Aws.Eks
     ///             PolicyArn = "arn:aws:iam::aws:policy/AmazonEKSClusterPolicy",
     ///             Role = example.Name,
     ///         });
-    ///         var example_AmazonEKSServicePolicy = new Aws.Iam.RolePolicyAttachment("example-AmazonEKSServicePolicy", new Aws.Iam.RolePolicyAttachmentArgs
+    ///         // Optionally, enable Security Groups for Pods
+    ///         // Reference: https://docs.aws.amazon.com/eks/latest/userguide/security-groups-for-pods.html
+    ///         var example_AmazonEKSVPCResourceController = new Aws.Iam.RolePolicyAttachment("example-AmazonEKSVPCResourceController", new Aws.Iam.RolePolicyAttachmentArgs
     ///         {
-    ///             PolicyArn = "arn:aws:iam::aws:policy/AmazonEKSServicePolicy",
+    ///             PolicyArn = "arn:aws:iam::aws:policy/AmazonEKSVPCResourceController",
     ///             Role = example.Name,
     ///         });
     ///     }
@@ -70,6 +71,11 @@ namespace Pulumi.Aws.Eks
     ///     {
     ///         var config = new Config();
     ///         var clusterName = config.Get("clusterName") ?? "example";
+    ///         var exampleLogGroup = new Aws.CloudWatch.LogGroup("exampleLogGroup", new Aws.CloudWatch.LogGroupArgs
+    ///         {
+    ///             RetentionInDays = 7,
+    ///         });
+    ///         // ... potentially other configuration ...
     ///         var exampleCluster = new Aws.Eks.Cluster("exampleCluster", new Aws.Eks.ClusterArgs
     ///         {
     ///             EnabledClusterLogTypes = 
@@ -81,16 +87,21 @@ namespace Pulumi.Aws.Eks
     ///         {
     ///             DependsOn = 
     ///             {
-    ///                 "aws_cloudwatch_log_group.example",
+    ///                 exampleLogGroup,
     ///             },
     ///         });
-    ///         var exampleLogGroup = new Aws.CloudWatch.LogGroup("exampleLogGroup", new Aws.CloudWatch.LogGroupArgs
-    ///         {
-    ///             RetentionInDays = 7,
-    ///         });
+    ///         // ... other configuration ...
     ///     }
     /// 
     /// }
+    /// ```
+    /// 
+    /// ## Import
+    /// 
+    /// EKS Clusters can be imported using the `name`, e.g.
+    /// 
+    /// ```sh
+    ///  $ pulumi import aws:eks/cluster:Cluster my_cluster my_cluster
     /// ```
     /// </summary>
     public partial class Cluster : Pulumi.CustomResource
@@ -133,6 +144,9 @@ namespace Pulumi.Aws.Eks
         /// </summary>
         [Output("identities")]
         public Output<ImmutableArray<Outputs.ClusterIdentity>> Identities { get; private set; } = null!;
+
+        [Output("kubernetesNetworkConfig")]
+        public Output<Outputs.ClusterKubernetesNetworkConfig> KubernetesNetworkConfig { get; private set; } = null!;
 
         /// <summary>
         /// Name of the cluster.
@@ -240,6 +254,9 @@ namespace Pulumi.Aws.Eks
         [Input("encryptionConfig")]
         public Input<Inputs.ClusterEncryptionConfigArgs>? EncryptionConfig { get; set; }
 
+        [Input("kubernetesNetworkConfig")]
+        public Input<Inputs.ClusterKubernetesNetworkConfigArgs>? KubernetesNetworkConfig { get; set; }
+
         /// <summary>
         /// Name of the cluster.
         /// </summary>
@@ -333,6 +350,9 @@ namespace Pulumi.Aws.Eks
             get => _identities ?? (_identities = new InputList<Inputs.ClusterIdentityGetArgs>());
             set => _identities = value;
         }
+
+        [Input("kubernetesNetworkConfig")]
+        public Input<Inputs.ClusterKubernetesNetworkConfigGetArgs>? KubernetesNetworkConfig { get; set; }
 
         /// <summary>
         /// Name of the cluster.

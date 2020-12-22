@@ -2,8 +2,7 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 /**
@@ -17,10 +16,9 @@ import * as utilities from "../utilities";
  *
  * const config = new pulumi.Config();
  * const fileSystemId = config.get("fileSystemId") || "";
- *
- * const byId = pulumi.output(aws.efs.getFileSystem({
+ * const byId = aws.efs.getFileSystem({
  *     fileSystemId: fileSystemId,
- * }, { async: true }));
+ * });
  * ```
  */
 export function getFileSystem(args?: GetFileSystemArgs, opts?: pulumi.InvokeOptions): Promise<GetFileSystemResult> {

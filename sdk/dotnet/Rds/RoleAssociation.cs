@@ -31,11 +31,19 @@ namespace Pulumi.Aws.Rds
     ///         {
     ///             DbInstanceIdentifier = aws_db_instance.Example.Id,
     ///             FeatureName = "S3_INTEGRATION",
-    ///             RoleArn = aws_iam_role.Example.Id,
+    ///             RoleArn = aws_iam_role.Example.Arn,
     ///         });
     ///     }
     /// 
     /// }
+    /// ```
+    /// 
+    /// ## Import
+    /// 
+    /// `aws_db_instance_role_association` can be imported using the DB Instance Identifier and IAM Role ARN separated by a comma (`,`), e.g.
+    /// 
+    /// ```sh
+    ///  $ pulumi import aws:rds/roleAssociation:RoleAssociation example my-db-instance,arn:aws:iam::123456789012:role/my-role
     /// ```
     /// </summary>
     public partial class RoleAssociation : Pulumi.CustomResource

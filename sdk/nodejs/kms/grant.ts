@@ -2,8 +2,7 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 /**
@@ -15,9 +14,8 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const key = new aws.kms.Key("a", {});
- * const role = new aws.iam.Role("a", {
- *     assumeRolePolicy: `{
+ * const key = new aws.kms.Key("key", {});
+ * const role = new aws.iam.Role("role", {assumeRolePolicy: `{
  *   "Version": "2012-10-17",
  *   "Statement": [
  *     {
@@ -30,22 +28,29 @@ import * as utilities from "../utilities";
  *     }
  *   ]
  * }
- * `,
- * });
- * const grant = new aws.kms.Grant("a", {
- *     constraints: [{
- *         encryptionContextEquals: {
- *             Department: "Finance",
- *         },
- *     }],
- *     granteePrincipal: role.arn,
+ * `});
+ * const grant = new aws.kms.Grant("grant", {
  *     keyId: key.keyId,
+ *     granteePrincipal: role.arn,
  *     operations: [
  *         "Encrypt",
  *         "Decrypt",
  *         "GenerateDataKey",
  *     ],
+ *     constraints: [{
+ *         encryptionContextEquals: {
+ *             Department: "Finance",
+ *         },
+ *     }],
  * });
+ * ```
+ *
+ * ## Import
+ *
+ * KMS Grants can be imported using the Key ID and Grant ID separated by a colon (`:`), e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:kms/grant:Grant test 1234abcd-12ab-34cd-56ef-1234567890ababcde1237f76e4ba7987489ac329fbfba6ad343d6f7075dbd1ef191f0120514
  * ```
  */
 export class Grant extends pulumi.CustomResource {
@@ -142,13 +147,13 @@ export class Grant extends pulumi.CustomResource {
             inputs["retiringPrincipal"] = state ? state.retiringPrincipal : undefined;
         } else {
             const args = argsOrState as GrantArgs | undefined;
-            if (!args || args.granteePrincipal === undefined) {
+            if ((!args || args.granteePrincipal === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'granteePrincipal'");
             }
-            if (!args || args.keyId === undefined) {
+            if ((!args || args.keyId === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'keyId'");
             }
-            if (!args || args.operations === undefined) {
+            if ((!args || args.operations === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'operations'");
             }
             inputs["constraints"] = args ? args.constraints : undefined;

@@ -66,6 +66,14 @@ import * as utilities from "../utilities";
  *     serviceNamespace: "rds",
  * });
  * ```
+ *
+ * ## Import
+ *
+ * Application AutoScaling Target can be imported using the `service-namespace` , `resource-id` and `scalable-dimension` separated by `/`.
+ *
+ * ```sh
+ *  $ pulumi import aws:appautoscaling/target:Target test-target service-namespace/resource-id/scalable-dimension
+ * ```
  */
 export class Target extends pulumi.CustomResource {
     /**
@@ -140,19 +148,19 @@ export class Target extends pulumi.CustomResource {
             inputs["serviceNamespace"] = state ? state.serviceNamespace : undefined;
         } else {
             const args = argsOrState as TargetArgs | undefined;
-            if (!args || args.maxCapacity === undefined) {
+            if ((!args || args.maxCapacity === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'maxCapacity'");
             }
-            if (!args || args.minCapacity === undefined) {
+            if ((!args || args.minCapacity === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'minCapacity'");
             }
-            if (!args || args.resourceId === undefined) {
+            if ((!args || args.resourceId === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'resourceId'");
             }
-            if (!args || args.scalableDimension === undefined) {
+            if ((!args || args.scalableDimension === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'scalableDimension'");
             }
-            if (!args || args.serviceNamespace === undefined) {
+            if ((!args || args.serviceNamespace === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'serviceNamespace'");
             }
             inputs["maxCapacity"] = args ? args.maxCapacity : undefined;

@@ -4,6 +4,7 @@
 package apigateway
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -20,7 +21,7 @@ import (
 // import (
 // 	"fmt"
 //
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/apigateway"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/apigateway"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -31,15 +32,15 @@ import (
 // 			return err
 // 		}
 // 		_, err = apigateway.NewResponse(ctx, "test", &apigateway.ResponseArgs{
-// 			ResponseParameters: pulumi.StringMap{
-// 				"gatewayresponse.header.Authorization": pulumi.String("'Basic'"),
-// 			},
+// 			RestApiId:    main.ID(),
+// 			StatusCode:   pulumi.String("401"),
+// 			ResponseType: pulumi.String("UNAUTHORIZED"),
 // 			ResponseTemplates: pulumi.StringMap{
 // 				"application/json": pulumi.String(fmt.Sprintf("%v%v%v", "{'message':", "$", "context.error.messageString}")),
 // 			},
-// 			ResponseType: pulumi.String("UNAUTHORIZED"),
-// 			RestApiId:    main.ID(),
-// 			StatusCode:   pulumi.String("401"),
+// 			ResponseParameters: pulumi.StringMap{
+// 				"gatewayresponse.header.Authorization": pulumi.String("'Basic'"),
+// 			},
 // 		})
 // 		if err != nil {
 // 			return err
@@ -47,6 +48,14 @@ import (
 // 		return nil
 // 	})
 // }
+// ```
+//
+// ## Import
+//
+// `aws_api_gateway_gateway_response` can be imported using `REST-API-ID/RESPONSE-TYPE`, e.g.
+//
+// ```sh
+//  $ pulumi import aws:apigateway/response:Response example 12345abcde/UNAUTHORIZED
 // ```
 type Response struct {
 	pulumi.CustomResourceState
@@ -66,14 +75,15 @@ type Response struct {
 // NewResponse registers a new resource with the given unique name, arguments, and options.
 func NewResponse(ctx *pulumi.Context,
 	name string, args *ResponseArgs, opts ...pulumi.ResourceOption) (*Response, error) {
-	if args == nil || args.ResponseType == nil {
-		return nil, errors.New("missing required argument 'ResponseType'")
-	}
-	if args == nil || args.RestApiId == nil {
-		return nil, errors.New("missing required argument 'RestApiId'")
-	}
 	if args == nil {
-		args = &ResponseArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.ResponseType == nil {
+		return nil, errors.New("invalid value for required argument 'ResponseType'")
+	}
+	if args.RestApiId == nil {
+		return nil, errors.New("invalid value for required argument 'RestApiId'")
 	}
 	var resource Response
 	err := ctx.RegisterResource("aws:apigateway/response:Response", name, args, &resource, opts...)
@@ -155,4 +165,43 @@ type ResponseArgs struct {
 
 func (ResponseArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*responseArgs)(nil)).Elem()
+}
+
+type ResponseInput interface {
+	pulumi.Input
+
+	ToResponseOutput() ResponseOutput
+	ToResponseOutputWithContext(ctx context.Context) ResponseOutput
+}
+
+func (Response) ElementType() reflect.Type {
+	return reflect.TypeOf((*Response)(nil)).Elem()
+}
+
+func (i Response) ToResponseOutput() ResponseOutput {
+	return i.ToResponseOutputWithContext(context.Background())
+}
+
+func (i Response) ToResponseOutputWithContext(ctx context.Context) ResponseOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(ResponseOutput)
+}
+
+type ResponseOutput struct {
+	*pulumi.OutputState
+}
+
+func (ResponseOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*ResponseOutput)(nil)).Elem()
+}
+
+func (o ResponseOutput) ToResponseOutput() ResponseOutput {
+	return o
+}
+
+func (o ResponseOutput) ToResponseOutputWithContext(ctx context.Context) ResponseOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(ResponseOutput{})
 }

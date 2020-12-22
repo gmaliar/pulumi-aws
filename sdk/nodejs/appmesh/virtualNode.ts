@@ -2,8 +2,7 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 /**
@@ -28,7 +27,7 @@ import * as utilities from "../utilities";
  * import * as aws from "@pulumi/aws";
  *
  * const serviceb1 = new aws.appmesh.VirtualNode("serviceb1", {
- *     meshName: aws_appmesh_mesh_simple.id,
+ *     meshName: aws_appmesh_mesh.simple.id,
  *     spec: {
  *         backends: [{
  *             virtualService: {
@@ -57,7 +56,7 @@ import * as utilities from "../utilities";
  *
  * const example = new aws.servicediscovery.HttpNamespace("example", {});
  * const serviceb1 = new aws.appmesh.VirtualNode("serviceb1", {
- *     meshName: aws_appmesh_mesh_simple.id,
+ *     meshName: aws_appmesh_mesh.simple.id,
  *     spec: {
  *         backends: [{
  *             virtualService: {
@@ -75,8 +74,8 @@ import * as utilities from "../utilities";
  *                 attributes: {
  *                     stack: "blue",
  *                 },
- *                 namespaceName: example.name,
  *                 serviceName: "serviceb1",
+ *                 namespaceName: example.name,
  *             },
  *         },
  *     },
@@ -89,7 +88,7 @@ import * as utilities from "../utilities";
  * import * as aws from "@pulumi/aws";
  *
  * const serviceb1 = new aws.appmesh.VirtualNode("serviceb1", {
- *     meshName: aws_appmesh_mesh_simple.id,
+ *     meshName: aws_appmesh_mesh.simple.id,
  *     spec: {
  *         backends: [{
  *             virtualService: {
@@ -97,17 +96,17 @@ import * as utilities from "../utilities";
  *             },
  *         }],
  *         listener: {
- *             healthCheck: {
- *                 healthyThreshold: 2,
- *                 intervalMillis: 5000,
- *                 path: "/ping",
- *                 protocol: "http",
- *                 timeoutMillis: 2000,
- *                 unhealthyThreshold: 2,
- *             },
  *             portMapping: {
  *                 port: 8080,
  *                 protocol: "http",
+ *             },
+ *             healthCheck: {
+ *                 protocol: "http",
+ *                 path: "/ping",
+ *                 healthyThreshold: 2,
+ *                 unhealthyThreshold: 2,
+ *                 timeoutMillis: 2000,
+ *                 intervalMillis: 5000,
  *             },
  *         },
  *         serviceDiscovery: {
@@ -125,7 +124,7 @@ import * as utilities from "../utilities";
  * import * as aws from "@pulumi/aws";
  *
  * const serviceb1 = new aws.appmesh.VirtualNode("serviceb1", {
- *     meshName: aws_appmesh_mesh_simple.id,
+ *     meshName: aws_appmesh_mesh.simple.id,
  *     spec: {
  *         backends: [{
  *             virtualService: {
@@ -138,6 +137,11 @@ import * as utilities from "../utilities";
  *                 protocol: "http",
  *             },
  *         },
+ *         serviceDiscovery: {
+ *             dns: {
+ *                 hostname: "serviceb.simpleapp.local",
+ *             },
+ *         },
  *         logging: {
  *             accessLog: {
  *                 file: {
@@ -145,14 +149,19 @@ import * as utilities from "../utilities";
  *                 },
  *             },
  *         },
- *         serviceDiscovery: {
- *             dns: {
- *                 hostname: "serviceb.simpleapp.local",
- *             },
- *         },
  *     },
  * });
  * ```
+ *
+ * ## Import
+ *
+ * App Mesh virtual nodes can be imported using `mesh_name` together with the virtual node's `name`, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:appmesh/virtualNode:VirtualNode serviceb1 simpleapp/serviceBv1
+ * ```
+ *
+ *  [1]/docs/providers/aws/index.html
  */
 export class VirtualNode extends pulumi.CustomResource {
     /**
@@ -195,13 +204,21 @@ export class VirtualNode extends pulumi.CustomResource {
      */
     public /*out*/ readonly lastUpdatedDate!: pulumi.Output<string>;
     /**
-     * The name of the service mesh in which to create the virtual node.
+     * The name of the service mesh in which to create the virtual node. Must be between 1 and 255 characters in length.
      */
     public readonly meshName!: pulumi.Output<string>;
     /**
-     * The name to use for the virtual node.
+     * The AWS account ID of the service mesh's owner. Defaults to the account ID the [AWS provider](https://www.terraform.io/docs/providers/aws/index.html) is currently connected to.
+     */
+    public readonly meshOwner!: pulumi.Output<string>;
+    /**
+     * The name to use for the virtual node. Must be between 1 and 255 characters in length.
      */
     public readonly name!: pulumi.Output<string>;
+    /**
+     * The resource owner's AWS account ID.
+     */
+    public /*out*/ readonly resourceOwner!: pulumi.Output<string>;
     /**
      * The virtual node specification to apply.
      */
@@ -227,24 +244,28 @@ export class VirtualNode extends pulumi.CustomResource {
             inputs["createdDate"] = state ? state.createdDate : undefined;
             inputs["lastUpdatedDate"] = state ? state.lastUpdatedDate : undefined;
             inputs["meshName"] = state ? state.meshName : undefined;
+            inputs["meshOwner"] = state ? state.meshOwner : undefined;
             inputs["name"] = state ? state.name : undefined;
+            inputs["resourceOwner"] = state ? state.resourceOwner : undefined;
             inputs["spec"] = state ? state.spec : undefined;
             inputs["tags"] = state ? state.tags : undefined;
         } else {
             const args = argsOrState as VirtualNodeArgs | undefined;
-            if (!args || args.meshName === undefined) {
+            if ((!args || args.meshName === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'meshName'");
             }
-            if (!args || args.spec === undefined) {
+            if ((!args || args.spec === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'spec'");
             }
             inputs["meshName"] = args ? args.meshName : undefined;
+            inputs["meshOwner"] = args ? args.meshOwner : undefined;
             inputs["name"] = args ? args.name : undefined;
             inputs["spec"] = args ? args.spec : undefined;
             inputs["tags"] = args ? args.tags : undefined;
             inputs["arn"] = undefined /*out*/;
             inputs["createdDate"] = undefined /*out*/;
             inputs["lastUpdatedDate"] = undefined /*out*/;
+            inputs["resourceOwner"] = undefined /*out*/;
         }
         if (!opts) {
             opts = {}
@@ -274,13 +295,21 @@ export interface VirtualNodeState {
      */
     readonly lastUpdatedDate?: pulumi.Input<string>;
     /**
-     * The name of the service mesh in which to create the virtual node.
+     * The name of the service mesh in which to create the virtual node. Must be between 1 and 255 characters in length.
      */
     readonly meshName?: pulumi.Input<string>;
     /**
-     * The name to use for the virtual node.
+     * The AWS account ID of the service mesh's owner. Defaults to the account ID the [AWS provider](https://www.terraform.io/docs/providers/aws/index.html) is currently connected to.
+     */
+    readonly meshOwner?: pulumi.Input<string>;
+    /**
+     * The name to use for the virtual node. Must be between 1 and 255 characters in length.
      */
     readonly name?: pulumi.Input<string>;
+    /**
+     * The resource owner's AWS account ID.
+     */
+    readonly resourceOwner?: pulumi.Input<string>;
     /**
      * The virtual node specification to apply.
      */
@@ -296,11 +325,15 @@ export interface VirtualNodeState {
  */
 export interface VirtualNodeArgs {
     /**
-     * The name of the service mesh in which to create the virtual node.
+     * The name of the service mesh in which to create the virtual node. Must be between 1 and 255 characters in length.
      */
     readonly meshName: pulumi.Input<string>;
     /**
-     * The name to use for the virtual node.
+     * The AWS account ID of the service mesh's owner. Defaults to the account ID the [AWS provider](https://www.terraform.io/docs/providers/aws/index.html) is currently connected to.
+     */
+    readonly meshOwner?: pulumi.Input<string>;
+    /**
+     * The name to use for the virtual node. Must be between 1 and 255 characters in length.
      */
     readonly name?: pulumi.Input<string>;
     /**

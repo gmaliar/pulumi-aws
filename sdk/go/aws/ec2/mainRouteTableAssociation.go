@@ -4,6 +4,7 @@
 package ec2
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -18,15 +19,15 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/ec2"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/ec2"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
 // func main() {
 // 	pulumi.Run(func(ctx *pulumi.Context) error {
 // 		_, err := ec2.NewMainRouteTableAssociation(ctx, "mainRouteTableAssociation", &ec2.MainRouteTableAssociationArgs{
-// 			RouteTableId: pulumi.String(aws_route_table.Bar.Id),
-// 			VpcId:        pulumi.String(aws_vpc.Foo.Id),
+// 			VpcId:        pulumi.Any(aws_vpc.Foo.Id),
+// 			RouteTableId: pulumi.Any(aws_route_table.Bar.Id),
 // 		})
 // 		if err != nil {
 // 			return err
@@ -58,14 +59,15 @@ type MainRouteTableAssociation struct {
 // NewMainRouteTableAssociation registers a new resource with the given unique name, arguments, and options.
 func NewMainRouteTableAssociation(ctx *pulumi.Context,
 	name string, args *MainRouteTableAssociationArgs, opts ...pulumi.ResourceOption) (*MainRouteTableAssociation, error) {
-	if args == nil || args.RouteTableId == nil {
-		return nil, errors.New("missing required argument 'RouteTableId'")
-	}
-	if args == nil || args.VpcId == nil {
-		return nil, errors.New("missing required argument 'VpcId'")
-	}
 	if args == nil {
-		args = &MainRouteTableAssociationArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.RouteTableId == nil {
+		return nil, errors.New("invalid value for required argument 'RouteTableId'")
+	}
+	if args.VpcId == nil {
+		return nil, errors.New("invalid value for required argument 'VpcId'")
 	}
 	var resource MainRouteTableAssociation
 	err := ctx.RegisterResource("aws:ec2/mainRouteTableAssociation:MainRouteTableAssociation", name, args, &resource, opts...)
@@ -131,4 +133,43 @@ type MainRouteTableAssociationArgs struct {
 
 func (MainRouteTableAssociationArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*mainRouteTableAssociationArgs)(nil)).Elem()
+}
+
+type MainRouteTableAssociationInput interface {
+	pulumi.Input
+
+	ToMainRouteTableAssociationOutput() MainRouteTableAssociationOutput
+	ToMainRouteTableAssociationOutputWithContext(ctx context.Context) MainRouteTableAssociationOutput
+}
+
+func (MainRouteTableAssociation) ElementType() reflect.Type {
+	return reflect.TypeOf((*MainRouteTableAssociation)(nil)).Elem()
+}
+
+func (i MainRouteTableAssociation) ToMainRouteTableAssociationOutput() MainRouteTableAssociationOutput {
+	return i.ToMainRouteTableAssociationOutputWithContext(context.Background())
+}
+
+func (i MainRouteTableAssociation) ToMainRouteTableAssociationOutputWithContext(ctx context.Context) MainRouteTableAssociationOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(MainRouteTableAssociationOutput)
+}
+
+type MainRouteTableAssociationOutput struct {
+	*pulumi.OutputState
+}
+
+func (MainRouteTableAssociationOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*MainRouteTableAssociationOutput)(nil)).Elem()
+}
+
+func (o MainRouteTableAssociationOutput) ToMainRouteTableAssociationOutput() MainRouteTableAssociationOutput {
+	return o
+}
+
+func (o MainRouteTableAssociationOutput) ToMainRouteTableAssociationOutputWithContext(ctx context.Context) MainRouteTableAssociationOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(MainRouteTableAssociationOutput{})
 }

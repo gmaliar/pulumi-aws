@@ -2,8 +2,7 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 /**
@@ -31,6 +30,14 @@ import * as utilities from "../utilities";
  * `,
  *     },
  * });
+ * ```
+ *
+ * ## Import
+ *
+ * Resource groups can be imported using the `name`, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:resourcegroups/group:Group foo resource-group-name
  * ```
  */
 export class Group extends pulumi.CustomResource {
@@ -101,7 +108,7 @@ export class Group extends pulumi.CustomResource {
             inputs["tags"] = state ? state.tags : undefined;
         } else {
             const args = argsOrState as GroupArgs | undefined;
-            if (!args || args.resourceQuery === undefined) {
+            if ((!args || args.resourceQuery === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'resourceQuery'");
             }
             inputs["description"] = args ? args.description : undefined;

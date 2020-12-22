@@ -16,10 +16,18 @@ import * as utilities from "../utilities";
  * import * as aws from "@pulumi/aws";
  *
  * const example = new aws.apigatewayv2.ApiMapping("example", {
- *     apiId: aws_apigatewayv2_api_example.id,
- *     domainName: aws_apigatewayv2_domain_name_example.id,
- *     stage: aws_apigatewayv2_stage_example.id,
+ *     apiId: aws_apigatewayv2_api.example.id,
+ *     domainName: aws_apigatewayv2_domain_name.example.id,
+ *     stage: aws_apigatewayv2_stage.example.id,
  * });
+ * ```
+ *
+ * ## Import
+ *
+ * `aws_apigatewayv2_api_mapping` can be imported by using the API mapping identifier and domain name, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:apigatewayv2/apiMapping:ApiMapping example 1122334/ws-api.example.com
  * ```
  */
 export class ApiMapping extends pulumi.CustomResource {
@@ -85,13 +93,13 @@ export class ApiMapping extends pulumi.CustomResource {
             inputs["stage"] = state ? state.stage : undefined;
         } else {
             const args = argsOrState as ApiMappingArgs | undefined;
-            if (!args || args.apiId === undefined) {
+            if ((!args || args.apiId === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'apiId'");
             }
-            if (!args || args.domainName === undefined) {
+            if ((!args || args.domainName === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'domainName'");
             }
-            if (!args || args.stage === undefined) {
+            if ((!args || args.stage === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'stage'");
             }
             inputs["apiId"] = args ? args.apiId : undefined;

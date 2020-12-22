@@ -29,7 +29,7 @@ namespace Pulumi.Aws.Ec2
     ///         {
     ///             Ami = "ami-21f78e11",
     ///             AvailabilityZone = "us-west-2a",
-    ///             InstanceType = "t1.micro",
+    ///             InstanceType = "t2.micro",
     ///             Tags = 
     ///             {
     ///                 { "Name", "HelloWorld" },
@@ -43,13 +43,23 @@ namespace Pulumi.Aws.Ec2
     ///         var ebsAtt = new Aws.Ec2.VolumeAttachment("ebsAtt", new Aws.Ec2.VolumeAttachmentArgs
     ///         {
     ///             DeviceName = "/dev/sdh",
-    ///             InstanceId = web.Id,
     ///             VolumeId = example.Id,
+    ///             InstanceId = web.Id,
     ///         });
     ///     }
     /// 
     /// }
     /// ```
+    /// 
+    /// ## Import
+    /// 
+    /// EBS Volume Attachments can be imported using `DEVICE_NAME:VOLUME_ID:INSTANCE_ID`, e.g.
+    /// 
+    /// ```sh
+    ///  $ pulumi import aws:ec2/volumeAttachment:VolumeAttachment example /dev/sdh:vol-049df61146c4d7901:i-12345678
+    /// ```
+    /// 
+    ///  [1]https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/device_naming.html#available-ec2-device-names [2]https://docs.aws.amazon.com/AWSEC2/latest/WindowsGuide/device_naming.html#available-ec2-device-names [3]https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-detaching-volume.html
     /// </summary>
     public partial class VolumeAttachment : Pulumi.CustomResource
     {

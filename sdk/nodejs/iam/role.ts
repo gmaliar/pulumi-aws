@@ -43,19 +43,27 @@ import {PolicyDocument} from "./index";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const instance_assume_role_policy = pulumi.output(aws.iam.getPolicyDocument({
+ * const instance-assume-role-policy = aws.iam.getPolicyDocument({
  *     statements: [{
  *         actions: ["sts:AssumeRole"],
  *         principals: [{
- *             identifiers: ["ec2.amazonaws.com"],
  *             type: "Service",
+ *             identifiers: ["ec2.amazonaws.com"],
  *         }],
  *     }],
- * }, { async: true }));
- * const instance = new aws.iam.Role("instance", {
- *     assumeRolePolicy: instance_assume_role_policy.json,
- *     path: "/system/",
  * });
+ * const instance = new aws.iam.Role("instance", {
+ *     path: "/system/",
+ *     assumeRolePolicy: instance_assume_role_policy.then(instance_assume_role_policy => instance_assume_role_policy.json),
+ * });
+ * ```
+ *
+ * ## Import
+ *
+ * IAM Roles can be imported using the `name`, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:iam/role:Role developer developer_name
  * ```
  */
 export class Role extends pulumi.CustomResource {
@@ -162,7 +170,7 @@ export class Role extends pulumi.CustomResource {
             inputs["uniqueId"] = state ? state.uniqueId : undefined;
         } else {
             const args = argsOrState as RoleArgs | undefined;
-            if (!args || args.assumeRolePolicy === undefined) {
+            if ((!args || args.assumeRolePolicy === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'assumeRolePolicy'");
             }
             inputs["assumeRolePolicy"] = args ? args.assumeRolePolicy : undefined;

@@ -20,6 +20,14 @@ import * as utilities from "../utilities";
  *     },
  * });
  * ```
+ *
+ * ## Import
+ *
+ * Cloudwatch Log Groups can be imported using the `name`, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:cloudwatch/logGroup:LogGroup test_group yada
+ * ```
  */
 export class LogGroup extends pulumi.CustomResource {
     /**
@@ -50,7 +58,7 @@ export class LogGroup extends pulumi.CustomResource {
     }
 
     /**
-     * The Amazon Resource Name (ARN) specifying the log group.
+     * The Amazon Resource Name (ARN) specifying the log group. Any `:*` suffix added by the API, denoting all CloudWatch Log Streams under the CloudWatch Log Group, is removed for greater compatibility with other AWS services that do not accept the suffix.
      */
     public /*out*/ readonly arn!: pulumi.Output<string>;
     /**
@@ -69,7 +77,8 @@ export class LogGroup extends pulumi.CustomResource {
     public readonly namePrefix!: pulumi.Output<string | undefined>;
     /**
      * Specifies the number of days
-     * you want to retain log events in the specified log group.  Possible values are: 1, 3, 5, 7, 14, 30, 60, 90, 120, 150, 180, 365, 400, 545, 731, 1827, and 3653.
+     * you want to retain log events in the specified log group.  Possible values are: 1, 3, 5, 7, 14, 30, 60, 90, 120, 150, 180, 365, 400, 545, 731, 1827, 3653, and 0.
+     * If you select 0, the events in the log group are always retained and never expire.
      */
     public readonly retentionInDays!: pulumi.Output<number | undefined>;
     /**
@@ -120,7 +129,7 @@ export class LogGroup extends pulumi.CustomResource {
  */
 export interface LogGroupState {
     /**
-     * The Amazon Resource Name (ARN) specifying the log group.
+     * The Amazon Resource Name (ARN) specifying the log group. Any `:*` suffix added by the API, denoting all CloudWatch Log Streams under the CloudWatch Log Group, is removed for greater compatibility with other AWS services that do not accept the suffix.
      */
     readonly arn?: pulumi.Input<string>;
     /**
@@ -139,7 +148,8 @@ export interface LogGroupState {
     readonly namePrefix?: pulumi.Input<string>;
     /**
      * Specifies the number of days
-     * you want to retain log events in the specified log group.  Possible values are: 1, 3, 5, 7, 14, 30, 60, 90, 120, 150, 180, 365, 400, 545, 731, 1827, and 3653.
+     * you want to retain log events in the specified log group.  Possible values are: 1, 3, 5, 7, 14, 30, 60, 90, 120, 150, 180, 365, 400, 545, 731, 1827, 3653, and 0.
+     * If you select 0, the events in the log group are always retained and never expire.
      */
     readonly retentionInDays?: pulumi.Input<number>;
     /**
@@ -168,7 +178,8 @@ export interface LogGroupArgs {
     readonly namePrefix?: pulumi.Input<string>;
     /**
      * Specifies the number of days
-     * you want to retain log events in the specified log group.  Possible values are: 1, 3, 5, 7, 14, 30, 60, 90, 120, 150, 180, 365, 400, 545, 731, 1827, and 3653.
+     * you want to retain log events in the specified log group.  Possible values are: 1, 3, 5, 7, 14, 30, 60, 90, 120, 150, 180, 365, 400, 545, 731, 1827, 3653, and 0.
+     * If you select 0, the events in the log group are always retained and never expire.
      */
     readonly retentionInDays?: pulumi.Input<number>;
     /**

@@ -4,6 +4,7 @@
 package elasticsearch
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
@@ -18,7 +19,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/elasticsearch"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/elasticsearch"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -53,13 +54,19 @@ import (
 // import (
 // 	"fmt"
 //
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws"
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/elasticsearch"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/elasticsearch"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
+// 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi/config"
 // )
 //
 // func main() {
 // 	pulumi.Run(func(ctx *pulumi.Context) error {
+// 		cfg := config.New(ctx, "")
+// 		domain := "tf-test"
+// 		if param := cfg.Get("domain"); param != "" {
+// 			domain = param
+// 		}
 // 		currentRegion, err := aws.GetRegion(ctx, nil, nil)
 // 		if err != nil {
 // 			return err
@@ -69,7 +76,7 @@ import (
 // 			return err
 // 		}
 // 		_, err = elasticsearch.NewDomain(ctx, "example", &elasticsearch.DomainArgs{
-// 			AccessPolicies: pulumi.String(fmt.Sprintf("%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v", "{\n", "  \"Version\": \"2012-10-17\",\n", "  \"Statement\": [\n", "    {\n", "      \"Action\": \"es:*\",\n", "      \"Principal\": \"*\",\n", "      \"Effect\": \"Allow\",\n", "      \"Resource\": \"arn:aws:es:", currentRegion.Name, ":", currentCallerIdentity.AccountId, ":domain/", domain, "/*\",\n", "      \"Condition\": {\n", "        \"IpAddress\": {\"aws:SourceIp\": [\"66.193.100.22/32\"]}\n", "      }\n", "    }\n", "  ]\n", "}\n", "\n")),
+// 			AccessPolicies: pulumi.String(fmt.Sprintf("%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v", "{\n", "  \"Version\": \"2012-10-17\",\n", "  \"Statement\": [\n", "    {\n", "      \"Action\": \"es:*\",\n", "      \"Principal\": \"*\",\n", "      \"Effect\": \"Allow\",\n", "      \"Resource\": \"arn:aws:es:", currentRegion.Name, ":", currentCallerIdentity.AccountId, ":domain/", domain, "/*\",\n", "      \"Condition\": {\n", "        \"IpAddress\": {\"aws:SourceIp\": [\"66.193.100.22/32\"]}\n", "      }\n", "    }\n", "  ]\n", "}\n")),
 // 		})
 // 		if err != nil {
 // 			return err
@@ -86,8 +93,8 @@ import (
 // import (
 // 	"fmt"
 //
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/cloudwatch"
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/elasticsearch"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/cloudwatch"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/elasticsearch"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -98,8 +105,8 @@ import (
 // 			return err
 // 		}
 // 		_, err = cloudwatch.NewLogResourcePolicy(ctx, "exampleLogResourcePolicy", &cloudwatch.LogResourcePolicyArgs{
-// 			PolicyDocument: pulumi.String(fmt.Sprintf("%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v", "{\n", "  \"Version\": \"2012-10-17\",\n", "  \"Statement\": [\n", "    {\n", "      \"Effect\": \"Allow\",\n", "      \"Principal\": {\n", "        \"Service\": \"es.amazonaws.com\"\n", "      },\n", "      \"Action\": [\n", "        \"logs:PutLogEvents\",\n", "        \"logs:PutLogEventsBatch\",\n", "        \"logs:CreateLogStream\"\n", "      ],\n", "      \"Resource\": \"arn:aws:logs:*\"\n", "    }\n", "  ]\n", "}\n", "\n")),
 // 			PolicyName:     pulumi.String("example"),
+// 			PolicyDocument: pulumi.String(fmt.Sprintf("%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v", "{\n", "  \"Version\": \"2012-10-17\",\n", "  \"Statement\": [\n", "    {\n", "      \"Effect\": \"Allow\",\n", "      \"Principal\": {\n", "        \"Service\": \"es.amazonaws.com\"\n", "      },\n", "      \"Action\": [\n", "        \"logs:PutLogEvents\",\n", "        \"logs:PutLogEventsBatch\",\n", "        \"logs:CreateLogStream\"\n", "      ],\n", "      \"Resource\": \"arn:aws:logs:*\"\n", "    }\n", "  ]\n", "}\n")),
 // 		})
 // 		if err != nil {
 // 			return err
@@ -118,6 +125,14 @@ import (
 // 		return nil
 // 	})
 // }
+// ```
+//
+// ## Import
+//
+// Elasticsearch domains can be imported using the `domain_name`, e.g.
+//
+// ```sh
+//  $ pulumi import aws:elasticsearch/domain:Domain example domain_name
 // ```
 type Domain struct {
 	pulumi.CustomResourceState
@@ -154,7 +169,7 @@ type Domain struct {
 	// * `vpc_options.0.availability_zones` - If the domain was created inside a VPC, the names of the availability zones the configured `subnetIds` were created inside.
 	// * `vpc_options.0.vpc_id` - If the domain was created inside a VPC, the ID of the VPC.
 	KibanaEndpoint pulumi.StringOutput `pulumi:"kibanaEndpoint"`
-	// Options for publishing slow logs to CloudWatch Logs.
+	// Options for publishing slow  and application logs to CloudWatch Logs. This block can be declared multiple times, for each log_type, within the same resource.
 	LogPublishingOptions DomainLogPublishingOptionArrayOutput `pulumi:"logPublishingOptions"`
 	// Node-to-node encryption options. See below.
 	NodeToNodeEncryption DomainNodeToNodeEncryptionOutput `pulumi:"nodeToNodeEncryption"`
@@ -172,6 +187,7 @@ func NewDomain(ctx *pulumi.Context,
 	if args == nil {
 		args = &DomainArgs{}
 	}
+
 	var resource Domain
 	err := ctx.RegisterResource("aws:elasticsearch/domain:Domain", name, args, &resource, opts...)
 	if err != nil {
@@ -226,7 +242,7 @@ type domainState struct {
 	// * `vpc_options.0.availability_zones` - If the domain was created inside a VPC, the names of the availability zones the configured `subnetIds` were created inside.
 	// * `vpc_options.0.vpc_id` - If the domain was created inside a VPC, the ID of the VPC.
 	KibanaEndpoint *string `pulumi:"kibanaEndpoint"`
-	// Options for publishing slow logs to CloudWatch Logs.
+	// Options for publishing slow  and application logs to CloudWatch Logs. This block can be declared multiple times, for each log_type, within the same resource.
 	LogPublishingOptions []DomainLogPublishingOption `pulumi:"logPublishingOptions"`
 	// Node-to-node encryption options. See below.
 	NodeToNodeEncryption *DomainNodeToNodeEncryption `pulumi:"nodeToNodeEncryption"`
@@ -271,7 +287,7 @@ type DomainState struct {
 	// * `vpc_options.0.availability_zones` - If the domain was created inside a VPC, the names of the availability zones the configured `subnetIds` were created inside.
 	// * `vpc_options.0.vpc_id` - If the domain was created inside a VPC, the ID of the VPC.
 	KibanaEndpoint pulumi.StringPtrInput
-	// Options for publishing slow logs to CloudWatch Logs.
+	// Options for publishing slow  and application logs to CloudWatch Logs. This block can be declared multiple times, for each log_type, within the same resource.
 	LogPublishingOptions DomainLogPublishingOptionArrayInput
 	// Node-to-node encryption options. See below.
 	NodeToNodeEncryption DomainNodeToNodeEncryptionPtrInput
@@ -310,7 +326,7 @@ type domainArgs struct {
 	ElasticsearchVersion *string `pulumi:"elasticsearchVersion"`
 	// Encrypt at rest options. Only available for [certain instance types](http://docs.aws.amazon.com/elasticsearch-service/latest/developerguide/aes-supported-instance-types.html). See below.
 	EncryptAtRest *DomainEncryptAtRest `pulumi:"encryptAtRest"`
-	// Options for publishing slow logs to CloudWatch Logs.
+	// Options for publishing slow  and application logs to CloudWatch Logs. This block can be declared multiple times, for each log_type, within the same resource.
 	LogPublishingOptions []DomainLogPublishingOption `pulumi:"logPublishingOptions"`
 	// Node-to-node encryption options. See below.
 	NodeToNodeEncryption *DomainNodeToNodeEncryption `pulumi:"nodeToNodeEncryption"`
@@ -346,7 +362,7 @@ type DomainArgs struct {
 	ElasticsearchVersion pulumi.StringPtrInput
 	// Encrypt at rest options. Only available for [certain instance types](http://docs.aws.amazon.com/elasticsearch-service/latest/developerguide/aes-supported-instance-types.html). See below.
 	EncryptAtRest DomainEncryptAtRestPtrInput
-	// Options for publishing slow logs to CloudWatch Logs.
+	// Options for publishing slow  and application logs to CloudWatch Logs. This block can be declared multiple times, for each log_type, within the same resource.
 	LogPublishingOptions DomainLogPublishingOptionArrayInput
 	// Node-to-node encryption options. See below.
 	NodeToNodeEncryption DomainNodeToNodeEncryptionPtrInput
@@ -360,4 +376,43 @@ type DomainArgs struct {
 
 func (DomainArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*domainArgs)(nil)).Elem()
+}
+
+type DomainInput interface {
+	pulumi.Input
+
+	ToDomainOutput() DomainOutput
+	ToDomainOutputWithContext(ctx context.Context) DomainOutput
+}
+
+func (Domain) ElementType() reflect.Type {
+	return reflect.TypeOf((*Domain)(nil)).Elem()
+}
+
+func (i Domain) ToDomainOutput() DomainOutput {
+	return i.ToDomainOutputWithContext(context.Background())
+}
+
+func (i Domain) ToDomainOutputWithContext(ctx context.Context) DomainOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(DomainOutput)
+}
+
+type DomainOutput struct {
+	*pulumi.OutputState
+}
+
+func (DomainOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*DomainOutput)(nil)).Elem()
+}
+
+func (o DomainOutput) ToDomainOutput() DomainOutput {
+	return o
+}
+
+func (o DomainOutput) ToDomainOutputWithContext(ctx context.Context) DomainOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(DomainOutput{})
 }

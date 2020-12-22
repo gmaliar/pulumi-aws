@@ -4,6 +4,7 @@
 package cfg
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -22,41 +23,41 @@ import (
 // import (
 // 	"fmt"
 //
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/cfg"
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/iam"
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/s3"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/cfg"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/iam"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/s3"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
 // func main() {
 // 	pulumi.Run(func(ctx *pulumi.Context) error {
-// 		_, err := cfg.NewRecorderStatus(ctx, "fooRecorderStatus", &cfg.RecorderStatusArgs{
+// 		bucket, err := s3.NewBucket(ctx, "bucket", nil)
+// 		if err != nil {
+// 			return err
+// 		}
+// 		fooDeliveryChannel, err := cfg.NewDeliveryChannel(ctx, "fooDeliveryChannel", &cfg.DeliveryChannelArgs{
+// 			S3BucketName: bucket.Bucket,
+// 		})
+// 		if err != nil {
+// 			return err
+// 		}
+// 		_, err = cfg.NewRecorderStatus(ctx, "fooRecorderStatus", &cfg.RecorderStatusArgs{
 // 			IsEnabled: pulumi.Bool(true),
 // 		}, pulumi.DependsOn([]pulumi.Resource{
-// 			"aws_config_delivery_channel.foo",
+// 			fooDeliveryChannel,
 // 		}))
 // 		if err != nil {
 // 			return err
 // 		}
 // 		role, err := iam.NewRole(ctx, "role", &iam.RoleArgs{
-// 			AssumeRolePolicy: pulumi.String(fmt.Sprintf("%v%v%v%v%v%v%v%v%v%v%v%v%v%v", "{\n", "  \"Version\": \"2012-10-17\",\n", "  \"Statement\": [\n", "    {\n", "      \"Action\": \"sts:AssumeRole\",\n", "      \"Principal\": {\n", "        \"Service\": \"config.amazonaws.com\"\n", "      },\n", "      \"Effect\": \"Allow\",\n", "      \"Sid\": \"\"\n", "    }\n", "  ]\n", "}\n", "\n")),
+// 			AssumeRolePolicy: pulumi.String(fmt.Sprintf("%v%v%v%v%v%v%v%v%v%v%v%v%v", "{\n", "  \"Version\": \"2012-10-17\",\n", "  \"Statement\": [\n", "    {\n", "      \"Action\": \"sts:AssumeRole\",\n", "      \"Principal\": {\n", "        \"Service\": \"config.amazonaws.com\"\n", "      },\n", "      \"Effect\": \"Allow\",\n", "      \"Sid\": \"\"\n", "    }\n", "  ]\n", "}\n")),
 // 		})
 // 		if err != nil {
 // 			return err
 // 		}
 // 		_, err = iam.NewRolePolicyAttachment(ctx, "rolePolicyAttachment", &iam.RolePolicyAttachmentArgs{
-// 			PolicyArn: pulumi.String("arn:aws:iam::aws:policy/service-role/AWSConfigRole"),
 // 			Role:      role.Name,
-// 		})
-// 		if err != nil {
-// 			return err
-// 		}
-// 		bucket, err := s3.NewBucket(ctx, "bucket", nil)
-// 		if err != nil {
-// 			return err
-// 		}
-// 		_, err = cfg.NewDeliveryChannel(ctx, "fooDeliveryChannel", &cfg.DeliveryChannelArgs{
-// 			S3BucketName: bucket.Bucket,
+// 			PolicyArn: pulumi.String("arn:aws:iam::aws:policy/service-role/AWSConfigRole"),
 // 		})
 // 		if err != nil {
 // 			return err
@@ -68,12 +69,12 @@ import (
 // 			return err
 // 		}
 // 		_, err = iam.NewRolePolicy(ctx, "rolePolicy", &iam.RolePolicyArgs{
+// 			Role: role.ID(),
 // 			Policy: pulumi.All(bucket.Arn, bucket.Arn).ApplyT(func(_args []interface{}) (string, error) {
 // 				bucketArn := _args[0].(string)
 // 				bucketArn1 := _args[1].(string)
-// 				return fmt.Sprintf("%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v", "{\n", "  \"Version\": \"2012-10-17\",\n", "  \"Statement\": [\n", "    {\n", "      \"Action\": [\n", "        \"s3:*\"\n", "      ],\n", "      \"Effect\": \"Allow\",\n", "      \"Resource\": [\n", "        \"", bucketArn, "\",\n", "        \"", bucketArn1, "/*\"\n", "      ]\n", "    }\n", "  ]\n", "}\n", "\n"), nil
+// 				return fmt.Sprintf("%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v", "{\n", "  \"Version\": \"2012-10-17\",\n", "  \"Statement\": [\n", "    {\n", "      \"Action\": [\n", "        \"s3:*\"\n", "      ],\n", "      \"Effect\": \"Allow\",\n", "      \"Resource\": [\n", "        \"", bucketArn, "\",\n", "        \"", bucketArn1, "/*\"\n", "      ]\n", "    }\n", "  ]\n", "}\n"), nil
 // 			}).(pulumi.StringOutput),
-// 			Role: role.ID(),
 // 		})
 // 		if err != nil {
 // 			return err
@@ -81,6 +82,14 @@ import (
 // 		return nil
 // 	})
 // }
+// ```
+//
+// ## Import
+//
+// Configuration Recorder Status can be imported using the name of the Configuration Recorder, e.g.
+//
+// ```sh
+//  $ pulumi import aws:cfg/recorderStatus:RecorderStatus foo example
 // ```
 type RecorderStatus struct {
 	pulumi.CustomResourceState
@@ -94,11 +103,12 @@ type RecorderStatus struct {
 // NewRecorderStatus registers a new resource with the given unique name, arguments, and options.
 func NewRecorderStatus(ctx *pulumi.Context,
 	name string, args *RecorderStatusArgs, opts ...pulumi.ResourceOption) (*RecorderStatus, error) {
-	if args == nil || args.IsEnabled == nil {
-		return nil, errors.New("missing required argument 'IsEnabled'")
-	}
 	if args == nil {
-		args = &RecorderStatusArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.IsEnabled == nil {
+		return nil, errors.New("invalid value for required argument 'IsEnabled'")
 	}
 	var resource RecorderStatus
 	err := ctx.RegisterResource("aws:cfg/recorderStatus:RecorderStatus", name, args, &resource, opts...)
@@ -156,4 +166,43 @@ type RecorderStatusArgs struct {
 
 func (RecorderStatusArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*recorderStatusArgs)(nil)).Elem()
+}
+
+type RecorderStatusInput interface {
+	pulumi.Input
+
+	ToRecorderStatusOutput() RecorderStatusOutput
+	ToRecorderStatusOutputWithContext(ctx context.Context) RecorderStatusOutput
+}
+
+func (RecorderStatus) ElementType() reflect.Type {
+	return reflect.TypeOf((*RecorderStatus)(nil)).Elem()
+}
+
+func (i RecorderStatus) ToRecorderStatusOutput() RecorderStatusOutput {
+	return i.ToRecorderStatusOutputWithContext(context.Background())
+}
+
+func (i RecorderStatus) ToRecorderStatusOutputWithContext(ctx context.Context) RecorderStatusOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(RecorderStatusOutput)
+}
+
+type RecorderStatusOutput struct {
+	*pulumi.OutputState
+}
+
+func (RecorderStatusOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*RecorderStatusOutput)(nil)).Elem()
+}
+
+func (o RecorderStatusOutput) ToRecorderStatusOutput() RecorderStatusOutput {
+	return o
+}
+
+func (o RecorderStatusOutput) ToRecorderStatusOutputWithContext(ctx context.Context) RecorderStatusOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(RecorderStatusOutput{})
 }

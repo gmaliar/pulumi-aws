@@ -25,14 +25,14 @@ namespace Pulumi.Aws.Route53
     ///     {
     ///         var www = new Aws.Route53.Record("www", new Aws.Route53.RecordArgs
     ///         {
+    ///             ZoneId = aws_route53_zone.Primary.Zone_id,
     ///             Name = "www.example.com",
+    ///             Type = "A",
+    ///             Ttl = 300,
     ///             Records = 
     ///             {
     ///                 aws_eip.Lb.Public_ip,
     ///             },
-    ///             Ttl = 300,
-    ///             Type = "A",
-    ///             ZoneId = aws_route53_zone.Primary.Zone_id,
     ///         });
     ///     }
     /// 
@@ -51,14 +51,10 @@ namespace Pulumi.Aws.Route53
     ///     {
     ///         var www_dev = new Aws.Route53.Record("www-dev", new Aws.Route53.RecordArgs
     ///         {
+    ///             ZoneId = aws_route53_zone.Primary.Zone_id,
     ///             Name = "www",
-    ///             Records = 
-    ///             {
-    ///                 "dev.example.com",
-    ///             },
-    ///             SetIdentifier = "dev",
-    ///             Ttl = 5,
     ///             Type = "CNAME",
+    ///             Ttl = 5,
     ///             WeightedRoutingPolicies = 
     ///             {
     ///                 new Aws.Route53.Inputs.RecordWeightedRoutingPolicyArgs
@@ -66,18 +62,18 @@ namespace Pulumi.Aws.Route53
     ///                     Weight = 10,
     ///                 },
     ///             },
-    ///             ZoneId = aws_route53_zone.Primary.Zone_id,
+    ///             SetIdentifier = "dev",
+    ///             Records = 
+    ///             {
+    ///                 "dev.example.com",
+    ///             },
     ///         });
     ///         var www_live = new Aws.Route53.Record("www-live", new Aws.Route53.RecordArgs
     ///         {
+    ///             ZoneId = aws_route53_zone.Primary.Zone_id,
     ///             Name = "www",
-    ///             Records = 
-    ///             {
-    ///                 "live.example.com",
-    ///             },
-    ///             SetIdentifier = "live",
-    ///             Ttl = 5,
     ///             Type = "CNAME",
+    ///             Ttl = 5,
     ///             WeightedRoutingPolicies = 
     ///             {
     ///                 new Aws.Route53.Inputs.RecordWeightedRoutingPolicyArgs
@@ -85,7 +81,11 @@ namespace Pulumi.Aws.Route53
     ///                     Weight = 90,
     ///                 },
     ///             },
-    ///             ZoneId = aws_route53_zone.Primary.Zone_id,
+    ///             SetIdentifier = "live",
+    ///             Records = 
+    ///             {
+    ///                 "live.example.com",
+    ///             },
     ///         });
     ///     }
     /// 
@@ -125,18 +125,18 @@ namespace Pulumi.Aws.Route53
     ///         });
     ///         var www = new Aws.Route53.Record("www", new Aws.Route53.RecordArgs
     ///         {
+    ///             ZoneId = aws_route53_zone.Primary.Zone_id,
+    ///             Name = "example.com",
+    ///             Type = "A",
     ///             Aliases = 
     ///             {
     ///                 new Aws.Route53.Inputs.RecordAliasArgs
     ///                 {
-    ///                     EvaluateTargetHealth = true,
     ///                     Name = main.DnsName,
     ///                     ZoneId = main.ZoneId,
+    ///                     EvaluateTargetHealth = true,
     ///                 },
     ///             },
-    ///             Name = "example.com",
-    ///             Type = "A",
-    ///             ZoneId = aws_route53_zone.Primary.Zone_id,
     ///         });
     ///     }
     /// 
@@ -161,6 +161,9 @@ namespace Pulumi.Aws.Route53
     ///         {
     ///             AllowOverwrite = true,
     ///             Name = "test.example.com",
+    ///             Ttl = 30,
+    ///             Type = "NS",
+    ///             ZoneId = exampleZone.ZoneId,
     ///             Records = 
     ///             {
     ///                 exampleZone.NameServers.Apply(nameServers =&gt; nameServers[0]),
@@ -168,13 +171,24 @@ namespace Pulumi.Aws.Route53
     ///                 exampleZone.NameServers.Apply(nameServers =&gt; nameServers[2]),
     ///                 exampleZone.NameServers.Apply(nameServers =&gt; nameServers[3]),
     ///             },
-    ///             Ttl = 30,
-    ///             Type = "NS",
-    ///             ZoneId = exampleZone.ZoneId,
     ///         });
     ///     }
     /// 
     /// }
+    /// ```
+    /// 
+    /// ## Import
+    /// 
+    /// Route53 Records can be imported using ID of the record, which is the zone identifier, record name, and record type, separated by underscores (`_`). e.g.
+    /// 
+    /// ```sh
+    ///  $ pulumi import aws:route53/record:Record myrecord Z4KAPRWWNC7JR_dev.example.com_NS
+    /// ```
+    /// 
+    ///  If the record also contains a delegated set identifier, it can be appended
+    /// 
+    /// ```sh
+    ///  $ pulumi import aws:route53/record:Record myrecord Z4KAPRWWNC7JR_dev.example.com_NS_dev
     /// ```
     /// </summary>
     public partial class Record : Pulumi.CustomResource
@@ -417,7 +431,7 @@ namespace Pulumi.Aws.Route53
         /// `PRIMARY` or `SECONDARY`. A `PRIMARY` record will be served if its healthcheck is passing, otherwise the `SECONDARY` will be served. See http://docs.aws.amazon.com/Route53/latest/DeveloperGuide/dns-failover-configuring-options.html#dns-failover-failover-rrsets
         /// </summary>
         [Input("type", required: true)]
-        public Input<string> Type { get; set; } = null!;
+        public InputUnion<string, Pulumi.Aws.Route53.RecordType> Type { get; set; } = null!;
 
         [Input("weightedRoutingPolicies")]
         private InputList<Inputs.RecordWeightedRoutingPolicyArgs>? _weightedRoutingPolicies;
@@ -551,7 +565,7 @@ namespace Pulumi.Aws.Route53
         /// `PRIMARY` or `SECONDARY`. A `PRIMARY` record will be served if its healthcheck is passing, otherwise the `SECONDARY` will be served. See http://docs.aws.amazon.com/Route53/latest/DeveloperGuide/dns-failover-configuring-options.html#dns-failover-failover-rrsets
         /// </summary>
         [Input("type")]
-        public Input<string>? Type { get; set; }
+        public InputUnion<string, Pulumi.Aws.Route53.RecordType>? Type { get; set; }
 
         [Input("weightedRoutingPolicies")]
         private InputList<Inputs.RecordWeightedRoutingPolicyGetArgs>? _weightedRoutingPolicies;

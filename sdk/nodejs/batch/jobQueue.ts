@@ -13,14 +13,22 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const testQueue = new aws.batch.JobQueue("test_queue", {
- *     computeEnvironments: [
- *         aws_batch_compute_environment_test_environment_1.arn,
- *         aws_batch_compute_environment_test_environment_2.arn,
- *     ],
- *     priority: 1,
+ * const testQueue = new aws.batch.JobQueue("testQueue", {
  *     state: "ENABLED",
+ *     priority: 1,
+ *     computeEnvironments: [
+ *         aws_batch_compute_environment.test_environment_1.arn,
+ *         aws_batch_compute_environment.test_environment_2.arn,
+ *     ],
  * });
+ * ```
+ *
+ * ## Import
+ *
+ * Batch Job Queue can be imported using the `arn`, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:batch/jobQueue:JobQueue test_queue arn:aws:batch:us-east-1:123456789012:job-queue/sample
  * ```
  */
 export class JobQueue extends pulumi.CustomResource {
@@ -75,6 +83,10 @@ export class JobQueue extends pulumi.CustomResource {
      * The state of the job queue. Must be one of: `ENABLED` or `DISABLED`
      */
     public readonly state!: pulumi.Output<string>;
+    /**
+     * Key-value map of resource tags
+     */
+    public readonly tags!: pulumi.Output<{[key: string]: string} | undefined>;
 
     /**
      * Create a JobQueue resource with the given unique name, arguments, and options.
@@ -93,21 +105,23 @@ export class JobQueue extends pulumi.CustomResource {
             inputs["name"] = state ? state.name : undefined;
             inputs["priority"] = state ? state.priority : undefined;
             inputs["state"] = state ? state.state : undefined;
+            inputs["tags"] = state ? state.tags : undefined;
         } else {
             const args = argsOrState as JobQueueArgs | undefined;
-            if (!args || args.computeEnvironments === undefined) {
+            if ((!args || args.computeEnvironments === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'computeEnvironments'");
             }
-            if (!args || args.priority === undefined) {
+            if ((!args || args.priority === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'priority'");
             }
-            if (!args || args.state === undefined) {
+            if ((!args || args.state === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'state'");
             }
             inputs["computeEnvironments"] = args ? args.computeEnvironments : undefined;
             inputs["name"] = args ? args.name : undefined;
             inputs["priority"] = args ? args.priority : undefined;
             inputs["state"] = args ? args.state : undefined;
+            inputs["tags"] = args ? args.tags : undefined;
             inputs["arn"] = undefined /*out*/;
         }
         if (!opts) {
@@ -149,6 +163,10 @@ export interface JobQueueState {
      * The state of the job queue. Must be one of: `ENABLED` or `DISABLED`
      */
     readonly state?: pulumi.Input<string>;
+    /**
+     * Key-value map of resource tags
+     */
+    readonly tags?: pulumi.Input<{[key: string]: pulumi.Input<string>}>;
 }
 
 /**
@@ -175,4 +193,8 @@ export interface JobQueueArgs {
      * The state of the job queue. Must be one of: `ENABLED` or `DISABLED`
      */
     readonly state: pulumi.Input<string>;
+    /**
+     * Key-value map of resource tags
+     */
+    readonly tags?: pulumi.Input<{[key: string]: pulumi.Input<string>}>;
 }

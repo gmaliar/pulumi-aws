@@ -52,6 +52,14 @@ namespace Pulumi.Aws.ApiGatewayV2
     /// 
     /// }
     /// ```
+    /// 
+    /// ## Import
+    /// 
+    /// `aws_apigatewayv2_api` can be imported by using the API identifier, e.g.
+    /// 
+    /// ```sh
+    ///  $ pulumi import aws:apigatewayv2/api:Api example aabbccddee
+    /// ```
     /// </summary>
     public partial class Api : Pulumi.CustomResource
     {
@@ -76,6 +84,12 @@ namespace Pulumi.Aws.ApiGatewayV2
         public Output<string> Arn { get; private set; } = null!;
 
         /// <summary>
+        /// An OpenAPI specification that defines the set of routes and integrations to create as part of the HTTP APIs. Supported only for HTTP APIs.
+        /// </summary>
+        [Output("body")]
+        public Output<string?> Body { get; private set; } = null!;
+
+        /// <summary>
         /// The cross-origin resource sharing (CORS) [configuration](https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api-cors.html). Applicable for HTTP APIs.
         /// </summary>
         [Output("corsConfiguration")]
@@ -88,10 +102,18 @@ namespace Pulumi.Aws.ApiGatewayV2
         public Output<string?> CredentialsArn { get; private set; } = null!;
 
         /// <summary>
-        /// The description of the API.
+        /// The description of the API. Must be less than or equal to 1024 characters in length.
         /// </summary>
         [Output("description")]
         public Output<string?> Description { get; private set; } = null!;
+
+        /// <summary>
+        /// Whether clients can invoke the API by using the default `execute-api` endpoint.
+        /// By default, clients can invoke the API with the default `{api_id}.execute-api.{region}.amazonaws.com endpoint`.
+        /// To require that clients use a custom domain name to invoke the API, disable the default endpoint.
+        /// </summary>
+        [Output("disableExecuteApiEndpoint")]
+        public Output<bool?> DisableExecuteApiEndpoint { get; private set; } = null!;
 
         /// <summary>
         /// The ARN prefix to be used in an `aws.lambda.Permission`'s `source_arn` attribute
@@ -102,7 +124,7 @@ namespace Pulumi.Aws.ApiGatewayV2
         public Output<string> ExecutionArn { get; private set; } = null!;
 
         /// <summary>
-        /// The name of the API.
+        /// The name of the API. Must be less than or equal to 128 characters in length.
         /// </summary>
         [Output("name")]
         public Output<string> Name { get; private set; } = null!;
@@ -141,7 +163,7 @@ namespace Pulumi.Aws.ApiGatewayV2
         public Output<string?> Target { get; private set; } = null!;
 
         /// <summary>
-        /// A version identifier for the API.
+        /// A version identifier for the API. Must be between 1 and 64 characters in length.
         /// </summary>
         [Output("version")]
         public Output<string?> Version { get; private set; } = null!;
@@ -201,6 +223,12 @@ namespace Pulumi.Aws.ApiGatewayV2
         public Input<string>? ApiKeySelectionExpression { get; set; }
 
         /// <summary>
+        /// An OpenAPI specification that defines the set of routes and integrations to create as part of the HTTP APIs. Supported only for HTTP APIs.
+        /// </summary>
+        [Input("body")]
+        public Input<string>? Body { get; set; }
+
+        /// <summary>
         /// The cross-origin resource sharing (CORS) [configuration](https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api-cors.html). Applicable for HTTP APIs.
         /// </summary>
         [Input("corsConfiguration")]
@@ -213,13 +241,21 @@ namespace Pulumi.Aws.ApiGatewayV2
         public Input<string>? CredentialsArn { get; set; }
 
         /// <summary>
-        /// The description of the API.
+        /// The description of the API. Must be less than or equal to 1024 characters in length.
         /// </summary>
         [Input("description")]
         public Input<string>? Description { get; set; }
 
         /// <summary>
-        /// The name of the API.
+        /// Whether clients can invoke the API by using the default `execute-api` endpoint.
+        /// By default, clients can invoke the API with the default `{api_id}.execute-api.{region}.amazonaws.com endpoint`.
+        /// To require that clients use a custom domain name to invoke the API, disable the default endpoint.
+        /// </summary>
+        [Input("disableExecuteApiEndpoint")]
+        public Input<bool>? DisableExecuteApiEndpoint { get; set; }
+
+        /// <summary>
+        /// The name of the API. Must be less than or equal to 128 characters in length.
         /// </summary>
         [Input("name")]
         public Input<string>? Name { get; set; }
@@ -264,7 +300,7 @@ namespace Pulumi.Aws.ApiGatewayV2
         public Input<string>? Target { get; set; }
 
         /// <summary>
-        /// A version identifier for the API.
+        /// A version identifier for the API. Must be between 1 and 64 characters in length.
         /// </summary>
         [Input("version")]
         public Input<string>? Version { get; set; }
@@ -297,6 +333,12 @@ namespace Pulumi.Aws.ApiGatewayV2
         public Input<string>? Arn { get; set; }
 
         /// <summary>
+        /// An OpenAPI specification that defines the set of routes and integrations to create as part of the HTTP APIs. Supported only for HTTP APIs.
+        /// </summary>
+        [Input("body")]
+        public Input<string>? Body { get; set; }
+
+        /// <summary>
         /// The cross-origin resource sharing (CORS) [configuration](https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api-cors.html). Applicable for HTTP APIs.
         /// </summary>
         [Input("corsConfiguration")]
@@ -309,10 +351,18 @@ namespace Pulumi.Aws.ApiGatewayV2
         public Input<string>? CredentialsArn { get; set; }
 
         /// <summary>
-        /// The description of the API.
+        /// The description of the API. Must be less than or equal to 1024 characters in length.
         /// </summary>
         [Input("description")]
         public Input<string>? Description { get; set; }
+
+        /// <summary>
+        /// Whether clients can invoke the API by using the default `execute-api` endpoint.
+        /// By default, clients can invoke the API with the default `{api_id}.execute-api.{region}.amazonaws.com endpoint`.
+        /// To require that clients use a custom domain name to invoke the API, disable the default endpoint.
+        /// </summary>
+        [Input("disableExecuteApiEndpoint")]
+        public Input<bool>? DisableExecuteApiEndpoint { get; set; }
 
         /// <summary>
         /// The ARN prefix to be used in an `aws.lambda.Permission`'s `source_arn` attribute
@@ -323,7 +373,7 @@ namespace Pulumi.Aws.ApiGatewayV2
         public Input<string>? ExecutionArn { get; set; }
 
         /// <summary>
-        /// The name of the API.
+        /// The name of the API. Must be less than or equal to 128 characters in length.
         /// </summary>
         [Input("name")]
         public Input<string>? Name { get; set; }
@@ -368,7 +418,7 @@ namespace Pulumi.Aws.ApiGatewayV2
         public Input<string>? Target { get; set; }
 
         /// <summary>
-        /// A version identifier for the API.
+        /// A version identifier for the API. Must be between 1 and 64 characters in length.
         /// </summary>
         [Input("version")]
         public Input<string>? Version { get; set; }

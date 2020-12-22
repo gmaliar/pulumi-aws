@@ -28,18 +28,25 @@ namespace Pulumi.Aws.ApiGateway
     ///         });
     ///         var myDemoModel = new Aws.ApiGateway.Model("myDemoModel", new Aws.ApiGateway.ModelArgs
     ///         {
-    ///             ContentType = "application/json",
-    ///             Description = "a JSON schema",
     ///             RestApi = myDemoAPI.Id,
+    ///             Description = "a JSON schema",
+    ///             ContentType = "application/json",
     ///             Schema = @"{
     ///   ""type"": ""object""
     /// }
-    /// 
     /// ",
     ///         });
     ///     }
     /// 
     /// }
+    /// ```
+    /// 
+    /// ## Import
+    /// 
+    /// `aws_api_gateway_model` can be imported using `REST-API-ID/NAME`, e.g.
+    /// 
+    /// ```sh
+    ///  $ pulumi import aws:apigateway/model:Model example 12345abcde/example
     /// ```
     /// </summary>
     public partial class Model : Pulumi.CustomResource

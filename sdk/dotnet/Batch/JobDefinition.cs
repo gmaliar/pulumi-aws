@@ -63,6 +63,14 @@ namespace Pulumi.Aws.Batch
     /// 
     /// }
     /// ```
+    /// 
+    /// ## Import
+    /// 
+    /// Batch Job Definition can be imported using the `arn`, e.g.
+    /// 
+    /// ```sh
+    ///  $ pulumi import aws:batch/jobDefinition:JobDefinition test arn:aws:batch:us-east-1:123456789012:job-definition/sample
+    /// ```
     /// </summary>
     public partial class JobDefinition : Pulumi.CustomResource
     {
@@ -103,6 +111,12 @@ namespace Pulumi.Aws.Batch
         /// </summary>
         [Output("revision")]
         public Output<int> Revision { get; private set; } = null!;
+
+        /// <summary>
+        /// Key-value map of resource tags
+        /// </summary>
+        [Output("tags")]
+        public Output<ImmutableDictionary<string, string>?> Tags { get; private set; } = null!;
 
         /// <summary>
         /// Specifies the timeout for jobs so that if a job runs longer, AWS Batch terminates the job. Maximum number of `timeout` is `1`. Defined below.
@@ -194,6 +208,18 @@ namespace Pulumi.Aws.Batch
         [Input("retryStrategy")]
         public Input<Inputs.JobDefinitionRetryStrategyArgs>? RetryStrategy { get; set; }
 
+        [Input("tags")]
+        private InputMap<string>? _tags;
+
+        /// <summary>
+        /// Key-value map of resource tags
+        /// </summary>
+        public InputMap<string> Tags
+        {
+            get => _tags ?? (_tags = new InputMap<string>());
+            set => _tags = value;
+        }
+
         /// <summary>
         /// Specifies the timeout for jobs so that if a job runs longer, AWS Batch terminates the job. Maximum number of `timeout` is `1`. Defined below.
         /// </summary>
@@ -256,6 +282,18 @@ namespace Pulumi.Aws.Batch
         /// </summary>
         [Input("revision")]
         public Input<int>? Revision { get; set; }
+
+        [Input("tags")]
+        private InputMap<string>? _tags;
+
+        /// <summary>
+        /// Key-value map of resource tags
+        /// </summary>
+        public InputMap<string> Tags
+        {
+            get => _tags ?? (_tags = new InputMap<string>());
+            set => _tags = value;
+        }
 
         /// <summary>
         /// Specifies the timeout for jobs so that if a job runs longer, AWS Batch terminates the job. Maximum number of `timeout` is `1`. Defined below.

@@ -13,12 +13,20 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const exampleBucket = new aws.s3.Bucket("example", {});
- * const exampleBucketPublicAccessBlock = new aws.s3.BucketPublicAccessBlock("example", {
+ * const exampleBucket = new aws.s3.Bucket("exampleBucket", {});
+ * const exampleBucketPublicAccessBlock = new aws.s3.BucketPublicAccessBlock("exampleBucketPublicAccessBlock", {
+ *     bucket: exampleBucket.id,
  *     blockPublicAcls: true,
  *     blockPublicPolicy: true,
- *     bucket: exampleBucket.id,
  * });
+ * ```
+ *
+ * ## Import
+ *
+ * `aws_s3_bucket_public_access_block` can be imported by using the bucket name, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:s3/bucketPublicAccessBlock:BucketPublicAccessBlock example my-bucket
  * ```
  */
 export class BucketPublicAccessBlock extends pulumi.CustomResource {
@@ -94,7 +102,7 @@ export class BucketPublicAccessBlock extends pulumi.CustomResource {
             inputs["restrictPublicBuckets"] = state ? state.restrictPublicBuckets : undefined;
         } else {
             const args = argsOrState as BucketPublicAccessBlockArgs | undefined;
-            if (!args || args.bucket === undefined) {
+            if ((!args || args.bucket === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'bucket'");
             }
             inputs["blockPublicAcls"] = args ? args.blockPublicAcls : undefined;

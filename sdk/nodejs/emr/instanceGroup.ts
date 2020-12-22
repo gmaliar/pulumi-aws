@@ -2,8 +2,7 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 /**
@@ -21,10 +20,18 @@ import * as utilities from "../utilities";
  * import * as aws from "@pulumi/aws";
  *
  * const task = new aws.emr.InstanceGroup("task", {
- *     clusterId: aws_emr_cluster_tf_test_cluster.id,
+ *     clusterId: aws_emr_cluster["tf-test-cluster"].id,
  *     instanceCount: 1,
  *     instanceType: "m5.xlarge",
  * });
+ * ```
+ *
+ * ## Import
+ *
+ * EMR task instance group can be imported using their EMR Cluster id and Instance Group id separated by a forward-slash `/`, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:emr/instanceGroup:InstanceGroup task_greoup j-123456ABCDEF/ig-15EK4O09RZLNR
  * ```
  */
 export class InstanceGroup extends pulumi.CustomResource {
@@ -119,10 +126,10 @@ export class InstanceGroup extends pulumi.CustomResource {
             inputs["status"] = state ? state.status : undefined;
         } else {
             const args = argsOrState as InstanceGroupArgs | undefined;
-            if (!args || args.clusterId === undefined) {
+            if ((!args || args.clusterId === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'clusterId'");
             }
-            if (!args || args.instanceType === undefined) {
+            if ((!args || args.instanceType === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'instanceType'");
             }
             inputs["autoscalingPolicy"] = args ? args.autoscalingPolicy : undefined;

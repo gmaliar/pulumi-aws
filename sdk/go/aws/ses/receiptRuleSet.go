@@ -4,6 +4,7 @@
 package ses
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -18,7 +19,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/ses"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/ses"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -34,6 +35,14 @@ import (
 // 	})
 // }
 // ```
+//
+// ## Import
+//
+// SES receipt rule sets can be imported using the rule set name.
+//
+// ```sh
+//  $ pulumi import aws:ses/receiptRuleSet:ReceiptRuleSet my_rule_set my_rule_set_name
+// ```
 type ReceiptRuleSet struct {
 	pulumi.CustomResourceState
 
@@ -44,11 +53,12 @@ type ReceiptRuleSet struct {
 // NewReceiptRuleSet registers a new resource with the given unique name, arguments, and options.
 func NewReceiptRuleSet(ctx *pulumi.Context,
 	name string, args *ReceiptRuleSetArgs, opts ...pulumi.ResourceOption) (*ReceiptRuleSet, error) {
-	if args == nil || args.RuleSetName == nil {
-		return nil, errors.New("missing required argument 'RuleSetName'")
-	}
 	if args == nil {
-		args = &ReceiptRuleSetArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.RuleSetName == nil {
+		return nil, errors.New("invalid value for required argument 'RuleSetName'")
 	}
 	var resource ReceiptRuleSet
 	err := ctx.RegisterResource("aws:ses/receiptRuleSet:ReceiptRuleSet", name, args, &resource, opts...)
@@ -98,4 +108,43 @@ type ReceiptRuleSetArgs struct {
 
 func (ReceiptRuleSetArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*receiptRuleSetArgs)(nil)).Elem()
+}
+
+type ReceiptRuleSetInput interface {
+	pulumi.Input
+
+	ToReceiptRuleSetOutput() ReceiptRuleSetOutput
+	ToReceiptRuleSetOutputWithContext(ctx context.Context) ReceiptRuleSetOutput
+}
+
+func (ReceiptRuleSet) ElementType() reflect.Type {
+	return reflect.TypeOf((*ReceiptRuleSet)(nil)).Elem()
+}
+
+func (i ReceiptRuleSet) ToReceiptRuleSetOutput() ReceiptRuleSetOutput {
+	return i.ToReceiptRuleSetOutputWithContext(context.Background())
+}
+
+func (i ReceiptRuleSet) ToReceiptRuleSetOutputWithContext(ctx context.Context) ReceiptRuleSetOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(ReceiptRuleSetOutput)
+}
+
+type ReceiptRuleSetOutput struct {
+	*pulumi.OutputState
+}
+
+func (ReceiptRuleSetOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*ReceiptRuleSetOutput)(nil)).Elem()
+}
+
+func (o ReceiptRuleSetOutput) ToReceiptRuleSetOutput() ReceiptRuleSetOutput {
+	return o
+}
+
+func (o ReceiptRuleSetOutput) ToReceiptRuleSetOutputWithContext(ctx context.Context) ReceiptRuleSetOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(ReceiptRuleSetOutput{})
 }

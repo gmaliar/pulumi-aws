@@ -10,7 +10,9 @@ using Pulumi.Serialization;
 namespace Pulumi.Aws.CloudWatch
 {
     /// <summary>
-    /// Provides a resource to create a CloudWatch Events permission to support cross-account events in the current account default event bus.
+    /// Provides a resource to create an EventBridge permission to support cross-account events in the current account default event bus.
+    /// 
+    /// &gt; **Note:** EventBridge was formerly known as CloudWatch Events. The functionality is identical.
     /// 
     /// ## Example Usage
     /// ### Account Access
@@ -44,18 +46,26 @@ namespace Pulumi.Aws.CloudWatch
     ///     {
     ///         var organizationAccess = new Aws.CloudWatch.EventPermission("organizationAccess", new Aws.CloudWatch.EventPermissionArgs
     ///         {
+    ///             Principal = "*",
+    ///             StatementId = "OrganizationAccess",
     ///             Condition = new Aws.CloudWatch.Inputs.EventPermissionConditionArgs
     ///             {
     ///                 Key = "aws:PrincipalOrgID",
     ///                 Type = "StringEquals",
     ///                 Value = aws_organizations_organization.Example.Id,
     ///             },
-    ///             Principal = "*",
-    ///             StatementId = "OrganizationAccess",
     ///         });
     ///     }
     /// 
     /// }
+    /// ```
+    /// 
+    /// ## Import
+    /// 
+    /// EventBridge permissions can be imported using the `event_bus_name/statement_id` (if you omit `event_bus_name`, the `default` event bus will be used), e.g.
+    /// 
+    /// ```sh
+    ///  $ pulumi import aws:cloudwatch/eventPermission:EventPermission DevAccountAccess example-event-bus/DevAccountAccess
     /// ```
     /// </summary>
     public partial class EventPermission : Pulumi.CustomResource
@@ -71,6 +81,12 @@ namespace Pulumi.Aws.CloudWatch
         /// </summary>
         [Output("condition")]
         public Output<Outputs.EventPermissionCondition?> Condition { get; private set; } = null!;
+
+        /// <summary>
+        /// The event bus to set the permissions on. If you omit this, the permissions are set on the `default` event bus.
+        /// </summary>
+        [Output("eventBusName")]
+        public Output<string?> EventBusName { get; private set; } = null!;
 
         /// <summary>
         /// The 12-digit AWS account ID that you are permitting to put events to your default event bus. Specify `*` to permit any account to put events to your default event bus, optionally limited by `condition`.
@@ -143,6 +159,12 @@ namespace Pulumi.Aws.CloudWatch
         public Input<Inputs.EventPermissionConditionArgs>? Condition { get; set; }
 
         /// <summary>
+        /// The event bus to set the permissions on. If you omit this, the permissions are set on the `default` event bus.
+        /// </summary>
+        [Input("eventBusName")]
+        public Input<string>? EventBusName { get; set; }
+
+        /// <summary>
         /// The 12-digit AWS account ID that you are permitting to put events to your default event bus. Specify `*` to permit any account to put events to your default event bus, optionally limited by `condition`.
         /// </summary>
         [Input("principal", required: true)]
@@ -172,6 +194,12 @@ namespace Pulumi.Aws.CloudWatch
         /// </summary>
         [Input("condition")]
         public Input<Inputs.EventPermissionConditionGetArgs>? Condition { get; set; }
+
+        /// <summary>
+        /// The event bus to set the permissions on. If you omit this, the permissions are set on the `default` event bus.
+        /// </summary>
+        [Input("eventBusName")]
+        public Input<string>? EventBusName { get; set; }
 
         /// <summary>
         /// The 12-digit AWS account ID that you are permitting to put events to your default event bus. Specify `*` to permit any account to put events to your default event bus, optionally limited by `condition`.

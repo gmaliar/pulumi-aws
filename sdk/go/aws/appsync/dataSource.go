@@ -4,6 +4,7 @@
 package appsync
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -20,39 +21,39 @@ import (
 // import (
 // 	"fmt"
 //
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/appsync"
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/dynamodb"
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/iam"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/appsync"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/dynamodb"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/iam"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
 // func main() {
 // 	pulumi.Run(func(ctx *pulumi.Context) error {
 // 		exampleTable, err := dynamodb.NewTable(ctx, "exampleTable", &dynamodb.TableArgs{
+// 			ReadCapacity:  pulumi.Int(1),
+// 			WriteCapacity: pulumi.Int(1),
+// 			HashKey:       pulumi.String("UserId"),
 // 			Attributes: dynamodb.TableAttributeArray{
 // 				&dynamodb.TableAttributeArgs{
 // 					Name: pulumi.String("UserId"),
 // 					Type: pulumi.String("S"),
 // 				},
 // 			},
-// 			HashKey:       pulumi.String("UserId"),
-// 			ReadCapacity:  pulumi.Int(1),
-// 			WriteCapacity: pulumi.Int(1),
 // 		})
 // 		if err != nil {
 // 			return err
 // 		}
 // 		exampleRole, err := iam.NewRole(ctx, "exampleRole", &iam.RoleArgs{
-// 			AssumeRolePolicy: pulumi.String(fmt.Sprintf("%v%v%v%v%v%v%v%v%v%v%v%v%v", "{\n", "  \"Version\": \"2012-10-17\",\n", "  \"Statement\": [\n", "    {\n", "      \"Action\": \"sts:AssumeRole\",\n", "      \"Principal\": {\n", "        \"Service\": \"appsync.amazonaws.com\"\n", "      },\n", "      \"Effect\": \"Allow\"\n", "    }\n", "  ]\n", "}\n", "\n")),
+// 			AssumeRolePolicy: pulumi.String(fmt.Sprintf("%v%v%v%v%v%v%v%v%v%v%v%v", "{\n", "  \"Version\": \"2012-10-17\",\n", "  \"Statement\": [\n", "    {\n", "      \"Action\": \"sts:AssumeRole\",\n", "      \"Principal\": {\n", "        \"Service\": \"appsync.amazonaws.com\"\n", "      },\n", "      \"Effect\": \"Allow\"\n", "    }\n", "  ]\n", "}\n")),
 // 		})
 // 		if err != nil {
 // 			return err
 // 		}
 // 		_, err = iam.NewRolePolicy(ctx, "exampleRolePolicy", &iam.RolePolicyArgs{
-// 			Policy: exampleTable.Arn.ApplyT(func(arn string) (string, error) {
-// 				return fmt.Sprintf("%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v", "{\n", "  \"Version\": \"2012-10-17\",\n", "  \"Statement\": [\n", "    {\n", "      \"Action\": [\n", "        \"dynamodb:*\"\n", "      ],\n", "      \"Effect\": \"Allow\",\n", "      \"Resource\": [\n", "        \"", arn, "\"\n", "      ]\n", "    }\n", "  ]\n", "}\n", "\n"), nil
-// 			}).(pulumi.StringOutput),
 // 			Role: exampleRole.ID(),
+// 			Policy: exampleTable.Arn.ApplyT(func(arn string) (string, error) {
+// 				return fmt.Sprintf("%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v%v", "{\n", "  \"Version\": \"2012-10-17\",\n", "  \"Statement\": [\n", "    {\n", "      \"Action\": [\n", "        \"dynamodb:*\"\n", "      ],\n", "      \"Effect\": \"Allow\",\n", "      \"Resource\": [\n", "        \"", arn, "\"\n", "      ]\n", "    }\n", "  ]\n", "}\n"), nil
+// 			}).(pulumi.StringOutput),
 // 		})
 // 		if err != nil {
 // 			return err
@@ -64,12 +65,13 @@ import (
 // 			return err
 // 		}
 // 		_, err = appsync.NewDataSource(ctx, "exampleDataSource", &appsync.DataSourceArgs{
-// 			ApiId: exampleGraphQLApi.ID(),
+// 			ApiId:          exampleGraphQLApi.ID(),
+// 			Name:           pulumi.String("tf_appsync_example"),
+// 			ServiceRoleArn: exampleRole.Arn,
+// 			Type:           pulumi.String("AMAZON_DYNAMODB"),
 // 			DynamodbConfig: &appsync.DataSourceDynamodbConfigArgs{
 // 				TableName: exampleTable.Name,
 // 			},
-// 			ServiceRoleArn: exampleRole.Arn,
-// 			Type:           pulumi.String("AMAZON_DYNAMODB"),
 // 		})
 // 		if err != nil {
 // 			return err
@@ -77,6 +79,14 @@ import (
 // 		return nil
 // 	})
 // }
+// ```
+//
+// ## Import
+//
+// `aws_appsync_datasource` can be imported with their `api_id`, a hyphen, and `name`, e.g.
+//
+// ```sh
+//  $ pulumi import aws:appsync/dataSource:DataSource example abcdef123456-example
 // ```
 type DataSource struct {
 	pulumi.CustomResourceState
@@ -106,14 +116,15 @@ type DataSource struct {
 // NewDataSource registers a new resource with the given unique name, arguments, and options.
 func NewDataSource(ctx *pulumi.Context,
 	name string, args *DataSourceArgs, opts ...pulumi.ResourceOption) (*DataSource, error) {
-	if args == nil || args.ApiId == nil {
-		return nil, errors.New("missing required argument 'ApiId'")
-	}
-	if args == nil || args.Type == nil {
-		return nil, errors.New("missing required argument 'Type'")
-	}
 	if args == nil {
-		args = &DataSourceArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.ApiId == nil {
+		return nil, errors.New("invalid value for required argument 'ApiId'")
+	}
+	if args.Type == nil {
+		return nil, errors.New("invalid value for required argument 'Type'")
 	}
 	var resource DataSource
 	err := ctx.RegisterResource("aws:appsync/dataSource:DataSource", name, args, &resource, opts...)
@@ -231,4 +242,43 @@ type DataSourceArgs struct {
 
 func (DataSourceArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*dataSourceArgs)(nil)).Elem()
+}
+
+type DataSourceInput interface {
+	pulumi.Input
+
+	ToDataSourceOutput() DataSourceOutput
+	ToDataSourceOutputWithContext(ctx context.Context) DataSourceOutput
+}
+
+func (DataSource) ElementType() reflect.Type {
+	return reflect.TypeOf((*DataSource)(nil)).Elem()
+}
+
+func (i DataSource) ToDataSourceOutput() DataSourceOutput {
+	return i.ToDataSourceOutputWithContext(context.Background())
+}
+
+func (i DataSource) ToDataSourceOutputWithContext(ctx context.Context) DataSourceOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(DataSourceOutput)
+}
+
+type DataSourceOutput struct {
+	*pulumi.OutputState
+}
+
+func (DataSourceOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*DataSourceOutput)(nil)).Elem()
+}
+
+func (o DataSourceOutput) ToDataSourceOutput() DataSourceOutput {
+	return o
+}
+
+func (o DataSourceOutput) ToDataSourceOutputWithContext(ctx context.Context) DataSourceOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(DataSourceOutput{})
 }

@@ -4,6 +4,7 @@
 package ec2
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -20,58 +21,13 @@ import (
 // and will overwrite the association.
 //
 // ## Example Usage
-// ### Basic
 //
-// ```go
-// package main
+// ## Import
 //
-// import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/ec2"
-// 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
-// )
+// VPC Endpoint Services can be imported using the `VPC endpoint service id`, e.g.
 //
-// func main() {
-// 	pulumi.Run(func(ctx *pulumi.Context) error {
-// 		_, err := ec2.NewVpcEndpointService(ctx, "example", &ec2.VpcEndpointServiceArgs{
-// 			AcceptanceRequired: pulumi.Bool(false),
-// 			NetworkLoadBalancerArns: pulumi.StringArray{
-// 				pulumi.String(aws_lb.Example.Arn),
-// 			},
-// 		})
-// 		if err != nil {
-// 			return err
-// 		}
-// 		return nil
-// 	})
-// }
-// ```
-// ### Basic w/ Tags
-//
-// ```go
-// package main
-//
-// import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/ec2"
-// 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
-// )
-//
-// func main() {
-// 	pulumi.Run(func(ctx *pulumi.Context) error {
-// 		_, err := ec2.NewVpcEndpointService(ctx, "example", &ec2.VpcEndpointServiceArgs{
-// 			AcceptanceRequired: pulumi.Bool(false),
-// 			NetworkLoadBalancerArns: pulumi.StringArray{
-// 				pulumi.String(aws_lb.Example.Arn),
-// 			},
-// 			Tags: pulumi.StringMap{
-// 				"Environment": pulumi.String("test"),
-// 			},
-// 		})
-// 		if err != nil {
-// 			return err
-// 		}
-// 		return nil
-// 	})
-// }
+// ```sh
+//  $ pulumi import aws:ec2/vpcEndpointService:VpcEndpointService foo vpce-svc-0f97a19d3fa8220bc
 // ```
 type VpcEndpointService struct {
 	pulumi.CustomResourceState
@@ -86,9 +42,11 @@ type VpcEndpointService struct {
 	AvailabilityZones pulumi.StringArrayOutput `pulumi:"availabilityZones"`
 	// The DNS names for the service.
 	BaseEndpointDnsNames pulumi.StringArrayOutput `pulumi:"baseEndpointDnsNames"`
+	// Amazon Resource Names (ARNs) of one or more Gateway Load Balancers for the endpoint service.
+	GatewayLoadBalancerArns pulumi.StringArrayOutput `pulumi:"gatewayLoadBalancerArns"`
 	// Whether or not the service manages its VPC endpoints - `true` or `false`.
 	ManagesVpcEndpoints pulumi.BoolOutput `pulumi:"managesVpcEndpoints"`
-	// The ARNs of one or more Network Load Balancers for the endpoint service.
+	// Amazon Resource Names (ARNs) of one or more Network Load Balancers for the endpoint service.
 	NetworkLoadBalancerArns pulumi.StringArrayOutput `pulumi:"networkLoadBalancerArns"`
 	// The private DNS name for the service.
 	PrivateDnsName pulumi.StringOutput `pulumi:"privateDnsName"`
@@ -105,14 +63,12 @@ type VpcEndpointService struct {
 // NewVpcEndpointService registers a new resource with the given unique name, arguments, and options.
 func NewVpcEndpointService(ctx *pulumi.Context,
 	name string, args *VpcEndpointServiceArgs, opts ...pulumi.ResourceOption) (*VpcEndpointService, error) {
-	if args == nil || args.AcceptanceRequired == nil {
-		return nil, errors.New("missing required argument 'AcceptanceRequired'")
-	}
-	if args == nil || args.NetworkLoadBalancerArns == nil {
-		return nil, errors.New("missing required argument 'NetworkLoadBalancerArns'")
-	}
 	if args == nil {
-		args = &VpcEndpointServiceArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.AcceptanceRequired == nil {
+		return nil, errors.New("invalid value for required argument 'AcceptanceRequired'")
 	}
 	var resource VpcEndpointService
 	err := ctx.RegisterResource("aws:ec2/vpcEndpointService:VpcEndpointService", name, args, &resource, opts...)
@@ -146,9 +102,11 @@ type vpcEndpointServiceState struct {
 	AvailabilityZones []string `pulumi:"availabilityZones"`
 	// The DNS names for the service.
 	BaseEndpointDnsNames []string `pulumi:"baseEndpointDnsNames"`
+	// Amazon Resource Names (ARNs) of one or more Gateway Load Balancers for the endpoint service.
+	GatewayLoadBalancerArns []string `pulumi:"gatewayLoadBalancerArns"`
 	// Whether or not the service manages its VPC endpoints - `true` or `false`.
 	ManagesVpcEndpoints *bool `pulumi:"managesVpcEndpoints"`
-	// The ARNs of one or more Network Load Balancers for the endpoint service.
+	// Amazon Resource Names (ARNs) of one or more Network Load Balancers for the endpoint service.
 	NetworkLoadBalancerArns []string `pulumi:"networkLoadBalancerArns"`
 	// The private DNS name for the service.
 	PrivateDnsName *string `pulumi:"privateDnsName"`
@@ -173,9 +131,11 @@ type VpcEndpointServiceState struct {
 	AvailabilityZones pulumi.StringArrayInput
 	// The DNS names for the service.
 	BaseEndpointDnsNames pulumi.StringArrayInput
+	// Amazon Resource Names (ARNs) of one or more Gateway Load Balancers for the endpoint service.
+	GatewayLoadBalancerArns pulumi.StringArrayInput
 	// Whether or not the service manages its VPC endpoints - `true` or `false`.
 	ManagesVpcEndpoints pulumi.BoolPtrInput
-	// The ARNs of one or more Network Load Balancers for the endpoint service.
+	// Amazon Resource Names (ARNs) of one or more Network Load Balancers for the endpoint service.
 	NetworkLoadBalancerArns pulumi.StringArrayInput
 	// The private DNS name for the service.
 	PrivateDnsName pulumi.StringPtrInput
@@ -198,7 +158,9 @@ type vpcEndpointServiceArgs struct {
 	AcceptanceRequired bool `pulumi:"acceptanceRequired"`
 	// The ARNs of one or more principals allowed to discover the endpoint service.
 	AllowedPrincipals []string `pulumi:"allowedPrincipals"`
-	// The ARNs of one or more Network Load Balancers for the endpoint service.
+	// Amazon Resource Names (ARNs) of one or more Gateway Load Balancers for the endpoint service.
+	GatewayLoadBalancerArns []string `pulumi:"gatewayLoadBalancerArns"`
+	// Amazon Resource Names (ARNs) of one or more Network Load Balancers for the endpoint service.
 	NetworkLoadBalancerArns []string `pulumi:"networkLoadBalancerArns"`
 	// A map of tags to assign to the resource.
 	Tags map[string]string `pulumi:"tags"`
@@ -210,7 +172,9 @@ type VpcEndpointServiceArgs struct {
 	AcceptanceRequired pulumi.BoolInput
 	// The ARNs of one or more principals allowed to discover the endpoint service.
 	AllowedPrincipals pulumi.StringArrayInput
-	// The ARNs of one or more Network Load Balancers for the endpoint service.
+	// Amazon Resource Names (ARNs) of one or more Gateway Load Balancers for the endpoint service.
+	GatewayLoadBalancerArns pulumi.StringArrayInput
+	// Amazon Resource Names (ARNs) of one or more Network Load Balancers for the endpoint service.
 	NetworkLoadBalancerArns pulumi.StringArrayInput
 	// A map of tags to assign to the resource.
 	Tags pulumi.StringMapInput
@@ -218,4 +182,43 @@ type VpcEndpointServiceArgs struct {
 
 func (VpcEndpointServiceArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*vpcEndpointServiceArgs)(nil)).Elem()
+}
+
+type VpcEndpointServiceInput interface {
+	pulumi.Input
+
+	ToVpcEndpointServiceOutput() VpcEndpointServiceOutput
+	ToVpcEndpointServiceOutputWithContext(ctx context.Context) VpcEndpointServiceOutput
+}
+
+func (VpcEndpointService) ElementType() reflect.Type {
+	return reflect.TypeOf((*VpcEndpointService)(nil)).Elem()
+}
+
+func (i VpcEndpointService) ToVpcEndpointServiceOutput() VpcEndpointServiceOutput {
+	return i.ToVpcEndpointServiceOutputWithContext(context.Background())
+}
+
+func (i VpcEndpointService) ToVpcEndpointServiceOutputWithContext(ctx context.Context) VpcEndpointServiceOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(VpcEndpointServiceOutput)
+}
+
+type VpcEndpointServiceOutput struct {
+	*pulumi.OutputState
+}
+
+func (VpcEndpointServiceOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*VpcEndpointServiceOutput)(nil)).Elem()
+}
+
+func (o VpcEndpointServiceOutput) ToVpcEndpointServiceOutput() VpcEndpointServiceOutput {
+	return o
+}
+
+func (o VpcEndpointServiceOutput) ToVpcEndpointServiceOutputWithContext(ctx context.Context) VpcEndpointServiceOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(VpcEndpointServiceOutput{})
 }

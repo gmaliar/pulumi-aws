@@ -29,6 +29,7 @@ namespace Pulumi.Aws.Cognito
     ///         });
     ///         var main = new Aws.Cognito.IdentityPool("main", new Aws.Cognito.IdentityPoolArgs
     ///         {
+    ///             IdentityPoolName = "identity pool",
     ///             AllowUnauthenticatedIdentities = false,
     ///             CognitoIdentityProviders = 
     ///             {
@@ -45,24 +46,31 @@ namespace Pulumi.Aws.Cognito
     ///                     ServerSideTokenCheck = false,
     ///                 },
     ///             },
-    ///             IdentityPoolName = "identity pool",
-    ///             OpenidConnectProviderArns = 
+    ///             SupportedLoginProviders = 
     ///             {
-    ///                 "arn:aws:iam::123456789012:oidc-provider/foo.example.com",
+    ///                 { "graph.facebook.com", "7346241598935552" },
+    ///                 { "accounts.google.com", "123456789012.apps.googleusercontent.com" },
     ///             },
     ///             SamlProviderArns = 
     ///             {
     ///                 @default.Arn,
     ///             },
-    ///             SupportedLoginProviders = 
+    ///             OpenidConnectProviderArns = 
     ///             {
-    ///                 { "accounts.google.com", "123456789012.apps.googleusercontent.com" },
-    ///                 { "graph.facebook.com", "7346241598935552" },
+    ///                 "arn:aws:iam::123456789012:oidc-provider/id.example.com",
     ///             },
     ///         });
     ///     }
     /// 
     /// }
+    /// ```
+    /// 
+    /// ## Import
+    /// 
+    /// Cognito Identity Pool can be imported using the name, e.g.
+    /// 
+    /// ```sh
+    ///  $ pulumi import aws:cognito/identityPool:IdentityPool mypool &lt;identity-pool-id&gt;
     /// ```
     /// </summary>
     public partial class IdentityPool : Pulumi.CustomResource
@@ -99,7 +107,7 @@ namespace Pulumi.Aws.Cognito
         public Output<string> IdentityPoolName { get; private set; } = null!;
 
         /// <summary>
-        /// A list of OpendID Connect provider ARNs.
+        /// Set of OpendID Connect provider ARNs.
         /// </summary>
         [Output("openidConnectProviderArns")]
         public Output<ImmutableArray<string>> OpenidConnectProviderArns { get; private set; } = null!;
@@ -203,7 +211,7 @@ namespace Pulumi.Aws.Cognito
         private InputList<string>? _openidConnectProviderArns;
 
         /// <summary>
-        /// A list of OpendID Connect provider ARNs.
+        /// Set of OpendID Connect provider ARNs.
         /// </summary>
         public InputList<string> OpenidConnectProviderArns
         {
@@ -295,7 +303,7 @@ namespace Pulumi.Aws.Cognito
         private InputList<string>? _openidConnectProviderArns;
 
         /// <summary>
-        /// A list of OpendID Connect provider ARNs.
+        /// Set of OpendID Connect provider ARNs.
         /// </summary>
         public InputList<string> OpenidConnectProviderArns
         {

@@ -4,6 +4,7 @@
 package ec2
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -19,8 +20,8 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws"
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/ec2"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/ec2"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -28,11 +29,12 @@ import (
 // 	pulumi.Run(func(ctx *pulumi.Context) error {
 // 		opt0 := true
 // 		ubuntu, err := aws.GetAmi(ctx, &aws.GetAmiArgs{
+// 			MostRecent: &opt0,
 // 			Filters: []aws.GetAmiFilter{
 // 				aws.GetAmiFilter{
 // 					Name: "name",
 // 					Values: []string{
-// 						"ubuntu/images/hvm-ssd/ubuntu-trusty-14.04-amd64-server-*",
+// 						"ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-*",
 // 					},
 // 				},
 // 				aws.GetAmiFilter{
@@ -42,7 +44,6 @@ import (
 // 					},
 // 				},
 // 			},
-// 			MostRecent: &opt0,
 // 			Owners: []string{
 // 				"099720109477",
 // 			},
@@ -52,7 +53,7 @@ import (
 // 		}
 // 		_, err = ec2.NewInstance(ctx, "web", &ec2.InstanceArgs{
 // 			Ami:          pulumi.String(ubuntu.Id),
-// 			InstanceType: pulumi.String("t2.micro"),
+// 			InstanceType: pulumi.String("t3.micro"),
 // 			Tags: pulumi.StringMap{
 // 				"Name": pulumi.String("HelloWorld"),
 // 			},
@@ -63,6 +64,14 @@ import (
 // 		return nil
 // 	})
 // }
+// ```
+//
+// ## Import
+//
+// Instances can be imported using the `id`, e.g.
+//
+// ```sh
+//  $ pulumi import aws:ec2/instance:Instance web i-12345678
 // ```
 type Instance struct {
 	pulumi.CustomResourceState
@@ -155,6 +164,8 @@ type Instance struct {
 	// Customize details about the root block
 	// device of the instance. See Block Devices below for details.
 	RootBlockDevice InstanceRootBlockDeviceOutput `pulumi:"rootBlockDevice"`
+	// A list of secondary private IPv4 addresses to assign to the instance's primary network interface (eth0) in a VPC. Can only be assigned to the primary network interface (eth0) attached at instance creation, not a pre-existing network interface i.e. referenced in a `networkInterface` block. Refer to the [Elastic network interfaces documentation](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using-eni.html#AvailableIpPerENI) to see the maximum number of private IP addresses allowed per instance type.
+	SecondaryPrivateIps pulumi.StringArrayOutput `pulumi:"secondaryPrivateIps"`
 	// A list of security group names (EC2-Classic) or IDs (default VPC) to associate with.
 	//
 	// Deprecated: Use of `securityGroups` is discouraged as it does not allow for changes and will force your instance to be replaced if changes are made. To avoid this, use `vpcSecurityGroupIds` which allows for updates.
@@ -181,14 +192,15 @@ type Instance struct {
 // NewInstance registers a new resource with the given unique name, arguments, and options.
 func NewInstance(ctx *pulumi.Context,
 	name string, args *InstanceArgs, opts ...pulumi.ResourceOption) (*Instance, error) {
-	if args == nil || args.Ami == nil {
-		return nil, errors.New("missing required argument 'Ami'")
-	}
-	if args == nil || args.InstanceType == nil {
-		return nil, errors.New("missing required argument 'InstanceType'")
-	}
 	if args == nil {
-		args = &InstanceArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.Ami == nil {
+		return nil, errors.New("invalid value for required argument 'Ami'")
+	}
+	if args.InstanceType == nil {
+		return nil, errors.New("invalid value for required argument 'InstanceType'")
 	}
 	var resource Instance
 	err := ctx.RegisterResource("aws:ec2/instance:Instance", name, args, &resource, opts...)
@@ -300,6 +312,8 @@ type instanceState struct {
 	// Customize details about the root block
 	// device of the instance. See Block Devices below for details.
 	RootBlockDevice *InstanceRootBlockDevice `pulumi:"rootBlockDevice"`
+	// A list of secondary private IPv4 addresses to assign to the instance's primary network interface (eth0) in a VPC. Can only be assigned to the primary network interface (eth0) attached at instance creation, not a pre-existing network interface i.e. referenced in a `networkInterface` block. Refer to the [Elastic network interfaces documentation](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using-eni.html#AvailableIpPerENI) to see the maximum number of private IP addresses allowed per instance type.
+	SecondaryPrivateIps []string `pulumi:"secondaryPrivateIps"`
 	// A list of security group names (EC2-Classic) or IDs (default VPC) to associate with.
 	//
 	// Deprecated: Use of `securityGroups` is discouraged as it does not allow for changes and will force your instance to be replaced if changes are made. To avoid this, use `vpcSecurityGroupIds` which allows for updates.
@@ -412,6 +426,8 @@ type InstanceState struct {
 	// Customize details about the root block
 	// device of the instance. See Block Devices below for details.
 	RootBlockDevice InstanceRootBlockDevicePtrInput
+	// A list of secondary private IPv4 addresses to assign to the instance's primary network interface (eth0) in a VPC. Can only be assigned to the primary network interface (eth0) attached at instance creation, not a pre-existing network interface i.e. referenced in a `networkInterface` block. Refer to the [Elastic network interfaces documentation](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using-eni.html#AvailableIpPerENI) to see the maximum number of private IP addresses allowed per instance type.
+	SecondaryPrivateIps pulumi.StringArrayInput
 	// A list of security group names (EC2-Classic) or IDs (default VPC) to associate with.
 	//
 	// Deprecated: Use of `securityGroups` is discouraged as it does not allow for changes and will force your instance to be replaced if changes are made. To avoid this, use `vpcSecurityGroupIds` which allows for updates.
@@ -505,6 +521,8 @@ type instanceArgs struct {
 	// Customize details about the root block
 	// device of the instance. See Block Devices below for details.
 	RootBlockDevice *InstanceRootBlockDevice `pulumi:"rootBlockDevice"`
+	// A list of secondary private IPv4 addresses to assign to the instance's primary network interface (eth0) in a VPC. Can only be assigned to the primary network interface (eth0) attached at instance creation, not a pre-existing network interface i.e. referenced in a `networkInterface` block. Refer to the [Elastic network interfaces documentation](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using-eni.html#AvailableIpPerENI) to see the maximum number of private IP addresses allowed per instance type.
+	SecondaryPrivateIps []string `pulumi:"secondaryPrivateIps"`
 	// A list of security group names (EC2-Classic) or IDs (default VPC) to associate with.
 	//
 	// Deprecated: Use of `securityGroups` is discouraged as it does not allow for changes and will force your instance to be replaced if changes are made. To avoid this, use `vpcSecurityGroupIds` which allows for updates.
@@ -595,6 +613,8 @@ type InstanceArgs struct {
 	// Customize details about the root block
 	// device of the instance. See Block Devices below for details.
 	RootBlockDevice InstanceRootBlockDevicePtrInput
+	// A list of secondary private IPv4 addresses to assign to the instance's primary network interface (eth0) in a VPC. Can only be assigned to the primary network interface (eth0) attached at instance creation, not a pre-existing network interface i.e. referenced in a `networkInterface` block. Refer to the [Elastic network interfaces documentation](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using-eni.html#AvailableIpPerENI) to see the maximum number of private IP addresses allowed per instance type.
+	SecondaryPrivateIps pulumi.StringArrayInput
 	// A list of security group names (EC2-Classic) or IDs (default VPC) to associate with.
 	//
 	// Deprecated: Use of `securityGroups` is discouraged as it does not allow for changes and will force your instance to be replaced if changes are made. To avoid this, use `vpcSecurityGroupIds` which allows for updates.
@@ -620,4 +640,43 @@ type InstanceArgs struct {
 
 func (InstanceArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*instanceArgs)(nil)).Elem()
+}
+
+type InstanceInput interface {
+	pulumi.Input
+
+	ToInstanceOutput() InstanceOutput
+	ToInstanceOutputWithContext(ctx context.Context) InstanceOutput
+}
+
+func (Instance) ElementType() reflect.Type {
+	return reflect.TypeOf((*Instance)(nil)).Elem()
+}
+
+func (i Instance) ToInstanceOutput() InstanceOutput {
+	return i.ToInstanceOutputWithContext(context.Background())
+}
+
+func (i Instance) ToInstanceOutputWithContext(ctx context.Context) InstanceOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(InstanceOutput)
+}
+
+type InstanceOutput struct {
+	*pulumi.OutputState
+}
+
+func (InstanceOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*InstanceOutput)(nil)).Elem()
+}
+
+func (o InstanceOutput) ToInstanceOutput() InstanceOutput {
+	return o
+}
+
+func (o InstanceOutput) ToInstanceOutputWithContext(ctx context.Context) InstanceOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(InstanceOutput{})
 }

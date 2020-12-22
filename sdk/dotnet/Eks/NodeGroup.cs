@@ -122,11 +122,19 @@ namespace Pulumi.Aws.Eks
     /// 
     /// }
     /// ```
+    /// 
+    /// ## Import
+    /// 
+    /// EKS Node Groups can be imported using the `cluster_name` and `node_group_name` separated by a colon (`:`), e.g.
+    /// 
+    /// ```sh
+    ///  $ pulumi import aws:eks/nodeGroup:NodeGroup my_node_group my_cluster:my_node_group
+    /// ```
     /// </summary>
     public partial class NodeGroup : Pulumi.CustomResource
     {
         /// <summary>
-        /// Type of Amazon Machine Image (AMI) associated with the EKS Node Group. Defaults to `AL2_x86_64`. Valid values: `AL2_x86_64`, `AL2_x86_64_GPU`. This provider will only perform drift detection if a configuration value is provided.
+        /// Type of Amazon Machine Image (AMI) associated with the EKS Node Group. Defaults to `AL2_x86_64`. Valid values: `AL2_x86_64`, `AL2_x86_64_GPU`, `AL2_ARM_64`. This provider will only perform drift detection if a configuration value is provided.
         /// </summary>
         [Output("amiType")]
         public Output<string> AmiType { get; private set; } = null!;
@@ -136,6 +144,12 @@ namespace Pulumi.Aws.Eks
         /// </summary>
         [Output("arn")]
         public Output<string> Arn { get; private set; } = null!;
+
+        /// <summary>
+        /// Type of capacity associated with the EKS Node Group. Valid values: `ON_DEMAND`, `SPOT`. This provider will only perform drift detection if a configuration value is provided.
+        /// </summary>
+        [Output("capacityType")]
+        public Output<string> CapacityType { get; private set; } = null!;
 
         /// <summary>
         /// Name of the EKS Cluster.
@@ -156,16 +170,22 @@ namespace Pulumi.Aws.Eks
         public Output<bool?> ForceUpdateVersion { get; private set; } = null!;
 
         /// <summary>
-        /// Set of instance types associated with the EKS Node Group. Defaults to `["t3.medium"]`. This provider will only perform drift detection if a configuration value is provided. Currently, the EKS API only accepts a single value in the set.
+        /// List of instance types associated with the EKS Node Group. Defaults to `["t3.medium"]`. This provider will only perform drift detection if a configuration value is provided.
         /// </summary>
         [Output("instanceTypes")]
-        public Output<string> InstanceTypes { get; private set; } = null!;
+        public Output<ImmutableArray<string>> InstanceTypes { get; private set; } = null!;
 
         /// <summary>
         /// Key-value map of Kubernetes labels. Only labels that are applied with the EKS API are managed by this argument. Other Kubernetes labels applied to the EKS Node Group will not be managed.
         /// </summary>
         [Output("labels")]
         public Output<ImmutableDictionary<string, string>?> Labels { get; private set; } = null!;
+
+        /// <summary>
+        /// Configuration block with Launch Template settings. Detailed below.
+        /// </summary>
+        [Output("launchTemplate")]
+        public Output<Outputs.NodeGroupLaunchTemplate?> LaunchTemplate { get; private set; } = null!;
 
         /// <summary>
         /// Name of the EKS Node Group.
@@ -222,7 +242,7 @@ namespace Pulumi.Aws.Eks
         public Output<ImmutableDictionary<string, string>?> Tags { get; private set; } = null!;
 
         /// <summary>
-        /// Kubernetes version. Defaults to EKS Cluster Kubernetes version. This provider will only perform drift detection if a configuration value is provided.
+        /// EC2 Launch Template version number. While the API accepts values like `$Default` and `$Latest`, the API will convert the value to the associated version number (e.g. `1`) on read and This provider will show a difference on next plan. Using the `default_version` or `latest_version` attribute of the `aws.ec2.LaunchTemplate` resource or data source is recommended for this argument.
         /// </summary>
         [Output("version")]
         public Output<string> Version { get; private set; } = null!;
@@ -274,10 +294,16 @@ namespace Pulumi.Aws.Eks
     public sealed class NodeGroupArgs : Pulumi.ResourceArgs
     {
         /// <summary>
-        /// Type of Amazon Machine Image (AMI) associated with the EKS Node Group. Defaults to `AL2_x86_64`. Valid values: `AL2_x86_64`, `AL2_x86_64_GPU`. This provider will only perform drift detection if a configuration value is provided.
+        /// Type of Amazon Machine Image (AMI) associated with the EKS Node Group. Defaults to `AL2_x86_64`. Valid values: `AL2_x86_64`, `AL2_x86_64_GPU`, `AL2_ARM_64`. This provider will only perform drift detection if a configuration value is provided.
         /// </summary>
         [Input("amiType")]
         public Input<string>? AmiType { get; set; }
+
+        /// <summary>
+        /// Type of capacity associated with the EKS Node Group. Valid values: `ON_DEMAND`, `SPOT`. This provider will only perform drift detection if a configuration value is provided.
+        /// </summary>
+        [Input("capacityType")]
+        public Input<string>? CapacityType { get; set; }
 
         /// <summary>
         /// Name of the EKS Cluster.
@@ -297,11 +323,17 @@ namespace Pulumi.Aws.Eks
         [Input("forceUpdateVersion")]
         public Input<bool>? ForceUpdateVersion { get; set; }
 
-        /// <summary>
-        /// Set of instance types associated with the EKS Node Group. Defaults to `["t3.medium"]`. This provider will only perform drift detection if a configuration value is provided. Currently, the EKS API only accepts a single value in the set.
-        /// </summary>
         [Input("instanceTypes")]
-        public Input<string>? InstanceTypes { get; set; }
+        private InputList<string>? _instanceTypes;
+
+        /// <summary>
+        /// List of instance types associated with the EKS Node Group. Defaults to `["t3.medium"]`. This provider will only perform drift detection if a configuration value is provided.
+        /// </summary>
+        public InputList<string> InstanceTypes
+        {
+            get => _instanceTypes ?? (_instanceTypes = new InputList<string>());
+            set => _instanceTypes = value;
+        }
 
         [Input("labels")]
         private InputMap<string>? _labels;
@@ -314,6 +346,12 @@ namespace Pulumi.Aws.Eks
             get => _labels ?? (_labels = new InputMap<string>());
             set => _labels = value;
         }
+
+        /// <summary>
+        /// Configuration block with Launch Template settings. Detailed below.
+        /// </summary>
+        [Input("launchTemplate")]
+        public Input<Inputs.NodeGroupLaunchTemplateArgs>? LaunchTemplate { get; set; }
 
         /// <summary>
         /// Name of the EKS Node Group.
@@ -370,7 +408,7 @@ namespace Pulumi.Aws.Eks
         }
 
         /// <summary>
-        /// Kubernetes version. Defaults to EKS Cluster Kubernetes version. This provider will only perform drift detection if a configuration value is provided.
+        /// EC2 Launch Template version number. While the API accepts values like `$Default` and `$Latest`, the API will convert the value to the associated version number (e.g. `1`) on read and This provider will show a difference on next plan. Using the `default_version` or `latest_version` attribute of the `aws.ec2.LaunchTemplate` resource or data source is recommended for this argument.
         /// </summary>
         [Input("version")]
         public Input<string>? Version { get; set; }
@@ -383,7 +421,7 @@ namespace Pulumi.Aws.Eks
     public sealed class NodeGroupState : Pulumi.ResourceArgs
     {
         /// <summary>
-        /// Type of Amazon Machine Image (AMI) associated with the EKS Node Group. Defaults to `AL2_x86_64`. Valid values: `AL2_x86_64`, `AL2_x86_64_GPU`. This provider will only perform drift detection if a configuration value is provided.
+        /// Type of Amazon Machine Image (AMI) associated with the EKS Node Group. Defaults to `AL2_x86_64`. Valid values: `AL2_x86_64`, `AL2_x86_64_GPU`, `AL2_ARM_64`. This provider will only perform drift detection if a configuration value is provided.
         /// </summary>
         [Input("amiType")]
         public Input<string>? AmiType { get; set; }
@@ -393,6 +431,12 @@ namespace Pulumi.Aws.Eks
         /// </summary>
         [Input("arn")]
         public Input<string>? Arn { get; set; }
+
+        /// <summary>
+        /// Type of capacity associated with the EKS Node Group. Valid values: `ON_DEMAND`, `SPOT`. This provider will only perform drift detection if a configuration value is provided.
+        /// </summary>
+        [Input("capacityType")]
+        public Input<string>? CapacityType { get; set; }
 
         /// <summary>
         /// Name of the EKS Cluster.
@@ -412,11 +456,17 @@ namespace Pulumi.Aws.Eks
         [Input("forceUpdateVersion")]
         public Input<bool>? ForceUpdateVersion { get; set; }
 
-        /// <summary>
-        /// Set of instance types associated with the EKS Node Group. Defaults to `["t3.medium"]`. This provider will only perform drift detection if a configuration value is provided. Currently, the EKS API only accepts a single value in the set.
-        /// </summary>
         [Input("instanceTypes")]
-        public Input<string>? InstanceTypes { get; set; }
+        private InputList<string>? _instanceTypes;
+
+        /// <summary>
+        /// List of instance types associated with the EKS Node Group. Defaults to `["t3.medium"]`. This provider will only perform drift detection if a configuration value is provided.
+        /// </summary>
+        public InputList<string> InstanceTypes
+        {
+            get => _instanceTypes ?? (_instanceTypes = new InputList<string>());
+            set => _instanceTypes = value;
+        }
 
         [Input("labels")]
         private InputMap<string>? _labels;
@@ -429,6 +479,12 @@ namespace Pulumi.Aws.Eks
             get => _labels ?? (_labels = new InputMap<string>());
             set => _labels = value;
         }
+
+        /// <summary>
+        /// Configuration block with Launch Template settings. Detailed below.
+        /// </summary>
+        [Input("launchTemplate")]
+        public Input<Inputs.NodeGroupLaunchTemplateGetArgs>? LaunchTemplate { get; set; }
 
         /// <summary>
         /// Name of the EKS Node Group.
@@ -503,7 +559,7 @@ namespace Pulumi.Aws.Eks
         }
 
         /// <summary>
-        /// Kubernetes version. Defaults to EKS Cluster Kubernetes version. This provider will only perform drift detection if a configuration value is provided.
+        /// EC2 Launch Template version number. While the API accepts values like `$Default` and `$Latest`, the API will convert the value to the associated version number (e.g. `1`) on read and This provider will show a difference on next plan. Using the `default_version` or `latest_version` attribute of the `aws.ec2.LaunchTemplate` resource or data source is recommended for this argument.
         /// </summary>
         [Input("version")]
         public Input<string>? Version { get; set; }

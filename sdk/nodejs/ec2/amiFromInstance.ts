@@ -2,8 +2,7 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 /**
@@ -174,7 +173,7 @@ export class AmiFromInstance extends pulumi.CustomResource {
             inputs["virtualizationType"] = state ? state.virtualizationType : undefined;
         } else {
             const args = argsOrState as AmiFromInstanceArgs | undefined;
-            if (!args || args.sourceInstanceId === undefined) {
+            if ((!args || args.sourceInstanceId === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'sourceInstanceId'");
             }
             inputs["description"] = args ? args.description : undefined;

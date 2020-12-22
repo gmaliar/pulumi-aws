@@ -4,6 +4,7 @@
 package s3
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -18,7 +19,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/s3"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/s3"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -29,9 +30,9 @@ import (
 // 			return err
 // 		}
 // 		_, err = s3.NewBucketPublicAccessBlock(ctx, "exampleBucketPublicAccessBlock", &s3.BucketPublicAccessBlockArgs{
+// 			Bucket:            exampleBucket.ID(),
 // 			BlockPublicAcls:   pulumi.Bool(true),
 // 			BlockPublicPolicy: pulumi.Bool(true),
-// 			Bucket:            exampleBucket.ID(),
 // 		})
 // 		if err != nil {
 // 			return err
@@ -39,6 +40,14 @@ import (
 // 		return nil
 // 	})
 // }
+// ```
+//
+// ## Import
+//
+// `aws_s3_bucket_public_access_block` can be imported by using the bucket name, e.g.
+//
+// ```sh
+//  $ pulumi import aws:s3/bucketPublicAccessBlock:BucketPublicAccessBlock example my-bucket
 // ```
 type BucketPublicAccessBlock struct {
 	pulumi.CustomResourceState
@@ -63,11 +72,12 @@ type BucketPublicAccessBlock struct {
 // NewBucketPublicAccessBlock registers a new resource with the given unique name, arguments, and options.
 func NewBucketPublicAccessBlock(ctx *pulumi.Context,
 	name string, args *BucketPublicAccessBlockArgs, opts ...pulumi.ResourceOption) (*BucketPublicAccessBlock, error) {
-	if args == nil || args.Bucket == nil {
-		return nil, errors.New("missing required argument 'Bucket'")
-	}
 	if args == nil {
-		args = &BucketPublicAccessBlockArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.Bucket == nil {
+		return nil, errors.New("invalid value for required argument 'Bucket'")
 	}
 	var resource BucketPublicAccessBlock
 	err := ctx.RegisterResource("aws:s3/bucketPublicAccessBlock:BucketPublicAccessBlock", name, args, &resource, opts...)
@@ -169,4 +179,43 @@ type BucketPublicAccessBlockArgs struct {
 
 func (BucketPublicAccessBlockArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*bucketPublicAccessBlockArgs)(nil)).Elem()
+}
+
+type BucketPublicAccessBlockInput interface {
+	pulumi.Input
+
+	ToBucketPublicAccessBlockOutput() BucketPublicAccessBlockOutput
+	ToBucketPublicAccessBlockOutputWithContext(ctx context.Context) BucketPublicAccessBlockOutput
+}
+
+func (BucketPublicAccessBlock) ElementType() reflect.Type {
+	return reflect.TypeOf((*BucketPublicAccessBlock)(nil)).Elem()
+}
+
+func (i BucketPublicAccessBlock) ToBucketPublicAccessBlockOutput() BucketPublicAccessBlockOutput {
+	return i.ToBucketPublicAccessBlockOutputWithContext(context.Background())
+}
+
+func (i BucketPublicAccessBlock) ToBucketPublicAccessBlockOutputWithContext(ctx context.Context) BucketPublicAccessBlockOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(BucketPublicAccessBlockOutput)
+}
+
+type BucketPublicAccessBlockOutput struct {
+	*pulumi.OutputState
+}
+
+func (BucketPublicAccessBlockOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*BucketPublicAccessBlockOutput)(nil)).Elem()
+}
+
+func (o BucketPublicAccessBlockOutput) ToBucketPublicAccessBlockOutput() BucketPublicAccessBlockOutput {
+	return o
+}
+
+func (o BucketPublicAccessBlockOutput) ToBucketPublicAccessBlockOutputWithContext(ctx context.Context) BucketPublicAccessBlockOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(BucketPublicAccessBlockOutput{})
 }

@@ -2,8 +2,7 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 /**
@@ -15,16 +14,24 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const exampleRestApi = new aws.apigateway.RestApi("example", {});
- * const exampleDocumentationPart = new aws.apigateway.DocumentationPart("example", {
+ * const exampleRestApi = new aws.apigateway.RestApi("exampleRestApi", {});
+ * const exampleDocumentationPart = new aws.apigateway.DocumentationPart("exampleDocumentationPart", {
  *     location: {
+ *         type: "METHOD",
  *         method: "GET",
  *         path: "/example",
- *         type: "METHOD",
  *     },
  *     properties: "{\"description\":\"Example description\"}",
  *     restApiId: exampleRestApi.id,
  * });
+ * ```
+ *
+ * ## Import
+ *
+ * API Gateway documentation_parts can be imported using `REST-API-ID/DOC-PART-ID`, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:apigateway/documentationPart:DocumentationPart example 5i4e1ko720/3oyy3t
  * ```
  */
 export class DocumentationPart extends pulumi.CustomResource {
@@ -85,13 +92,13 @@ export class DocumentationPart extends pulumi.CustomResource {
             inputs["restApiId"] = state ? state.restApiId : undefined;
         } else {
             const args = argsOrState as DocumentationPartArgs | undefined;
-            if (!args || args.location === undefined) {
+            if ((!args || args.location === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'location'");
             }
-            if (!args || args.properties === undefined) {
+            if ((!args || args.properties === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'properties'");
             }
-            if (!args || args.restApiId === undefined) {
+            if ((!args || args.restApiId === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'restApiId'");
             }
             inputs["location"] = args ? args.location : undefined;

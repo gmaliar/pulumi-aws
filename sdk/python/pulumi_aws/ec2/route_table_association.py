@@ -5,24 +5,22 @@
 import warnings
 import pulumi
 import pulumi.runtime
-from typing import Union
-from .. import utilities, tables
+from typing import Any, Mapping, Optional, Sequence, Union
+from .. import _utilities, _tables
+
+__all__ = ['RouteTableAssociation']
 
 
 class RouteTableAssociation(pulumi.CustomResource):
-    gateway_id: pulumi.Output[str]
-    """
-    The gateway ID to create an association. Conflicts with `subnet_id`.
-    """
-    route_table_id: pulumi.Output[str]
-    """
-    The ID of the routing table to associate with.
-    """
-    subnet_id: pulumi.Output[str]
-    """
-    The subnet ID to create an association. Conflicts with `gateway_id`.
-    """
-    def __init__(__self__, resource_name, opts=None, gateway_id=None, route_table_id=None, subnet_id=None, __props__=None, __name__=None, __opts__=None):
+    def __init__(__self__,
+                 resource_name: str,
+                 opts: Optional[pulumi.ResourceOptions] = None,
+                 gateway_id: Optional[pulumi.Input[str]] = None,
+                 route_table_id: Optional[pulumi.Input[str]] = None,
+                 subnet_id: Optional[pulumi.Input[str]] = None,
+                 __props__=None,
+                 __name__=None,
+                 __opts__=None):
         """
         Provides a resource to create an association between a route table and a subnet or a route table and an
         internet gateway or virtual private gateway.
@@ -47,6 +45,20 @@ class RouteTableAssociation(pulumi.CustomResource):
             route_table_id=aws_route_table["bar"]["id"])
         ```
 
+        ## Import
+
+        is already associated, will result in an error (e.g., `Resource.AlreadyAssociatedthe specified association for route table rtb-4176657279 conflicts with an existing association`) unless you first import the original association. EC2 Route Table Associations can be imported using the associated resource ID and Route Table ID separated by a forward slash (`/`). For example with EC2 Subnets
+
+        ```sh
+         $ pulumi import aws:ec2/routeTableAssociation:RouteTableAssociation assoc subnet-6777656e646f6c796e/rtb-656c65616e6f72
+        ```
+
+         For example with EC2 Internet Gateways
+
+        ```sh
+         $ pulumi import aws:ec2/routeTableAssociation:RouteTableAssociation assoc igw-01b3a60780f8d034a/rtb-656c65616e6f72
+        ```
+
         :param str resource_name: The name of the resource.
         :param pulumi.ResourceOptions opts: Options for the resource.
         :param pulumi.Input[str] gateway_id: The gateway ID to create an association. Conflicts with `subnet_id`.
@@ -64,14 +76,14 @@ class RouteTableAssociation(pulumi.CustomResource):
         if not isinstance(opts, pulumi.ResourceOptions):
             raise TypeError('Expected resource options to be a ResourceOptions instance')
         if opts.version is None:
-            opts.version = utilities.get_version()
+            opts.version = _utilities.get_version()
         if opts.id is None:
             if __props__ is not None:
                 raise TypeError('__props__ is only valid when passed in combination with a valid opts.id to get an existing resource')
             __props__ = dict()
 
             __props__['gateway_id'] = gateway_id
-            if route_table_id is None:
+            if route_table_id is None and not opts.urn:
                 raise TypeError("Missing required property 'route_table_id'")
             __props__['route_table_id'] = route_table_id
             __props__['subnet_id'] = subnet_id
@@ -82,13 +94,18 @@ class RouteTableAssociation(pulumi.CustomResource):
             opts)
 
     @staticmethod
-    def get(resource_name, id, opts=None, gateway_id=None, route_table_id=None, subnet_id=None):
+    def get(resource_name: str,
+            id: pulumi.Input[str],
+            opts: Optional[pulumi.ResourceOptions] = None,
+            gateway_id: Optional[pulumi.Input[str]] = None,
+            route_table_id: Optional[pulumi.Input[str]] = None,
+            subnet_id: Optional[pulumi.Input[str]] = None) -> 'RouteTableAssociation':
         """
         Get an existing RouteTableAssociation resource's state with the given name, id, and optional extra
         properties used to qualify the lookup.
 
         :param str resource_name: The unique name of the resulting resource.
-        :param str id: The unique provider ID of the resource to lookup.
+        :param pulumi.Input[str] id: The unique provider ID of the resource to lookup.
         :param pulumi.ResourceOptions opts: Options for the resource.
         :param pulumi.Input[str] gateway_id: The gateway ID to create an association. Conflicts with `subnet_id`.
         :param pulumi.Input[str] route_table_id: The ID of the routing table to associate with.
@@ -103,8 +120,33 @@ class RouteTableAssociation(pulumi.CustomResource):
         __props__["subnet_id"] = subnet_id
         return RouteTableAssociation(resource_name, opts=opts, __props__=__props__)
 
+    @property
+    @pulumi.getter(name="gatewayId")
+    def gateway_id(self) -> pulumi.Output[Optional[str]]:
+        """
+        The gateway ID to create an association. Conflicts with `subnet_id`.
+        """
+        return pulumi.get(self, "gateway_id")
+
+    @property
+    @pulumi.getter(name="routeTableId")
+    def route_table_id(self) -> pulumi.Output[str]:
+        """
+        The ID of the routing table to associate with.
+        """
+        return pulumi.get(self, "route_table_id")
+
+    @property
+    @pulumi.getter(name="subnetId")
+    def subnet_id(self) -> pulumi.Output[Optional[str]]:
+        """
+        The subnet ID to create an association. Conflicts with `gateway_id`.
+        """
+        return pulumi.get(self, "subnet_id")
+
     def translate_output_property(self, prop):
-        return tables._CAMEL_TO_SNAKE_CASE_TABLE.get(prop) or prop
+        return _tables.CAMEL_TO_SNAKE_CASE_TABLE.get(prop) or prop
 
     def translate_input_property(self, prop):
-        return tables._SNAKE_TO_CAMEL_CASE_TABLE.get(prop) or prop
+        return _tables.SNAKE_TO_CAMEL_CASE_TABLE.get(prop) or prop
+

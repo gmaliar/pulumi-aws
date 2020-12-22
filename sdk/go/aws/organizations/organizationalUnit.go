@@ -4,6 +4,7 @@
 package organizations
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -18,14 +19,14 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/organizations"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/organizations"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
 // func main() {
 // 	pulumi.Run(func(ctx *pulumi.Context) error {
 // 		_, err := organizations.NewOrganizationalUnit(ctx, "example", &organizations.OrganizationalUnitArgs{
-// 			ParentId: pulumi.String(aws_organizations_organization.Example.Roots[0].Id),
+// 			ParentId: pulumi.Any(aws_organizations_organization.Example.Roots[0].Id),
 // 		})
 // 		if err != nil {
 // 			return err
@@ -33,6 +34,14 @@ import (
 // 		return nil
 // 	})
 // }
+// ```
+//
+// ## Import
+//
+// AWS Organizations Organizational Units can be imported by using the `id`, e.g.
+//
+// ```sh
+//  $ pulumi import aws:organizations/organizationalUnit:OrganizationalUnit example ou-1234567
 // ```
 type OrganizationalUnit struct {
 	pulumi.CustomResourceState
@@ -50,11 +59,12 @@ type OrganizationalUnit struct {
 // NewOrganizationalUnit registers a new resource with the given unique name, arguments, and options.
 func NewOrganizationalUnit(ctx *pulumi.Context,
 	name string, args *OrganizationalUnitArgs, opts ...pulumi.ResourceOption) (*OrganizationalUnit, error) {
-	if args == nil || args.ParentId == nil {
-		return nil, errors.New("missing required argument 'ParentId'")
-	}
 	if args == nil {
-		args = &OrganizationalUnitArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.ParentId == nil {
+		return nil, errors.New("invalid value for required argument 'ParentId'")
 	}
 	var resource OrganizationalUnit
 	err := ctx.RegisterResource("aws:organizations/organizationalUnit:OrganizationalUnit", name, args, &resource, opts...)
@@ -120,4 +130,43 @@ type OrganizationalUnitArgs struct {
 
 func (OrganizationalUnitArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*organizationalUnitArgs)(nil)).Elem()
+}
+
+type OrganizationalUnitInput interface {
+	pulumi.Input
+
+	ToOrganizationalUnitOutput() OrganizationalUnitOutput
+	ToOrganizationalUnitOutputWithContext(ctx context.Context) OrganizationalUnitOutput
+}
+
+func (OrganizationalUnit) ElementType() reflect.Type {
+	return reflect.TypeOf((*OrganizationalUnit)(nil)).Elem()
+}
+
+func (i OrganizationalUnit) ToOrganizationalUnitOutput() OrganizationalUnitOutput {
+	return i.ToOrganizationalUnitOutputWithContext(context.Background())
+}
+
+func (i OrganizationalUnit) ToOrganizationalUnitOutputWithContext(ctx context.Context) OrganizationalUnitOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(OrganizationalUnitOutput)
+}
+
+type OrganizationalUnitOutput struct {
+	*pulumi.OutputState
+}
+
+func (OrganizationalUnitOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*OrganizationalUnitOutput)(nil)).Elem()
+}
+
+func (o OrganizationalUnitOutput) ToOrganizationalUnitOutput() OrganizationalUnitOutput {
+	return o
+}
+
+func (o OrganizationalUnitOutput) ToOrganizationalUnitOutputWithContext(ctx context.Context) OrganizationalUnitOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(OrganizationalUnitOutput{})
 }

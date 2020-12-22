@@ -17,13 +17,33 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/acm"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/acm"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
 // func main() {
 // 	pulumi.Run(func(ctx *pulumi.Context) error {
 // 		_, err := acm.LookupCertificate(ctx, &acm.LookupCertificateArgs{
+// 			Domain: "tf.example.com",
+// 			Statuses: []string{
+// 				"ISSUED",
+// 			},
+// 		}, nil)
+// 		if err != nil {
+// 			return err
+// 		}
+// 		opt0 := true
+// 		_, err = acm.LookupCertificate(ctx, &acm.LookupCertificateArgs{
+// 			Domain:     "tf.example.com",
+// 			MostRecent: &opt0,
+// 			Types: []string{
+// 				"AMAZON_ISSUED",
+// 			},
+// 		}, nil)
+// 		if err != nil {
+// 			return err
+// 		}
+// 		_, err = acm.LookupCertificate(ctx, &acm.LookupCertificateArgs{
 // 			Domain: "tf.example.com",
 // 			KeyTypes: []string{
 // 				"RSA_4096",
@@ -65,7 +85,7 @@ type LookupCertificateArgs struct {
 
 // A collection of values returned by getCertificate.
 type LookupCertificateResult struct {
-	// Set to the ARN of the found certificate, suitable for referencing in other resources that support ACM certificates.
+	// Amazon Resource Name (ARN) of the found certificate, suitable for referencing in other resources that support ACM certificates.
 	Arn    string `pulumi:"arn"`
 	Domain string `pulumi:"domain"`
 	// The provider-assigned unique ID for this managed resource.

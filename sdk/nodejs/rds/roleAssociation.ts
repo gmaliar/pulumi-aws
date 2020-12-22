@@ -19,10 +19,18 @@ import * as utilities from "../utilities";
  * import * as aws from "@pulumi/aws";
  *
  * const example = new aws.rds.RoleAssociation("example", {
- *     dbInstanceIdentifier: aws_db_instance_example.id,
+ *     dbInstanceIdentifier: aws_db_instance.example.id,
  *     featureName: "S3_INTEGRATION",
- *     roleArn: aws_iam_role_example.id,
+ *     roleArn: aws_iam_role.example.arn,
  * });
+ * ```
+ *
+ * ## Import
+ *
+ * `aws_db_instance_role_association` can be imported using the DB Instance Identifier and IAM Role ARN separated by a comma (`,`), e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:rds/roleAssociation:RoleAssociation example my-db-instance,arn:aws:iam::123456789012:role/my-role
  * ```
  */
 export class RoleAssociation extends pulumi.CustomResource {
@@ -83,13 +91,13 @@ export class RoleAssociation extends pulumi.CustomResource {
             inputs["roleArn"] = state ? state.roleArn : undefined;
         } else {
             const args = argsOrState as RoleAssociationArgs | undefined;
-            if (!args || args.dbInstanceIdentifier === undefined) {
+            if ((!args || args.dbInstanceIdentifier === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'dbInstanceIdentifier'");
             }
-            if (!args || args.featureName === undefined) {
+            if ((!args || args.featureName === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'featureName'");
             }
-            if (!args || args.roleArn === undefined) {
+            if ((!args || args.roleArn === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'roleArn'");
             }
             inputs["dbInstanceIdentifier"] = args ? args.dbInstanceIdentifier : undefined;

@@ -36,10 +36,22 @@ namespace Pulumi.Aws.Ec2TransitGateway
     /// }
     /// ```
     /// 
-    /// A full example of how to create a Transit Gateway in one AWS account, share it with a second AWS account, and attach a VPC in the second account to the Transit Gateway via the `aws.ec2transitgateway.VpcAttachment` and `aws.ec2transitgateway.VpcAttachmentAccepter` resources can be found in [the `./examples/transit-gateway-cross-account-vpc-attachment` directory within the Github Repository](https://github.com/providers/provider-aws/tree/master/examples/transit-gateway-cross-account-vpc-attachment).
+    /// ## Import
+    /// 
+    /// `aws_ec2_transit_gateway_vpc_attachment` can be imported by using the EC2 Transit Gateway Attachment identifier, e.g.
+    /// 
+    /// ```sh
+    ///  $ pulumi import aws:ec2transitgateway/vpcAttachment:VpcAttachment example tgw-attach-12345678
+    /// ```
     /// </summary>
     public partial class VpcAttachment : Pulumi.CustomResource
     {
+        /// <summary>
+        /// Whether Appliance Mode support is enabled. If enabled, a traffic flow between a source and destination uses the same Availability Zone for the VPC attachment for the lifetime of that flow. Valid values: `disable`, `enable`. Default value: `disable`.
+        /// </summary>
+        [Output("applianceModeSupport")]
+        public Output<string?> ApplianceModeSupport { get; private set; } = null!;
+
         /// <summary>
         /// Whether DNS support is enabled. Valid values: `disable`, `enable`. Default value: `enable`.
         /// </summary>
@@ -141,6 +153,12 @@ namespace Pulumi.Aws.Ec2TransitGateway
     public sealed class VpcAttachmentArgs : Pulumi.ResourceArgs
     {
         /// <summary>
+        /// Whether Appliance Mode support is enabled. If enabled, a traffic flow between a source and destination uses the same Availability Zone for the VPC attachment for the lifetime of that flow. Valid values: `disable`, `enable`. Default value: `disable`.
+        /// </summary>
+        [Input("applianceModeSupport")]
+        public Input<string>? ApplianceModeSupport { get; set; }
+
+        /// <summary>
         /// Whether DNS support is enabled. Valid values: `disable`, `enable`. Default value: `enable`.
         /// </summary>
         [Input("dnsSupport")]
@@ -207,6 +225,12 @@ namespace Pulumi.Aws.Ec2TransitGateway
 
     public sealed class VpcAttachmentState : Pulumi.ResourceArgs
     {
+        /// <summary>
+        /// Whether Appliance Mode support is enabled. If enabled, a traffic flow between a source and destination uses the same Availability Zone for the VPC attachment for the lifetime of that flow. Valid values: `disable`, `enable`. Default value: `disable`.
+        /// </summary>
+        [Input("applianceModeSupport")]
+        public Input<string>? ApplianceModeSupport { get; set; }
+
         /// <summary>
         /// Whether DNS support is enabled. Valid values: `disable`, `enable`. Default value: `enable`.
         /// </summary>

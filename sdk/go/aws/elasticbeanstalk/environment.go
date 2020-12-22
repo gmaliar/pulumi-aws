@@ -4,6 +4,7 @@
 package elasticbeanstalk
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -23,7 +24,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/elasticbeanstalk"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/elasticbeanstalk"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -64,7 +65,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/elasticbeanstalk"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/elasticbeanstalk"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -77,20 +78,20 @@ import (
 // 			return err
 // 		}
 // 		_, err = elasticbeanstalk.NewEnvironment(ctx, "tfenvtest", &elasticbeanstalk.EnvironmentArgs{
-// 			Application: tftest.Name,
+// 			Application:       tftest.Name,
+// 			SolutionStackName: pulumi.String("64bit Amazon Linux 2015.03 v2.0.3 running Go 1.4"),
 // 			Settings: elasticbeanstalk.EnvironmentSettingArray{
 // 				&elasticbeanstalk.EnvironmentSettingArgs{
-// 					Name:      pulumi.String("VPCId"),
 // 					Namespace: pulumi.String("aws:ec2:vpc"),
+// 					Name:      pulumi.String("VPCId"),
 // 					Value:     pulumi.String("vpc-xxxxxxxx"),
 // 				},
 // 				&elasticbeanstalk.EnvironmentSettingArgs{
-// 					Name:      pulumi.String("Subnets"),
 // 					Namespace: pulumi.String("aws:ec2:vpc"),
+// 					Name:      pulumi.String("Subnets"),
 // 					Value:     pulumi.String("subnet-xxxxxxxx"),
 // 				},
 // 			},
-// 			SolutionStackName: pulumi.String("64bit Amazon Linux 2015.03 v2.0.3 running Go 1.4"),
 // 		})
 // 		if err != nil {
 // 			return err
@@ -98,6 +99,14 @@ import (
 // 		return nil
 // 	})
 // }
+// ```
+//
+// ## Import
+//
+// Elastic Beanstalk Environments can be imported using the `id`, e.g.
+//
+// ```sh
+//  $ pulumi import aws:elasticbeanstalk/environment:Environment prodenv e-rpqsewtp2j
 // ```
 type Environment struct {
 	pulumi.CustomResourceState
@@ -170,11 +179,12 @@ type Environment struct {
 // NewEnvironment registers a new resource with the given unique name, arguments, and options.
 func NewEnvironment(ctx *pulumi.Context,
 	name string, args *EnvironmentArgs, opts ...pulumi.ResourceOption) (*Environment, error) {
-	if args == nil || args.Application == nil {
-		return nil, errors.New("missing required argument 'Application'")
-	}
 	if args == nil {
-		args = &EnvironmentArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.Application == nil {
+		return nil, errors.New("invalid value for required argument 'Application'")
 	}
 	var resource Environment
 	err := ctx.RegisterResource("aws:elasticbeanstalk/environment:Environment", name, args, &resource, opts...)
@@ -426,4 +436,43 @@ type EnvironmentArgs struct {
 
 func (EnvironmentArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*environmentArgs)(nil)).Elem()
+}
+
+type EnvironmentInput interface {
+	pulumi.Input
+
+	ToEnvironmentOutput() EnvironmentOutput
+	ToEnvironmentOutputWithContext(ctx context.Context) EnvironmentOutput
+}
+
+func (Environment) ElementType() reflect.Type {
+	return reflect.TypeOf((*Environment)(nil)).Elem()
+}
+
+func (i Environment) ToEnvironmentOutput() EnvironmentOutput {
+	return i.ToEnvironmentOutputWithContext(context.Background())
+}
+
+func (i Environment) ToEnvironmentOutputWithContext(ctx context.Context) EnvironmentOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(EnvironmentOutput)
+}
+
+type EnvironmentOutput struct {
+	*pulumi.OutputState
+}
+
+func (EnvironmentOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*EnvironmentOutput)(nil)).Elem()
+}
+
+func (o EnvironmentOutput) ToEnvironmentOutput() EnvironmentOutput {
+	return o
+}
+
+func (o EnvironmentOutput) ToEnvironmentOutputWithContext(ctx context.Context) EnvironmentOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(EnvironmentOutput{})
 }

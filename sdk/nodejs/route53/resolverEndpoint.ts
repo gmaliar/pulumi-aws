@@ -2,8 +2,7 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 /**
@@ -17,23 +16,31 @@ import * as utilities from "../utilities";
  *
  * const foo = new aws.route53.ResolverEndpoint("foo", {
  *     direction: "INBOUND",
+ *     securityGroupIds: [
+ *         aws_security_group.sg1.id,
+ *         aws_security_group.sg2.id,
+ *     ],
  *     ipAddresses: [
  *         {
- *             subnetId: aws_subnet_sn1.id,
+ *             subnetId: aws_subnet.sn1.id,
  *         },
  *         {
+ *             subnetId: aws_subnet.sn2.id,
  *             ip: "10.0.64.4",
- *             subnetId: aws_subnet_sn2.id,
  *         },
- *     ],
- *     securityGroupIds: [
- *         aws_security_group_sg1.id,
- *         aws_security_group_sg2.id,
  *     ],
  *     tags: {
  *         Environment: "Prod",
  *     },
  * });
+ * ```
+ *
+ * ## Import
+ *
+ *  Route 53 Resolver endpoints can be imported using the Route 53 Resolver endpoint ID, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:route53/resolverEndpoint:ResolverEndpoint foo rslvr-in-abcdef01234567890
  * ```
  */
 export class ResolverEndpoint extends pulumi.CustomResource {
@@ -117,13 +124,13 @@ export class ResolverEndpoint extends pulumi.CustomResource {
             inputs["tags"] = state ? state.tags : undefined;
         } else {
             const args = argsOrState as ResolverEndpointArgs | undefined;
-            if (!args || args.direction === undefined) {
+            if ((!args || args.direction === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'direction'");
             }
-            if (!args || args.ipAddresses === undefined) {
+            if ((!args || args.ipAddresses === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'ipAddresses'");
             }
-            if (!args || args.securityGroupIds === undefined) {
+            if ((!args || args.securityGroupIds === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'securityGroupIds'");
             }
             inputs["direction"] = args ? args.direction : undefined;

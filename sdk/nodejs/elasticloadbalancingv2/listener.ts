@@ -2,8 +2,7 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 /**
@@ -18,18 +17,20 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const frontEndLoadBalancer = new aws.lb.LoadBalancer("front_end", {});
- * const frontEndTargetGroup = new aws.lb.TargetGroup("front_end", {});
- * const frontEndListener = new aws.lb.Listener("front_end", {
- *     certificateArn: "arn:aws:iam::187416307283:server-certificate/test_cert_rab3wuqwgja25ct3n4jdj2tzu4",
- *     defaultActions: [{
- *         targetGroupArn: frontEndTargetGroup.arn,
- *         type: "forward",
- *     }],
+ * const frontEndLoadBalancer = new aws.lb.LoadBalancer("frontEndLoadBalancer", {});
+ * // ...
+ * const frontEndTargetGroup = new aws.lb.TargetGroup("frontEndTargetGroup", {});
+ * // ...
+ * const frontEndListener = new aws.lb.Listener("frontEndListener", {
  *     loadBalancerArn: frontEndLoadBalancer.arn,
- *     port: 443,
+ *     port: "443",
  *     protocol: "HTTPS",
  *     sslPolicy: "ELBSecurityPolicy-2016-08",
+ *     certificateArn: "arn:aws:iam::187416307283:server-certificate/test_cert_rab3wuqwgja25ct3n4jdj2tzu4",
+ *     defaultActions: [{
+ *         type: "forward",
+ *         targetGroupArn: frontEndTargetGroup.arn,
+ *     }],
  * });
  * ```
  * ### Redirect Action
@@ -38,19 +39,20 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const frontEndLoadBalancer = new aws.lb.LoadBalancer("front_end", {});
- * const frontEndListener = new aws.lb.Listener("front_end", {
+ * const frontEndLoadBalancer = new aws.lb.LoadBalancer("frontEndLoadBalancer", {});
+ * // ...
+ * const frontEndListener = new aws.lb.Listener("frontEndListener", {
+ *     loadBalancerArn: frontEndLoadBalancer.arn,
+ *     port: "80",
+ *     protocol: "HTTP",
  *     defaultActions: [{
+ *         type: "redirect",
  *         redirect: {
  *             port: "443",
  *             protocol: "HTTPS",
  *             statusCode: "HTTP_301",
  *         },
- *         type: "redirect",
  *     }],
- *     loadBalancerArn: frontEndLoadBalancer.arn,
- *     port: 80,
- *     protocol: "HTTP",
  * });
  * ```
  * ### Fixed-response Action
@@ -59,19 +61,20 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const frontEndLoadBalancer = new aws.lb.LoadBalancer("front_end", {});
- * const frontEndListener = new aws.lb.Listener("front_end", {
+ * const frontEndLoadBalancer = new aws.lb.LoadBalancer("frontEndLoadBalancer", {});
+ * // ...
+ * const frontEndListener = new aws.lb.Listener("frontEndListener", {
+ *     loadBalancerArn: frontEndLoadBalancer.arn,
+ *     port: "80",
+ *     protocol: "HTTP",
  *     defaultActions: [{
+ *         type: "fixed-response",
  *         fixedResponse: {
  *             contentType: "text/plain",
  *             messageBody: "Fixed response content",
  *             statusCode: "200",
  *         },
- *         type: "fixed-response",
  *     }],
- *     loadBalancerArn: frontEndLoadBalancer.arn,
- *     port: 80,
- *     protocol: "HTTP",
  * });
  * ```
  * ### Authenticate-cognito Action
@@ -80,29 +83,34 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const frontEndLoadBalancer = new aws.lb.LoadBalancer("front_end", {});
- * const frontEndTargetGroup = new aws.lb.TargetGroup("front_end", {});
+ * const frontEndLoadBalancer = new aws.lb.LoadBalancer("frontEndLoadBalancer", {});
+ * // ...
+ * const frontEndTargetGroup = new aws.lb.TargetGroup("frontEndTargetGroup", {});
+ * // ...
  * const pool = new aws.cognito.UserPool("pool", {});
+ * // ...
  * const client = new aws.cognito.UserPoolClient("client", {});
+ * // ...
  * const domain = new aws.cognito.UserPoolDomain("domain", {});
- * const frontEndListener = new aws.lb.Listener("front_end", {
+ * // ...
+ * const frontEndListener = new aws.lb.Listener("frontEndListener", {
+ *     loadBalancerArn: frontEndLoadBalancer.arn,
+ *     port: "80",
+ *     protocol: "HTTP",
  *     defaultActions: [
  *         {
+ *             type: "authenticate-cognito",
  *             authenticateCognito: {
  *                 userPoolArn: pool.arn,
  *                 userPoolClientId: client.id,
  *                 userPoolDomain: domain.domain,
  *             },
- *             type: "authenticate-cognito",
  *         },
  *         {
- *             targetGroupArn: frontEndTargetGroup.arn,
  *             type: "forward",
+ *             targetGroupArn: frontEndTargetGroup.arn,
  *         },
  *     ],
- *     loadBalancerArn: frontEndLoadBalancer.arn,
- *     port: 80,
- *     protocol: "HTTP",
  * });
  * ```
  * ### Authenticate-oidc Action
@@ -111,11 +119,17 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const frontEndLoadBalancer = new aws.lb.LoadBalancer("front_end", {});
- * const frontEndTargetGroup = new aws.lb.TargetGroup("front_end", {});
- * const frontEndListener = new aws.lb.Listener("front_end", {
+ * const frontEndLoadBalancer = new aws.lb.LoadBalancer("frontEndLoadBalancer", {});
+ * // ...
+ * const frontEndTargetGroup = new aws.lb.TargetGroup("frontEndTargetGroup", {});
+ * // ...
+ * const frontEndListener = new aws.lb.Listener("frontEndListener", {
+ *     loadBalancerArn: frontEndLoadBalancer.arn,
+ *     port: "80",
+ *     protocol: "HTTP",
  *     defaultActions: [
  *         {
+ *             type: "authenticate-oidc",
  *             authenticateOidc: {
  *                 authorizationEndpoint: "https://example.com/authorization_endpoint",
  *                 clientId: "client_id",
@@ -124,17 +138,50 @@ import * as utilities from "../utilities";
  *                 tokenEndpoint: "https://example.com/token_endpoint",
  *                 userInfoEndpoint: "https://example.com/user_info_endpoint",
  *             },
- *             type: "authenticate-oidc",
  *         },
  *         {
- *             targetGroupArn: frontEndTargetGroup.arn,
  *             type: "forward",
+ *             targetGroupArn: frontEndTargetGroup.arn,
  *         },
  *     ],
- *     loadBalancerArn: frontEndLoadBalancer.arn,
- *     port: 80,
- *     protocol: "HTTP",
  * });
+ * ```
+ * ### Gateway Load Balancer Listener
+ *
+ * ```typescript
+ * import * as pulumi from "@pulumi/pulumi";
+ * import * as aws from "@pulumi/aws";
+ *
+ * const exampleLoadBalancer = new aws.lb.LoadBalancer("exampleLoadBalancer", {
+ *     loadBalancerType: "gateway",
+ *     subnetMappings: [{
+ *         subnetId: aws_subnet.example.id,
+ *     }],
+ * });
+ * const exampleTargetGroup = new aws.lb.TargetGroup("exampleTargetGroup", {
+ *     port: 6081,
+ *     protocol: "GENEVE",
+ *     vpcId: aws_vpc.example.id,
+ *     healthCheck: {
+ *         port: 80,
+ *         protocol: "HTTP",
+ *     },
+ * });
+ * const exampleListener = new aws.lb.Listener("exampleListener", {
+ *     loadBalancerArn: exampleLoadBalancer.id,
+ *     defaultActions: [{
+ *         targetGroupArn: exampleTargetGroup.id,
+ *         type: "forward",
+ *     }],
+ * });
+ * ```
+ *
+ * ## Import
+ *
+ * Listeners can be imported using their ARN, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:elasticloadbalancingv2/listener:Listener front_end arn:aws:elasticloadbalancing:us-west-2:187416307283:listener/app/front-end-alb/8e4497da625e2d8a/9ab28ade35828f96
  * ```
  *
  * @deprecated aws.elasticloadbalancingv2.Listener has been deprecated in favor of aws.lb.Listener
@@ -185,13 +232,13 @@ export class Listener extends pulumi.CustomResource {
      */
     public readonly loadBalancerArn!: pulumi.Output<string>;
     /**
-     * The port on which the load balancer is listening.
+     * The port on which the load balancer is listening. Not valid for Gateway Load Balancers.
      */
-    public readonly port!: pulumi.Output<number>;
+    public readonly port!: pulumi.Output<number | undefined>;
     /**
-     * The protocol for connections from clients to the load balancer. Valid values are `TCP`, `TLS`, `UDP`, `TCP_UDP`, `HTTP` and `HTTPS`. Defaults to `HTTP`.
+     * The protocol for connections from clients to the load balancer. For Application Load Balancers, valid values are `HTTP` and `HTTPS`, with a default of `HTTP`. For Network Load Balancers, valid values are `TCP`, `TLS`, `UDP`, and `TCP_UDP`. Not valid to use `UDP` or `TCP_UDP` if dual-stack mode is enabled. Not valid for Gateway Load Balancers.
      */
-    public readonly protocol!: pulumi.Output<string | undefined>;
+    public readonly protocol!: pulumi.Output<string>;
     /**
      * The name of the SSL Policy for the listener. Required if `protocol` is `HTTPS` or `TLS`.
      */
@@ -221,14 +268,11 @@ export class Listener extends pulumi.CustomResource {
             inputs["sslPolicy"] = state ? state.sslPolicy : undefined;
         } else {
             const args = argsOrState as ListenerArgs | undefined;
-            if (!args || args.defaultActions === undefined) {
+            if ((!args || args.defaultActions === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'defaultActions'");
             }
-            if (!args || args.loadBalancerArn === undefined) {
+            if ((!args || args.loadBalancerArn === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'loadBalancerArn'");
-            }
-            if (!args || args.port === undefined) {
-                throw new Error("Missing required property 'port'");
             }
             inputs["certificateArn"] = args ? args.certificateArn : undefined;
             inputs["defaultActions"] = args ? args.defaultActions : undefined;
@@ -270,11 +314,11 @@ export interface ListenerState {
      */
     readonly loadBalancerArn?: pulumi.Input<string>;
     /**
-     * The port on which the load balancer is listening.
+     * The port on which the load balancer is listening. Not valid for Gateway Load Balancers.
      */
     readonly port?: pulumi.Input<number>;
     /**
-     * The protocol for connections from clients to the load balancer. Valid values are `TCP`, `TLS`, `UDP`, `TCP_UDP`, `HTTP` and `HTTPS`. Defaults to `HTTP`.
+     * The protocol for connections from clients to the load balancer. For Application Load Balancers, valid values are `HTTP` and `HTTPS`, with a default of `HTTP`. For Network Load Balancers, valid values are `TCP`, `TLS`, `UDP`, and `TCP_UDP`. Not valid to use `UDP` or `TCP_UDP` if dual-stack mode is enabled. Not valid for Gateway Load Balancers.
      */
     readonly protocol?: pulumi.Input<string>;
     /**
@@ -300,11 +344,11 @@ export interface ListenerArgs {
      */
     readonly loadBalancerArn: pulumi.Input<string>;
     /**
-     * The port on which the load balancer is listening.
+     * The port on which the load balancer is listening. Not valid for Gateway Load Balancers.
      */
-    readonly port: pulumi.Input<number>;
+    readonly port?: pulumi.Input<number>;
     /**
-     * The protocol for connections from clients to the load balancer. Valid values are `TCP`, `TLS`, `UDP`, `TCP_UDP`, `HTTP` and `HTTPS`. Defaults to `HTTP`.
+     * The protocol for connections from clients to the load balancer. For Application Load Balancers, valid values are `HTTP` and `HTTPS`, with a default of `HTTP`. For Network Load Balancers, valid values are `TCP`, `TLS`, `UDP`, and `TCP_UDP`. Not valid to use `UDP` or `TCP_UDP` if dual-stack mode is enabled. Not valid for Gateway Load Balancers.
      */
     readonly protocol?: pulumi.Input<string>;
     /**

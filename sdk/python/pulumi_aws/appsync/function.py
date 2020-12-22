@@ -5,48 +5,26 @@
 import warnings
 import pulumi
 import pulumi.runtime
-from typing import Union
-from .. import utilities, tables
+from typing import Any, Mapping, Optional, Sequence, Union
+from .. import _utilities, _tables
+
+__all__ = ['Function']
 
 
 class Function(pulumi.CustomResource):
-    api_id: pulumi.Output[str]
-    """
-    The ID of the associated AppSync API.
-    """
-    arn: pulumi.Output[str]
-    """
-    The ARN of the Function object.
-    """
-    data_source: pulumi.Output[str]
-    """
-    The Function DataSource name.
-    """
-    description: pulumi.Output[str]
-    """
-    The Function description.
-    """
-    function_id: pulumi.Output[str]
-    """
-    A unique ID representing the Function object.
-    """
-    function_version: pulumi.Output[str]
-    """
-    The version of the request mapping template. Currently the supported value is `2018-05-29`.
-    """
-    name: pulumi.Output[str]
-    """
-    The Function name. The function name does not have to be unique.
-    """
-    request_mapping_template: pulumi.Output[str]
-    """
-    The Function request mapping template. Functions support only the 2018-05-29 version of the request mapping template.
-    """
-    response_mapping_template: pulumi.Output[str]
-    """
-    The Function response mapping template.
-    """
-    def __init__(__self__, resource_name, opts=None, api_id=None, data_source=None, description=None, function_version=None, name=None, request_mapping_template=None, response_mapping_template=None, __props__=None, __name__=None, __opts__=None):
+    def __init__(__self__,
+                 resource_name: str,
+                 opts: Optional[pulumi.ResourceOptions] = None,
+                 api_id: Optional[pulumi.Input[str]] = None,
+                 data_source: Optional[pulumi.Input[str]] = None,
+                 description: Optional[pulumi.Input[str]] = None,
+                 function_version: Optional[pulumi.Input[str]] = None,
+                 name: Optional[pulumi.Input[str]] = None,
+                 request_mapping_template: Optional[pulumi.Input[str]] = None,
+                 response_mapping_template: Optional[pulumi.Input[str]] = None,
+                 __props__=None,
+                 __name__=None,
+                 __opts__=None):
         """
         Provides an AppSync Function.
 
@@ -56,37 +34,37 @@ class Function(pulumi.CustomResource):
         import pulumi
         import pulumi_aws as aws
 
-        test_graph_ql_api = aws.appsync.GraphQLApi("testGraphQLApi",
+        example_graph_ql_api = aws.appsync.GraphQLApi("exampleGraphQLApi",
             authentication_type="API_KEY",
             schema=\"\"\"type Mutation {
-            putPost(id: ID!, title: String!): Post
+          putPost(id: ID!, title: String!): Post
         }
 
         type Post {
-            id: ID!
-            title: String!
+          id: ID!
+          title: String!
         }
 
         type Query {
-            singlePost(id: ID!): Post
+          singlePost(id: ID!): Post
         }
 
         schema {
-            query: Query
-            mutation: Mutation
+          query: Query
+          mutation: Mutation
         }
-
         \"\"\")
-        test_data_source = aws.appsync.DataSource("testDataSource",
-            api_id=test_graph_ql_api.id,
-            http_config={
-                "endpoint": "http://example.com",
-            },
-            type="HTTP")
-        test_function = aws.appsync.Function("testFunction",
-            api_id=test_graph_ql_api.id,
-            data_source=test_data_source.name,
-            name="tf_example",
+        example_data_source = aws.appsync.DataSource("exampleDataSource",
+            api_id=example_graph_ql_api.id,
+            name="example",
+            type="HTTP",
+            http_config=aws.appsync.DataSourceHttpConfigArgs(
+                endpoint="http://example.com",
+            ))
+        example_function = aws.appsync.Function("exampleFunction",
+            api_id=example_graph_ql_api.id,
+            data_source=example_data_source.name,
+            name="example",
             request_mapping_template=\"\"\"{
             "version": "2018-05-29",
             "method": "GET",
@@ -95,15 +73,21 @@ class Function(pulumi.CustomResource):
                 "headers": $utils.http.copyheaders($ctx.request.headers)
             }
         }
-
         \"\"\",
             response_mapping_template=\"\"\"#if($ctx.result.statusCode == 200)
             $ctx.result.body
         #else
             $utils.appendError($ctx.result.body, $ctx.result.statusCode)
         #end
-
         \"\"\")
+        ```
+
+        ## Import
+
+        `aws_appsync_function` can be imported using the AppSync API ID and Function ID separated by `-`, e.g.
+
+        ```sh
+         $ pulumi import aws:appsync/function:Function example xxxxx-yyyyy
         ```
 
         :param str resource_name: The name of the resource.
@@ -127,25 +111,25 @@ class Function(pulumi.CustomResource):
         if not isinstance(opts, pulumi.ResourceOptions):
             raise TypeError('Expected resource options to be a ResourceOptions instance')
         if opts.version is None:
-            opts.version = utilities.get_version()
+            opts.version = _utilities.get_version()
         if opts.id is None:
             if __props__ is not None:
                 raise TypeError('__props__ is only valid when passed in combination with a valid opts.id to get an existing resource')
             __props__ = dict()
 
-            if api_id is None:
+            if api_id is None and not opts.urn:
                 raise TypeError("Missing required property 'api_id'")
             __props__['api_id'] = api_id
-            if data_source is None:
+            if data_source is None and not opts.urn:
                 raise TypeError("Missing required property 'data_source'")
             __props__['data_source'] = data_source
             __props__['description'] = description
             __props__['function_version'] = function_version
             __props__['name'] = name
-            if request_mapping_template is None:
+            if request_mapping_template is None and not opts.urn:
                 raise TypeError("Missing required property 'request_mapping_template'")
             __props__['request_mapping_template'] = request_mapping_template
-            if response_mapping_template is None:
+            if response_mapping_template is None and not opts.urn:
                 raise TypeError("Missing required property 'response_mapping_template'")
             __props__['response_mapping_template'] = response_mapping_template
             __props__['arn'] = None
@@ -157,13 +141,24 @@ class Function(pulumi.CustomResource):
             opts)
 
     @staticmethod
-    def get(resource_name, id, opts=None, api_id=None, arn=None, data_source=None, description=None, function_id=None, function_version=None, name=None, request_mapping_template=None, response_mapping_template=None):
+    def get(resource_name: str,
+            id: pulumi.Input[str],
+            opts: Optional[pulumi.ResourceOptions] = None,
+            api_id: Optional[pulumi.Input[str]] = None,
+            arn: Optional[pulumi.Input[str]] = None,
+            data_source: Optional[pulumi.Input[str]] = None,
+            description: Optional[pulumi.Input[str]] = None,
+            function_id: Optional[pulumi.Input[str]] = None,
+            function_version: Optional[pulumi.Input[str]] = None,
+            name: Optional[pulumi.Input[str]] = None,
+            request_mapping_template: Optional[pulumi.Input[str]] = None,
+            response_mapping_template: Optional[pulumi.Input[str]] = None) -> 'Function':
         """
         Get an existing Function resource's state with the given name, id, and optional extra
         properties used to qualify the lookup.
 
         :param str resource_name: The unique name of the resulting resource.
-        :param str id: The unique provider ID of the resource to lookup.
+        :param pulumi.Input[str] id: The unique provider ID of the resource to lookup.
         :param pulumi.ResourceOptions opts: Options for the resource.
         :param pulumi.Input[str] api_id: The ID of the associated AppSync API.
         :param pulumi.Input[str] arn: The ARN of the Function object.
@@ -190,8 +185,81 @@ class Function(pulumi.CustomResource):
         __props__["response_mapping_template"] = response_mapping_template
         return Function(resource_name, opts=opts, __props__=__props__)
 
+    @property
+    @pulumi.getter(name="apiId")
+    def api_id(self) -> pulumi.Output[str]:
+        """
+        The ID of the associated AppSync API.
+        """
+        return pulumi.get(self, "api_id")
+
+    @property
+    @pulumi.getter
+    def arn(self) -> pulumi.Output[str]:
+        """
+        The ARN of the Function object.
+        """
+        return pulumi.get(self, "arn")
+
+    @property
+    @pulumi.getter(name="dataSource")
+    def data_source(self) -> pulumi.Output[str]:
+        """
+        The Function DataSource name.
+        """
+        return pulumi.get(self, "data_source")
+
+    @property
+    @pulumi.getter
+    def description(self) -> pulumi.Output[Optional[str]]:
+        """
+        The Function description.
+        """
+        return pulumi.get(self, "description")
+
+    @property
+    @pulumi.getter(name="functionId")
+    def function_id(self) -> pulumi.Output[str]:
+        """
+        A unique ID representing the Function object.
+        """
+        return pulumi.get(self, "function_id")
+
+    @property
+    @pulumi.getter(name="functionVersion")
+    def function_version(self) -> pulumi.Output[Optional[str]]:
+        """
+        The version of the request mapping template. Currently the supported value is `2018-05-29`.
+        """
+        return pulumi.get(self, "function_version")
+
+    @property
+    @pulumi.getter
+    def name(self) -> pulumi.Output[str]:
+        """
+        The Function name. The function name does not have to be unique.
+        """
+        return pulumi.get(self, "name")
+
+    @property
+    @pulumi.getter(name="requestMappingTemplate")
+    def request_mapping_template(self) -> pulumi.Output[str]:
+        """
+        The Function request mapping template. Functions support only the 2018-05-29 version of the request mapping template.
+        """
+        return pulumi.get(self, "request_mapping_template")
+
+    @property
+    @pulumi.getter(name="responseMappingTemplate")
+    def response_mapping_template(self) -> pulumi.Output[str]:
+        """
+        The Function response mapping template.
+        """
+        return pulumi.get(self, "response_mapping_template")
+
     def translate_output_property(self, prop):
-        return tables._CAMEL_TO_SNAKE_CASE_TABLE.get(prop) or prop
+        return _tables.CAMEL_TO_SNAKE_CASE_TABLE.get(prop) or prop
 
     def translate_input_property(self, prop):
-        return tables._SNAKE_TO_CAMEL_CASE_TABLE.get(prop) or prop
+        return _tables.SNAKE_TO_CAMEL_CASE_TABLE.get(prop) or prop
+

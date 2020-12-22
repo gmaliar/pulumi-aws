@@ -27,13 +27,21 @@ namespace Pulumi.Aws.S3
     ///         });
     ///         var exampleBucketPublicAccessBlock = new Aws.S3.BucketPublicAccessBlock("exampleBucketPublicAccessBlock", new Aws.S3.BucketPublicAccessBlockArgs
     ///         {
+    ///             Bucket = exampleBucket.Id,
     ///             BlockPublicAcls = true,
     ///             BlockPublicPolicy = true,
-    ///             Bucket = exampleBucket.Id,
     ///         });
     ///     }
     /// 
     /// }
+    /// ```
+    /// 
+    /// ## Import
+    /// 
+    /// `aws_s3_bucket_public_access_block` can be imported by using the bucket name, e.g.
+    /// 
+    /// ```sh
+    ///  $ pulumi import aws:s3/bucketPublicAccessBlock:BucketPublicAccessBlock example my-bucket
     /// ```
     /// </summary>
     public partial class BucketPublicAccessBlock : Pulumi.CustomResource

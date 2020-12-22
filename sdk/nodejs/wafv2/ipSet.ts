@@ -27,6 +27,14 @@ import * as utilities from "../utilities";
  *     },
  * });
  * ```
+ *
+ * ## Import
+ *
+ * WAFv2 IP Sets can be imported using `ID/name/scope`
+ *
+ * ```sh
+ *  $ pulumi import aws:wafv2/ipSet:IpSet example a1b2c3d4-d5f6-7777-8888-9999aaaabbbbcccc/example/REGIONAL
+ * ```
  */
 export class IpSet extends pulumi.CustomResource {
     /**
@@ -108,10 +116,10 @@ export class IpSet extends pulumi.CustomResource {
             inputs["tags"] = state ? state.tags : undefined;
         } else {
             const args = argsOrState as IpSetArgs | undefined;
-            if (!args || args.ipAddressVersion === undefined) {
+            if ((!args || args.ipAddressVersion === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'ipAddressVersion'");
             }
-            if (!args || args.scope === undefined) {
+            if ((!args || args.scope === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'scope'");
             }
             inputs["addresses"] = args ? args.addresses : undefined;

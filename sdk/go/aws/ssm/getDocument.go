@@ -17,7 +17,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/ssm"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/ssm"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -25,8 +25,8 @@ import (
 // 	pulumi.Run(func(ctx *pulumi.Context) error {
 // 		opt0 := "YAML"
 // 		foo, err := ssm.LookupDocument(ctx, &ssm.LookupDocumentArgs{
-// 			DocumentFormat: &opt0,
 // 			Name:           "AWS-GatherSoftwareInventory",
+// 			DocumentFormat: &opt0,
 // 		}, nil)
 // 		if err != nil {
 // 			return err
@@ -43,7 +43,7 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/ssm"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/ssm"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -51,8 +51,8 @@ import (
 // 	pulumi.Run(func(ctx *pulumi.Context) error {
 // 		opt0 := "JSON"
 // 		_, err := ssm.LookupDocument(ctx, &ssm.LookupDocumentArgs{
-// 			DocumentFormat: &opt0,
 // 			Name:           aws_ssm_document.Test.Name,
+// 			DocumentFormat: &opt0,
 // 		}, nil)
 // 		if err != nil {
 // 			return err

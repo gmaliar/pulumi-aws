@@ -2,8 +2,7 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 /**
@@ -17,19 +16,27 @@ import * as utilities from "../utilities";
  * import * as aws from "@pulumi/aws";
  *
  * const example = new aws.ec2clientvpn.Endpoint("example", {
- *     authenticationOptions: [{
- *         rootCertificateChainArn: aws_acm_certificate_root_cert.arn,
- *         type: "certificate-authentication",
- *     }],
- *     clientCidrBlock: "10.0.0.0/16",
- *     connectionLogOptions: {
- *         cloudwatchLogGroup: aws_cloudwatch_log_group_lg.name,
- *         cloudwatchLogStream: aws_cloudwatch_log_stream_ls.name,
- *         enabled: true,
- *     },
  *     description: "clientvpn-example",
- *     serverCertificateArn: aws_acm_certificate_cert.arn,
+ *     serverCertificateArn: aws_acm_certificate.cert.arn,
+ *     clientCidrBlock: "10.0.0.0/16",
+ *     authenticationOptions: [{
+ *         type: "certificate-authentication",
+ *         rootCertificateChainArn: aws_acm_certificate.root_cert.arn,
+ *     }],
+ *     connectionLogOptions: {
+ *         enabled: true,
+ *         cloudwatchLogGroup: aws_cloudwatch_log_group.lg.name,
+ *         cloudwatchLogStream: aws_cloudwatch_log_stream.ls.name,
+ *     },
  * });
+ * ```
+ *
+ * ## Import
+ *
+ * AWS Client VPN endpoints can be imported using the `id` value found via `aws ec2 describe-client-vpn-endpoints`, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:ec2clientvpn/endpoint:Endpoint example cvpn-endpoint-0ac3a1abbccddd666
  * ```
  */
 export class Endpoint extends pulumi.CustomResource {
@@ -135,16 +142,16 @@ export class Endpoint extends pulumi.CustomResource {
             inputs["transportProtocol"] = state ? state.transportProtocol : undefined;
         } else {
             const args = argsOrState as EndpointArgs | undefined;
-            if (!args || args.authenticationOptions === undefined) {
+            if ((!args || args.authenticationOptions === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'authenticationOptions'");
             }
-            if (!args || args.clientCidrBlock === undefined) {
+            if ((!args || args.clientCidrBlock === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'clientCidrBlock'");
             }
-            if (!args || args.connectionLogOptions === undefined) {
+            if ((!args || args.connectionLogOptions === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'connectionLogOptions'");
             }
-            if (!args || args.serverCertificateArn === undefined) {
+            if ((!args || args.serverCertificateArn === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'serverCertificateArn'");
             }
             inputs["authenticationOptions"] = args ? args.authenticationOptions : undefined;

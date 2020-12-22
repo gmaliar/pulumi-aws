@@ -4,6 +4,7 @@
 package cfg
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -25,39 +26,39 @@ import (
 // import (
 // 	"fmt"
 //
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/cfg"
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/iam"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/cfg"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/iam"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
 // func main() {
 // 	pulumi.Run(func(ctx *pulumi.Context) error {
-// 		_, err := cfg.NewRule(ctx, "rule", &cfg.RuleArgs{
-// 			Source: &cfg.RuleSourceArgs{
-// 				Owner:            pulumi.String("AWS"),
-// 				SourceIdentifier: pulumi.String("S3_BUCKET_VERSIONING_ENABLED"),
-// 			},
-// 		}, pulumi.DependsOn([]pulumi.Resource{
-// 			"aws_config_configuration_recorder.foo",
-// 		}))
-// 		if err != nil {
-// 			return err
-// 		}
 // 		role, err := iam.NewRole(ctx, "role", &iam.RoleArgs{
-// 			AssumeRolePolicy: pulumi.String(fmt.Sprintf("%v%v%v%v%v%v%v%v%v%v%v%v%v%v", "{\n", "  \"Version\": \"2012-10-17\",\n", "  \"Statement\": [\n", "    {\n", "      \"Action\": \"sts:AssumeRole\",\n", "      \"Principal\": {\n", "        \"Service\": \"config.amazonaws.com\"\n", "      },\n", "      \"Effect\": \"Allow\",\n", "      \"Sid\": \"\"\n", "    }\n", "  ]\n", "}\n", "\n")),
+// 			AssumeRolePolicy: pulumi.String(fmt.Sprintf("%v%v%v%v%v%v%v%v%v%v%v%v%v", "{\n", "  \"Version\": \"2012-10-17\",\n", "  \"Statement\": [\n", "    {\n", "      \"Action\": \"sts:AssumeRole\",\n", "      \"Principal\": {\n", "        \"Service\": \"config.amazonaws.com\"\n", "      },\n", "      \"Effect\": \"Allow\",\n", "      \"Sid\": \"\"\n", "    }\n", "  ]\n", "}\n")),
 // 		})
 // 		if err != nil {
 // 			return err
 // 		}
-// 		_, err = cfg.NewRecorder(ctx, "foo", &cfg.RecorderArgs{
+// 		foo, err := cfg.NewRecorder(ctx, "foo", &cfg.RecorderArgs{
 // 			RoleArn: role.Arn,
 // 		})
 // 		if err != nil {
 // 			return err
 // 		}
+// 		_, err = cfg.NewRule(ctx, "rule", &cfg.RuleArgs{
+// 			Source: &cfg.RuleSourceArgs{
+// 				Owner:            pulumi.String("AWS"),
+// 				SourceIdentifier: pulumi.String("S3_BUCKET_VERSIONING_ENABLED"),
+// 			},
+// 		}, pulumi.DependsOn([]pulumi.Resource{
+// 			foo,
+// 		}))
+// 		if err != nil {
+// 			return err
+// 		}
 // 		_, err = iam.NewRolePolicy(ctx, "rolePolicy", &iam.RolePolicyArgs{
-// 			Policy: pulumi.String(fmt.Sprintf("%v%v%v%v%v%v%v%v%v%v%v%v", "{\n", "  \"Version\": \"2012-10-17\",\n", "  \"Statement\": [\n", "  	{\n", "  		\"Action\": \"config:Put*\",\n", "  		\"Effect\": \"Allow\",\n", "  		\"Resource\": \"*\"\n", "\n", "  	}\n", "  ]\n", "}\n", "\n")),
 // 			Role: role.ID(),
+// 			Policy: pulumi.String(fmt.Sprintf("%v%v%v%v%v%v%v%v%v%v%v", "{\n", "  \"Version\": \"2012-10-17\",\n", "  \"Statement\": [\n", "  	{\n", "  		\"Action\": \"config:Put*\",\n", "  		\"Effect\": \"Allow\",\n", "  		\"Resource\": \"*\"\n", "\n", "  	}\n", "  ]\n", "}\n")),
 // 		})
 // 		if err != nil {
 // 			return err
@@ -74,14 +75,14 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/cfg"
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/lambda"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/cfg"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/lambda"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
 // func main() {
 // 	pulumi.Run(func(ctx *pulumi.Context) error {
-// 		_, err := cfg.NewRecorder(ctx, "exampleRecorder", nil)
+// 		exampleRecorder, err := cfg.NewRecorder(ctx, "exampleRecorder", nil)
 // 		if err != nil {
 // 			return err
 // 		}
@@ -89,7 +90,7 @@ import (
 // 		if err != nil {
 // 			return err
 // 		}
-// 		_, err = lambda.NewPermission(ctx, "examplePermission", &lambda.PermissionArgs{
+// 		examplePermission, err := lambda.NewPermission(ctx, "examplePermission", &lambda.PermissionArgs{
 // 			Action:    pulumi.String("lambda:InvokeFunction"),
 // 			Function:  exampleFunction.Arn,
 // 			Principal: pulumi.String("config.amazonaws.com"),
@@ -103,8 +104,8 @@ import (
 // 				SourceIdentifier: exampleFunction.Arn,
 // 			},
 // 		}, pulumi.DependsOn([]pulumi.Resource{
-// 			"aws_config_configuration_recorder.example",
-// 			"aws_lambda_permission.example",
+// 			exampleRecorder,
+// 			examplePermission,
 // 		}))
 // 		if err != nil {
 // 			return err
@@ -112,6 +113,14 @@ import (
 // 		return nil
 // 	})
 // }
+// ```
+//
+// ## Import
+//
+// Config Rule can be imported using the name, e.g.
+//
+// ```sh
+//  $ pulumi import aws:cfg/rule:Rule foo example
 // ```
 type Rule struct {
 	pulumi.CustomResourceState
@@ -122,8 +131,7 @@ type Rule struct {
 	Description pulumi.StringPtrOutput `pulumi:"description"`
 	// A string in JSON format that is passed to the AWS Config rule Lambda function.
 	InputParameters pulumi.StringPtrOutput `pulumi:"inputParameters"`
-	// The frequency that you want AWS Config to run evaluations for a rule that
-	// is triggered periodically. If specified, requires `messageType` to be `ScheduledNotification`.
+	// The frequency that you want AWS Config to run evaluations for a rule that is triggered periodically. If specified, requires `messageType` to be `ScheduledNotification`.
 	MaximumExecutionFrequency pulumi.StringPtrOutput `pulumi:"maximumExecutionFrequency"`
 	// The name of the rule
 	Name pulumi.StringOutput `pulumi:"name"`
@@ -131,8 +139,7 @@ type Rule struct {
 	RuleId pulumi.StringOutput `pulumi:"ruleId"`
 	// Scope defines which resources can trigger an evaluation for the rule as documented below.
 	Scope RuleScopePtrOutput `pulumi:"scope"`
-	// Source specifies the rule owner, the rule identifier, and the notifications that cause
-	// the function to evaluate your AWS resources as documented below.
+	// Source specifies the rule owner, the rule identifier, and the notifications that cause the function to evaluate your AWS resources as documented below.
 	Source RuleSourceOutput `pulumi:"source"`
 	// A map of tags to assign to the resource.
 	Tags pulumi.StringMapOutput `pulumi:"tags"`
@@ -141,11 +148,12 @@ type Rule struct {
 // NewRule registers a new resource with the given unique name, arguments, and options.
 func NewRule(ctx *pulumi.Context,
 	name string, args *RuleArgs, opts ...pulumi.ResourceOption) (*Rule, error) {
-	if args == nil || args.Source == nil {
-		return nil, errors.New("missing required argument 'Source'")
-	}
 	if args == nil {
-		args = &RuleArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.Source == nil {
+		return nil, errors.New("invalid value for required argument 'Source'")
 	}
 	var resource Rule
 	err := ctx.RegisterResource("aws:cfg/rule:Rule", name, args, &resource, opts...)
@@ -175,8 +183,7 @@ type ruleState struct {
 	Description *string `pulumi:"description"`
 	// A string in JSON format that is passed to the AWS Config rule Lambda function.
 	InputParameters *string `pulumi:"inputParameters"`
-	// The frequency that you want AWS Config to run evaluations for a rule that
-	// is triggered periodically. If specified, requires `messageType` to be `ScheduledNotification`.
+	// The frequency that you want AWS Config to run evaluations for a rule that is triggered periodically. If specified, requires `messageType` to be `ScheduledNotification`.
 	MaximumExecutionFrequency *string `pulumi:"maximumExecutionFrequency"`
 	// The name of the rule
 	Name *string `pulumi:"name"`
@@ -184,8 +191,7 @@ type ruleState struct {
 	RuleId *string `pulumi:"ruleId"`
 	// Scope defines which resources can trigger an evaluation for the rule as documented below.
 	Scope *RuleScope `pulumi:"scope"`
-	// Source specifies the rule owner, the rule identifier, and the notifications that cause
-	// the function to evaluate your AWS resources as documented below.
+	// Source specifies the rule owner, the rule identifier, and the notifications that cause the function to evaluate your AWS resources as documented below.
 	Source *RuleSource `pulumi:"source"`
 	// A map of tags to assign to the resource.
 	Tags map[string]string `pulumi:"tags"`
@@ -198,8 +204,7 @@ type RuleState struct {
 	Description pulumi.StringPtrInput
 	// A string in JSON format that is passed to the AWS Config rule Lambda function.
 	InputParameters pulumi.StringPtrInput
-	// The frequency that you want AWS Config to run evaluations for a rule that
-	// is triggered periodically. If specified, requires `messageType` to be `ScheduledNotification`.
+	// The frequency that you want AWS Config to run evaluations for a rule that is triggered periodically. If specified, requires `messageType` to be `ScheduledNotification`.
 	MaximumExecutionFrequency pulumi.StringPtrInput
 	// The name of the rule
 	Name pulumi.StringPtrInput
@@ -207,8 +212,7 @@ type RuleState struct {
 	RuleId pulumi.StringPtrInput
 	// Scope defines which resources can trigger an evaluation for the rule as documented below.
 	Scope RuleScopePtrInput
-	// Source specifies the rule owner, the rule identifier, and the notifications that cause
-	// the function to evaluate your AWS resources as documented below.
+	// Source specifies the rule owner, the rule identifier, and the notifications that cause the function to evaluate your AWS resources as documented below.
 	Source RuleSourcePtrInput
 	// A map of tags to assign to the resource.
 	Tags pulumi.StringMapInput
@@ -223,15 +227,13 @@ type ruleArgs struct {
 	Description *string `pulumi:"description"`
 	// A string in JSON format that is passed to the AWS Config rule Lambda function.
 	InputParameters *string `pulumi:"inputParameters"`
-	// The frequency that you want AWS Config to run evaluations for a rule that
-	// is triggered periodically. If specified, requires `messageType` to be `ScheduledNotification`.
+	// The frequency that you want AWS Config to run evaluations for a rule that is triggered periodically. If specified, requires `messageType` to be `ScheduledNotification`.
 	MaximumExecutionFrequency *string `pulumi:"maximumExecutionFrequency"`
 	// The name of the rule
 	Name *string `pulumi:"name"`
 	// Scope defines which resources can trigger an evaluation for the rule as documented below.
 	Scope *RuleScope `pulumi:"scope"`
-	// Source specifies the rule owner, the rule identifier, and the notifications that cause
-	// the function to evaluate your AWS resources as documented below.
+	// Source specifies the rule owner, the rule identifier, and the notifications that cause the function to evaluate your AWS resources as documented below.
 	Source RuleSource `pulumi:"source"`
 	// A map of tags to assign to the resource.
 	Tags map[string]string `pulumi:"tags"`
@@ -243,15 +245,13 @@ type RuleArgs struct {
 	Description pulumi.StringPtrInput
 	// A string in JSON format that is passed to the AWS Config rule Lambda function.
 	InputParameters pulumi.StringPtrInput
-	// The frequency that you want AWS Config to run evaluations for a rule that
-	// is triggered periodically. If specified, requires `messageType` to be `ScheduledNotification`.
+	// The frequency that you want AWS Config to run evaluations for a rule that is triggered periodically. If specified, requires `messageType` to be `ScheduledNotification`.
 	MaximumExecutionFrequency pulumi.StringPtrInput
 	// The name of the rule
 	Name pulumi.StringPtrInput
 	// Scope defines which resources can trigger an evaluation for the rule as documented below.
 	Scope RuleScopePtrInput
-	// Source specifies the rule owner, the rule identifier, and the notifications that cause
-	// the function to evaluate your AWS resources as documented below.
+	// Source specifies the rule owner, the rule identifier, and the notifications that cause the function to evaluate your AWS resources as documented below.
 	Source RuleSourceInput
 	// A map of tags to assign to the resource.
 	Tags pulumi.StringMapInput
@@ -259,4 +259,43 @@ type RuleArgs struct {
 
 func (RuleArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*ruleArgs)(nil)).Elem()
+}
+
+type RuleInput interface {
+	pulumi.Input
+
+	ToRuleOutput() RuleOutput
+	ToRuleOutputWithContext(ctx context.Context) RuleOutput
+}
+
+func (Rule) ElementType() reflect.Type {
+	return reflect.TypeOf((*Rule)(nil)).Elem()
+}
+
+func (i Rule) ToRuleOutput() RuleOutput {
+	return i.ToRuleOutputWithContext(context.Background())
+}
+
+func (i Rule) ToRuleOutputWithContext(ctx context.Context) RuleOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(RuleOutput)
+}
+
+type RuleOutput struct {
+	*pulumi.OutputState
+}
+
+func (RuleOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*RuleOutput)(nil)).Elem()
+}
+
+func (o RuleOutput) ToRuleOutput() RuleOutput {
+	return o
+}
+
+func (o RuleOutput) ToRuleOutputWithContext(ctx context.Context) RuleOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(RuleOutput{})
 }

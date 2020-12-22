@@ -2,8 +2,7 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 /**
@@ -24,11 +23,10 @@ import * as utilities from "../utilities";
  * const config = new pulumi.Config();
  * const lbArn = config.get("lbArn") || "";
  * const lbName = config.get("lbName") || "";
- *
- * const test = pulumi.output(aws.lb.getLoadBalancer({
+ * const test = aws.lb.getLoadBalancer({
  *     arn: lbArn,
  *     name: lbName,
- * }, { async: true }));
+ * });
  * ```
  */
 /** @deprecated aws.elasticloadbalancingv2.getLoadBalancer has been deprecated in favor of aws.lb.getLoadBalancer */
@@ -71,9 +69,11 @@ export interface GetLoadBalancerResult {
     readonly accessLogs: outputs.elasticloadbalancingv2.GetLoadBalancerAccessLogs;
     readonly arn: string;
     readonly arnSuffix: string;
+    readonly customerOwnedIpv4Pool: string;
     readonly dnsName: string;
     readonly dropInvalidHeaderFields: boolean;
     readonly enableDeletionProtection: boolean;
+    readonly enableHttp2: boolean;
     /**
      * The provider-assigned unique ID for this managed resource.
      */

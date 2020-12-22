@@ -73,14 +73,22 @@ namespace Pulumi.Aws.Ec2
     ///         });
     ///         var main = new Aws.Ec2.VpnConnection("main", new Aws.Ec2.VpnConnectionArgs
     ///         {
-    ///             CustomerGatewayId = customerGateway.Id,
-    ///             StaticRoutesOnly = true,
-    ///             Type = "ipsec.1",
     ///             VpnGatewayId = vpnGateway.Id,
+    ///             CustomerGatewayId = customerGateway.Id,
+    ///             Type = "ipsec.1",
+    ///             StaticRoutesOnly = true,
     ///         });
     ///     }
     /// 
     /// }
+    /// ```
+    /// 
+    /// ## Import
+    /// 
+    /// VPN Connections can be imported using the `vpn connection id`, e.g.
+    /// 
+    /// ```sh
+    ///  $ pulumi import aws:ec2/vpnConnection:VpnConnection testvpnconnection vpn-40f41529
     /// ```
     /// </summary>
     public partial class VpnConnection : Pulumi.CustomResource
@@ -119,7 +127,7 @@ namespace Pulumi.Aws.Ec2
         public Output<ImmutableDictionary<string, string>?> Tags { get; private set; } = null!;
 
         /// <summary>
-        /// When associated with an EC2 Transit Gateway (`transit_gateway_id` argument), the attachment ID.
+        /// When associated with an EC2 Transit Gateway (`transit_gateway_id` argument), the attachment ID. See also the [`aws.ec2.Tag` resource](https://www.terraform.io/docs/providers/aws/r/ec2_tag.html) for tagging the EC2 Transit Gateway VPN Attachment.
         /// </summary>
         [Output("transitGatewayAttachmentId")]
         public Output<string> TransitGatewayAttachmentId { get; private set; } = null!;
@@ -393,7 +401,7 @@ namespace Pulumi.Aws.Ec2
         }
 
         /// <summary>
-        /// When associated with an EC2 Transit Gateway (`transit_gateway_id` argument), the attachment ID.
+        /// When associated with an EC2 Transit Gateway (`transit_gateway_id` argument), the attachment ID. See also the [`aws.ec2.Tag` resource](https://www.terraform.io/docs/providers/aws/r/ec2_tag.html) for tagging the EC2 Transit Gateway VPN Attachment.
         /// </summary>
         [Input("transitGatewayAttachmentId")]
         public Input<string>? TransitGatewayAttachmentId { get; set; }

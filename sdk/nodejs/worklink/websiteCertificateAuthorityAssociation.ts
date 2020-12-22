@@ -10,13 +10,21 @@ import * as utilities from "../utilities";
  * ```typescript
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
- * import * as fs from "fs";
+ * import * from "fs";
  *
  * const example = new aws.worklink.Fleet("example", {});
  * const test = new aws.worklink.WebsiteCertificateAuthorityAssociation("test", {
- *     certificate: fs.readFileSync("certificate.pem", "utf-8"),
- *     fleetArn: aws_worklink_fleet_test.arn,
+ *     fleetArn: aws_worklink_fleet.test.arn,
+ *     certificate: fs.readFileSync("certificate.pem"),
  * });
+ * ```
+ *
+ * ## Import
+ *
+ * WorkLink Website Certificate Authority can be imported using `FLEET-ARN,WEBSITE-CA-ID`, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:worklink/websiteCertificateAuthorityAssociation:WebsiteCertificateAuthorityAssociation example arn:aws:worklink::123456789012:fleet/example,abcdefghijk
  * ```
  */
 export class WebsiteCertificateAuthorityAssociation extends pulumi.CustomResource {
@@ -82,10 +90,10 @@ export class WebsiteCertificateAuthorityAssociation extends pulumi.CustomResourc
             inputs["websiteCaId"] = state ? state.websiteCaId : undefined;
         } else {
             const args = argsOrState as WebsiteCertificateAuthorityAssociationArgs | undefined;
-            if (!args || args.certificate === undefined) {
+            if ((!args || args.certificate === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'certificate'");
             }
-            if (!args || args.fleetArn === undefined) {
+            if ((!args || args.fleetArn === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'fleetArn'");
             }
             inputs["certificate"] = args ? args.certificate : undefined;

@@ -4,6 +4,7 @@
 package elasticbeanstalk
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
@@ -22,19 +23,19 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/elasticbeanstalk"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/elasticbeanstalk"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
 // func main() {
 // 	pulumi.Run(func(ctx *pulumi.Context) error {
 // 		_, err := elasticbeanstalk.NewApplication(ctx, "tftest", &elasticbeanstalk.ApplicationArgs{
-// 			AppversionLifecycle: &elasticbeanstalk.ApplicationAppversionLifecycleArgs{
-// 				DeleteSourceFromS3: pulumi.Bool(true),
-// 				MaxCount:           pulumi.Int(128),
-// 				ServiceRole:        pulumi.String(aws_iam_role.Beanstalk_service.Arn),
-// 			},
 // 			Description: pulumi.String("tf-test-desc"),
+// 			AppversionLifecycle: &elasticbeanstalk.ApplicationAppversionLifecycleArgs{
+// 				ServiceRole:        pulumi.Any(aws_iam_role.Beanstalk_service.Arn),
+// 				MaxCount:           pulumi.Int(128),
+// 				DeleteSourceFromS3: pulumi.Bool(true),
+// 			},
 // 		})
 // 		if err != nil {
 // 			return err
@@ -42,6 +43,14 @@ import (
 // 		return nil
 // 	})
 // }
+// ```
+//
+// ## Import
+//
+// Elastic Beanstalk Applications can be imported using the `name`, e.g.
+//
+// ```sh
+//  $ pulumi import aws:elasticbeanstalk/application:Application tf_test tf-test-name
 // ```
 type Application struct {
 	pulumi.CustomResourceState
@@ -63,6 +72,7 @@ func NewApplication(ctx *pulumi.Context,
 	if args == nil {
 		args = &ApplicationArgs{}
 	}
+
 	var resource Application
 	err := ctx.RegisterResource("aws:elasticbeanstalk/application:Application", name, args, &resource, opts...)
 	if err != nil {
@@ -135,4 +145,43 @@ type ApplicationArgs struct {
 
 func (ApplicationArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*applicationArgs)(nil)).Elem()
+}
+
+type ApplicationInput interface {
+	pulumi.Input
+
+	ToApplicationOutput() ApplicationOutput
+	ToApplicationOutputWithContext(ctx context.Context) ApplicationOutput
+}
+
+func (Application) ElementType() reflect.Type {
+	return reflect.TypeOf((*Application)(nil)).Elem()
+}
+
+func (i Application) ToApplicationOutput() ApplicationOutput {
+	return i.ToApplicationOutputWithContext(context.Background())
+}
+
+func (i Application) ToApplicationOutputWithContext(ctx context.Context) ApplicationOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(ApplicationOutput)
+}
+
+type ApplicationOutput struct {
+	*pulumi.OutputState
+}
+
+func (ApplicationOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*ApplicationOutput)(nil)).Elem()
+}
+
+func (o ApplicationOutput) ToApplicationOutput() ApplicationOutput {
+	return o
+}
+
+func (o ApplicationOutput) ToApplicationOutputWithContext(ctx context.Context) ApplicationOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(ApplicationOutput{})
 }

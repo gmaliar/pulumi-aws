@@ -42,15 +42,15 @@ namespace Pulumi.Aws.Ec2
         ///         }));
         ///         var main = new Aws.Ec2.VpnGateway("main", new Aws.Ec2.VpnGatewayArgs
         ///         {
-        ///             AmazonSideAsn = "7224",
         ///             VpcId = aws_vpc.Main.Id,
+        ///             AmazonSideAsn = "7224",
         ///         });
         ///         var transit = new Aws.Ec2.VpnConnection("transit", new Aws.Ec2.VpnConnectionArgs
         ///         {
-        ///             CustomerGatewayId = foo.Apply(foo =&gt; foo.Id),
-        ///             StaticRoutesOnly = false,
-        ///             Type = foo.Apply(foo =&gt; foo.Type),
         ///             VpnGatewayId = main.Id,
+        ///             CustomerGatewayId = foo.Apply(foo =&gt; foo.Id),
+        ///             Type = foo.Apply(foo =&gt; foo.Type),
+        ///             StaticRoutesOnly = false,
         ///         });
         ///     }
         /// 
@@ -114,7 +114,7 @@ namespace Pulumi.Aws.Ec2
         /// </summary>
         public readonly int BgpAsn;
         public readonly ImmutableArray<Outputs.GetCustomerGatewayFilterResult> Filters;
-        public readonly string? Id;
+        public readonly string Id;
         /// <summary>
         /// (Optional) The IP address of the gateway's Internet-routable external interface.
         /// </summary>
@@ -136,7 +136,7 @@ namespace Pulumi.Aws.Ec2
 
             ImmutableArray<Outputs.GetCustomerGatewayFilterResult> filters,
 
-            string? id,
+            string id,
 
             string ipAddress,
 

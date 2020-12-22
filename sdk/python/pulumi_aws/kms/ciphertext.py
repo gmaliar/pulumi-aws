@@ -5,28 +5,22 @@
 import warnings
 import pulumi
 import pulumi.runtime
-from typing import Union
-from .. import utilities, tables
+from typing import Any, Mapping, Optional, Sequence, Union
+from .. import _utilities, _tables
+
+__all__ = ['Ciphertext']
 
 
 class Ciphertext(pulumi.CustomResource):
-    ciphertext_blob: pulumi.Output[str]
-    """
-    Base64 encoded ciphertext
-    """
-    context: pulumi.Output[dict]
-    """
-    An optional mapping that makes up the encryption context.
-    """
-    key_id: pulumi.Output[str]
-    """
-    Globally unique key ID for the customer master key.
-    """
-    plaintext: pulumi.Output[str]
-    """
-    Data to be encrypted. Note that this may show up in logs, and it will be stored in the state file.
-    """
-    def __init__(__self__, resource_name, opts=None, context=None, key_id=None, plaintext=None, __props__=None, __name__=None, __opts__=None):
+    def __init__(__self__,
+                 resource_name: str,
+                 opts: Optional[pulumi.ResourceOptions] = None,
+                 context: Optional[pulumi.Input[Mapping[str, pulumi.Input[str]]]] = None,
+                 key_id: Optional[pulumi.Input[str]] = None,
+                 plaintext: Optional[pulumi.Input[str]] = None,
+                 __props__=None,
+                 __name__=None,
+                 __opts__=None):
         """
         The KMS ciphertext resource allows you to encrypt plaintext into ciphertext
         by using an AWS KMS customer master key. The value returned by this resource
@@ -50,13 +44,12 @@ class Ciphertext(pulumi.CustomResource):
           "client_id": "e587dbae22222f55da22",
           "client_secret": "8289575d00000ace55e1815ec13673955721b8a5"
         }
-
         \"\"\")
         ```
 
         :param str resource_name: The name of the resource.
         :param pulumi.ResourceOptions opts: Options for the resource.
-        :param pulumi.Input[dict] context: An optional mapping that makes up the encryption context.
+        :param pulumi.Input[Mapping[str, pulumi.Input[str]]] context: An optional mapping that makes up the encryption context.
         :param pulumi.Input[str] key_id: Globally unique key ID for the customer master key.
         :param pulumi.Input[str] plaintext: Data to be encrypted. Note that this may show up in logs, and it will be stored in the state file.
         """
@@ -71,17 +64,17 @@ class Ciphertext(pulumi.CustomResource):
         if not isinstance(opts, pulumi.ResourceOptions):
             raise TypeError('Expected resource options to be a ResourceOptions instance')
         if opts.version is None:
-            opts.version = utilities.get_version()
+            opts.version = _utilities.get_version()
         if opts.id is None:
             if __props__ is not None:
                 raise TypeError('__props__ is only valid when passed in combination with a valid opts.id to get an existing resource')
             __props__ = dict()
 
             __props__['context'] = context
-            if key_id is None:
+            if key_id is None and not opts.urn:
                 raise TypeError("Missing required property 'key_id'")
             __props__['key_id'] = key_id
-            if plaintext is None:
+            if plaintext is None and not opts.urn:
                 raise TypeError("Missing required property 'plaintext'")
             __props__['plaintext'] = plaintext
             __props__['ciphertext_blob'] = None
@@ -92,16 +85,22 @@ class Ciphertext(pulumi.CustomResource):
             opts)
 
     @staticmethod
-    def get(resource_name, id, opts=None, ciphertext_blob=None, context=None, key_id=None, plaintext=None):
+    def get(resource_name: str,
+            id: pulumi.Input[str],
+            opts: Optional[pulumi.ResourceOptions] = None,
+            ciphertext_blob: Optional[pulumi.Input[str]] = None,
+            context: Optional[pulumi.Input[Mapping[str, pulumi.Input[str]]]] = None,
+            key_id: Optional[pulumi.Input[str]] = None,
+            plaintext: Optional[pulumi.Input[str]] = None) -> 'Ciphertext':
         """
         Get an existing Ciphertext resource's state with the given name, id, and optional extra
         properties used to qualify the lookup.
 
         :param str resource_name: The unique name of the resulting resource.
-        :param str id: The unique provider ID of the resource to lookup.
+        :param pulumi.Input[str] id: The unique provider ID of the resource to lookup.
         :param pulumi.ResourceOptions opts: Options for the resource.
         :param pulumi.Input[str] ciphertext_blob: Base64 encoded ciphertext
-        :param pulumi.Input[dict] context: An optional mapping that makes up the encryption context.
+        :param pulumi.Input[Mapping[str, pulumi.Input[str]]] context: An optional mapping that makes up the encryption context.
         :param pulumi.Input[str] key_id: Globally unique key ID for the customer master key.
         :param pulumi.Input[str] plaintext: Data to be encrypted. Note that this may show up in logs, and it will be stored in the state file.
         """
@@ -115,8 +114,41 @@ class Ciphertext(pulumi.CustomResource):
         __props__["plaintext"] = plaintext
         return Ciphertext(resource_name, opts=opts, __props__=__props__)
 
+    @property
+    @pulumi.getter(name="ciphertextBlob")
+    def ciphertext_blob(self) -> pulumi.Output[str]:
+        """
+        Base64 encoded ciphertext
+        """
+        return pulumi.get(self, "ciphertext_blob")
+
+    @property
+    @pulumi.getter
+    def context(self) -> pulumi.Output[Optional[Mapping[str, str]]]:
+        """
+        An optional mapping that makes up the encryption context.
+        """
+        return pulumi.get(self, "context")
+
+    @property
+    @pulumi.getter(name="keyId")
+    def key_id(self) -> pulumi.Output[str]:
+        """
+        Globally unique key ID for the customer master key.
+        """
+        return pulumi.get(self, "key_id")
+
+    @property
+    @pulumi.getter
+    def plaintext(self) -> pulumi.Output[str]:
+        """
+        Data to be encrypted. Note that this may show up in logs, and it will be stored in the state file.
+        """
+        return pulumi.get(self, "plaintext")
+
     def translate_output_property(self, prop):
-        return tables._CAMEL_TO_SNAKE_CASE_TABLE.get(prop) or prop
+        return _tables.CAMEL_TO_SNAKE_CASE_TABLE.get(prop) or prop
 
     def translate_input_property(self, prop):
-        return tables._SNAKE_TO_CAMEL_CASE_TABLE.get(prop) or prop
+        return _tables.SNAKE_TO_CAMEL_CASE_TABLE.get(prop) or prop
+

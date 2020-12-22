@@ -4,6 +4,7 @@
 package ec2transitgateway
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -18,14 +19,14 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/ec2transitgateway"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/ec2transitgateway"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
 // func main() {
 // 	pulumi.Run(func(ctx *pulumi.Context) error {
 // 		_, err := ec2transitgateway.NewRouteTable(ctx, "example", &ec2transitgateway.RouteTableArgs{
-// 			TransitGatewayId: pulumi.String(aws_ec2_transit_gateway.Example.Id),
+// 			TransitGatewayId: pulumi.Any(aws_ec2_transit_gateway.Example.Id),
 // 		})
 // 		if err != nil {
 // 			return err
@@ -34,9 +35,19 @@ import (
 // 	})
 // }
 // ```
+//
+// ## Import
+//
+// `aws_ec2_transit_gateway_route_table` can be imported by using the EC2 Transit Gateway Route Table identifier, e.g.
+//
+// ```sh
+//  $ pulumi import aws:ec2transitgateway/routeTable:RouteTable example tgw-rtb-12345678
+// ```
 type RouteTable struct {
 	pulumi.CustomResourceState
 
+	// EC2 Transit Gateway Route Table Amazon Resource Name (ARN).
+	Arn pulumi.StringOutput `pulumi:"arn"`
 	// Boolean whether this is the default association route table for the EC2 Transit Gateway.
 	DefaultAssociationRouteTable pulumi.BoolOutput `pulumi:"defaultAssociationRouteTable"`
 	// Boolean whether this is the default propagation route table for the EC2 Transit Gateway.
@@ -50,11 +61,12 @@ type RouteTable struct {
 // NewRouteTable registers a new resource with the given unique name, arguments, and options.
 func NewRouteTable(ctx *pulumi.Context,
 	name string, args *RouteTableArgs, opts ...pulumi.ResourceOption) (*RouteTable, error) {
-	if args == nil || args.TransitGatewayId == nil {
-		return nil, errors.New("missing required argument 'TransitGatewayId'")
-	}
 	if args == nil {
-		args = &RouteTableArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.TransitGatewayId == nil {
+		return nil, errors.New("invalid value for required argument 'TransitGatewayId'")
 	}
 	var resource RouteTable
 	err := ctx.RegisterResource("aws:ec2transitgateway/routeTable:RouteTable", name, args, &resource, opts...)
@@ -78,6 +90,8 @@ func GetRouteTable(ctx *pulumi.Context,
 
 // Input properties used for looking up and filtering RouteTable resources.
 type routeTableState struct {
+	// EC2 Transit Gateway Route Table Amazon Resource Name (ARN).
+	Arn *string `pulumi:"arn"`
 	// Boolean whether this is the default association route table for the EC2 Transit Gateway.
 	DefaultAssociationRouteTable *bool `pulumi:"defaultAssociationRouteTable"`
 	// Boolean whether this is the default propagation route table for the EC2 Transit Gateway.
@@ -89,6 +103,8 @@ type routeTableState struct {
 }
 
 type RouteTableState struct {
+	// EC2 Transit Gateway Route Table Amazon Resource Name (ARN).
+	Arn pulumi.StringPtrInput
 	// Boolean whether this is the default association route table for the EC2 Transit Gateway.
 	DefaultAssociationRouteTable pulumi.BoolPtrInput
 	// Boolean whether this is the default propagation route table for the EC2 Transit Gateway.
@@ -120,4 +136,43 @@ type RouteTableArgs struct {
 
 func (RouteTableArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*routeTableArgs)(nil)).Elem()
+}
+
+type RouteTableInput interface {
+	pulumi.Input
+
+	ToRouteTableOutput() RouteTableOutput
+	ToRouteTableOutputWithContext(ctx context.Context) RouteTableOutput
+}
+
+func (RouteTable) ElementType() reflect.Type {
+	return reflect.TypeOf((*RouteTable)(nil)).Elem()
+}
+
+func (i RouteTable) ToRouteTableOutput() RouteTableOutput {
+	return i.ToRouteTableOutputWithContext(context.Background())
+}
+
+func (i RouteTable) ToRouteTableOutputWithContext(ctx context.Context) RouteTableOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(RouteTableOutput)
+}
+
+type RouteTableOutput struct {
+	*pulumi.OutputState
+}
+
+func (RouteTableOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*RouteTableOutput)(nil)).Elem()
+}
+
+func (o RouteTableOutput) ToRouteTableOutput() RouteTableOutput {
+	return o
+}
+
+func (o RouteTableOutput) ToRouteTableOutputWithContext(ctx context.Context) RouteTableOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(RouteTableOutput{})
 }

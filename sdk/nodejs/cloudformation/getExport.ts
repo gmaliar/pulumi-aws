@@ -2,8 +2,7 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 /**
@@ -18,13 +17,13 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const subnetId = pulumi.output(aws.cloudformation.getExport({
+ * const subnetId = aws.cloudformation.getExport({
  *     name: "mySubnetIdExportName",
- * }, { async: true }));
+ * });
  * const web = new aws.ec2.Instance("web", {
  *     ami: "ami-abb07bcb",
- *     instanceType: "t1.micro",
- *     subnetId: subnetId.value,
+ *     instanceType: "t2.micro",
+ *     subnetId: subnetId.then(subnetId => subnetId.value),
  * });
  * ```
  */

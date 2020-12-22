@@ -2,8 +2,7 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 /**
@@ -51,6 +50,40 @@ import * as utilities from "../utilities";
  *
  * * `type` - The permission type for the document. The permission type can be `Share`.
  * * `accountIds` - The AWS user accounts that should have access to the document. The account IDs can either be a group of account IDs or `All`.
+ *
+ * ## Import
+ *
+ * SSM Documents can be imported using the name, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:ssm/document:Document example example
+ * ```
+ *
+ *  The `attachments_source` argument does not have an SSM API method for reading the attachment information detail after creation. If the argument is set in the provider configuration on an imported resource, this provider will always show a difference. To workaround this behavior, either omit the argument from the configuration or use [`ignoreChanges`](https://www.pulumi.com/docs/intro/concepts/programming-model/#ignorechanges) to hide the difference, e.g. hcl resource "aws_ssm_document" "test" {
+ *
+ *  name
+ *
+ * = "test_document"
+ *
+ *  document_type = "Package"
+ *
+ *  attachments_source {
+ *
+ *  key
+ *
+ * = "SourceUrl"
+ *
+ *  values = ["s3://${aws_s3_bucket.object_bucket.bucket}/test.zip"]
+ *
+ *  }
+ *
+ * # There is no AWS SSM API for reading attachments_source info directly
+ *
+ *  lifecycle {
+ *
+ *  ignore_changes = [attachments_source]
+ *
+ *  } }
  */
 export class Document extends pulumi.CustomResource {
     /**
@@ -197,10 +230,10 @@ export class Document extends pulumi.CustomResource {
             inputs["targetType"] = state ? state.targetType : undefined;
         } else {
             const args = argsOrState as DocumentArgs | undefined;
-            if (!args || args.content === undefined) {
+            if ((!args || args.content === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'content'");
             }
-            if (!args || args.documentType === undefined) {
+            if ((!args || args.documentType === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'documentType'");
             }
             inputs["attachmentsSources"] = args ? args.attachmentsSources : undefined;

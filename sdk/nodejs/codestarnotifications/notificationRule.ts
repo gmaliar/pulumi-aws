@@ -2,8 +2,7 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 /**
@@ -39,6 +38,14 @@ import * as utilities from "../utilities";
  *         address: notif.arn,
  *     }],
  * });
+ * ```
+ *
+ * ## Import
+ *
+ * CodeStar notification rule can be imported using the ARN, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:codestarnotifications/notificationRule:NotificationRule foo arn:aws:codestar-notifications:us-west-1:0123456789:notificationrule/2cdc68a3-8f7c-4893-b6a5-45b362bd4f2b
  * ```
  */
 export class NotificationRule extends pulumi.CustomResource {
@@ -125,13 +132,13 @@ export class NotificationRule extends pulumi.CustomResource {
             inputs["targets"] = state ? state.targets : undefined;
         } else {
             const args = argsOrState as NotificationRuleArgs | undefined;
-            if (!args || args.detailType === undefined) {
+            if ((!args || args.detailType === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'detailType'");
             }
-            if (!args || args.eventTypeIds === undefined) {
+            if ((!args || args.eventTypeIds === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'eventTypeIds'");
             }
-            if (!args || args.resource === undefined) {
+            if ((!args || args.resource === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'resource'");
             }
             inputs["detailType"] = args ? args.detailType : undefined;

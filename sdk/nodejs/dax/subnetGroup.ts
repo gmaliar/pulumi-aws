@@ -13,12 +13,18 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const example = new aws.dax.SubnetGroup("example", {
- *     subnetIds: [
- *         aws_subnet_example1.id,
- *         aws_subnet_example2.id,
- *     ],
- * });
+ * const example = new aws.dax.SubnetGroup("example", {subnetIds: [
+ *     aws_subnet.example1.id,
+ *     aws_subnet.example2.id,
+ * ]});
+ * ```
+ *
+ * ## Import
+ *
+ * DAX Subnet Group can be imported using the `name`, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:dax/subnetGroup:SubnetGroup example my_dax_sg
  * ```
  */
 export class SubnetGroup extends pulumi.CustomResource {
@@ -84,7 +90,7 @@ export class SubnetGroup extends pulumi.CustomResource {
             inputs["vpcId"] = state ? state.vpcId : undefined;
         } else {
             const args = argsOrState as SubnetGroupArgs | undefined;
-            if (!args || args.subnetIds === undefined) {
+            if ((!args || args.subnetIds === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'subnetIds'");
             }
             inputs["description"] = args ? args.description : undefined;

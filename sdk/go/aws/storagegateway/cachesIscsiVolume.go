@@ -4,6 +4,7 @@
 package storagegateway
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -18,22 +19,22 @@ import (
 //
 // ## Example Usage
 //
-// > **NOTE:** These examples are referencing the `storagegateway.Cache` resource `gatewayArn` attribute to ensure this provider properly adds cache before creating the volume. If you are not using this method, you may need to declare an expicit dependency (e.g. via `dependsOn = ["aws_storagegateway_cache.example"]`) to ensure proper ordering.
+// > **NOTE:** These examples are referencing the `storagegateway.Cache` resource `gatewayArn` attribute to ensure this provider properly adds cache before creating the volume. If you are not using this method, you may need to declare an expicit dependency (e.g. via `dependsOn = [aws_storagegateway_cache.example]`) to ensure proper ordering.
 // ### Create Empty Cached iSCSI Volume
 //
 // ```go
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/storagegateway"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/storagegateway"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
 // func main() {
 // 	pulumi.Run(func(ctx *pulumi.Context) error {
 // 		_, err := storagegateway.NewCachesIscsiVolume(ctx, "example", &storagegateway.CachesIscsiVolumeArgs{
-// 			GatewayArn:         pulumi.String(aws_storagegateway_cache.Example.Gateway_arn),
-// 			NetworkInterfaceId: pulumi.String(aws_instance.Example.Private_ip),
+// 			GatewayArn:         pulumi.Any(aws_storagegateway_cache.Example.Gateway_arn),
+// 			NetworkInterfaceId: pulumi.Any(aws_instance.Example.Private_ip),
 // 			TargetName:         pulumi.String("example"),
 // 			VolumeSizeInBytes:  pulumi.Int(5368709120),
 // 		})
@@ -50,16 +51,16 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/storagegateway"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/storagegateway"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
 // func main() {
 // 	pulumi.Run(func(ctx *pulumi.Context) error {
 // 		_, err := storagegateway.NewCachesIscsiVolume(ctx, "example", &storagegateway.CachesIscsiVolumeArgs{
-// 			GatewayArn:         pulumi.String(aws_storagegateway_cache.Example.Gateway_arn),
-// 			NetworkInterfaceId: pulumi.String(aws_instance.Example.Private_ip),
-// 			SnapshotId:         pulumi.String(aws_ebs_snapshot.Example.Id),
+// 			GatewayArn:         pulumi.Any(aws_storagegateway_cache.Example.Gateway_arn),
+// 			NetworkInterfaceId: pulumi.Any(aws_instance.Example.Private_ip),
+// 			SnapshotId:         pulumi.Any(aws_ebs_snapshot.Example.Id),
 // 			TargetName:         pulumi.String("example"),
 // 			VolumeSizeInBytes:  pulumi.Int(aws_ebs_snapshot.Example.Volume_size * 1024 * 1024 * 1024),
 // 		})
@@ -76,18 +77,18 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/storagegateway"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/storagegateway"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
 // func main() {
 // 	pulumi.Run(func(ctx *pulumi.Context) error {
 // 		_, err := storagegateway.NewCachesIscsiVolume(ctx, "example", &storagegateway.CachesIscsiVolumeArgs{
-// 			GatewayArn:         pulumi.String(aws_storagegateway_cache.Example.Gateway_arn),
-// 			NetworkInterfaceId: pulumi.String(aws_instance.Example.Private_ip),
-// 			SourceVolumeArn:    pulumi.String(aws_storagegateway_cached_iscsi_volume.Existing.Arn),
+// 			GatewayArn:         pulumi.Any(aws_storagegateway_cache.Example.Gateway_arn),
+// 			NetworkInterfaceId: pulumi.Any(aws_instance.Example.Private_ip),
+// 			SourceVolumeArn:    pulumi.Any(aws_storagegateway_cached_iscsi_volume.Existing.Arn),
 // 			TargetName:         pulumi.String("example"),
-// 			VolumeSizeInBytes:  pulumi.String(aws_storagegateway_cached_iscsi_volume.Existing.Volume_size_in_bytes),
+// 			VolumeSizeInBytes:  pulumi.Any(aws_storagegateway_cached_iscsi_volume.Existing.Volume_size_in_bytes),
 // 		})
 // 		if err != nil {
 // 			return err
@@ -95,6 +96,14 @@ import (
 // 		return nil
 // 	})
 // }
+// ```
+//
+// ## Import
+//
+// `aws_storagegateway_cached_iscsi_volume` can be imported by using the volume Amazon Resource Name (ARN), e.g.
+//
+// ```sh
+//  $ pulumi import aws:storagegateway/cachesIscsiVolume:CachesIscsiVolume example arn:aws:storagegateway:us-east-1:123456789012:gateway/sgw-12345678/volume/vol-12345678
 // ```
 type CachesIscsiVolume struct {
 	pulumi.CustomResourceState
@@ -105,6 +114,10 @@ type CachesIscsiVolume struct {
 	ChapEnabled pulumi.BoolOutput `pulumi:"chapEnabled"`
 	// The Amazon Resource Name (ARN) of the gateway.
 	GatewayArn pulumi.StringOutput `pulumi:"gatewayArn"`
+	// Set to `true` to use Amazon S3 server side encryption with your own AWS KMS key, or `false` to use a key managed by Amazon S3.
+	KmsEncrypted pulumi.BoolPtrOutput `pulumi:"kmsEncrypted"`
+	// The Amazon Resource Name (ARN) of the AWS KMS key used for Amazon S3 server side encryption. Is required when `kmsEncrypted` is set.
+	KmsKey pulumi.StringPtrOutput `pulumi:"kmsKey"`
 	// Logical disk number.
 	LunNumber pulumi.IntOutput `pulumi:"lunNumber"`
 	// The network interface of the gateway on which to expose the iSCSI target. Only IPv4 addresses are accepted.
@@ -132,20 +145,21 @@ type CachesIscsiVolume struct {
 // NewCachesIscsiVolume registers a new resource with the given unique name, arguments, and options.
 func NewCachesIscsiVolume(ctx *pulumi.Context,
 	name string, args *CachesIscsiVolumeArgs, opts ...pulumi.ResourceOption) (*CachesIscsiVolume, error) {
-	if args == nil || args.GatewayArn == nil {
-		return nil, errors.New("missing required argument 'GatewayArn'")
-	}
-	if args == nil || args.NetworkInterfaceId == nil {
-		return nil, errors.New("missing required argument 'NetworkInterfaceId'")
-	}
-	if args == nil || args.TargetName == nil {
-		return nil, errors.New("missing required argument 'TargetName'")
-	}
-	if args == nil || args.VolumeSizeInBytes == nil {
-		return nil, errors.New("missing required argument 'VolumeSizeInBytes'")
-	}
 	if args == nil {
-		args = &CachesIscsiVolumeArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.GatewayArn == nil {
+		return nil, errors.New("invalid value for required argument 'GatewayArn'")
+	}
+	if args.NetworkInterfaceId == nil {
+		return nil, errors.New("invalid value for required argument 'NetworkInterfaceId'")
+	}
+	if args.TargetName == nil {
+		return nil, errors.New("invalid value for required argument 'TargetName'")
+	}
+	if args.VolumeSizeInBytes == nil {
+		return nil, errors.New("invalid value for required argument 'VolumeSizeInBytes'")
 	}
 	var resource CachesIscsiVolume
 	err := ctx.RegisterResource("aws:storagegateway/cachesIscsiVolume:CachesIscsiVolume", name, args, &resource, opts...)
@@ -175,6 +189,10 @@ type cachesIscsiVolumeState struct {
 	ChapEnabled *bool `pulumi:"chapEnabled"`
 	// The Amazon Resource Name (ARN) of the gateway.
 	GatewayArn *string `pulumi:"gatewayArn"`
+	// Set to `true` to use Amazon S3 server side encryption with your own AWS KMS key, or `false` to use a key managed by Amazon S3.
+	KmsEncrypted *bool `pulumi:"kmsEncrypted"`
+	// The Amazon Resource Name (ARN) of the AWS KMS key used for Amazon S3 server side encryption. Is required when `kmsEncrypted` is set.
+	KmsKey *string `pulumi:"kmsKey"`
 	// Logical disk number.
 	LunNumber *int `pulumi:"lunNumber"`
 	// The network interface of the gateway on which to expose the iSCSI target. Only IPv4 addresses are accepted.
@@ -206,6 +224,10 @@ type CachesIscsiVolumeState struct {
 	ChapEnabled pulumi.BoolPtrInput
 	// The Amazon Resource Name (ARN) of the gateway.
 	GatewayArn pulumi.StringPtrInput
+	// Set to `true` to use Amazon S3 server side encryption with your own AWS KMS key, or `false` to use a key managed by Amazon S3.
+	KmsEncrypted pulumi.BoolPtrInput
+	// The Amazon Resource Name (ARN) of the AWS KMS key used for Amazon S3 server side encryption. Is required when `kmsEncrypted` is set.
+	KmsKey pulumi.StringPtrInput
 	// Logical disk number.
 	LunNumber pulumi.IntPtrInput
 	// The network interface of the gateway on which to expose the iSCSI target. Only IPv4 addresses are accepted.
@@ -237,6 +259,10 @@ func (CachesIscsiVolumeState) ElementType() reflect.Type {
 type cachesIscsiVolumeArgs struct {
 	// The Amazon Resource Name (ARN) of the gateway.
 	GatewayArn string `pulumi:"gatewayArn"`
+	// Set to `true` to use Amazon S3 server side encryption with your own AWS KMS key, or `false` to use a key managed by Amazon S3.
+	KmsEncrypted *bool `pulumi:"kmsEncrypted"`
+	// The Amazon Resource Name (ARN) of the AWS KMS key used for Amazon S3 server side encryption. Is required when `kmsEncrypted` is set.
+	KmsKey *string `pulumi:"kmsKey"`
 	// The network interface of the gateway on which to expose the iSCSI target. Only IPv4 addresses are accepted.
 	NetworkInterfaceId string `pulumi:"networkInterfaceId"`
 	// The snapshot ID of the snapshot to restore as the new cached volume. e.g. `snap-1122aabb`.
@@ -255,6 +281,10 @@ type cachesIscsiVolumeArgs struct {
 type CachesIscsiVolumeArgs struct {
 	// The Amazon Resource Name (ARN) of the gateway.
 	GatewayArn pulumi.StringInput
+	// Set to `true` to use Amazon S3 server side encryption with your own AWS KMS key, or `false` to use a key managed by Amazon S3.
+	KmsEncrypted pulumi.BoolPtrInput
+	// The Amazon Resource Name (ARN) of the AWS KMS key used for Amazon S3 server side encryption. Is required when `kmsEncrypted` is set.
+	KmsKey pulumi.StringPtrInput
 	// The network interface of the gateway on which to expose the iSCSI target. Only IPv4 addresses are accepted.
 	NetworkInterfaceId pulumi.StringInput
 	// The snapshot ID of the snapshot to restore as the new cached volume. e.g. `snap-1122aabb`.
@@ -271,4 +301,43 @@ type CachesIscsiVolumeArgs struct {
 
 func (CachesIscsiVolumeArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*cachesIscsiVolumeArgs)(nil)).Elem()
+}
+
+type CachesIscsiVolumeInput interface {
+	pulumi.Input
+
+	ToCachesIscsiVolumeOutput() CachesIscsiVolumeOutput
+	ToCachesIscsiVolumeOutputWithContext(ctx context.Context) CachesIscsiVolumeOutput
+}
+
+func (CachesIscsiVolume) ElementType() reflect.Type {
+	return reflect.TypeOf((*CachesIscsiVolume)(nil)).Elem()
+}
+
+func (i CachesIscsiVolume) ToCachesIscsiVolumeOutput() CachesIscsiVolumeOutput {
+	return i.ToCachesIscsiVolumeOutputWithContext(context.Background())
+}
+
+func (i CachesIscsiVolume) ToCachesIscsiVolumeOutputWithContext(ctx context.Context) CachesIscsiVolumeOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(CachesIscsiVolumeOutput)
+}
+
+type CachesIscsiVolumeOutput struct {
+	*pulumi.OutputState
+}
+
+func (CachesIscsiVolumeOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*CachesIscsiVolumeOutput)(nil)).Elem()
+}
+
+func (o CachesIscsiVolumeOutput) ToCachesIscsiVolumeOutput() CachesIscsiVolumeOutput {
+	return o
+}
+
+func (o CachesIscsiVolumeOutput) ToCachesIscsiVolumeOutputWithContext(ctx context.Context) CachesIscsiVolumeOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(CachesIscsiVolumeOutput{})
 }

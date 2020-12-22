@@ -2,8 +2,7 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 /**
@@ -16,10 +15,10 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const example = pulumi.all([aws_dx_gateway_example.id, aws_ec2_transit_gateway_example.id]).apply(([aws_dx_gateway_exampleId, aws_ec2_transit_gateway_exampleId]) => aws.ec2transitgateway.getDirectConnectGatewayAttachment({
- *     dxGatewayId: aws_dx_gateway_exampleId,
- *     transitGatewayId: aws_ec2_transit_gateway_exampleId,
- * }, { async: true }));
+ * const example = aws.ec2transitgateway.getDirectConnectGatewayAttachment({
+ *     transitGatewayId: aws_ec2_transit_gateway.example.id,
+ *     dxGatewayId: aws_dx_gateway.example.id,
+ * });
  * ```
  */
 export function getDirectConnectGatewayAttachment(args?: GetDirectConnectGatewayAttachmentArgs, opts?: pulumi.InvokeOptions): Promise<GetDirectConnectGatewayAttachmentResult> {

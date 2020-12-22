@@ -2,8 +2,7 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 /**
@@ -36,7 +35,7 @@ import * as utilities from "../utilities";
  *     gatewayName: "example",
  *     gatewayTimezone: "GMT",
  *     gatewayType: "VTL",
- *     mediaChangerType: "AWS-Gateway-VTL",
+ *     mediumChangerType: "AWS-Gateway-VTL",
  *     tapeDriveType: "IBM-ULT3580-TD5",
  * });
  * ```
@@ -66,6 +65,16 @@ import * as utilities from "../utilities";
  *     gatewayType: "STORED",
  * });
  * ```
+ *
+ * ## Import
+ *
+ * `aws_storagegateway_gateway` can be imported by using the gateway Amazon Resource Name (ARN), e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:storagegateway/gateway:Gateway example arn:aws:storagegateway:us-east-1:123456789012:gateway/sgw-12345678
+ * ```
+ *
+ *  Certain resource arguments, like `gateway_ip_address` do not have a Storage Gateway API method for reading the information after creation, either omit the argument from the provider configuration or use `ignoreChanges` to hide the difference.
  */
 export class Gateway extends pulumi.CustomResource {
     /**
@@ -104,9 +113,25 @@ export class Gateway extends pulumi.CustomResource {
      */
     public /*out*/ readonly arn!: pulumi.Output<string>;
     /**
+     * The average download bandwidth rate limit in bits per second. This is supported for the `CACHED`, `STORED`, and `VTL` gateway types.
+     */
+    public readonly averageDownloadRateLimitInBitsPerSec!: pulumi.Output<number | undefined>;
+    /**
+     * The average upload bandwidth rate limit in bits per second. This is supported for the `CACHED`, `STORED`, and `VTL` gateway types.
+     */
+    public readonly averageUploadRateLimitInBitsPerSec!: pulumi.Output<number | undefined>;
+    /**
      * The Amazon Resource Name (ARN) of the Amazon CloudWatch log group to use to monitor and log events in the gateway.
      */
     public readonly cloudwatchLogGroupArn!: pulumi.Output<string | undefined>;
+    /**
+     * The ID of the Amazon EC2 instance that was used to launch the gateway.
+     */
+    public /*out*/ readonly ec2InstanceId!: pulumi.Output<string>;
+    /**
+     * The type of endpoint for your gateway.
+     */
+    public /*out*/ readonly endpointType!: pulumi.Output<string>;
     /**
      * Identifier of the gateway.
      */
@@ -120,6 +145,10 @@ export class Gateway extends pulumi.CustomResource {
      */
     public readonly gatewayName!: pulumi.Output<string>;
     /**
+     * An array that contains descriptions of the gateway network interfaces. See Gateway Network Interface.
+     */
+    public /*out*/ readonly gatewayNetworkInterfaces!: pulumi.Output<outputs.storagegateway.GatewayGatewayNetworkInterface[]>;
+    /**
      * Time zone for the gateway. The time zone is of the format "GMT", "GMT-hr:mm", or "GMT+hr:mm". For example, `GMT-4:00` indicates the time is 4 hours behind GMT. The time zone is used, for example, for scheduling snapshots and your gateway's maintenance schedule.
      */
     public readonly gatewayTimezone!: pulumi.Output<string>;
@@ -131,6 +160,13 @@ export class Gateway extends pulumi.CustomResource {
      * VPC endpoint address to be used when activating your gateway. This should be used when your instance is in a private subnet. Requires HTTP access from client computer running Pulumi. More info on what ports are required by your VPC Endpoint Security group in [Activating a Gateway in a Virtual Private Cloud](https://docs.aws.amazon.com/storagegateway/latest/userguide/gateway-private-link.html).
      */
     public readonly gatewayVpcEndpoint!: pulumi.Output<string | undefined>;
+    /**
+     * The type of hypervisor environment used by the host.
+     */
+    public /*out*/ readonly hostEnvironment!: pulumi.Output<string>;
+    /**
+     * Type of medium changer to use for tape gateway. This provider cannot detect drift of this argument. Valid values: `STK-L700`, `AWS-Gateway-VTL`, `IBM-03584L32-0402`.
+     */
     public readonly mediumChangerType!: pulumi.Output<string | undefined>;
     /**
      * Nested argument with Active Directory domain join information for Server Message Block (SMB) file shares. Only valid for `FILE_S3` gateway type. Must be set before creating `ActiveDirectory` authentication SMB file shares. More details below.
@@ -140,6 +176,10 @@ export class Gateway extends pulumi.CustomResource {
      * Guest password for Server Message Block (SMB) file shares. Only valid for `FILE_S3` gateway type. Must be set before creating `GuestAccess` authentication SMB file shares. This provider can only detect drift of the existence of a guest password, not its actual value from the gateway. This provider can however update the password with changing the argument.
      */
     public readonly smbGuestPassword!: pulumi.Output<string | undefined>;
+    /**
+     * Specifies the type of security strategy. Valid values are: `ClientSpecified`, `MandatorySigning`, and `MandatoryEncryption`. See [Setting a Security Level for Your Gateway](https://docs.aws.amazon.com/storagegateway/latest/userguide/managing-gateway-file.html#security-strategy) for more information.
+     */
+    public readonly smbSecurityStrategy!: pulumi.Output<string>;
     /**
      * Key-value mapping of resource tags
      */
@@ -163,27 +203,36 @@ export class Gateway extends pulumi.CustomResource {
             const state = argsOrState as GatewayState | undefined;
             inputs["activationKey"] = state ? state.activationKey : undefined;
             inputs["arn"] = state ? state.arn : undefined;
+            inputs["averageDownloadRateLimitInBitsPerSec"] = state ? state.averageDownloadRateLimitInBitsPerSec : undefined;
+            inputs["averageUploadRateLimitInBitsPerSec"] = state ? state.averageUploadRateLimitInBitsPerSec : undefined;
             inputs["cloudwatchLogGroupArn"] = state ? state.cloudwatchLogGroupArn : undefined;
+            inputs["ec2InstanceId"] = state ? state.ec2InstanceId : undefined;
+            inputs["endpointType"] = state ? state.endpointType : undefined;
             inputs["gatewayId"] = state ? state.gatewayId : undefined;
             inputs["gatewayIpAddress"] = state ? state.gatewayIpAddress : undefined;
             inputs["gatewayName"] = state ? state.gatewayName : undefined;
+            inputs["gatewayNetworkInterfaces"] = state ? state.gatewayNetworkInterfaces : undefined;
             inputs["gatewayTimezone"] = state ? state.gatewayTimezone : undefined;
             inputs["gatewayType"] = state ? state.gatewayType : undefined;
             inputs["gatewayVpcEndpoint"] = state ? state.gatewayVpcEndpoint : undefined;
+            inputs["hostEnvironment"] = state ? state.hostEnvironment : undefined;
             inputs["mediumChangerType"] = state ? state.mediumChangerType : undefined;
             inputs["smbActiveDirectorySettings"] = state ? state.smbActiveDirectorySettings : undefined;
             inputs["smbGuestPassword"] = state ? state.smbGuestPassword : undefined;
+            inputs["smbSecurityStrategy"] = state ? state.smbSecurityStrategy : undefined;
             inputs["tags"] = state ? state.tags : undefined;
             inputs["tapeDriveType"] = state ? state.tapeDriveType : undefined;
         } else {
             const args = argsOrState as GatewayArgs | undefined;
-            if (!args || args.gatewayName === undefined) {
+            if ((!args || args.gatewayName === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'gatewayName'");
             }
-            if (!args || args.gatewayTimezone === undefined) {
+            if ((!args || args.gatewayTimezone === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'gatewayTimezone'");
             }
             inputs["activationKey"] = args ? args.activationKey : undefined;
+            inputs["averageDownloadRateLimitInBitsPerSec"] = args ? args.averageDownloadRateLimitInBitsPerSec : undefined;
+            inputs["averageUploadRateLimitInBitsPerSec"] = args ? args.averageUploadRateLimitInBitsPerSec : undefined;
             inputs["cloudwatchLogGroupArn"] = args ? args.cloudwatchLogGroupArn : undefined;
             inputs["gatewayIpAddress"] = args ? args.gatewayIpAddress : undefined;
             inputs["gatewayName"] = args ? args.gatewayName : undefined;
@@ -193,10 +242,15 @@ export class Gateway extends pulumi.CustomResource {
             inputs["mediumChangerType"] = args ? args.mediumChangerType : undefined;
             inputs["smbActiveDirectorySettings"] = args ? args.smbActiveDirectorySettings : undefined;
             inputs["smbGuestPassword"] = args ? args.smbGuestPassword : undefined;
+            inputs["smbSecurityStrategy"] = args ? args.smbSecurityStrategy : undefined;
             inputs["tags"] = args ? args.tags : undefined;
             inputs["tapeDriveType"] = args ? args.tapeDriveType : undefined;
             inputs["arn"] = undefined /*out*/;
+            inputs["ec2InstanceId"] = undefined /*out*/;
+            inputs["endpointType"] = undefined /*out*/;
             inputs["gatewayId"] = undefined /*out*/;
+            inputs["gatewayNetworkInterfaces"] = undefined /*out*/;
+            inputs["hostEnvironment"] = undefined /*out*/;
         }
         if (!opts) {
             opts = {}
@@ -222,9 +276,25 @@ export interface GatewayState {
      */
     readonly arn?: pulumi.Input<string>;
     /**
+     * The average download bandwidth rate limit in bits per second. This is supported for the `CACHED`, `STORED`, and `VTL` gateway types.
+     */
+    readonly averageDownloadRateLimitInBitsPerSec?: pulumi.Input<number>;
+    /**
+     * The average upload bandwidth rate limit in bits per second. This is supported for the `CACHED`, `STORED`, and `VTL` gateway types.
+     */
+    readonly averageUploadRateLimitInBitsPerSec?: pulumi.Input<number>;
+    /**
      * The Amazon Resource Name (ARN) of the Amazon CloudWatch log group to use to monitor and log events in the gateway.
      */
     readonly cloudwatchLogGroupArn?: pulumi.Input<string>;
+    /**
+     * The ID of the Amazon EC2 instance that was used to launch the gateway.
+     */
+    readonly ec2InstanceId?: pulumi.Input<string>;
+    /**
+     * The type of endpoint for your gateway.
+     */
+    readonly endpointType?: pulumi.Input<string>;
     /**
      * Identifier of the gateway.
      */
@@ -238,6 +308,10 @@ export interface GatewayState {
      */
     readonly gatewayName?: pulumi.Input<string>;
     /**
+     * An array that contains descriptions of the gateway network interfaces. See Gateway Network Interface.
+     */
+    readonly gatewayNetworkInterfaces?: pulumi.Input<pulumi.Input<inputs.storagegateway.GatewayGatewayNetworkInterface>[]>;
+    /**
      * Time zone for the gateway. The time zone is of the format "GMT", "GMT-hr:mm", or "GMT+hr:mm". For example, `GMT-4:00` indicates the time is 4 hours behind GMT. The time zone is used, for example, for scheduling snapshots and your gateway's maintenance schedule.
      */
     readonly gatewayTimezone?: pulumi.Input<string>;
@@ -249,6 +323,13 @@ export interface GatewayState {
      * VPC endpoint address to be used when activating your gateway. This should be used when your instance is in a private subnet. Requires HTTP access from client computer running Pulumi. More info on what ports are required by your VPC Endpoint Security group in [Activating a Gateway in a Virtual Private Cloud](https://docs.aws.amazon.com/storagegateway/latest/userguide/gateway-private-link.html).
      */
     readonly gatewayVpcEndpoint?: pulumi.Input<string>;
+    /**
+     * The type of hypervisor environment used by the host.
+     */
+    readonly hostEnvironment?: pulumi.Input<string>;
+    /**
+     * Type of medium changer to use for tape gateway. This provider cannot detect drift of this argument. Valid values: `STK-L700`, `AWS-Gateway-VTL`, `IBM-03584L32-0402`.
+     */
     readonly mediumChangerType?: pulumi.Input<string>;
     /**
      * Nested argument with Active Directory domain join information for Server Message Block (SMB) file shares. Only valid for `FILE_S3` gateway type. Must be set before creating `ActiveDirectory` authentication SMB file shares. More details below.
@@ -258,6 +339,10 @@ export interface GatewayState {
      * Guest password for Server Message Block (SMB) file shares. Only valid for `FILE_S3` gateway type. Must be set before creating `GuestAccess` authentication SMB file shares. This provider can only detect drift of the existence of a guest password, not its actual value from the gateway. This provider can however update the password with changing the argument.
      */
     readonly smbGuestPassword?: pulumi.Input<string>;
+    /**
+     * Specifies the type of security strategy. Valid values are: `ClientSpecified`, `MandatorySigning`, and `MandatoryEncryption`. See [Setting a Security Level for Your Gateway](https://docs.aws.amazon.com/storagegateway/latest/userguide/managing-gateway-file.html#security-strategy) for more information.
+     */
+    readonly smbSecurityStrategy?: pulumi.Input<string>;
     /**
      * Key-value mapping of resource tags
      */
@@ -276,6 +361,14 @@ export interface GatewayArgs {
      * Gateway activation key during resource creation. Conflicts with `gatewayIpAddress`. Additional information is available in the [Storage Gateway User Guide](https://docs.aws.amazon.com/storagegateway/latest/userguide/get-activation-key.html).
      */
     readonly activationKey?: pulumi.Input<string>;
+    /**
+     * The average download bandwidth rate limit in bits per second. This is supported for the `CACHED`, `STORED`, and `VTL` gateway types.
+     */
+    readonly averageDownloadRateLimitInBitsPerSec?: pulumi.Input<number>;
+    /**
+     * The average upload bandwidth rate limit in bits per second. This is supported for the `CACHED`, `STORED`, and `VTL` gateway types.
+     */
+    readonly averageUploadRateLimitInBitsPerSec?: pulumi.Input<number>;
     /**
      * The Amazon Resource Name (ARN) of the Amazon CloudWatch log group to use to monitor and log events in the gateway.
      */
@@ -300,6 +393,9 @@ export interface GatewayArgs {
      * VPC endpoint address to be used when activating your gateway. This should be used when your instance is in a private subnet. Requires HTTP access from client computer running Pulumi. More info on what ports are required by your VPC Endpoint Security group in [Activating a Gateway in a Virtual Private Cloud](https://docs.aws.amazon.com/storagegateway/latest/userguide/gateway-private-link.html).
      */
     readonly gatewayVpcEndpoint?: pulumi.Input<string>;
+    /**
+     * Type of medium changer to use for tape gateway. This provider cannot detect drift of this argument. Valid values: `STK-L700`, `AWS-Gateway-VTL`, `IBM-03584L32-0402`.
+     */
     readonly mediumChangerType?: pulumi.Input<string>;
     /**
      * Nested argument with Active Directory domain join information for Server Message Block (SMB) file shares. Only valid for `FILE_S3` gateway type. Must be set before creating `ActiveDirectory` authentication SMB file shares. More details below.
@@ -309,6 +405,10 @@ export interface GatewayArgs {
      * Guest password for Server Message Block (SMB) file shares. Only valid for `FILE_S3` gateway type. Must be set before creating `GuestAccess` authentication SMB file shares. This provider can only detect drift of the existence of a guest password, not its actual value from the gateway. This provider can however update the password with changing the argument.
      */
     readonly smbGuestPassword?: pulumi.Input<string>;
+    /**
+     * Specifies the type of security strategy. Valid values are: `ClientSpecified`, `MandatorySigning`, and `MandatoryEncryption`. See [Setting a Security Level for Your Gateway](https://docs.aws.amazon.com/storagegateway/latest/userguide/managing-gateway-file.html#security-strategy) for more information.
+     */
+    readonly smbSecurityStrategy?: pulumi.Input<string>;
     /**
      * Key-value mapping of resource tags
      */

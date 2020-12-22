@@ -4,13 +4,14 @@
 package guardduty
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 )
 
-// Manages a GuardDuty Organization Admin Account. The AWS account utilizing this resource must be an Organizations master account. More information about Organizations support in GuardDuty can be found in the [GuardDuty User Guide](https://docs.aws.amazon.com/guardduty/latest/ug/guardduty_organizations.html).
+// Manages a GuardDuty Organization Admin Account. The AWS account utilizing this resource must be an Organizations primary account. More information about Organizations support in GuardDuty can be found in the [GuardDuty User Guide](https://docs.aws.amazon.com/guardduty/latest/ug/guardduty_organizations.html).
 //
 // ## Example Usage
 //
@@ -18,8 +19,8 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/guardduty"
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/organizations"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/guardduty"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/organizations"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -50,6 +51,14 @@ import (
 // 	})
 // }
 // ```
+//
+// ## Import
+//
+// GuardDuty Organization Admin Account can be imported using the AWS account ID, e.g.
+//
+// ```sh
+//  $ pulumi import aws:guardduty/organizationAdminAccount:OrganizationAdminAccount example 123456789012
+// ```
 type OrganizationAdminAccount struct {
 	pulumi.CustomResourceState
 
@@ -60,11 +69,12 @@ type OrganizationAdminAccount struct {
 // NewOrganizationAdminAccount registers a new resource with the given unique name, arguments, and options.
 func NewOrganizationAdminAccount(ctx *pulumi.Context,
 	name string, args *OrganizationAdminAccountArgs, opts ...pulumi.ResourceOption) (*OrganizationAdminAccount, error) {
-	if args == nil || args.AdminAccountId == nil {
-		return nil, errors.New("missing required argument 'AdminAccountId'")
-	}
 	if args == nil {
-		args = &OrganizationAdminAccountArgs{}
+		return nil, errors.New("missing one or more required arguments")
+	}
+
+	if args.AdminAccountId == nil {
+		return nil, errors.New("invalid value for required argument 'AdminAccountId'")
 	}
 	var resource OrganizationAdminAccount
 	err := ctx.RegisterResource("aws:guardduty/organizationAdminAccount:OrganizationAdminAccount", name, args, &resource, opts...)
@@ -114,4 +124,43 @@ type OrganizationAdminAccountArgs struct {
 
 func (OrganizationAdminAccountArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*organizationAdminAccountArgs)(nil)).Elem()
+}
+
+type OrganizationAdminAccountInput interface {
+	pulumi.Input
+
+	ToOrganizationAdminAccountOutput() OrganizationAdminAccountOutput
+	ToOrganizationAdminAccountOutputWithContext(ctx context.Context) OrganizationAdminAccountOutput
+}
+
+func (OrganizationAdminAccount) ElementType() reflect.Type {
+	return reflect.TypeOf((*OrganizationAdminAccount)(nil)).Elem()
+}
+
+func (i OrganizationAdminAccount) ToOrganizationAdminAccountOutput() OrganizationAdminAccountOutput {
+	return i.ToOrganizationAdminAccountOutputWithContext(context.Background())
+}
+
+func (i OrganizationAdminAccount) ToOrganizationAdminAccountOutputWithContext(ctx context.Context) OrganizationAdminAccountOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(OrganizationAdminAccountOutput)
+}
+
+type OrganizationAdminAccountOutput struct {
+	*pulumi.OutputState
+}
+
+func (OrganizationAdminAccountOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*OrganizationAdminAccountOutput)(nil)).Elem()
+}
+
+func (o OrganizationAdminAccountOutput) ToOrganizationAdminAccountOutput() OrganizationAdminAccountOutput {
+	return o
+}
+
+func (o OrganizationAdminAccountOutput) ToOrganizationAdminAccountOutputWithContext(ctx context.Context) OrganizationAdminAccountOutput {
+	return o
+}
+
+func init() {
+	pulumi.RegisterOutputType(OrganizationAdminAccountOutput{})
 }

@@ -15,8 +15,8 @@ import (
 // package main
 //
 // import (
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/apigateway"
-// 	"github.com/pulumi/pulumi-aws/sdk/v2/go/aws/cognito"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/apigateway"
+// 	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/cognito"
 // 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 // )
 //
@@ -35,9 +35,9 @@ import (
 // 			return err
 // 		}
 // 		_, err = apigateway.NewAuthorizer(ctx, "cognito", &apigateway.AuthorizerArgs{
-// 			ProviderArns: toPulumiStringArray(selectedUserPools.Arns),
-// 			RestApi:      pulumi.String(selectedRestApi.Id),
 // 			Type:         pulumi.String("COGNITO_USER_POOLS"),
+// 			RestApi:      pulumi.String(selectedRestApi.Id),
+// 			ProviderArns: toPulumiStringArray(selectedUserPools.Arns),
 // 		})
 // 		if err != nil {
 // 			return err

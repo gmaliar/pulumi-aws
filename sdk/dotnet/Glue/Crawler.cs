@@ -26,6 +26,7 @@ namespace Pulumi.Aws.Glue
     ///         var example = new Aws.Glue.Crawler("example", new Aws.Glue.CrawlerArgs
     ///         {
     ///             DatabaseName = aws_glue_catalog_database.Example.Name,
+    ///             Role = aws_iam_role.Example.Arn,
     ///             DynamodbTargets = 
     ///             {
     ///                 new Aws.Glue.Inputs.CrawlerDynamodbTargetArgs
@@ -33,7 +34,6 @@ namespace Pulumi.Aws.Glue
     ///                     Path = "table-name",
     ///                 },
     ///             },
-    ///             Role = aws_iam_role.Example.Arn,
     ///         });
     ///     }
     /// 
@@ -52,6 +52,7 @@ namespace Pulumi.Aws.Glue
     ///         var example = new Aws.Glue.Crawler("example", new Aws.Glue.CrawlerArgs
     ///         {
     ///             DatabaseName = aws_glue_catalog_database.Example.Name,
+    ///             Role = aws_iam_role.Example.Arn,
     ///             JdbcTargets = 
     ///             {
     ///                 new Aws.Glue.Inputs.CrawlerJdbcTargetArgs
@@ -60,7 +61,6 @@ namespace Pulumi.Aws.Glue
     ///                     Path = "database-name/%",
     ///                 },
     ///             },
-    ///             Role = aws_iam_role.Example.Arn,
     ///         });
     ///     }
     /// 
@@ -104,6 +104,8 @@ namespace Pulumi.Aws.Glue
     ///     {
     ///         var example = new Aws.Glue.Crawler("example", new Aws.Glue.CrawlerArgs
     ///         {
+    ///             DatabaseName = aws_glue_catalog_database.Example.Name,
+    ///             Role = aws_iam_role.Example.Arn,
     ///             CatalogTargets = 
     ///             {
     ///                 new Aws.Glue.Inputs.CrawlerCatalogTargetArgs
@@ -115,24 +117,101 @@ namespace Pulumi.Aws.Glue
     ///                     },
     ///                 },
     ///             },
+    ///             SchemaChangePolicy = new Aws.Glue.Inputs.CrawlerSchemaChangePolicyArgs
+    ///             {
+    ///                 DeleteBehavior = "LOG",
+    ///             },
     ///             Configuration = @"{
     ///   ""Version"":1.0,
     ///   ""Grouping"": {
     ///     ""TableGroupingPolicy"": ""CombineCompatibleSchemas""
     ///   }
     /// }
-    /// 
     /// ",
+    ///         });
+    ///     }
+    /// 
+    /// }
+    /// ```
+    /// ### MongoDB Target
+    /// 
+    /// ```csharp
+    /// using Pulumi;
+    /// using Aws = Pulumi.Aws;
+    /// 
+    /// class MyStack : Stack
+    /// {
+    ///     public MyStack()
+    ///     {
+    ///         var example = new Aws.Glue.Crawler("example", new Aws.Glue.CrawlerArgs
+    ///         {
     ///             DatabaseName = aws_glue_catalog_database.Example.Name,
     ///             Role = aws_iam_role.Example.Arn,
-    ///             SchemaChangePolicy = new Aws.Glue.Inputs.CrawlerSchemaChangePolicyArgs
+    ///             MongodbTargets = 
     ///             {
-    ///                 DeleteBehavior = "LOG",
+    ///                 new Aws.Glue.Inputs.CrawlerMongodbTargetArgs
+    ///                 {
+    ///                     ConnectionName = aws_glue_connection.Example.Name,
+    ///                     Path = "database-name/%",
+    ///                 },
     ///             },
     ///         });
     ///     }
     /// 
     /// }
+    /// ```
+    /// ### Configuration Settings
+    /// 
+    /// ```csharp
+    /// using System.Collections.Generic;
+    /// using System.Text.Json;
+    /// using Pulumi;
+    /// using Aws = Pulumi.Aws;
+    /// 
+    /// class MyStack : Stack
+    /// {
+    ///     public MyStack()
+    ///     {
+    ///         var eventsCrawler = new Aws.Glue.Crawler("eventsCrawler", new Aws.Glue.CrawlerArgs
+    ///         {
+    ///             DatabaseName = aws_glue_catalog_database.Glue_database.Name,
+    ///             Schedule = "cron(0 1 * * ? *)",
+    ///             Role = aws_iam_role.Glue_role.Arn,
+    ///             Tags = @var.Tags,
+    ///             Configuration = JsonSerializer.Serialize(new Dictionary&lt;string, object?&gt;
+    ///             {
+    ///                 { "Grouping", new Dictionary&lt;string, object?&gt;
+    ///                 {
+    ///                     { "TableGroupingPolicy", "CombineCompatibleSchemas" },
+    ///                 } },
+    ///                 { "CrawlerOutput", new Dictionary&lt;string, object?&gt;
+    ///                 {
+    ///                     { "Partitions", new Dictionary&lt;string, object?&gt;
+    ///                     {
+    ///                         { "AddOrUpdateBehavior", "InheritFromTable" },
+    ///                     } },
+    ///                 } },
+    ///                 { "Version", 1 },
+    ///             }),
+    ///             S3Targets = 
+    ///             {
+    ///                 new Aws.Glue.Inputs.CrawlerS3TargetArgs
+    ///                 {
+    ///                     Path = $"s3://{aws_s3_bucket.Data_lake_bucket.Bucket}",
+    ///                 },
+    ///             },
+    ///         });
+    ///     }
+    /// 
+    /// }
+    /// ```
+    /// 
+    /// ## Import
+    /// 
+    /// Glue Crawlers can be imported using `name`, e.g.
+    /// 
+    /// ```sh
+    ///  $ pulumi import aws:glue/crawler:Crawler MyJob MyJob
     /// ```
     /// </summary>
     public partial class Crawler : Pulumi.CustomResource
@@ -153,7 +232,7 @@ namespace Pulumi.Aws.Glue
         public Output<ImmutableArray<string>> Classifiers { get; private set; } = null!;
 
         /// <summary>
-        /// JSON string of configuration information.
+        /// JSON string of configuration information. For more details see [Setting Crawler Configuration Options](https://docs.aws.amazon.com/glue/latest/dg/crawler-configuration.html).
         /// </summary>
         [Output("configuration")]
         public Output<string?> Configuration { get; private set; } = null!;
@@ -181,6 +260,12 @@ namespace Pulumi.Aws.Glue
         /// </summary>
         [Output("jdbcTargets")]
         public Output<ImmutableArray<Outputs.CrawlerJdbcTarget>> JdbcTargets { get; private set; } = null!;
+
+        /// <summary>
+        /// List nested MongoDB target arguments. See below.
+        /// </summary>
+        [Output("mongodbTargets")]
+        public Output<ImmutableArray<Outputs.CrawlerMongodbTarget>> MongodbTargets { get; private set; } = null!;
 
         /// <summary>
         /// Name of the crawler.
@@ -297,7 +382,7 @@ namespace Pulumi.Aws.Glue
         }
 
         /// <summary>
-        /// JSON string of configuration information.
+        /// JSON string of configuration information. For more details see [Setting Crawler Configuration Options](https://docs.aws.amazon.com/glue/latest/dg/crawler-configuration.html).
         /// </summary>
         [Input("configuration")]
         public Input<string>? Configuration { get; set; }
@@ -336,6 +421,18 @@ namespace Pulumi.Aws.Glue
         {
             get => _jdbcTargets ?? (_jdbcTargets = new InputList<Inputs.CrawlerJdbcTargetArgs>());
             set => _jdbcTargets = value;
+        }
+
+        [Input("mongodbTargets")]
+        private InputList<Inputs.CrawlerMongodbTargetArgs>? _mongodbTargets;
+
+        /// <summary>
+        /// List nested MongoDB target arguments. See below.
+        /// </summary>
+        public InputList<Inputs.CrawlerMongodbTargetArgs> MongodbTargets
+        {
+            get => _mongodbTargets ?? (_mongodbTargets = new InputList<Inputs.CrawlerMongodbTargetArgs>());
+            set => _mongodbTargets = value;
         }
 
         /// <summary>
@@ -432,7 +529,7 @@ namespace Pulumi.Aws.Glue
         }
 
         /// <summary>
-        /// JSON string of configuration information.
+        /// JSON string of configuration information. For more details see [Setting Crawler Configuration Options](https://docs.aws.amazon.com/glue/latest/dg/crawler-configuration.html).
         /// </summary>
         [Input("configuration")]
         public Input<string>? Configuration { get; set; }
@@ -471,6 +568,18 @@ namespace Pulumi.Aws.Glue
         {
             get => _jdbcTargets ?? (_jdbcTargets = new InputList<Inputs.CrawlerJdbcTargetGetArgs>());
             set => _jdbcTargets = value;
+        }
+
+        [Input("mongodbTargets")]
+        private InputList<Inputs.CrawlerMongodbTargetGetArgs>? _mongodbTargets;
+
+        /// <summary>
+        /// List nested MongoDB target arguments. See below.
+        /// </summary>
+        public InputList<Inputs.CrawlerMongodbTargetGetArgs> MongodbTargets
+        {
+            get => _mongodbTargets ?? (_mongodbTargets = new InputList<Inputs.CrawlerMongodbTargetGetArgs>());
+            set => _mongodbTargets = value;
         }
 
         /// <summary>

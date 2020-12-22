@@ -13,6 +13,7 @@ namespace Pulumi.Aws.AccessAnalyzer
     /// Manages an Access Analyzer Analyzer. More information can be found in the [Access Analyzer User Guide](https://docs.aws.amazon.com/IAM/latest/UserGuide/what-is-access-analyzer.html).
     /// 
     /// ## Example Usage
+    /// ### Account Analyzer
     /// 
     /// ```csharp
     /// using Pulumi;
@@ -29,6 +30,46 @@ namespace Pulumi.Aws.AccessAnalyzer
     ///     }
     /// 
     /// }
+    /// ```
+    /// ### Organization Analyzer
+    /// 
+    /// ```csharp
+    /// using Pulumi;
+    /// using Aws = Pulumi.Aws;
+    /// 
+    /// class MyStack : Stack
+    /// {
+    ///     public MyStack()
+    ///     {
+    ///         var exampleOrganization = new Aws.Organizations.Organization("exampleOrganization", new Aws.Organizations.OrganizationArgs
+    ///         {
+    ///             AwsServiceAccessPrincipals = 
+    ///             {
+    ///                 "access-analyzer.amazonaws.com",
+    ///             },
+    ///         });
+    ///         var exampleAnalyzer = new Aws.AccessAnalyzer.Analyzer("exampleAnalyzer", new Aws.AccessAnalyzer.AnalyzerArgs
+    ///         {
+    ///             AnalyzerName = "example",
+    ///             Type = "ORGANIZATION",
+    ///         }, new CustomResourceOptions
+    ///         {
+    ///             DependsOn = 
+    ///             {
+    ///                 exampleOrganization,
+    ///             },
+    ///         });
+    ///     }
+    /// 
+    /// }
+    /// ```
+    /// 
+    /// ## Import
+    /// 
+    /// Access Analyzer Analyzers can be imported using the `analyzer_name`, e.g.
+    /// 
+    /// ```sh
+    ///  $ pulumi import aws:accessanalyzer/analyzer:Analyzer example example
     /// ```
     /// </summary>
     public partial class Analyzer : Pulumi.CustomResource
@@ -49,7 +90,7 @@ namespace Pulumi.Aws.AccessAnalyzer
         public Output<ImmutableDictionary<string, string>?> Tags { get; private set; } = null!;
 
         /// <summary>
-        /// Type of Analyzer. Valid value is currently only `ACCOUNT`. Defaults to `ACCOUNT`.
+        /// Type of Analyzer. Valid values are `ACCOUNT` or `ORGANIZATION`. Defaults to `ACCOUNT`.
         /// </summary>
         [Output("type")]
         public Output<string?> Type { get; private set; } = null!;
@@ -119,7 +160,7 @@ namespace Pulumi.Aws.AccessAnalyzer
         }
 
         /// <summary>
-        /// Type of Analyzer. Valid value is currently only `ACCOUNT`. Defaults to `ACCOUNT`.
+        /// Type of Analyzer. Valid values are `ACCOUNT` or `ORGANIZATION`. Defaults to `ACCOUNT`.
         /// </summary>
         [Input("type")]
         public Input<string>? Type { get; set; }
@@ -153,7 +194,7 @@ namespace Pulumi.Aws.AccessAnalyzer
         }
 
         /// <summary>
-        /// Type of Analyzer. Valid value is currently only `ACCOUNT`. Defaults to `ACCOUNT`.
+        /// Type of Analyzer. Valid values are `ACCOUNT` or `ORGANIZATION`. Defaults to `ACCOUNT`.
         /// </summary>
         [Input("type")]
         public Input<string>? Type { get; set; }

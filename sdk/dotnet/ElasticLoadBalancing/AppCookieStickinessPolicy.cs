@@ -41,13 +41,21 @@ namespace Pulumi.Aws.ElasticLoadBalancing
     ///         });
     ///         var foo = new Aws.Elb.AppCookieStickinessPolicy("foo", new Aws.Elb.AppCookieStickinessPolicyArgs
     ///         {
-    ///             CookieName = "MyAppCookie",
-    ///             LbPort = 80,
     ///             LoadBalancer = lb.Name,
+    ///             LbPort = 80,
+    ///             CookieName = "MyAppCookie",
     ///         });
     ///     }
     /// 
     /// }
+    /// ```
+    /// 
+    /// ## Import
+    /// 
+    /// Application cookie stickiness policies can be imported using the ELB name, port, and policy name separated by colons (`:`), e.g.
+    /// 
+    /// ```sh
+    ///  $ pulumi import aws:elasticloadbalancing/appCookieStickinessPolicy:AppCookieStickinessPolicy example my-elb:80:my-policy
     /// ```
     /// </summary>
     [Obsolete(@"aws.elasticloadbalancing.AppCookieStickinessPolicy has been deprecated in favor of aws.elb.AppCookieStickinessPolicy")]

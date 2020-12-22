@@ -2,8 +2,7 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 /**
@@ -16,7 +15,7 @@ import * as utilities from "../utilities";
  * import * as aws from "@pulumi/aws";
  *
  * const lb = new aws.opsworks.HaproxyLayer("lb", {
- *     stackId: aws_opsworks_stack_main.id,
+ *     stackId: aws_opsworks_stack.main.id,
  *     statsPassword: "foobarbaz",
  * });
  * ```
@@ -189,10 +188,10 @@ export class HaproxyLayer extends pulumi.CustomResource {
             inputs["useEbsOptimizedInstances"] = state ? state.useEbsOptimizedInstances : undefined;
         } else {
             const args = argsOrState as HaproxyLayerArgs | undefined;
-            if (!args || args.stackId === undefined) {
+            if ((!args || args.stackId === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'stackId'");
             }
-            if (!args || args.statsPassword === undefined) {
+            if ((!args || args.statsPassword === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'statsPassword'");
             }
             inputs["autoAssignElasticIps"] = args ? args.autoAssignElasticIps : undefined;

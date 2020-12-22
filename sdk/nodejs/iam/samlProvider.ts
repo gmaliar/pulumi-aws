@@ -12,11 +12,17 @@ import * as utilities from "../utilities";
  * ```typescript
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
- * import * as fs from "fs";
+ * import * from "fs";
  *
- * const defaultSamlProvider = new aws.iam.SamlProvider("default", {
- *     samlMetadataDocument: fs.readFileSync("saml-metadata.xml", "utf-8"),
- * });
+ * const _default = new aws.iam.SamlProvider("default", {samlMetadataDocument: fs.readFileSync("saml-metadata.xml")});
+ * ```
+ *
+ * ## Import
+ *
+ * IAM SAML Providers can be imported using the `arn`, e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:iam/samlProvider:SamlProvider default arn:aws:iam::123456789012:saml-provider/SAMLADFS
  * ```
  */
 export class SamlProvider extends pulumi.CustomResource {
@@ -82,7 +88,7 @@ export class SamlProvider extends pulumi.CustomResource {
             inputs["validUntil"] = state ? state.validUntil : undefined;
         } else {
             const args = argsOrState as SamlProviderArgs | undefined;
-            if (!args || args.samlMetadataDocument === undefined) {
+            if ((!args || args.samlMetadataDocument === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'samlMetadataDocument'");
             }
             inputs["name"] = args ? args.name : undefined;

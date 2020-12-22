@@ -2,8 +2,7 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 /**
@@ -15,10 +14,10 @@ import * as utilities from "../utilities";
  * import * as pulumi from "@pulumi/pulumi";
  * import * as aws from "@pulumi/aws";
  *
- * const example = aws_backup_plan_example.id.apply(id => aws.backup.getSelection({
- *     planId: id,
+ * const example = aws.backup.getSelection({
+ *     planId: data.aws_backup_plan.example.id,
  *     selectionId: "selection-id-example",
- * }, { async: true }));
+ * });
  * ```
  */
 export function getSelection(args: GetSelectionArgs, opts?: pulumi.InvokeOptions): Promise<GetSelectionResult> {

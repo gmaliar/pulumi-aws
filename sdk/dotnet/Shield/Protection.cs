@@ -27,13 +27,13 @@ namespace Pulumi.Aws.Shield
     ///         var available = Output.Create(Aws.GetAvailabilityZones.InvokeAsync());
     ///         var currentRegion = Output.Create(Aws.GetRegion.InvokeAsync());
     ///         var currentCallerIdentity = Output.Create(Aws.GetCallerIdentity.InvokeAsync());
-    ///         var fooEip = new Aws.Ec2.Eip("fooEip", new Aws.Ec2.EipArgs
+    ///         var exampleEip = new Aws.Ec2.Eip("exampleEip", new Aws.Ec2.EipArgs
     ///         {
     ///             Vpc = true,
     ///         });
-    ///         var fooProtection = new Aws.Shield.Protection("fooProtection", new Aws.Shield.ProtectionArgs
+    ///         var exampleProtection = new Aws.Shield.Protection("exampleProtection", new Aws.Shield.ProtectionArgs
     ///         {
-    ///             ResourceArn = Output.Tuple(currentRegion, currentCallerIdentity, fooEip.Id).Apply(values =&gt;
+    ///             ResourceArn = Output.Tuple(currentRegion, currentCallerIdentity, exampleEip.Id).Apply(values =&gt;
     ///             {
     ///                 var currentRegion = values.Item1;
     ///                 var currentCallerIdentity = values.Item2;
@@ -44,6 +44,14 @@ namespace Pulumi.Aws.Shield
     ///     }
     /// 
     /// }
+    /// ```
+    /// 
+    /// ## Import
+    /// 
+    /// Shield protection resources can be imported by specifying their ID e.g.
+    /// 
+    /// ```sh
+    ///  $ pulumi import aws:shield/protection:Protection example ff9592dc-22f3-4e88-afa1-7b29fde9669a
     /// ```
     /// </summary>
     public partial class Protection : Pulumi.CustomResource

@@ -2,8 +2,7 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "../types/input";
-import * as outputs from "../types/output";
+import { input as inputs, output as outputs, enums } from "../types";
 import * as utilities from "../utilities";
 
 /**
@@ -44,6 +43,14 @@ import * as utilities from "../utilities";
  *     policyArn: "arn:aws:iam::aws:policy/AmazonEKSFargatePodExecutionRolePolicy",
  *     role: example.name,
  * });
+ * ```
+ *
+ * ## Import
+ *
+ * EKS Fargate Profiles can be imported using the `cluster_name` and `fargate_profile_name` separated by a colon (`:`), e.g.
+ *
+ * ```sh
+ *  $ pulumi import aws:eks/fargateProfile:FargateProfile my_fargate_profile my_cluster:my_fargate_profile
  * ```
  */
 export class FargateProfile extends pulumi.CustomResource {
@@ -129,13 +136,13 @@ export class FargateProfile extends pulumi.CustomResource {
             inputs["tags"] = state ? state.tags : undefined;
         } else {
             const args = argsOrState as FargateProfileArgs | undefined;
-            if (!args || args.clusterName === undefined) {
+            if ((!args || args.clusterName === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'clusterName'");
             }
-            if (!args || args.podExecutionRoleArn === undefined) {
+            if ((!args || args.podExecutionRoleArn === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'podExecutionRoleArn'");
             }
-            if (!args || args.selectors === undefined) {
+            if ((!args || args.selectors === undefined) && !(opts && opts.urn)) {
                 throw new Error("Missing required property 'selectors'");
             }
             inputs["clusterName"] = args ? args.clusterName : undefined;

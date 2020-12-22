@@ -25,13 +25,25 @@ namespace Pulumi.Aws.Ec2ClientVpn
     ///     {
     ///         var example = new Aws.Ec2ClientVpn.AuthorizationRule("example", new Aws.Ec2ClientVpn.AuthorizationRuleArgs
     ///         {
-    ///             AuthorizeAllGroups = true,
     ///             ClientVpnEndpointId = aws_ec2_client_vpn_endpoint.Example.Id,
     ///             TargetNetworkCidr = aws_subnet.Example.Cidr_block,
+    ///             AuthorizeAllGroups = true,
     ///         });
     ///     }
     /// 
     /// }
+    /// ```
+    /// 
+    /// ## Import
+    /// 
+    /// AWS Client VPN authorization rules can be imported using the endpoint ID and target network CIDR. If there is a specific group name that is included as well. All values are separated by a `,`.
+    /// 
+    /// ```sh
+    ///  $ pulumi import aws:ec2clientvpn/authorizationRule:AuthorizationRule example cvpn-endpoint-0ac3a1abbccddd666,10.1.0.0/24
+    /// ```
+    /// 
+    /// ```sh
+    ///  $ pulumi import aws:ec2clientvpn/authorizationRule:AuthorizationRule example cvpn-endpoint-0ac3a1abbccddd666,10.1.0.0/24,team-a
     /// ```
     /// </summary>
     public partial class AuthorizationRule : Pulumi.CustomResource
